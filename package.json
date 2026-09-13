@@ -1,0 +1,9 @@
+{
+  "name": "mw-dynasty-unified-app",
+  "private": true,
+  "version": "3.0.0",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  }
+}

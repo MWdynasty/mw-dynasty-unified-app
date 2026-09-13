@@ -1,0 +1,118 @@
+/* MW Dynasty Unified Design System — V1.9
+   One visual language across Athlete, Coach, Pace, Distance and support/legal surfaces. */
+:root{
+  --mw-bg:#050403;
+  --mw-bg2:#0a0805;
+  --mw-panel:#0b0d10;
+  --mw-panel2:#111316;
+  --mw-panel3:#17130b;
+  --mw-text:#f7f3e8;
+  --mw-muted:#b8b0a2;
+  --mw-gold:#e7b84a;
+  --mw-gold2:#f4d47e;
+  --mw-line:rgba(231,184,74,.38);
+  --mw-line-strong:rgba(231,184,74,.72);
+  --mw-shadow:0 18px 50px rgba(0,0,0,.38);
+  --bg:var(--mw-bg)!important;
+  --panel:var(--mw-panel)!important;
+  --panel2:var(--mw-panel2)!important;
+  --text:var(--mw-text)!important;
+  --muted:var(--mw-muted)!important;
+  --gold:var(--mw-gold)!important;
+  --gold2:var(--mw-gold2)!important;
+  --blue:var(--mw-gold)!important;
+  --blue2:var(--mw-gold2)!important;
+  --accent:var(--mw-gold)!important;
+  --accent2:#5e4514!important;
+  --line:var(--mw-line)!important;
+}
+html,body{background:radial-gradient(circle at 50% -12%,rgba(231,184,74,.08),transparent 34%),linear-gradient(180deg,var(--mw-bg2),var(--mw-bg) 36%,#020201 100%)!important;color:var(--mw-text)!important}
+body,.app,.page,.main,.frame,.shell{color:var(--mw-text)!important}
+.app,.page,.main{background:transparent!important}
+.frame{background:#070706!important;border-color:var(--mw-line)!important;box-shadow:0 0 0 1px rgba(231,184,74,.08),var(--mw-shadow)!important}
+
+/* Brand and hierarchy */
+.logo b,.brand-title,.brand-tag,.side-logo .mw-mark,.eyebrow,.kicker,.sub,.link-btn,.mw-chip,.mw-week-guide,.mw-detail-block>b,.mw-lift-section h4,.mw-coach-note>b,.mw-strength-block-title,.mwLoginBrandMark,.coach-login-mw,.coach-login-tagline,.coach-apply-kicker{color:var(--mw-gold)!important}
+.logo,.brand-title,.side-logo,.mwLoginBrandName,.coach-login-coach{color:#fff!important}
+.muted,.brand-sub,.coach-role,.meet-place,.ai-card p,.insight p,.module span,.mw-reference-note,.mwLoginCardHead p,.coach-login-card p,.note{color:var(--mw-muted)!important}
+
+/* Shared card language */
+.card,.heroCard,.entryHero,.question,.result,.entryStatus,.faithCard,.settingGroup,.panel,.tile,.section,.mini-card,.stat,.quick,.ai-card,.module,.ai-hub .hub,.overview,.mw-modal-card,.mw-week-banner,.mw-session-card,.mw-lift-section,.mw-coach-note,.mw-day-card,.mw-strength-block,.mwUtilityBox,.handoff,.gpsCard>div,.target,.repRow,.notice{
+  background:linear-gradient(155deg,rgba(17,18,18,.98),rgba(7,7,7,.99))!important;
+  border-color:var(--mw-line)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+.card,.heroCard,.entryHero,.settingGroup,.panel,.tile,.section,.mini-card,.stat,.quick,.ai-card,.module,.overview,.mw-modal-card,.mw-day-card,.mw-strength-block,.mwUtilityBox{border-radius:16px!important}
+.section-head,.mw-session-top,.mw-strength-block-title{border-color:rgba(231,184,74,.18)!important}
+
+/* Controls */
+input,select,textarea,.search,.mwLoginField input,.coach-field input,.coach-apply-form input,.coach-apply-form select,.coach-apply-form textarea{
+  background:#0a0b0c!important;color:#fff!important;border-color:rgba(231,184,74,.34)!important;
+}
+input:focus,select:focus,textarea:focus,.mwLoginField input:focus,.coach-field input:focus{
+  border-color:var(--mw-gold)!important;outline:none!important;box-shadow:0 0 0 3px rgba(231,184,74,.10)!important;
+}
+.mwLoginButton,.coach-login-submit,.submit,.entryAction,.action,button.primary,.primary{
+  background:linear-gradient(100deg,#bd821b 0%,var(--mw-gold2) 50%,#cf9227 100%)!important;
+  color:#090806!important;border:1px solid #f0ce72!important;box-shadow:0 10px 28px rgba(206,153,42,.16)!important;
+}
+.save,.ghost,.secondary,.back,.switch,.signout,.entryGhost,.accountLink,.mode,.quick button,.mwHubBack{
+  background:#0a0b0c!important;color:var(--mw-gold2)!important;border-color:var(--mw-line)!important;
+}
+a,.mwLoginLink,.coach-forgot,.coach-login-contact button{color:var(--mw-gold2)!important}
+
+/* Navigation */
+.nav,.sidebar,.side-nav,.side-account,.footer{background:rgba(5,5,4,.97)!important;border-color:var(--mw-line)!important}
+.nav button.active,.nav-btn.active,.mode.active{color:#090806!important;background:linear-gradient(100deg,#bf861d,var(--mw-gold2),#cb9025)!important;border-color:#efd071!important}
+.nav button:not(.active),.nav-btn:not(.active){color:#d9d2c5!important}
+
+/* Athlete interior */
+body.mw-auth-ready{background:radial-gradient(circle at 50% -5%,rgba(231,184,74,.08),transparent 31%),#050403!important}
+body.mw-auth-ready .app{background:transparent!important}
+body.mw-auth-ready .top{border-color:rgba(231,184,74,.18)!important}
+body.mw-auth-ready .actionCard{background:linear-gradient(155deg,#10100f,#090909)!important;border-color:var(--mw-line)!important}
+body.mw-auth-ready .actionCard b{color:var(--mw-gold2)!important}
+body.mw-auth-ready .progressBar,body.mw-auth-ready .ring:before{background:#0c0c0b!important}
+body.mw-auth-ready .ring{background:conic-gradient(var(--mw-gold) 0 85%,#2b2518 85%)!important}
+body.mw-auth-ready .ask{background:rgba(8,8,7,.96)!important;border-color:var(--mw-line-strong)!important}
+body.mw-auth-ready .round,.attach{background:#0b0b0b!important;border-color:var(--mw-line)!important;color:var(--mw-gold2)!important}
+body.mw-auth-ready .me,body.mw-auth-ready .coach{background:#12100b!important;border-color:var(--mw-line)!important}
+body.mw-auth-ready .premiumChip.live,body.mw-auth-ready .badge{background:#17130a!important;color:var(--mw-gold2)!important;border-color:var(--mw-line)!important}
+
+/* Athlete sign-in — same master MW Dynasty language as coach sign-in */
+#mwAuth.mwAthleteLoginV26,.mwLoginStage,.mwLoginMain,.mwLoginStory{background:#050403!important}
+.mwLoginRunner{filter:saturate(.72) sepia(.12) contrast(1.08) brightness(.78)!important}
+.mwLoginStory:after{background:linear-gradient(180deg,rgba(5,4,3,.08),rgba(5,4,3,.24) 45%,rgba(5,4,3,.96) 100%)!important}
+.mwLoginCard{background:linear-gradient(180deg,rgba(12,12,11,.97),rgba(5,5,4,.995))!important;border-color:var(--mw-line-strong)!important;box-shadow:var(--mw-shadow)!important}
+.mwLoginField input{background:#0b0c0d!important;border-color:rgba(231,184,74,.32)!important}
+.mwLoginFeatureBar{background:rgba(5,5,4,.96)!important;border-color:var(--mw-line)!important}
+
+/* Coach sign-in */
+.coach-login-screen,.coach-login-stage{background:#050403!important}
+.coach-login-bg:after,.coach-login-stage:after{background:linear-gradient(180deg,rgba(5,4,3,.08),rgba(5,4,3,.35) 54%,rgba(5,4,3,.92) 100%)!important}
+.coach-login-card{background:linear-gradient(180deg,rgba(12,12,11,.97),rgba(5,5,4,.995))!important;border-color:var(--mw-line-strong)!important;box-shadow:var(--mw-shadow)!important}
+.coach-field{background:#0b0c0d!important;border-color:rgba(231,184,74,.32)!important}
+.coach-login-features{background:rgba(5,5,4,.96)!important;border-color:var(--mw-line)!important}
+.coach-login-divider span{background:rgba(231,184,74,.22)!important}
+
+/* Coach dashboard — remove separate blue/gold visual systems */
+.blue,.gold{--accent:var(--mw-gold)!important;--accent2:#5e4514!important;--line:var(--mw-line)!important}
+.blue .frame,.gold .frame{box-shadow:0 0 0 1px rgba(231,184,74,.18),var(--mw-shadow)!important}
+.blue .brand-title,.gold .brand-title,.blue .brand-tag,.gold .brand-tag,.blue .link-btn,.gold .link-btn{color:var(--mw-gold)!important}
+.blue .hero,.gold .hero,.hero{background:linear-gradient(100deg,#171109,#0d0b08 58%,#080807)!important;border-color:var(--mw-line)!important}
+.blue .hero-art:after,.gold .hero-art:after,.hero-art:after{background:linear-gradient(90deg,#171109 0,rgba(23,17,9,.48) 45%,transparent 78%)!important}
+.blue .page,.gold .page,.page.blue,.page.gold{background:transparent!important}
+.ai-icon,.announce-icon{background:#17130a!important;color:var(--mw-gold2)!important}
+.progress>span{background:linear-gradient(90deg,#b97e18,var(--mw-gold2))!important}
+
+/* Pace + Distance */
+.brand-stage{background:#070604!important;border-color:var(--mw-line)!important}
+.mode,.secondary{background:#0a0b0c!important}
+.accuracy.high,.status{color:var(--mw-gold2)!important;border-color:var(--mw-line)!important}
+
+/* Legal/support */
+body>main,body>.wrap{color:var(--mw-text)}
+
+@media(max-width:640px){
+  .card,.heroCard,.panel,.tile,.section,.mini-card,.mw-modal-card,.mw-day-card{border-radius:14px!important}
+}

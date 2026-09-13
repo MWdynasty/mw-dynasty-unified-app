@@ -1,0 +1,1681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#02060b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MW Dynasty">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>MW Dynasty · Athlete</title>
+<style>
+:root{--bg:#02060b;--panel:#071019;--panel2:#091522;--blue:#159cff;--blue2:#55c9ff;--gold:#f5b92e;--text:#f5f7fb;--muted:#93a0ad;--line:#24313d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 70px 70px,#071c31 0,transparent 26%),linear-gradient(#010409,#02070c);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.app{max-width:520px;margin:auto;padding:17px 15px 108px;min-height:100vh}.top{display:flex;justify-content:space-between;align-items:center}.logo{font-weight:950;font-size:24px;letter-spacing:-1px}.logo b{color:var(--gold);font-style:italic}.sub{font-size:9px;color:var(--gold);letter-spacing:.08em}.online{font-size:11px}.dot{color:#35e878}
+.hero{margin-top:12px;position:relative;min-height:345px;overflow:hidden;border-bottom:1px solid rgba(245,185,46,.35)}
+.heroText{position:relative;z-index:3;width:48%;padding-top:22px;max-width:230px}.hero h1{font-size:31px;line-height:1.05;margin:0 0 10px}.hero h1 em{font-style:normal;color:var(--gold)}.hero p{font-size:14px;line-height:1.45;color:#d6dde5;max-width:215px}
+.aiHead{position:absolute;right:-92px;top:-12px;width:70%;height:355px;background-image:linear-gradient(90deg,rgba(2,6,11,1) 0%,rgba(2,6,11,.98) 20%,rgba(2,6,11,.82) 34%,rgba(2,6,11,.28) 50%,rgba(2,6,11,0) 66%),url("coach-mw-male-luxe.jpg");background-size:cover;background-position:78% 8%;filter:saturate(1.08) contrast(1.05);z-index:1;transition:opacity .22s ease,filter .22s ease}
+.aiHead:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 68%,#02060b 100%)}
+.aiHead.listening{filter:saturate(1.2) contrast(1.08);box-shadow:inset 0 0 0 1px rgba(21,156,255,.12)}.aiHead.speaking{filter:saturate(1.18) contrast(1.08) brightness(1.04)}
+
+.system{display:inline-block;margin-top:8px;padding:10px 12px;border:1px solid #33404c;border-radius:12px;background:rgba(4,11,17,.78);font-size:11px}.system b{display:block;margin-bottom:4px}.system span{color:var(--blue2)}
+.ask{margin-top:14px;border:1px solid var(--gold);box-shadow:0 0 24px rgba(245,185,46,.12);border-radius:17px;padding:11px;background:rgba(5,12,18,.95)}
+.askrow{display:grid;grid-template-columns:48px 48px 1fr 48px;gap:8px}.attach{height:46px;border-radius:50%;border:1px solid #4c6478;background:#07131f;color:#d9e8f4;font-size:18px;cursor:pointer}.attachReady{border-color:var(--gold)!important;color:var(--gold)!important;box-shadow:0 0 0 2px rgba(255,198,55,.12)}#imagePick{display:none}.attachStatus{font-size:9px;color:var(--gold);margin-top:6px;min-height:12px}.ask input{border:0;outline:0;background:transparent;color:#fff;font-size:16px;width:100%}.round{height:46px;border-radius:50%;border:1px solid var(--blue);background:#06192a;color:var(--blue2);font-size:20px}.send{height:46px;border-radius:50%;border:0;background:linear-gradient(#ffd65d,#d89412);font-weight:900;font-size:22px;color:#101010}.voice{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid #23303b;color:var(--blue2);font-size:9px}.voice span:last-child{color:var(--gold)}
+.chat{margin-top:11px;max-height:300px;overflow:auto}.msg{padding:10px 11px;border-radius:13px;margin:7px 0;font-size:13px;line-height:1.42}.me{margin-left:15%;background:#122232}.coach{margin-right:5%;border:1px solid rgba(21,156,255,.25);background:#07131e}.speak{border:0;background:none;color:var(--blue2);padding:7px 0 0;font-size:11px}
+.title{display:flex;align-items:center;gap:10px;margin:18px 0 10px;color:var(--gold);font-weight:850;font-size:13px}.title:before,.title:after{content:"";height:1px;background:#584514;flex:1}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.quick button{min-height:82px;border:1px solid #34414d;border-radius:12px;background:linear-gradient(#09131d,#050b11);color:#fff;padding:8px 5px;font-size:11px}.quick i{display:block;font-style:normal;color:var(--blue);font-size:24px;margin-bottom:6px}
+.card{margin-top:12px;border:1px solid #34414d;border-radius:14px;background:linear-gradient(145deg,#08121c,#04090e);padding:13px}.cardHead{display:flex;justify-content:space-between;color:var(--gold);font-weight:850;font-size:13px}.smalllink{color:var(--blue2);font-size:9px}.workout{display:grid;grid-template-columns:1fr 82px;gap:10px;margin-top:13px}.workout b{font-size:19px}.muted{color:var(--muted);font-size:11px;line-height:1.4}.ring{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) 0 85%,#263340 85%);position:relative}.ring:before{content:"";position:absolute;width:58px;height:58px;border-radius:50%;background:#06101a}.ring strong{z-index:1;font-size:18px}.pacer{margin-top:12px;border:1px solid var(--gold);background:#090d10;color:var(--gold);border-radius:10px;padding:10px 12px;font-weight:750;font-size:11px}
+
+.entryHero{margin-top:14px;border:1px solid rgba(245,185,46,.45);border-radius:16px;padding:15px;background:linear-gradient(145deg,#091420,#05090e)}
+.entryHero h2{margin:0 0 6px;font-size:22px}.entryHero strong{color:var(--gold)}.entryHero p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.phaseStrip{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:12px}.phasePill{padding:8px 4px;border:1px solid #2d3a46;border-radius:8px;text-align:center;font-size:9px;color:#8795a2;background:#050b11}.phasePill.active{border-color:var(--gold);color:var(--gold);background:#171107}.phasePill span{display:block;font-size:15px;font-weight:900;margin-bottom:2px}
+.assessment{margin-top:12px}.question{border:1px solid #283642;border-radius:13px;padding:12px;margin:9px 0;background:#06101a}.question label{display:block;font-weight:800;font-size:12px;margin-bottom:7px}.question select,.question input{width:100%;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:9px;padding:11px;font-size:16px}.seasonCalendarSummary{border:1px solid rgba(230,185,74,.28);background:linear-gradient(135deg,rgba(230,185,74,.08),rgba(20,43,68,.34));border-radius:11px;padding:12px;color:#dce9f3;font-size:13px;line-height:1.45}.seasonCalendarSummary b{display:block;color:#f0c86a;font-size:14px;margin-bottom:4px}.seasonCalendarSummary small{display:block;color:#93a7b7;margin-top:4px}
+.entryAction{width:100%;margin-top:10px;border:0;border-radius:11px;padding:13px;background:linear-gradient(#ffd65d,#d89412);color:#111;font-weight:950;font-size:13px}.entryGhost{width:100%;margin-top:8px;border:1px solid #34424f;border-radius:11px;padding:11px;background:#06101a;color:#dbe5ee;font-weight:750}
+.result{display:none;margin-top:13px;border:1px solid var(--blue);border-radius:15px;background:linear-gradient(145deg,#071827,#040b12);padding:14px}.result.show{display:block}.resultTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#0a2a40;color:var(--blue2);font-size:9px;font-weight:850}.result h3{margin:8px 0 5px;font-size:20px}.result h3 em{font-style:normal;color:var(--gold)}.decisionGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:11px 0}.decisionBox{border:1px solid #2d3a46;border-radius:10px;padding:9px;background:#050c12}.decisionBox small{display:block;color:var(--muted);font-size:8px;letter-spacing:.08em}.decisionBox b{display:block;margin-top:3px;font-size:12px}.reason{font-size:11px;line-height:1.5;color:#ccd6df;border-top:1px solid #263641;padding-top:10px}.warning{margin-top:9px;border-left:3px solid var(--gold);padding:8px 10px;background:#151108;color:#e6d6aa;font-size:10px;line-height:1.45}
+.smartBtn{width:100%;margin-top:12px;border:1px solid var(--blue);background:linear-gradient(90deg,#061523,#071e30);color:#fff;border-radius:11px;padding:12px;font-weight:900}.smartBtn span{color:var(--gold)}
+.entryStatus{display:none;margin-top:10px;border:1px solid rgba(21,156,255,.35);border-radius:12px;background:#06121d;padding:11px}.entryStatus.show{display:block}.entryStatus small{display:block;color:var(--blue2);font-size:9px;font-weight:850;letter-spacing:.05em}.entryStatus b{display:block;margin-top:4px;color:#fff;font-size:13px}.entryStatus span{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.4}.syncTag{color:var(--gold)!important;font-weight:800}
+.faithCard{margin-top:12px;border:1px solid rgba(245,185,46,.5);border-radius:14px;background:linear-gradient(145deg,#0c1116,#070a0d);padding:13px;box-shadow:0 0 22px rgba(245,185,46,.06)}.faithTop{display:flex;justify-content:space-between;gap:10px;align-items:center}.faithTop b{color:var(--gold);font-size:12px;letter-spacing:.04em}.faithTop span{font-size:10px;color:#d8e2eb}.verseRef{font-size:20px;font-weight:950;margin-top:9px}.verseTheme{color:#d4dde5;font-size:12px;line-height:1.5;margin-top:5px}.faithNote{font-size:9px;color:var(--muted);margin-top:7px;line-height:1.4}.faithActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.faithActions button{border:1px solid #354450;border-radius:10px;background:#06111a;color:#fff;padding:9px;font-size:10px;font-weight:800}.faithActions button:first-child{border-color:var(--gold);color:var(--gold)}
+.view{display:none}.view.active{display:block}.profilegrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field label{display:block;font-size:9px;color:var(--muted);margin-bottom:4px}.field input,.field select{width:100%;background:#06101a;border:1px solid #2d3a46;color:#fff;border-radius:9px;padding:10px;font-size:16px}.save{width:100%;margin-top:10px;border:1px solid var(--gold);background:#151109;color:var(--gold);border-radius:10px;padding:11px;font-weight:850}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);display:grid;grid-template-columns:repeat(5,1fr);background:rgba(2,6,11,.96);border-top:1px solid #26313b;padding:8px 6px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(15px)}.nav button{border:0;background:none;color:#7f8993;font-size:10px}.nav b{display:block;font-size:21px;margin-bottom:2px}.nav button.active{color:var(--gold)}
+
+.knowledgeStatus h2{margin:10px 0 6px;font-size:21px}.coverage{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.coverage span{font-size:8px;color:#b9e2ff;border:1px solid #245477;background:#061929;border-radius:999px;padding:6px 8px}
+.weekChooser{margin-top:12px}.weekChooser label{display:block;color:var(--muted);font-size:9px;margin-bottom:5px}.weekChooser select{width:100%;background:#02070c;color:#fff;border:1px solid #34424f;border-radius:10px;padding:11px;font-size:16px}
+.strengthPlan{margin-top:12px}.strengthPhase{color:var(--gold);font-size:11px;font-weight:900;margin-bottom:10px}.strengthSection{border-top:1px solid #263641;padding:10px 0}.strengthSection:first-child{border-top:0}.strengthSection h4{margin:0 0 7px;color:var(--blue2);font-size:11px}.strengthRow{display:grid;grid-template-columns:1.05fr 1.25fr;gap:8px;padding:7px 0;font-size:10px}.strengthRow>span:last-child{text-align:right;color:#e7edf3;font-weight:750}.loadCalc{display:block;margin-top:5px;padding:7px 8px;border:1px solid #2d3a46;border-radius:9px;background:#06101a;text-align:left}.loadTarget{display:block;color:var(--gold);font-weight:900;font-size:10px}.plateLine{display:block;color:#b9c8d3;font-size:9px;line-height:1.35;margin-top:3px}.plateLine b{color:#fff}.coachNoteBox{margin-top:8px;border-left:3px solid var(--gold);background:#141008;padding:9px 10px;font-size:10px;line-height:1.45;color:#e7d9b2}
+@media(max-width:430px){.hero{min-height:345px;overflow:hidden}.heroText{width:47%;max-width:205px;padding-top:22px}.hero h1{font-size:30px}.hero p{max-width:190px}.aiHead{right:-112px;top:-10px;width:74%;height:355px;background-position:82% 8%}.system{margin-bottom:2px}}
+
+/* MW 2026 focused add-ons: spacious navigation, progress, settings */
+.topActions{display:flex;align-items:center;gap:8px}.gearBtn{border:1px solid #34414d;background:#071019;color:#fff;border-radius:10px;width:38px;height:38px;font-size:18px}.homeGrid{display:grid;gap:12px;margin-top:14px}.heroCard{border:1px solid rgba(245,185,46,.45);border-radius:18px;padding:18px;background:linear-gradient(145deg,#0a1722,#05090e)}.heroCard h2{font-size:25px;margin:4px 0 7px}.metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.metric{border:1px solid #2b3945;border-radius:12px;padding:12px 8px;background:#06101a;text-align:center}.metric strong{display:block;color:var(--gold);font-size:20px}.metric small{color:var(--muted);font-size:8px}.actionGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actionCard{border:1px solid #34414d;border-radius:14px;background:linear-gradient(#09131d,#050b11);color:#fff;padding:16px;text-align:left;min-height:105px}.actionCard b{display:block;color:var(--gold);font-size:14px;margin-bottom:5px}.progressBar{height:9px;background:#1b2732;border-radius:999px;overflow:hidden;margin-top:10px}.progressBar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--gold));width:0}.checkList{display:grid;gap:9px;margin-top:12px}.checkRow{display:flex;align-items:center;justify-content:space-between;border:1px solid #2d3a46;border-radius:12px;padding:12px;background:#06101a}.checkRow.done{border-color:rgba(53,232,120,.45)}.checkRow button{border:1px solid #42515f;background:#09131d;color:#fff;border-radius:9px;padding:8px 10px}.checkRow.done button{color:#35e878}.lockNote{margin-top:10px;padding:10px;border-radius:10px;background:#111821;color:var(--muted);font-size:10px;line-height:1.45}.settingGroup{margin-top:14px}.settingGroup h3{color:var(--gold);font-size:12px;margin:0 0 8px}.settingRow{border:1px solid #2d3a46;border-radius:12px;padding:12px;margin:8px 0;background:#06101a}.settingRow label{display:block;font-size:11px;font-weight:800;margin-bottom:7px}.settingRow select,.settingRow input{width:100%;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:9px;padding:11px;font-size:15px}.nav{grid-template-columns:repeat(5,1fr)}
+.homeBrand{margin-top:12px;border:1px solid rgba(245,185,46,.35);border-radius:18px;overflow:hidden;background:#020406}.homeBrand img{display:block;width:100%;height:auto;max-height:245px;object-fit:cover;object-position:center 38%}
+
+/* MW first-login onboarding — V11 Premium Guided Tour */
+.tourOverlay{
+  position:fixed;inset:0;z-index:20000;display:none;
+  background:rgba(1,5,9,.60);backdrop-filter:blur(5px);
+  pointer-events:auto;
+}
+.tourOverlay.show{display:block}
+.tourSpotlight{
+  position:fixed;z-index:20001;display:none;pointer-events:none;
+  border:1.5px solid rgba(255,210,85,.95);border-radius:18px;
+  box-shadow:0 0 0 9999px rgba(1,5,9,.57),0 0 0 4px rgba(255,196,38,.09),
+             0 0 34px rgba(255,190,32,.34),inset 0 0 24px rgba(255,190,32,.05);
+  transition:all .32s cubic-bezier(.2,.8,.2,1);
+}
+.tourSpotlight.pulse:after{
+  content:"";position:absolute;inset:-7px;border:1px solid rgba(81,196,255,.55);
+  border-radius:22px;animation:mwTourPulse 1.7s ease-out infinite;
+}
+@keyframes mwTourPulse{0%{opacity:.75;transform:scale(.985)}75%,100%{opacity:0;transform:scale(1.045)}}
+.tourArrow{
+  position:fixed;z-index:20003;width:42px;height:42px;display:none;pointer-events:none;
+  filter:drop-shadow(0 4px 12px rgba(0,0,0,.65));
+  transition:left .32s cubic-bezier(.2,.8,.2,1),top .32s cubic-bezier(.2,.8,.2,1),transform .32s ease;
+}
+.tourArrow:before{
+  content:"";position:absolute;left:15px;top:3px;width:10px;height:29px;border-radius:999px;
+  background:linear-gradient(180deg,#fff5bf,#f5b92e);
+  box-shadow:0 0 16px rgba(245,185,46,.46);
+}
+.tourArrow:after{
+  content:"";position:absolute;left:7px;top:23px;width:20px;height:20px;
+  border-right:8px solid #f5b92e;border-bottom:8px solid #f5b92e;
+  transform:rotate(45deg);border-radius:2px;
+}
+.tourCard{
+  position:fixed;z-index:20004;width:min(440px,calc(100vw - 28px));
+  left:50%;transform:translateX(-50%);
+  border:1px solid rgba(245,185,46,.60);border-radius:24px;
+  background:
+    radial-gradient(circle at 88% 0%,rgba(52,160,214,.12),transparent 34%),
+    linear-gradient(155deg,rgba(11,24,35,.985),rgba(4,8,13,.99) 72%);
+  box-shadow:0 26px 90px rgba(0,0,0,.68),0 0 38px rgba(245,185,46,.09);
+  padding:18px 18px 16px;transition:top .28s ease,bottom .28s ease;
+}
+.tourCard.atBottom{bottom:max(20px,calc(18px + env(safe-area-inset-bottom)));top:auto}
+.tourCard.atTop{top:max(20px,calc(16px + env(safe-area-inset-top)));bottom:auto}
+.tourTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tourEyebrow{display:flex;align-items:center;gap:7px;color:#f5b92e;font-size:9px;font-weight:950;letter-spacing:.14em}
+.tourEyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:#36d998;box-shadow:0 0 12px #36d998}
+.tourStep{font-size:9px;color:#8fa2b3;font-weight:800;letter-spacing:.08em}
+.tourLead{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;margin-top:13px}
+.tourIcon{
+  width:48px;height:48px;border:1px solid rgba(85,201,255,.42);border-radius:15px;
+  display:grid;place-items:center;background:linear-gradient(145deg,#091d2b,#06111a);
+  font-size:23px;box-shadow:inset 0 0 18px rgba(72,180,231,.05)
+}
+.tourCard h2{font-size:23px;line-height:1.08;margin:0 0 5px;letter-spacing:-.02em}
+.tourCard p{color:#c6d1db;font-size:13px;line-height:1.48;margin:0;max-width:395px}
+.tourMiniHint{
+  margin-top:11px;border-left:2px solid rgba(85,201,255,.75);padding:7px 9px;
+  background:rgba(6,20,31,.72);border-radius:0 9px 9px 0;
+  font-size:10px;line-height:1.4;color:#8edcff
+}
+.tourDots{display:flex;gap:6px;margin-top:13px;align-items:center}
+.tourDots i{width:6px;height:6px;border-radius:999px;background:#33424e;transition:.22s}
+.tourDots i.active{width:22px;background:linear-gradient(90deg,#f5b92e,#ffe282)}
+.tourActions{display:grid;grid-template-columns:.82fr .82fr 1.3fr;gap:8px;margin-top:14px}
+.tourActions button{border-radius:12px;padding:11px 8px;font-weight:900;font-size:10px;letter-spacing:.03em}
+.tourSkip{border:1px solid #2c3944;background:#060d13;color:#8e9ca7}
+.tourBack{border:1px solid #40505e;background:#09131d;color:#d6dee5}
+.tourNext{border:0;background:linear-gradient(180deg,#ffda63,#d99512);color:#101010;box-shadow:0 8px 22px rgba(218,149,18,.18)}
+.tourBack:disabled{opacity:.32}
+.tourTargetLabel{
+  position:fixed;z-index:20003;display:none;pointer-events:none;
+  color:#fff;font-size:9px;font-weight:950;letter-spacing:.10em;
+  padding:7px 9px;border-radius:999px;border:1px solid rgba(245,185,46,.6);
+  background:rgba(4,10,15,.95);box-shadow:0 8px 24px rgba(0,0,0,.4);
+  white-space:nowrap
+}
+@media(max-width:430px){
+  .tourCard{width:calc(100vw - 22px);padding:16px 15px 14px;border-radius:21px}
+  .tourCard h2{font-size:21px}.tourCard p{font-size:12px}
+  .tourActions{grid-template-columns:.74fr .74fr 1.35fr}
+  .tourActions button{padding:11px 5px;font-size:9px}
+}
+
+/* MW V24.9 — stable iOS bottom navigation + coach connection */
+html,body{min-height:100%;min-height:100dvh}
+body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+.app{padding-bottom:calc(110px + env(safe-area-inset-bottom))!important}
+.nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;transform:none!important;margin:0 auto!important;width:100%!important;max-width:520px!important;z-index:9000!important;padding:8px 6px max(8px,env(safe-area-inset-bottom))!important;box-shadow:0 -12px 34px rgba(0,0,0,.38);isolation:isolate}
+.nav button{min-height:54px;touch-action:manipulation}
+@media(min-width:600px) and (max-width:1023px){.nav{max-width:900px!important;left:0!important;right:0!important;transform:none!important}}
+@media(min-width:1024px){.nav{max-width:1060px!important;width:calc(100% - 40px)!important;left:0!important;right:0!important;bottom:18px!important;transform:none!important}}
+.coachConnectCard{margin-top:14px;border:1px solid rgba(85,201,255,.45);border-radius:15px;background:linear-gradient(145deg,#071827,#040b12);padding:14px}
+.coachConnectCard .eyebrow{color:var(--blue2);font-size:9px;font-weight:900;letter-spacing:.08em}
+.coachConnectCard h3{margin:6px 0 6px;font-size:20px}
+.coachConnectCard p{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
+.coachConnectRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.coachConnectRow input{width:100%;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:10px;padding:12px;font-size:15px;min-width:0}
+.coachConnectRow button,.coachConnectAction{border:1px solid var(--blue);background:#071b2b;color:#fff;border-radius:10px;padding:12px;font-weight:900}
+.coachConnectAction{width:100%;margin-top:9px}
+.coachConnectStatus{margin-top:10px;border:1px solid #2d3a46;border-radius:10px;padding:10px;background:#06101a;color:#c9d5df;font-size:10px;line-height:1.45;display:none}
+.coachConnectStatus.show{display:block}.coachConnectStatus.good{border-color:rgba(53,232,120,.5);color:#d7f7e2}.coachConnectStatus.bad{border-color:rgba(255,95,110,.5);color:#ffd0d5}
+.coachConnectionBadge{display:none;margin-top:10px;padding:11px;border:1px solid rgba(53,232,120,.5);border-radius:10px;background:rgba(22,83,47,.18)}
+.coachConnectionBadge.show{display:block}.coachConnectionBadge b{display:block;color:#72efa2;font-size:12px}.coachConnectionBadge span{display:block;color:#c6d1d9;font-size:10px;margin-top:3px}
+@media(max-width:430px){.coachConnectRow{grid-template-columns:1fr}.coachConnectRow button{width:100%}}
+
+/* V2.8 — training-year clarity */
+.mwTrainingYearCard{width:100%;margin-top:16px;border:1px solid rgba(232,190,80,.32);border-radius:14px;padding:14px 15px;text-align:left;background:linear-gradient(135deg,rgba(232,190,80,.09),rgba(11,31,53,.72));color:#fff;display:grid;gap:4px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.mwTrainingYearCard:hover{border-color:rgba(232,190,80,.58);transform:translateY(-1px)}
+.mwTrainingYearCard .mwTyKicker{font-size:10px;letter-spacing:.15em;color:#e7c25f;font-weight:900}
+.mwTrainingYearCard strong{font-size:14px;line-height:1.35;color:#f6f8fa}
+.mwTrainingYearCard small{font-size:11px;line-height:1.45;color:#9fb1bf}
+.mwTrainingYearCard em{font-style:normal;font-size:10px;font-weight:900;letter-spacing:.07em;color:#e7c25f;margin-top:3px}
+@media(max-width:520px){.mwTrainingYearCard{padding:12px 13px}.mwTrainingYearCard strong{font-size:13px}}
+
+</style>
+
+<style>
+.premiumRail{display:flex;gap:7px;overflow:auto;padding:9px 0 2px;scrollbar-width:none}
+.premiumRail::-webkit-scrollbar{display:none}
+.premiumChip{white-space:nowrap;border:1px solid #293946;border-radius:999px;padding:7px 9px;background:rgba(4,12,19,.82);font-size:8px;font-weight:900;letter-spacing:.05em;color:#9eb0bf}
+.premiumChip.live{border-color:#1a6650;color:#56e8a2}.premiumChip.gold{border-color:#6d5418;color:var(--gold)}
+.coachContext{margin:11px 0 2px;border:1px solid rgba(85,201,255,.22);border-radius:14px;padding:11px;background:linear-gradient(135deg,rgba(5,18,29,.95),rgba(4,10,15,.95))}
+.contextTop{display:flex;align-items:center;justify-content:space-between;gap:10px}.contextTop b{font-size:11px;color:#dcebf7}.contextTop span{font-size:8px;color:var(--blue2)}
+.contextGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.ctx{border:1px solid #253745;border-radius:9px;padding:8px;background:#050c12}.ctx small{display:block;font-size:7px;color:#728391;letter-spacing:.07em}.ctx strong{display:block;font-size:10px;margin-top:3px;color:#f4f7fa}
+.liveVoiceBar{display:flex;align-items:center;gap:8px;margin-top:9px;padding:8px 9px;border:1px solid #1e4058;border-radius:10px;background:#04121d}
+.voiceOrb{width:10px;height:10px;border-radius:50%;background:#34d99b;box-shadow:0 0 12px #34d99b}
+.liveVoiceBar b{font-size:9px;color:#dcecf6}.liveVoiceBar span{font-size:8px;color:#7f95a5;margin-left:auto}
+.chatControls{display:flex;justify-content:flex-end;gap:7px;margin-top:6px}
+.chatControls button{border:1px solid #2b3a46;background:#050b10;color:#91a2af;border-radius:999px;padding:6px 9px;font-size:8px;font-weight:800}
+.msg.coach{position:relative;padding-bottom:34px}.msg.coach .speak{position:absolute;left:10px;bottom:7px}
+.msg.coach .voiceLabel{position:absolute;right:9px;bottom:10px;color:#657887;font-size:8px}
+.connectionNotice{display:none;margin-top:8px;border-left:3px solid var(--gold);padding:8px 10px;background:#171108;color:#ead59e;font-size:9px;line-height:1.4}
+.connectionNotice.show{display:block}
+
+/* MW 2026 focused add-ons: spacious navigation, progress, settings */
+.topActions{display:flex;align-items:center;gap:8px}.gearBtn{border:1px solid #34414d;background:#071019;color:#fff;border-radius:10px;width:38px;height:38px;font-size:18px}.homeGrid{display:grid;gap:12px;margin-top:14px}.heroCard{border:1px solid rgba(245,185,46,.45);border-radius:18px;padding:18px;background:linear-gradient(145deg,#0a1722,#05090e)}.heroCard h2{font-size:25px;margin:4px 0 7px}.metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.metric{border:1px solid #2b3945;border-radius:12px;padding:12px 8px;background:#06101a;text-align:center}.metric strong{display:block;color:var(--gold);font-size:20px}.metric small{color:var(--muted);font-size:8px}.actionGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actionCard{border:1px solid #34414d;border-radius:14px;background:linear-gradient(#09131d,#050b11);color:#fff;padding:16px;text-align:left;min-height:105px}.actionCard b{display:block;color:var(--gold);font-size:14px;margin-bottom:5px}.progressBar{height:9px;background:#1b2732;border-radius:999px;overflow:hidden;margin-top:10px}.progressBar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--gold));width:0}.checkList{display:grid;gap:9px;margin-top:12px}.checkRow{display:flex;align-items:center;justify-content:space-between;border:1px solid #2d3a46;border-radius:12px;padding:12px;background:#06101a}.checkRow.done{border-color:rgba(53,232,120,.45)}.checkRow button{border:1px solid #42515f;background:#09131d;color:#fff;border-radius:9px;padding:8px 10px}.checkRow.done button{color:#35e878}.lockNote{margin-top:10px;padding:10px;border-radius:10px;background:#111821;color:var(--muted);font-size:10px;line-height:1.45}.settingGroup{margin-top:14px}.settingGroup h3{color:var(--gold);font-size:12px;margin:0 0 8px}.settingRow{border:1px solid #2d3a46;border-radius:12px;padding:12px;margin:8px 0;background:#06101a}.settingRow label{display:block;font-size:11px;font-weight:800;margin-bottom:7px}.settingRow select,.settingRow input{width:100%;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:9px;padding:11px;font-size:15px}.nav{grid-template-columns:repeat(5,1fr)}
+
+/* MW first-login onboarding */
+.tourOverlay{position:fixed;inset:0;z-index:9999;background:rgba(1,5,9,.78);backdrop-filter:blur(9px);display:none;align-items:flex-end;justify-content:center;padding:18px 14px calc(22px + env(safe-area-inset-bottom))}.tourOverlay.show{display:flex}.tourCard{width:min(490px,100%);border:1px solid rgba(245,185,46,.62);border-radius:22px;background:linear-gradient(155deg,#0b1823,#05090e 70%);box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 34px rgba(245,185,46,.08);padding:18px}.tourTop{display:flex;align-items:center;justify-content:space-between;gap:12px}.tourEyebrow{color:var(--gold);font-size:9px;font-weight:900;letter-spacing:.13em}.tourStep{font-size:9px;color:#8fa2b3}.tourIcon{width:52px;height:52px;border:1px solid rgba(85,201,255,.4);border-radius:16px;display:grid;place-items:center;background:#071523;font-size:25px;margin-top:14px}.tourCard h2{font-size:24px;line-height:1.08;margin:13px 0 7px}.tourCard p{color:#c4cfda;font-size:13px;line-height:1.55;margin:0;max-width:410px}.tourDots{display:flex;gap:6px;margin-top:16px}.tourDots i{width:7px;height:7px;border-radius:999px;background:#34424f}.tourDots i.active{width:22px;background:var(--gold)}.tourActions{display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin-top:16px}.tourActions button{border-radius:12px;padding:12px;font-weight:900;font-size:12px}.tourSkip{border:1px solid #33414d;background:#071019;color:#c8d2db}.tourNext{border:0;background:linear-gradient(#ffd65d,#d89412);color:#111}.tourFocus{position:relative;z-index:9998!important;box-shadow:0 0 0 2px rgba(245,185,46,.85),0 0 30px rgba(245,185,46,.18)!important;border-radius:14px}.tourMiniHint{font-size:10px;color:var(--blue2);margin-top:9px}
+</style>
+
+
+<style id="mw-auth-styles">
+body.mw-auth-pending .app,body.mw-auth-pending .nav{visibility:hidden}
+body.mw-auth-ready .app,body.mw-auth-ready .nav{visibility:visible}
+#mwAuth{position:fixed;inset:0;z-index:9999;overflow:auto;padding:calc(24px + env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom));background:
+radial-gradient(circle at 50% 15%,rgba(245,185,46,.10),transparent 27%),
+linear-gradient(135deg,transparent 0 13%,rgba(245,185,46,.07) 13.2% 13.7%,transparent 14%),
+linear-gradient(225deg,transparent 0 19%,rgba(245,185,46,.05) 19.2% 19.6%,transparent 20%),
+linear-gradient(180deg,#050505 0%,#090909 45%,#020304 100%);color:#f5f7fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+#mwAuth:before{content:"";position:fixed;left:0;right:0;bottom:0;height:36%;pointer-events:none;opacity:.5;background:repeating-linear-gradient(90deg,transparent 0 13%,rgba(255,255,255,.055) 13.2% 13.45%,transparent 13.7% 25%);transform:perspective(320px) rotateX(55deg);transform-origin:bottom}
+body.mw-auth-ready #mwAuth{display:none}
+.mwAuthShell{width:min(440px,100%);margin:0 auto;position:relative;z-index:1}
+.mwAuthLogoWrap{display:flex;justify-content:center;margin:0 auto 14px}
+.mwAuthLogo{width:min(330px,88vw);aspect-ratio:1/1;object-fit:cover;border-radius:20px;box-shadow:0 20px 65px rgba(0,0,0,.65),0 0 0 1px rgba(245,185,46,.18);display:block}
+.mwAuthTagline{text-align:center;color:#e7b54f;font-size:11px;letter-spacing:.27em;font-weight:750;margin:-3px 0 20px;text-transform:uppercase}
+.mwAuthCard{width:100%;border:1px solid rgba(245,185,46,.44);border-radius:24px;background:linear-gradient(145deg,rgba(8,12,15,.94),rgba(2,4,6,.96));padding:24px 20px 22px;box-shadow:0 24px 80px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.025);backdrop-filter:blur(20px)}
+.mwAuthBrand{text-align:center;font-size:12px;font-weight:900;letter-spacing:.22em;color:#e6b34b}.mwAuthSub{text-align:center;margin-top:5px;color:#777f87;font-size:9px;letter-spacing:.18em}.mwAuthCard h1{text-align:center;font-size:31px;line-height:1.05;margin:18px 0 7px;font-weight:950}.mwAuthCard h1 span{color:#f0bd52}.mwAuthCard p{text-align:center;color:#949aa1;font-size:14px;line-height:1.45;margin:0 0 20px}
+.mwAuthField{margin:12px 0}.mwAuthField label{display:block;font-size:9px;color:#a7adb3;margin:0 0 6px 2px;letter-spacing:.08em}.mwAuthInputWrap{position:relative}.mwAuthField input{width:100%;height:54px;background:linear-gradient(180deg,#0c1115,#080c0f);border:1px solid #3b444b;color:#fff;border-radius:12px;padding:0 46px 0 15px;font-size:16px;outline:none;transition:.2s}.mwAuthField input:focus{border-color:#dcae50;box-shadow:0 0 0 3px rgba(245,185,46,.08)}.mwAuthEye{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:0;background:transparent;color:#aeb5bb;font-size:17px;display:grid;place-items:center}
+.mwAuthBtn{width:100%;margin-top:16px;border:0;border-radius:12px;padding:15px 14px;background:linear-gradient(110deg,#ffe18a,#d99a21 62%,#a86a0e);box-shadow:0 8px 26px rgba(218,155,35,.20);color:#111;font-weight:950;font-size:14px;letter-spacing:.06em}.mwAuthBtn:active{transform:translateY(1px)}
+.mwAuthLinkRow{display:flex;justify-content:flex-end;margin-top:9px}.mwAuthLink{border:0;background:none;padding:2px 0;color:#efbd50;font-size:12px;font-weight:800;text-decoration:none}.mwAuthLink:hover{text-decoration:underline;text-underline-offset:3px}
+.mwAuthReset{display:none}.mwAuthReset.show{display:block}.mwAuthStatus{min-height:20px;margin-top:12px;font-size:11px;color:#55c9ff;line-height:1.45;text-align:center}.mwOfficialTag{display:inline-block;margin-top:7px;border:1px solid rgba(53,232,120,.35);border-radius:999px;padding:5px 8px;color:#56e8a2;font-size:8px;font-weight:850}.mwSignOut{width:100%;margin-top:10px;border:1px solid #6b3540;border-radius:10px;padding:11px;background:#14090c;color:#ffb1be;font-weight:800}
+.mwAuthBottom{text-align:center;margin:18px 0 3px;color:#6f767d;font-size:10px;letter-spacing:.18em}.mwAuthBottom b{color:#b98b36}
+@media(max-height:760px){.mwAuthLogo{width:min(245px,70vw)}.mwAuthTagline{margin-bottom:13px}.mwAuthCard{padding-top:18px}.mwAuthCard h1{font-size:27px;margin-top:12px}}
+
+/* MW first-login onboarding */
+.tourOverlay{position:fixed;inset:0;z-index:9999;background:rgba(1,5,9,.78);backdrop-filter:blur(9px);display:none;align-items:flex-end;justify-content:center;padding:18px 14px calc(22px + env(safe-area-inset-bottom))}.tourOverlay.show{display:flex}.tourCard{width:min(490px,100%);border:1px solid rgba(245,185,46,.62);border-radius:22px;background:linear-gradient(155deg,#0b1823,#05090e 70%);box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 34px rgba(245,185,46,.08);padding:18px}.tourTop{display:flex;align-items:center;justify-content:space-between;gap:12px}.tourEyebrow{color:var(--gold);font-size:9px;font-weight:900;letter-spacing:.13em}.tourStep{font-size:9px;color:#8fa2b3}.tourIcon{width:52px;height:52px;border:1px solid rgba(85,201,255,.4);border-radius:16px;display:grid;place-items:center;background:#071523;font-size:25px;margin-top:14px}.tourCard h2{font-size:24px;line-height:1.08;margin:13px 0 7px}.tourCard p{color:#c4cfda;font-size:13px;line-height:1.55;margin:0;max-width:410px}.tourDots{display:flex;gap:6px;margin-top:16px}.tourDots i{width:7px;height:7px;border-radius:999px;background:#34424f}.tourDots i.active{width:22px;background:var(--gold)}.tourActions{display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin-top:16px}.tourActions button{border-radius:12px;padding:12px;font-weight:900;font-size:12px}.tourSkip{border:1px solid #33414d;background:#071019;color:#c8d2db}.tourNext{border:0;background:linear-gradient(#ffd65d,#d89412);color:#111}.tourFocus{position:relative;z-index:9998!important;box-shadow:0 0 0 2px rgba(245,185,46,.85),0 0 30px rgba(245,185,46,.18)!important;border-radius:14px}.tourMiniHint{font-size:10px;color:var(--blue2);margin-top:9px}
+</style>
+
+<style>
+/* V9 premium refinements */
+@media (max-width: 520px){
+  #athlete .profilegrid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:14px 12px !important;
+    align-items:start !important;
+  }
+  #athlete .profilegrid .field{
+    min-width:0 !important;
+    width:100% !important;
+  }
+  #athlete .profilegrid .field input,
+  #athlete .profilegrid .field select{
+    width:100% !important;
+    box-sizing:border-box !important;
+  }
+  #athlete .profilegrid .field:nth-last-child(-n+2){
+    margin-top:2px !important;
+  }
+}
+.coachContext{
+  padding:14px 16px !important;
+}
+.coachContext .contextTop{
+  display:none !important;
+}
+.coachContext .contextGrid{
+  display:none !important;
+}
+.liveVoiceBar{
+  margin-top:0 !important;
+  border-radius:14px !important;
+  min-height:52px !important;
+  padding:0 14px !important;
+}
+.liveVoiceBar:before{
+  content:"COACH MW READY · ";
+  color:#f6bf3a;
+  font-weight:900;
+  letter-spacing:.06em;
+  margin-right:2px;
+}
+#premiumVoiceState{
+  font-size:11px !important;
+}
+.coachContext{
+  border:1px solid #21455f !important;
+  background:linear-gradient(180deg,#07131e,#06101a) !important;
+}
+.hero{
+  margin-top:18px !important;
+}
+</style>
+
+
+<style>
+/* V10 — Coach MW portrait framing only */
+.hero{
+  overflow:hidden !important;
+}
+.aiHead{
+  right:-20px !important;
+  top:4px !important;
+  width:58% !important;
+  height:100% !important;
+  min-height:350px !important;
+  background-size:contain !important;
+  background-repeat:no-repeat !important;
+  background-position:right center !important;
+}
+@media (max-width:430px){
+  .aiHead{
+    right:-18px !important;
+    top:4px !important;
+    width:58% !important;
+    height:100% !important;
+    min-height:350px !important;
+    background-size:contain !important;
+    background-repeat:no-repeat !important;
+    background-position:right center !important;
+  }
+}
+</style>
+
+
+<style>
+/* V12 — premium icon-targeted guided tour */
+.tourCard{
+  width:min(360px,calc(100vw - 28px)) !important;
+  padding:14px 15px 13px !important;
+  border-radius:20px !important;
+}
+.tourLead{grid-template-columns:42px 1fr !important;gap:10px !important;margin-top:10px !important}
+.tourIcon{width:42px !important;height:42px !important;border-radius:13px !important;font-size:20px !important}
+.tourCard h2{font-size:19px !important;line-height:1.08 !important}
+.tourCard p{font-size:11px !important;line-height:1.42 !important}
+.tourMiniHint{font-size:9px !important;line-height:1.35 !important;margin-top:8px !important;padding:6px 8px !important}
+.tourDots{margin-top:10px !important}
+.tourActions{margin-top:11px !important;gap:7px !important}
+.tourActions button{padding:9px 6px !important;font-size:9px !important}
+.tourTargetLabel{font-size:8px !important;padding:6px 8px !important}
+.tourSpotlight{
+  border-radius:16px !important;
+  box-shadow:
+    0 0 0 9999px rgba(1,5,9,.62),
+    0 0 0 3px rgba(255,196,38,.11),
+    0 0 28px rgba(255,190,32,.42),
+    inset 0 0 18px rgba(255,190,32,.05) !important;
+}
+.tourArrow{width:34px !important;height:34px !important}
+.tourArrow:before{left:12px !important;top:2px !important;width:8px !important;height:22px !important}
+.tourArrow:after{
+  left:6px !important;top:17px !important;width:16px !important;height:16px !important;
+  border-right-width:6px !important;border-bottom-width:6px !important
+}
+@media(max-width:430px){
+  .tourCard{width:calc(100vw - 34px) !important}
+}
+</style>
+
+
+<style>
+/* V13 — guided tour targeting refinement */
+.tourCard{
+  width:min(330px,calc(100vw - 36px)) !important;
+  padding:13px 14px 12px !important;
+}
+.tourLead{grid-template-columns:40px 1fr !important;gap:9px !important}
+.tourIcon{width:40px !important;height:40px !important;font-size:19px !important}
+.tourCard h2{font-size:18px !important}
+.tourCard p{font-size:10.5px !important}
+.tourMiniHint{font-size:8.8px !important}
+.tourSpotlight.welcomeHidden,
+.tourArrow.welcomeHidden,
+.tourTargetLabel.welcomeHidden{
+  display:none !important;
+}
+</style>
+
+
+<style>
+/* V14 — MW Dynasty full-screen Quick Start */
+#mwTour{display:none!important}
+.mwQuickStart{
+  position:fixed;inset:0;z-index:30000;display:none;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(30,87,122,.16),transparent 32%),
+    linear-gradient(180deg,#02070b 0%,#03080d 46%,#010305 100%);
+  color:#fff;overflow:hidden;
+}
+.mwQuickStart.show{display:block}
+.qsShell{
+  height:100%;display:flex;flex-direction:column;
+  padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+}
+.qsTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qsBrand{font-size:10px;font-weight:950;letter-spacing:.16em;color:#f5b92e}
+.qsCount{font-size:9px;font-weight:850;color:#718391;letter-spacing:.08em}
+.qsProgress{height:3px;background:#17222c;border-radius:999px;overflow:hidden;margin-top:10px}
+.qsProgress i{display:block;height:100%;width:16.66%;background:linear-gradient(90deg,#f5b92e,#ffe17b);transition:width .35s ease}
+.qsMain{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  max-width:520px;width:100%;margin:0 auto;padding:18px 0 10px;
+}
+.qsIcon{
+  width:68px;height:68px;border-radius:20px;
+  display:grid;place-items:center;font-size:31px;
+  border:1px solid rgba(245,185,46,.42);
+  background:linear-gradient(145deg,#0a1721,#050a0f);
+  box-shadow:0 18px 40px rgba(0,0,0,.32),inset 0 0 25px rgba(255,255,255,.02);
+  margin-bottom:20px
+}
+.qsEyebrow{font-size:9px;color:#76c8ef;font-weight:900;letter-spacing:.14em;margin-bottom:8px}
+.qsTitle{font-size:34px;line-height:1.02;letter-spacing:-.035em;margin:0;max-width:430px}
+.qsBody{font-size:14px;line-height:1.55;color:#c6d0d8;margin:14px 0 0;max-width:450px}
+.qsPreview{
+  margin-top:24px;border:1px solid #273744;border-radius:20px;
+  background:linear-gradient(155deg,#08131c,#04090e);
+  padding:15px;box-shadow:0 18px 50px rgba(0,0,0,.28)
+}
+.qsPreviewLabel{font-size:8px;color:#697b89;font-weight:850;letter-spacing:.12em;margin-bottom:8px}
+.qsPreviewCard{
+  min-height:92px;border:1px solid rgba(245,185,46,.42);
+  border-radius:15px;padding:15px;background:linear-gradient(145deg,#0a1722,#05090e);
+  display:flex;gap:12px;align-items:center
+}
+.qsPreviewCard .miniIcon{
+  flex:0 0 auto;width:45px;height:45px;border-radius:14px;
+  display:grid;place-items:center;background:#071621;border:1px solid #294050;font-size:21px
+}
+.qsPreviewCard b{display:block;color:#f5b92e;font-size:14px;margin-bottom:4px}
+.qsPreviewCard span{display:block;color:#b8c3cb;font-size:11px;line-height:1.4}
+.qsReady{
+  text-align:center;align-items:center
+}
+.qsReady .qsIcon{margin-left:auto;margin-right:auto}
+.qsReady .qsTitle{max-width:380px}
+.qsReady .qsBody{max-width:380px}
+.qsTagline{
+  margin-top:22px;color:#f5b92e;font-size:11px;font-weight:900;letter-spacing:.13em
+}
+.qsActions{display:grid;grid-template-columns:.8fr 1fr 1.35fr;gap:8px;max-width:520px;width:100%;margin:0 auto}
+.qsActions button{
+  border-radius:13px;padding:12px 9px;font-size:10px;font-weight:950;letter-spacing:.03em
+}
+.qsSkip{border:1px solid #27333d;background:#050b10;color:#7f8f9b}
+.qsBack{border:1px solid #374855;background:#08131c;color:#d6dde3}
+.qsNext{border:0;background:linear-gradient(180deg,#ffda63,#d99512);color:#111}
+.qsBack:disabled{opacity:.28}
+.qsFade{animation:qsFade .28s ease}
+@keyframes qsFade{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:430px){
+  .qsShell{padding-left:16px;padding-right:16px}
+  .qsTitle{font-size:30px}
+  .qsBody{font-size:13px}
+  .qsPreview{margin-top:20px}
+}
+</style>
+
+
+<style id="mw-v19-role-routing">
+.mwRoleBadge{
+  display:inline-flex;align-items:center;gap:7px;
+  margin-top:8px;padding:7px 10px;border-radius:999px;
+  border:1px solid rgba(229,183,90,.42);
+  background:rgba(229,183,90,.08);
+  color:#e6b75a;font-size:9px;font-weight:950;letter-spacing:.12em;
+}
+.mwFounderNote{
+  margin-top:12px;padding:12px 13px;border-radius:14px;
+  border:1px solid rgba(85,201,255,.20);
+  background:rgba(85,201,255,.055);
+  color:#bcd6e4;font-size:11px;line-height:1.45;
+}
+</style>
+
+
+<style id="v23-responsive-upgrade">
+.profileSectionTitle{margin:16px 0 8px;padding-top:13px;border-top:1px solid #27323d}.profileSectionTitle span{display:block;color:var(--gold);font-size:11px;font-weight:950;letter-spacing:.08em}.profileSectionTitle small{display:block;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.4}.accountLinkGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.accountLink{border:1px solid #2d3a46;background:#07111a;color:#d8e1e7;border-radius:9px;padding:11px;font-size:10px;font-weight:850;text-align:left}.field input:not([readonly]):focus,.field select:focus,.settingRow select:focus{outline:2px solid rgba(245,185,46,.35);border-color:var(--gold)}.field input[readonly]{opacity:.62;cursor:not-allowed}.maxGrid .field input{border-color:#4b4028;background:#0a0e12}.maxGrid .field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,185,46,.08)}
+@media(max-width:599px){.app{width:100%;max-width:560px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-bottom:calc(108px + env(safe-area-inset-bottom))}.nav{padding-bottom:env(safe-area-inset-bottom)}.profilegrid,.maxGrid{grid-template-columns:1fr 1fr}.actionGrid{grid-template-columns:1fr 1fr}input,select,textarea{font-size:16px!important}}
+@media(max-width:390px){.profilegrid,.maxGrid,.accountLinkGrid{grid-template-columns:1fr}}
+@media(min-width:600px) and (max-width:1023px){.app{max-width:900px;padding:28px 26px 118px}.homeGrid{grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);align-items:stretch}.homeBrand img{max-height:330px}.actionGrid{grid-template-columns:1fr 1fr}.hero{min-height:310px}.hero h1{font-size:clamp(42px,6vw,60px)}.heroText{width:56%}.aiHead{width:52%;right:-3%}.profilegrid,.maxGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.nav{left:50%;right:auto;transform:translateX(-50%);width:min(900px,100%)}}
+@media(min-width:1024px){body{background:radial-gradient(circle at 50% -10%,rgba(20,62,92,.16),transparent 38%),#03070b}.app{max-width:1360px;padding:34px 38px 122px}.top{padding:3px 4px 12px;border-bottom:1px solid rgba(80,94,105,.28)}.logo{font-size:30px}.sub{font-size:10px;letter-spacing:.13em}.homeGrid{grid-template-columns:minmax(0,1.35fr) minmax(360px,.65fr);gap:18px}.homeBrand{max-width:900px;margin-left:auto;margin-right:auto}.homeBrand img{max-height:430px;object-position:center 40%}.heroCard,.card,.settingGroup{border-radius:16px;padding:22px}.actionGrid{grid-template-columns:1fr 1fr;gap:12px}.actionCard{min-height:120px;padding:18px}#coach .hero{min-height:390px;margin-top:18px}#coach .hero h1{font-size:64px;line-height:1.04}#coach .heroText{width:56%}#coach .aiHead{width:46%;right:2%;top:3%;bottom:3%}.profilegrid,.maxGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}#athlete .card{max-width:1180px;margin-left:auto;margin-right:auto}#settings{max-width:1180px;margin-left:auto;margin-right:auto}.nav{left:50%;right:auto;transform:translateX(-50%);width:min(1060px,calc(100% - 40px));bottom:18px;border:1px solid #2c3945;border-radius:18px;background:rgba(4,10,15,.95);backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(0,0,0,.4);overflow:hidden}.nav button{padding:14px 16px}}
+@media(min-width:1600px){.app{max-width:1580px;padding-top:42px}.logo{font-size:34px}#coach .hero{min-height:470px}#coach .hero h1{font-size:76px}.card,.heroCard,.settingGroup{padding:26px}.field label{font-size:11px}.field input,.field select{padding:13px}}
+@media(min-width:2200px){.app{max-width:1860px}body{font-size:18px}#coach .hero h1{font-size:88px}.homeBrand img{max-height:520px}}
+</style>
+
+
+<style id="mw-athlete-login-v24-5-final">
+/* V24.6 — approved MW Athlete login, locked single source of truth. */
+body.mw-auth-pending{margin:0!important;background:#02070b!important;overflow:hidden!important}
+body.mw-auth-ready{overflow:auto!important}
+body.mw-auth-ready #mwAuth{display:none!important}
+#mwAuth.mwAthleteLoginV26{position:fixed!important;inset:0!important;z-index:9999!important;overflow:auto!important;background:#02070b!important;color:#fff!important;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+.mwLoginStage{position:relative!important;width:100%!important;min-height:100vh!important;min-height:100svh!important;box-sizing:border-box!important;padding:0!important;background:radial-gradient(circle at 51% 38%,rgba(37,55,63,.22),transparent 36%),linear-gradient(180deg,#071116,#02070b 72%,#010405)!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.mwLoginMain{position:relative!important;width:100%!important;min-height:100vh!important;min-height:100svh!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#061015!important;box-shadow:none!important}
+.mwLoginTopbar{position:absolute!important;z-index:9!important;inset:clamp(28px,3vw,48px) clamp(34px,4vw,70px) auto!important;display:grid!important;grid-template-columns:minmax(240px,340px) 1fr minmax(190px,270px)!important;gap:28px!important;align-items:start!important;pointer-events:none!important}
+.mwLoginBrand{line-height:.84!important}.mwLoginBrandMark{font-size:clamp(62px,6.5vw,108px)!important;font-weight:1000!important;font-style:italic!important;letter-spacing:-.11em!important;color:#e8ba4d!important;text-shadow:0 3px 26px rgba(232,186,77,.14)!important}.mwLoginBrandName{font-size:clamp(38px,4.2vw,72px)!important;font-weight:1000!important;letter-spacing:-.055em!important;color:#f4f4f4!important}.mwLoginBrandTag{margin-top:10px!important;color:#eabb48!important;font-size:clamp(8px,.75vw,12px)!important;font-weight:950!important;letter-spacing:.21em!important}.mwLoginDesktopNav{display:flex!important;justify-content:center!important;gap:clamp(15px,2vw,32px)!important;padding-top:14px!important;color:#eef2f3!important;font-size:clamp(8px,.76vw,12px)!important;font-weight:850!important;letter-spacing:.10em!important;white-space:nowrap!important}.mwLoginFuture{text-align:right!important;color:#eef2f3!important;font-size:clamp(8px,.8vw,12px)!important;line-height:1.55!important;letter-spacing:.17em!important;font-weight:850!important;padding-top:5px!important}.mwLoginFuture::after{content:""!important;display:block!important;width:48px!important;height:4px!important;background:#efbd45!important;margin:14px 0 0 auto!important;border-radius:99px!important}
+.mwLoginStory{position:absolute!important;inset:0!important;overflow:hidden!important;background:#061015!important}.mwLoginRunner{position:absolute!important;inset:0!important;background-color:#061015!important;background-image:linear-gradient(90deg,rgba(2,7,10,.94) 0%,rgba(2,7,10,.63) 22%,rgba(2,7,10,.04) 40%,rgba(2,7,10,.02) 61%,rgba(2,7,10,.52) 78%,rgba(2,7,10,.78) 100%),linear-gradient(180deg,rgba(2,6,9,.05),rgba(2,6,9,.07) 58%,rgba(2,6,9,.82) 100%),url('mw-athlete-crouch-clean.jpg')!important;background-repeat:no-repeat!important;background-size:auto 88%!important;background-position:center 53%!important;filter:saturate(.90) contrast(1.05) brightness(.90)!important;transform:none!important}.mwLoginStory::after{content:""!important;position:absolute!important;inset:0!important;pointer-events:none!important;background:radial-gradient(circle at 50% 42%,transparent 0 23%,rgba(0,0,0,.08) 54%,rgba(0,0,0,.31) 100%)!important}
+.mwLoginStoryCopy{position:absolute!important;z-index:5!important;left:clamp(42px,4.4vw,78px)!important;top:clamp(255px,31vh,355px)!important;text-shadow:0 8px 30px rgba(0,0,0,.86)!important}.mwLoginStoryCopy h1{margin:0!important;font-size:clamp(44px,4.8vw,78px)!important;line-height:.91!important;letter-spacing:-.045em!important;font-weight:1000!important}.mwLoginStoryCopy h1 em{font-style:normal!important;color:#f0bc40!important}.mwLoginAccent{width:58px!important;height:5px!important;border-radius:5px!important;background:#f0bc40!important;margin:21px 0 15px!important}.mwLoginStoryCopy p{margin:0!important;color:#f4f6f7!important;font-size:clamp(11px,1.08vw,17px)!important;line-height:1.42!important;letter-spacing:.11em!important;font-weight:850!important}
+.mwLoginCard{position:absolute!important;z-index:7!important;right:clamp(30px,4vw,70px)!important;top:50%!important;transform:translateY(-45%)!important;width:min(440px,35%)!important;box-sizing:border-box!important;border:1px solid rgba(231,184,76,.72)!important;border-radius:18px!important;background:linear-gradient(180deg,rgba(5,14,19,.965),rgba(2,7,10,.992))!important;padding:clamp(22px,2.1vw,32px)!important;box-shadow:0 30px 90px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.025)!important;backdrop-filter:blur(16px)!important}.mwLoginCardHead h2{margin:0 0 8px!important;font-size:clamp(26px,2.2vw,38px)!important;line-height:1.05!important;letter-spacing:-.03em!important}.mwLoginCardHead p{margin:0 0 22px!important;color:#d0d7da!important;font-size:clamp(12px,1vw,16px)!important;line-height:1.45!important}.mwLoginField{position:relative!important;margin:13px 0!important}.mwLoginField>span{position:absolute!important;left:16px!important;top:50%!important;transform:translateY(-50%)!important;z-index:2!important;color:#f0f4f5!important;font-size:15px!important}.mwLoginField input{box-sizing:border-box!important;width:100%!important;height:58px!important;border:1px solid #2c4b5b!important;border-radius:10px!important;background:#071821!important;color:#fff!important;padding:0 48px 0 46px!important;font-size:16px!important;outline:none!important}.mwLoginField input::placeholder{color:#8b9aa2!important}.mwLoginField input:focus{border-color:#e4b23d!important;box-shadow:0 0 0 3px rgba(228,178,61,.10)!important}.mwAuthEye{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;border:0!important;background:transparent!important;color:#e5ebed!important;font-size:18px!important;padding:8px!important}.mwLoginRow{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important;margin:10px 1px 12px!important}.mwLoginRemember{display:flex!important;align-items:center!important;gap:8px!important;color:#edf0f1!important;font-size:12px!important}.mwLoginRemember input{accent-color:#e5b240!important}.mwLoginLink{border:0!important;background:none!important;color:#efbd43!important;font-size:12px!important;font-weight:850!important;padding:8px 0!important}.mwLoginButton{width:100%!important;height:59px!important;margin-top:4px!important;border:1px solid #f3ca63!important;border-radius:10px!important;background:linear-gradient(100deg,#c88a1a 0%,#f6d16d 49%,#d99d27 100%)!important;color:#090909!important;font-size:18px!important;font-weight:1000!important;box-shadow:0 12px 30px rgba(219,165,45,.20)!important}.mwLoginButton span{font-size:22px!important;margin-left:8px!important}.mwAuthStatus{text-align:center!important;margin-top:9px!important;font-size:11px!important;min-height:15px!important}.mwLoginDivider{display:grid!important;grid-template-columns:1fr auto 1fr!important;align-items:center!important;gap:12px!important;margin:14px 0 8px!important;color:#eef2f3!important;font-size:10px!important}.mwLoginDivider span{height:1px!important;background:rgba(255,255,255,.30)!important}.mwLoginDivider b{font-weight:800!important}.mwLoginAccessNote{text-align:center!important;margin-top:8px!important;color:#ecf0f2!important;font-size:10px!important}.mwCreateAccount{border:0!important;background:none!important;color:#efbd43!important;font-weight:900!important;font-size:10px!important;padding:6px 2px!important;cursor:pointer!important}.mwLoginReset{margin-top:13px!important;padding-top:12px!important;border-top:1px solid rgba(232,185,68,.16)!important}
+.mwLoginFeatureBar{position:absolute!important;z-index:8!important;left:clamp(28px,2.6vw,50px)!important;right:clamp(28px,2.6vw,50px)!important;bottom:clamp(18px,2vw,32px)!important;display:grid!important;grid-template-columns:repeat(6,1fr)!important;border:1px solid rgba(231,184,76,.34)!important;border-radius:13px!important;overflow:hidden!important;background:rgba(2,8,11,.972)!important;box-shadow:0 18px 38px rgba(0,0,0,.35)!important}.mwLoginFeatureBar div{min-height:90px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:11px!important;padding:10px!important;border-right:1px solid rgba(231,184,76,.16)!important;box-sizing:border-box!important}.mwLoginFeatureBar div:last-child{border-right:0!important}.mwLoginFeatureBar b{color:#eabb47!important;font-size:24px!important}.mwLoginFeatureBar span{font-size:10px!important;line-height:1.3!important;font-weight:900!important;letter-spacing:.06em!important;color:#f4f6f7!important;text-align:center!important}
+@media(max-width:1100px){.mwLoginTopbar{grid-template-columns:230px 1fr!important}.mwLoginFuture{display:none!important}.mwLoginDesktopNav{justify-content:flex-end!important}.mwLoginMain{min-height:780px!important}.mwLoginRunner{background-size:auto 87%!important}.mwLoginStoryCopy{top:240px!important;left:34px!important}.mwLoginStoryCopy h1{font-size:49px!important}.mwLoginCard{right:22px!important;width:390px!important}.mwLoginFeatureBar div{min-height:80px!important}}
+@media(max-width:820px){body.mw-auth-pending{overflow:auto!important}.mwLoginStage{padding:10px!important;align-items:flex-start!important}.mwLoginTopbar{inset:22px 24px auto!important;grid-template-columns:1fr!important}.mwLoginDesktopNav,.mwLoginFuture{display:none!important}.mwLoginMain{min-height:900px!important;border-radius:20px!important}.mwLoginRunner{background-size:auto 77%!important;background-position:center 37%!important}.mwLoginStoryCopy{left:26px!important;top:194px!important}.mwLoginStoryCopy h1{font-size:42px!important}.mwLoginCard{right:18px!important;top:51%!important;width:365px!important;transform:translateY(-11%)!important;padding:20px!important}.mwLoginFeatureBar{grid-template-columns:repeat(3,1fr)!important;left:12px!important;right:12px!important;bottom:12px!important}.mwLoginFeatureBar div{min-height:68px!important}}
+@media(max-width:599px){body.mw-auth-pending{overflow:auto!important}.mwLoginStage{padding:max(5px,env(safe-area-inset-top)) 5px max(5px,env(safe-area-inset-bottom))!important}.mwLoginTopbar{inset:max(14px,env(safe-area-inset-top)) 18px auto!important}.mwLoginBrandMark{font-size:48px!important}.mwLoginBrandName{font-size:30px!important}.mwLoginBrandTag{font-size:7px!important;margin-top:6px!important}.mwLoginMain{width:100%!important;min-height:820px!important;border-radius:0!important}.mwLoginRunner{background-size:auto 54%!important;background-position:center 15%!important;background-image:linear-gradient(180deg,rgba(2,7,9,.10) 0%,rgba(2,7,9,.03) 31%,rgba(2,7,9,.55) 59%,rgba(2,7,9,.97) 100%),url('mw-athlete-crouch-clean.jpg')!important}.mwLoginStoryCopy{left:18px!important;top:184px!important}.mwLoginStoryCopy h1{font-size:30px!important;line-height:.93!important}.mwLoginStoryCopy p{font-size:8.5px!important}.mwLoginAccent{width:33px!important;height:3px!important;margin:10px 0 8px!important}.mwLoginCard{left:10px!important;right:10px!important;top:auto!important;bottom:90px!important;width:auto!important;transform:none!important;padding:15px 13px 13px!important;border-radius:14px!important}.mwLoginCardHead h2{font-size:21px!important;margin-bottom:6px!important}.mwLoginCardHead p{font-size:10.5px!important;margin-bottom:11px!important}.mwLoginField{margin:7px 0!important}.mwLoginField input{height:45px!important;font-size:16px!important}.mwLoginRow{margin:6px 1px 7px!important}.mwLoginRemember,.mwLoginLink{font-size:9.7px!important}.mwLoginButton{height:47px!important;font-size:16px!important}.mwLoginDivider{margin:8px 0 4px!important;font-size:8px!important}.mwLoginAccessNote,.mwCreateAccount{font-size:8.2px!important}.mwLoginFeatureBar{left:5px!important;right:5px!important;bottom:5px!important;grid-template-columns:repeat(4,1fr)!important;border-radius:10px!important}.mwLoginFeatureBar div{min-height:63px!important;padding:5px!important;gap:3px!important;flex-direction:column!important}.mwLoginFeatureBar div:nth-child(5),.mwLoginFeatureBar div:nth-child(6){display:none!important}.mwLoginFeatureBar b{font-size:16px!important}.mwLoginFeatureBar span{font-size:5.9px!important}}
+@media(max-width:380px){.mwLoginMain{min-height:760px!important}.mwLoginStoryCopy{top:174px!important}.mwLoginStoryCopy h1{font-size:27px!important}.mwLoginCard{left:8px!important;right:8px!important;bottom:87px!important;padding:12px 11px!important}.mwLoginCardHead h2{font-size:19px!important}.mwLoginFeatureBar span{font-size:5.6px!important}}
+</style>
+
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="stylesheet" href="/assets/mw-unified-theme.css"><link rel="stylesheet" href="/assets/mw-premium-v2.css">
+<link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
+<link rel="stylesheet" href="/assets/mw-dashboard-v23.css">
+<link rel="stylesheet" href="/assets/mw-responsive-v25.css">
+</head>
+<body class="mw-auth-pending">
+<div id="mwAuth" class="mwAthleteLoginV26">
+  <div class="mwLoginStage">
+    <div class="mwLoginTopbar">
+      <div class="mwLoginBrand">
+        <div class="mwLoginBrandMark">MW</div>
+        <div class="mwLoginBrandName">DYNASTY</div>
+        <div class="mwLoginBrandTag">ATHLETE • DISCIPLINE BUILDS FREEDOM</div>
+      </div>
+      <div class="mwLoginDesktopNav" aria-hidden="true">
+        <span>TRAIN</span><span>PROGRESS</span><span>TOOLS</span><span>EDUCATION</span><span>AI COACH</span><span>MORE</span>
+      </div>
+      <div class="mwLoginFuture">ATHLETES TODAY<br>BUILD A BRIGHTER<br>TOMORROW</div>
+    </div>
+
+    <div class="mwLoginMain">
+      <div class="mwLoginStory">
+        <div class="mwLoginStoryCopy">
+          <h1>TRAIN<br>SMARTER<br>RUN FASTER<br><em>BE BETTER</em></h1>
+          <div class="mwLoginAccent"></div>
+          <p>A HIGHER STANDARD<br>FOR A BRIGHTER YOU.</p>
+        </div>
+        <div class="mwLoginRunner" role="img" aria-label="MW athlete sprinting on the track"></div>
+      </div>
+
+      <section class="mwLoginCard" aria-label="MW Athlete sign in">
+        <div class="mwLoginCardHead">
+          <h2>Welcome Back</h2>
+          <p>Sign in to your MW Dynasty Athlete experience.</p>
+        </div>
+
+        <div class="mwLoginField">
+          <span aria-hidden="true">✉</span>
+          <input id="mwAuthEmail" type="email" autocomplete="email" placeholder="Enter your email" aria-label="Email address">
+        </div>
+
+        <div class="mwLoginField">
+          <span aria-hidden="true">▣</span>
+          <input id="mwAuthPassword" type="password" autocomplete="current-password" placeholder="Enter your password" aria-label="Password">
+          <button id="mwTogglePassword" class="mwAuthEye" type="button" aria-label="Show password">◉</button>
+        </div>
+
+        <div class="mwLoginRow">
+          <label class="mwLoginRemember"><input type="checkbox" id="mwRememberMe"><span>Keep me signed in</span></label>
+          <button id="mwForgotPassword" class="mwLoginLink" type="button">Forgot password?</button>
+        </div>
+
+        <button id="mwAuthLogin" class="mwLoginButton" type="button">Sign In <span>→</span></button>
+
+        <div id="mwAuthReset" class="mwAuthReset mwLoginReset">
+          <div class="mwLoginField"><span aria-hidden="true">◆</span><input id="mwNewPassword" type="password" autocomplete="new-password" placeholder="Create a new password"></div>
+          <div class="mwLoginField"><span aria-hidden="true">◆</span><input id="mwConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm new password"></div>
+          <button id="mwSavePassword" class="mwLoginButton" type="button">Save New Password</button>
+        </div>
+
+        <div id="mwAuthStatus" class="mwAuthStatus"></div>
+        <div class="mwLoginDivider"><span></span><b>NEW ATHLETE?</b><span></span></div>
+        <div class="mwLoginAccessNote">Don’t have an athlete account yet? <a class="mwCreateAccount" href="/athlete/signup.html">Create an Account</a></div>
+        <div class="mwLoginAccessNote"><b>MW Athlete requires an authorized MW Dynasty account.</b> Need account help? <a href="/support.html" target="_blank" rel="noopener">Contact MW Support</a>.</div>
+        <div class="mwLoginAccessNote"><a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> • <a href="/terms.html" target="_blank" rel="noopener">Terms</a> • <a href="/support.html" target="_blank" rel="noopener">Support</a></div>
+      </section>
+    </div>
+
+    <div class="mwLoginFeatureBar" aria-label="MW Athlete platform features">
+      <div><b>🏃</b><span>TRAINING<br>PROGRAMS</span></div>
+      <div><b>▥</b><span>PACE<br>CALCULATOR</span></div>
+      <div><b>⌖</b><span>DISTANCE<br>PACER</span></div>
+      <div><b>🧠</b><span>COACH MW<br>AI</span></div>
+      <div><b>▤</b><span>SPRINT<br>SCHOOL</span></div>
+      <div><b>🏆</b><span>TRACK YOUR<br>PROGRESS</span></div>
+    </div>
+  </div>
+</div>
+<main class="app">
+<section class="view active" id="home">
+<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE HUB</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
+<div class="homeBrand"><img src="/assets/mw-athlete-dashboard-v23.jpg" alt="MW Dynasty Athlete Performance Hub" onerror="this.onerror=null;this.src='/athlete/mw-athlete-crouch-clean.jpg'"></div>
+<div class="homeGrid">
+  <div class="heroCard"><div class="sub">YOUR MW JOURNEY</div><h2>Welcome back, <span id="homeName">Athlete</span>.</h2><p class="muted">One clear place for your current week, completed work, and what unlocks next.</p><div class="metricGrid"><div class="metric"><strong id="homeWeek">1</strong><small>CURRENT WEEK</small></div><div class="metric"><strong id="homeDone">0/4</strong><small>WORKOUTS DONE</small></div><div class="metric"><strong id="homePct">0%</strong><small>PROGRAM PROGRESS</small></div></div><div class="progressBar"><i id="homeProgressBar"></i></div><button type="button" class="mwTrainingYearCard" id="homeTrainingYear" data-open="entry"><span class="mwTyKicker">MW TRAINING YEAR</span><strong>Loading your training position…</strong><small>Standard calendar + Smart Entry protection</small><em>WHY AM I ON THIS WEEK? →</em></button></div>
+  <div class="actionGrid"><button class="actionCard" data-open="coach"><b>🧠 COACH MW</b><span class="muted">Ask about training, pace, technique or recovery.</span></button><button class="actionCard" data-open="workouts"><b>📅 MY PROGRAM</b><span class="muted">See your active week and mark workouts complete.</span></button><button class="actionCard" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span class="muted">Workout targets, rep execution and pace calculator.</span></button><button class="actionCard" onclick="location.href='/distance-pacer/'"><b>📍 DISTANCE PACER</b><span class="muted">Track, football field and GPS distance marks.</span></button><button class="actionCard" data-open="athlete"><b>👤 PROFILE</b><span class="muted">PRs, athlete info and Smart Entry.</span></button></div>
+</div>
+</section>
+<section class="view" id="coach">
+<div class="top"><div><div class="logo"><b>MW</b> COACH AI</div><div class="sub">POWERED BY MW SPRINT PERFORMANCE</div></div><div class="topActions"><div class="online"><span class="dot">●</span> ONLINE</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+<div class="premiumRail">
+  <div class="premiumChip live" id="aiChip">● CHECKING AI</div>
+  <div class="premiumChip gold">MW METHODOLOGY LOCKED</div>
+  <div class="premiumChip gold">41-WEEK STRENGTH LINKED</div>
+  <div class="premiumChip">NATURAL VOICE</div>
+</div>
+<div class="coachContext">
+  <div class="contextTop"><b>COACH CONTEXT</b><span>ONE BRAIN • ONE ATHLETE • ONE MW SYSTEM</span></div>
+  <div class="contextGrid">
+    <div class="ctx"><small>ATHLETE</small><strong id="ctxAthlete">Not set</strong></div>
+    <div class="ctx"><small>MW WEEK</small><strong id="ctxWeek">Week 1</strong></div>
+    <div class="ctx"><small>WEIGHT ROOM</small><strong id="ctxStrength">Linked</strong></div>
+  </div>
+  <div class="liveVoiceBar"><i class="voiceOrb"></i><b id="premiumVoiceState">41-WEEK PROGRAM · TRACK + WEIGHT ROOM SYNCED</b><span>GPT-5.6 intelligence • web when needed • vision • natural voice</span></div>
+</div>
+
+<div class="hero"><div class="aiHead" id="coachAvatar" aria-label="Coach MW visual"><img id="coachAvatarImg" src="/athlete/coach-mw-male.jpg" alt="Coach MW" loading="eager" decoding="async" onerror="this.onerror=null;this.src='/athlete/coach-mw-male.jpg'"></div><div class="heroText"><h1>Hello,<br><span id="helloName">Athlete.</span><br><em>I’m Coach MW AI.</em></h1><p>Your personal AI coach built on the MW System—performance, character, and faith. Ask me anything.</p><div class="system"><b>⚡ MW COACHING BRAIN ACTIVE</b><span>WEEK <span id="weekBadge">1</span> • TRAINING</span></div></div></div>
+<div class="ask"><div class="askrow"><button id="mic" class="round" title="Speak">🎙</button><button id="attachImage" class="attach" title="Add a photo">＋</button><input id="imagePick" type="file" accept="image/png,image/jpeg,image/webp"><input id="q" placeholder="Ask Coach MW anything..."><button id="go" class="send">↑</button></div><div id="attachStatus" class="attachStatus"></div><div class="voice"><span id="voiceState">TAP MIC TO SPEAK • + TO ADD PHOTO</span><span>COACH WILL SPEAK BACK 🔊</span></div></div>
+<div class="connectionNotice" id="connectionNotice"></div><div class="chatControls"><button id="clearChat">CLEAR CONVERSATION</button></div><div class="chat" id="chat"><div class="msg coach">I’m Coach MW. Talk to me like you would talk to your coach. I’m built around MW methodology, your training context, the 41-week strength system, Smart Entry, pacing, mechanics, recovery, faith, and the principle that quality comes first. You don’t need to know the names of MW drills or circuits—just tell me what’s going on. ✝️⚡️</div></div><button class="smartBtn" id="openEntry">⚡ <span>MW SMART ENTRY</span> — I just joined. Where do I start?</button><div class="entryStatus" id="entryStatus"></div>
+<div class="faithCard"><div class="faithTop"><b>✝️ MW WORD FOR TODAY</b><span>FAITH • CHARACTER • PURPOSE</span></div><div class="verseRef" id="verseRef">Galatians 6:9</div><div class="verseTheme" id="verseTheme">Stay faithful in the work. Growth can be happening before you can see it.</div><div class="faithActions"><button id="encourageMe">ENCOURAGE ME</button><button id="faithTalk">ASK A FAITH QUESTION</button></div></div>
+<div class="title">QUICK ASK</div>
+<div class="quick">
+<button data-q="Explain what I should focus on in today's workout."><i>▤</i>Explain Today’s Workout</button>
+<button data-q="What pace should I hit?"><i>◷</i>What Pace Should I Hit?</button>
+<button data-q="What should I focus on technically today?"><i>◎</i>What Should I Focus On?</button>
+<button data-q="Why am I doing this workout?"><i>🏃</i>Why Am I Doing This?</button>
+<button data-q="Help me with race strategy."><i>⚑</i>Race Strategy</button>
+<button data-q="How much rest should I take?"><i>◴</i>How Much Rest?</button>
+</div>
+
+</section>
+
+<section class="view" id="entry">
+<div class="top"><div><div class="logo"><b>MW</b> SMART ENTRY</div><div class="sub">ATHLETE PLACEMENT ASSESSMENT</div></div><div class="online"><span class="dot">●</span> MW SYSTEM</div></div>
+<div class="entryHero"><h2>Start where you’re <strong>prepared</strong>.</h2><p>MW Smart Entry uses the MW Standard Training Year — beginning the day after Labor Day — or your assigned coach’s custom calendar, then compares that position with your recent training readiness. Track and strength placement stay synchronized.</p><div class="phaseStrip" id="phaseStrip"><div class="phasePill" data-phase="1"><span>1</span>W1–8</div><div class="phasePill" data-phase="2"><span>2</span>W9–16</div><div class="phasePill" data-phase="3"><span>3</span>W17–24</div><div class="phasePill" data-phase="4"><span>4</span>W25–33</div><div class="phasePill" data-phase="5"><span>5</span>W34–41</div></div></div>
+<div class="assessment">
+<div class="question"><label>First name</label><input id="entryFirstName" autocomplete="given-name" maxlength="80" placeholder="First name"></div>
+<div class="question"><label>Last name</label><input id="entryLastName" autocomplete="family-name" maxlength="80" placeholder="Last name"></div>
+<div class="question"><label>Date of birth</label><input id="entryDob" type="date"></div>
+<div class="question"><label>Which events do you run?</label><div class="checkList"><label><input id="event100" type="checkbox" value="100m"> 100m</label><label><input id="event200" type="checkbox" value="200m"> 200m</label><label><input id="event400" type="checkbox" value="400m"> 400m</label></div><small>Select at least one event.</small></div>
+<div class="question"><label>100m PR (optional)</label><input id="entryPr100" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr100Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
+<div class="question"><label>200m PR (optional)</label><input id="entryPr200" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr200Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
+<div class="question"><label>400m PR (optional)</label><input id="entryPr400" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr400Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
+<div class="question"><label>Weight unit</label><select id="entryWeightUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select></div>
+<div class="question"><label>Power Clean maximum (optional)</label><input id="entryPowerClean" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Not tested"></div>
+<div class="question"><label>Front Squat maximum (optional)</label><input id="entryFrontSquat" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Not tested"></div>
+<div class="question"><label>Back Squat maximum (optional)</label><input id="entryBackSquat" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Not tested"></div>
+<div class="question"><label>Deadlift maximum (optional)</label><input id="entryDeadlift" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Not tested"><select id="entryDeadliftType"><option value="conventional">Conventional deadlift</option><option value="trap_bar">Trap-bar deadlift</option></select></div>
+<div class="question"><label>MW TRAINING-YEAR CALENDAR</label><div id="seasonCalendarSummary" class="seasonCalendarSummary"><b>Loading MW calendar…</b><span>Your official calendar position is set automatically.</span></div><input id="seasonWeek" type="hidden" value="1"></div>
+<div class="question"><label>How long have you consistently trained for track?</label><select id="trainingAge"><option value="0">Less than 6 months / brand new</option><option value="1">6 months–2 years</option><option value="3">2–4 years</option><option value="5">5+ years</option></select></div>
+<div class="question"><label>How consistently have you been sprint training over the last 4–6 weeks?</label><select id="continuity"><option value="3">4+ training days per week, consistently</option><option value="2">2–3 days per week, consistently</option><option value="1">On and off / inconsistent</option><option value="0">I’ve been off sprint training for 4+ weeks</option></select></div>
+<div class="question"><label>How much true high-speed sprinting have you done in the last 14 days?</label><select id="speedExposure"><option value="3">2 or more high-speed sessions</option><option value="2">1 high-speed session</option><option value="0">None</option></select></div>
+<div class="question"><label>Have you competed in a sprint/hurdle race in the last 30 days?</label><select id="recentRace"><option value="1">Yes</option><option value="0">No</option></select></div>
+<div class="question"><label>How consistently are you currently lifting?</label><select id="lifting"><option value="2">2–3+ sessions per week</option><option value="1">About 1 session per week</option><option value="0">Not currently lifting</option></select></div>
+<div class="question"><label>How do you feel right now?</label><select id="health"><option value="clear">Normal training soreness / I feel ready</option><option value="tight">Some mild tightness or unusual soreness</option><option value="pain">Pain, recent injury, or something that changes how I run</option></select></div>
+<button class="entryAction" id="assess">COMPLETE ASSESSMENT & ASSIGN MY PROGRAM</button><button class="entryGhost" id="backCoach">← BACK TO COACH AI</button>
+</div>
+<div class="result" id="entryResult" aria-live="polite"></div>
+</section>
+
+<section class="view" id="workouts">
+<div class="top"><div><div class="logo"><b>MW</b> WORKOUTS</div><div class="sub">MW PERFORMANCE SYSTEM</div></div><div class="online"><span class="dot">●</span> MW DATA</div></div>
+<div class="card"><div class="cardHead"><span>WEEK <span id="completionWeek">1</span> COMPLETION</span><span id="unlockBadge" class="smalllink">IN PROGRESS</span></div><p class="muted">Check off each prescribed training session as you finish it. Your MW progression uses these completions with your selected unlock rule.</p><div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div></div>
+<div class="card knowledgeStatus"><div class="cardHead">MW SOURCE CONNECTION <span class="smalllink">VERIFIED</span></div>
+<h2>41 / 41 strength weeks connected</h2>
+<p class="muted">Coach MW can now retrieve the exact MW Strength & Power prescription for every week, including phase, lifting sessions, circuits, loads, checkpoint logic and Coach MW notes. Track-first remains the governing rule.</p>
+<div class="coverage"><span>✓ W1–8 FOUNDATION</span><span>✓ W9–16 STRENGTH</span><span>✓ W17–24 POWER</span><span>✓ W25–33 COMP</span><span>✓ W34–41 PEAK</span></div></div>
+<div class="card">
+<div class="cardHead">WEEKLY WEIGHT ROOM <span id="strengthPhaseLabel" class="smalllink"></span></div>
+<div class="weekChooser"><label>MW WEEK</label><select id="strengthWeek"></select></div>
+<div id="strengthPlan" class="strengthPlan"></div>
+<button id="askStrength" class="smartBtn">ASK COACH MW ABOUT THIS WEEK</button>
+</div>
+<div class="card"><div class="cardHead">TRACK KNOWLEDGE STATUS <span class="smalllink">INTEGRATION ACTIVE</span></div>
+<p class="muted">Verified MW track assets currently connected include Week 1 acceleration material, Week 17 race-specific work, Week 21 training material, Competition Warm-Up, and selected workout/drill assets. Coach MW will not invent a missing track prescription. Coach MW will not invent a missing track prescription and will ask for the prescribed session when exact week data is unavailable.</p></div>
+</section>
+<section class="view" id="pacer"><div class="top"><div class="logo"><b>MW</b> PACER</div></div><div class="card"><h2>MW Performance Tools</h2><p class="muted">Your pacing tools are connected to this MW account.</p><button class="save" onclick="location.href='/pace-ai/'">OPEN SPRINT PACE AI</button><button class="save" onclick="location.href='/distance-pacer/'">OPEN DISTANCE PACER</button></div></section>
+<section class="view" id="athlete"><div class="top"><div class="logo"><b>MW</b> ATHLETE</div></div>
+<div class="card"><div class="profilegrid">
+<div class="field"><label>FIRST NAME</label><input id="name" placeholder="Athlete"></div>
+<div class="field"><label>CHOOSE YOUR COACH MW</label><select id="coachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div>
+<div class="field"><label>60M PR</label><input id="p60" inputmode="decimal" type="number" min="0" step="0.01" placeholder="6.85"></div>
+<div class="field"><label>100M PR</label><input id="p100" inputmode="decimal" type="number" min="0" step="0.01" placeholder="10.85"></div>
+<div class="field"><label>200M PR</label><input id="p200" inputmode="decimal" type="number" min="0" step="0.01" placeholder="21.72"></div>
+<div class="field"><label>300M PR</label><input id="p300" inputmode="decimal" type="number" min="0" step="0.01" placeholder="34.50"></div>
+<div class="field"><label>400M PR</label><input id="p400" inputmode="decimal" type="number" min="0" step="0.01" placeholder="48.90"></div>
+<div class="field"><label>CURRENT WEEK</label><input id="week" value="1" readonly></div>
+<div class="field"><label>PROGRAM START DATE</label><input id="startDate" type="date"></div>
+<div class="field"><label>STARTING WEEK</label><input id="startWeek" type="number" min="1" max="41" value="1"></div>
+</div>
+<button id="save" class="save">SAVE ATHLETE PROFILE</button><div id="profileSaveStatus" class="lockNote" style="display:none"></div>
+<div class="coachConnectCard" id="coachConnectionCard">
+  <div class="eyebrow">COACH CONNECTION</div>
+  <h3>Connect to your coach</h3>
+  <p>Paste the secure invite code your coach sent you. Your athlete account stays the same; accepting only connects this profile to that coach.</p>
+  <div id="coachConnectedBadge" class="coachConnectionBadge"><b>✓ CONNECTED TO COACH</b><span id="coachConnectedText">Your MW coach connection is active.</span></div>
+  <div id="coachInviteControls">
+    <div class="coachConnectRow"><input id="coachInviteCode" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Paste invite code"><button type="button" id="coachInviteReview">Review Invite</button></div>
+    <div id="coachInvitePreview" class="coachConnectStatus"></div>
+    <button type="button" id="coachInviteAccept" class="coachConnectAction" style="display:none">Accept Coach Invitation</button>
+  </div>
+</div>
+<button class="smartBtn" id="profileEntry">⚡ MW SMART ENTRY — REVIEW MY ENTRY POINT</button></div>
+<div class="card"><div class="cardHead"><span>WEIGHT ROOM MAXES</span><span class="smalllink">LOAD CALCULATOR</span></div><p class="muted">Enter only established maximums. New and youth athletes may leave a lift blank; MW will assign technique-based loading without requiring a 1RM test.</p><div class="profilegrid" style="margin-top:10px">
+<div class="field"><label>POWER CLEAN MAX</label><input id="maxPowerClean" type="number" min="0" step="0.5" placeholder="Not established"></div>
+<div class="field"><label>FRONT SQUAT MAX</label><input id="maxFrontSquat" type="number" min="0" step="0.5" placeholder="Not established"></div>
+<div class="field"><label>BACK SQUAT MAX</label><input id="maxBackSquat" type="number" min="0" step="0.5" placeholder="Not established"></div>
+<div class="field"><label>DEADLIFT MAX</label><input id="maxDeadlift" type="number" min="0" step="0.5" placeholder="Not established"></div>
+<div class="field"><label>DEADLIFT TYPE</label><select id="profileDeadliftType"><option value="conventional">Conventional</option><option value="trap_bar">Trap bar</option></select></div>
+<div class="field"><label>WEIGHT UNIT</label><select id="profileWeightUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select></div>
+</div><div class="lockNote" style="margin-top:10px">MW calculates working loads from these four established maximums. Technique, age, and readiness still control the prescription.</div><button id="saveLiftMaxes" class="save">SAVE WEIGHT ROOM MAXES</button><div id="liftMaxStatus" class="lockNote">These maxes stay synchronized with the coaching dashboard and Coach MW.</div></div></section>
+
+<section class="view" id="progress"><div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">YOUR TRAINING JOURNEY</div></div><button class="gearBtn" data-open-settings>⚙</button></div><div class="heroCard"><div class="cardHead"><span>PROGRAM PROGRESS</span><span id="progressPct" class="smalllink">0%</span></div><h2 id="progressHeadline">Week 1</h2><div class="progressBar"><i id="progressBarFill"></i></div><div class="metricGrid"><div class="metric"><strong id="progressStart">—</strong><small>START DATE</small></div><div class="metric"><strong id="progressCompleted">0</strong><small>WORKOUTS DONE</small></div><div class="metric"><strong id="progressWeeks">0</strong><small>WEEKS COMPLETE</small></div></div></div><div class="card"><div class="cardHead">CURRENT WEEK <span id="progressCurrentWeek" class="smalllink">WEEK 1</span></div><div id="progressChecklist" class="checkList"></div></div></section>
+<section class="view" id="settings"><div class="top"><div><div class="logo"><b>MW</b> SETTINGS</div><div class="sub">YOUR MW EXPERIENCE</div></div><button class="gearBtn" data-open="home">×</button></div><div class="settingGroup"><h3>YOUR COACH MW</h3><div class="settingRow"><label>COACH PREFERENCE</label><select id="settingsCoachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div><div class="lockNote">Choose once during setup. You can change your Coach MW here anytime.</div></div><div class="settingGroup"><h3>COACH MW VOICE</h3><div class="settingRow"><label>VOICE SPEED</label><select id="voiceSpeed"><option value="0.9">0.9× Relaxed</option><option value="1" selected>1.0× Natural</option><option value="1.1">1.1× Quick</option><option value="1.2">1.2× Fast</option></select></div><div class="settingRow"><label>VOICE RESPONSE</label><select id="voiceMode"><option value="fast" selected>Fast — start speaking sooner</option><option value="standard">Standard — full response audio</option></select></div><div class="settingRow"><label>AUTO-PLAY COACH VOICE</label><select id="autoVoice"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>ACCOUNT & NOTIFICATIONS</h3><div class="settingRow"><label>WORKOUT REMINDERS</label><select id="workoutReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>MEET REMINDERS</label><select id="meetReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>COACH MESSAGE ALERTS</label><select id="messageAlerts"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>HELP & ACCOUNT</h3><div class="accountLinkGrid"><button type="button" class="accountLink" id="helpCenterBtn">HELP CENTER</button><button type="button" class="accountLink" id="reportIssueBtn">REPORT A PROBLEM</button><button type="button" class="accountLink" id="privacyBtn">PRIVACY</button><button type="button" class="accountLink" id="termsBtn">TERMS</button><button type="button" class="accountLink" id="deleteAccountBtn">DELETE ACCOUNT</button></div></div><div class="settingGroup"><h3>PROGRAM PROGRESSION</h3><div class="lockNote"><b>MW-controlled progression.</b><br>Your official week is synced from MW Dynasty. Athletes cannot unlock future weeks or change progression rules.</div></div><button id="saveSettings" class="save">SAVE SETTINGS</button><button id="replayTour" class="entryGhost">REPLAY APP TUTORIAL</button><button id="mwSignOut" class="mwSignOut">SIGN OUT</button></section>
+</main>
+
+<div class="tourOverlay" id="mwTour" aria-modal="true" role="dialog" aria-label="MW Dynasty guided app tour">
+  <div class="tourSpotlight pulse" id="tourSpotlight"></div>
+  <div class="tourArrow" id="tourArrow"></div>
+  <div class="tourTargetLabel" id="tourTargetLabel"></div>
+  <div class="tourCard atBottom" id="tourCard">
+    <div class="tourTop">
+      <div class="tourEyebrow">MW DYNASTY • GUIDED TOUR</div>
+      <div class="tourStep" id="tourStepText">1 OF 7</div>
+    </div>
+    <div class="tourLead">
+      <div class="tourIcon" id="tourIcon">✦</div>
+      <div><h2 id="tourTitle">Welcome to MW Dynasty</h2><p id="tourBody">Everything you need to execute the MW System lives here.</p></div>
+    </div>
+    <div class="tourMiniHint" id="tourHint">This guided tour appears automatically only on your first login.</div>
+    <div class="tourDots" id="tourDots"></div>
+    <div class="tourActions">
+      <button class="tourSkip" id="tourSkip">SKIP</button>
+      <button class="tourBack" id="tourBack">BACK</button>
+      <button class="tourNext" id="tourNext">NEXT</button>
+    </div>
+  </div>
+</div>
+
+<div class="mwQuickStart" id="mwQuickStart" aria-modal="true" role="dialog" aria-label="MW Dynasty Quick Start">
+  <div class="qsShell">
+    <div class="qsTop">
+      <div class="qsBrand">MW DYNASTY • QUICK START</div>
+      <div class="qsCount" id="qsCount">1 OF 6</div>
+    </div>
+    <div class="qsProgress"><i id="qsProgressFill"></i></div>
+
+    <div class="qsMain" id="qsMain">
+      <div class="qsIcon" id="qsIcon">◉</div>
+      <div class="qsEyebrow" id="qsEyebrow">YOUR AI COACH</div>
+      <h1 class="qsTitle" id="qsTitle">Meet Coach MW</h1>
+      <p class="qsBody" id="qsBody">Ask about today’s workout, technique, recovery, race strategy, strength, or pacing.</p>
+      <div class="qsPreview" id="qsPreview">
+        <div class="qsPreviewLabel">WHAT YOU’LL SEE IN THE APP</div>
+        <div class="qsPreviewCard">
+          <div class="miniIcon" id="qsMiniIcon">🧠</div>
+          <div><b id="qsPreviewTitle">COACH MW</b><span id="qsPreviewBody">Ask about training, pace, technique or recovery.</span></div>
+        </div>
+      </div>
+      <div class="qsTagline" id="qsTagline"></div>
+    </div>
+
+    <div class="qsActions">
+      <button class="qsSkip" id="qsSkip">SKIP</button>
+      <button class="qsBack" id="qsBack">BACK</button>
+      <button class="qsNext" id="qsNext">NEXT</button>
+    </div>
+  </div>
+</div>
+
+<nav class="nav"><button class="active" data-v="home"><b>⌂</b>HOME</button><button data-v="coach"><b>◉</b>COACH</button><button data-v="workouts"><b>▣</b>PROGRAM</button><button data-v="progress"><b>◫</b>PROGRESS</button><button data-v="athlete"><b>♙</b>PROFILE</button></nav>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const saved=JSON.parse(localStorage.getItem('mwPremiumProfile')||'{}');
+const LIFT_MAX_KEY='mwLiftMaxes';
+function getLiftMaxes(){return JSON.parse(localStorage.getItem(LIFT_MAX_KEY)||'{}')}
+function round5(x){return Math.round(x/5)*5}
+function liftKey(name){name=String(name||'').toLowerCase();if(name.includes('front squat'))return'maxFrontSquat';if(name.includes('back squat'))return'maxBackSquat';if(name.includes('deadlift'))return'maxDeadlift';if(name.includes('hang clean')||name.includes('clean pull')||name.includes('power clean'))return'maxPowerClean';return''}
+function isDumbbellLift(name){return /\bdb\b|dumbbell/i.test(String(name||''))}
+function barWeightFor(){const m=getLiftMaxes();return m.profileWeightUnit==='kg'?20:45}
+function plateBreakdown(total,barWeight){total=Number(total);barWeight=Number(barWeight||45);if(!total||total<barWeight)return total===barWeight?`${barWeight} lb bar only`:'';let side=(total-barWeight)/2;if(side<0)return'';const plates=[45,35,25,10,5,2.5],used=[];for(const plate of plates){let n=Math.floor((side+0.001)/plate);if(n){used.push([plate,n]);side-=n*plate;side=Math.round(side*100)/100}}if(Math.abs(side)>.01)return'';const text=used.length?used.map(([p,n])=>`${n>1?n+'×':''}${p} lb`).join(' + '):'no plates';return `${barWeight} lb bar • each side: ${text}`}
+function loadSetupLine(name,total){if(isDumbbellLift(name))return `Use <b>${total} lb each hand</b>`;const setup=plateBreakdown(total,barWeightFor(name));return setup?`<b>${setup}</b>`:`Target <b>${total} lb</b>`}
+function workingLoadHTML(name,prescription){const k=liftKey(name),m=Number(getLiftMaxes()[k]||0);if(!k||!m)return'';const q=String(prescription||'').match(/@(\s*)(\d+(?:\.\d+)?)(?:-(\d+(?:\.\d+)?))?%/);if(!q)return'';const a=Number(q[2]),b=q[3]?Number(q[3]):a;const lo=round5(m*a/100),hi=round5(m*b/100);if(lo===hi)return `<span class="loadCalc"><span class="loadTarget">MW LOAD: ~${lo} lb</span><span class="plateLine">${loadSetupLine(name,lo)}</span></span>`;return `<span class="loadCalc"><span class="loadTarget">MW LOAD: ~${lo}–${hi} lb</span><span class="plateLine">LOW: ${loadSetupLine(name,lo)}</span><span class="plateLine">HIGH: ${loadSetupLine(name,hi)}</span></span>`}
+
+['name','coachType','p60','p100','p200','p300','p400','week','startDate','startWeek','maxFrontSquat','maxBackSquat','maxBench','maxHangClean','maxHangSnatch','maxHexBar','maxPushPress','maxTestDate'].forEach(k=>{if(saved[k]!==undefined && $('#'+k))$('#'+k).value=saved[k]}); if($('#startDate')&&!$('#startDate').value)$('#startDate').value=new Date().toISOString().slice(0,10);
+function coachVisualChoice(){const remote=(typeof mwRemoteProfile!=='undefined'&&['male','female'].includes(mwRemoteProfile?.coachType))?mwRemoteProfile.coachType:'';const select=['male','female'].includes($('#coachType')?.value)?$('#coachType').value:'';const local=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}').coachType||'';return remote||local||select||'male'}
+function applyCoachVisual(choice){
+  choice=(choice==='female')?'female':'male';
+  const avatar=$('#coachAvatar');
+  const img=$('#coachAvatarImg');
+  const primary=choice==='female'?'/athlete/coach-mw-female.jpg':'/athlete/coach-mw-male.jpg';
+  const fallback=choice==='female'?'/athlete/coach-mw-female-luxe.jpg':'/athlete/coach-mw-male-luxe.jpg';
+  if(avatar){avatar.setAttribute('data-coach',choice);avatar.style.backgroundImage='none'}
+  if(img){img.onerror=()=>{img.onerror=null;img.src=fallback};if(img.getAttribute('src')!==primary)img.src=primary;img.alt=choice==='female'?'Coach MW — Female':'Coach MW — Male'}
+}
+function setCoachChoice(choice){
+  choice=(choice==='female')?'female':'male';
+  if($('#coachType'))$('#coachType').value=choice;
+  try{let pref=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}');pref.coachType=choice;localStorage.setItem('mwCoachPreference',JSON.stringify(pref))}catch{}
+  try{if(typeof mwRemoteProfile!=='undefined')mwRemoteProfile.coachType=choice}catch{}
+  applyCoachVisual(choice);
+}
+function sync(){let n=$('#name').value.trim();$('#helloName').textContent=(n||'Athlete')+'.';$('#weekBadge').textContent=$('#week').value||'1';applyCoachVisual(coachVisualChoice())}sync();
+$('#save').onclick=()=>{let d=getProfile();['name','coachType','p60','p100','p200','p300','p400','week','startDate','startWeek','maxPowerClean','maxFrontSquat','maxBackSquat','maxDeadlift'].forEach(k=>{if($('#'+k))d[k]=$('#'+k).value});localStorage.setItem('mwPremiumProfile',JSON.stringify(d));sync();renderEntryStatus();$('#save').textContent='✓ PROFILE SAVED';setTimeout(()=>$('#save').textContent='SAVE ATHLETE PROFILE',1200)};
+function openView(id){if(id==='workouts'&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Assessment required.</b><br>Complete your Athlete Profile Assessment to receive your MW training assignment.</div>'}}$$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));$$('.view').forEach(x=>x.classList.toggle('active',x.id===id)); if(id==='entry') syncEntrySeason(); if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();} if(id==='home'||id==='progress')renderProgressUI();}
+$$('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v));
+
+
+let mwOnboardingUserKey='local';
+const TOUR_STEPS=[
+  {view:'home',icon:'✦',title:'Welcome to MW Dynasty',body:'One login connects your training plan, Coach MW, pace tools, strength work and progress.',hint:'We’ll show you the essentials in under a minute. This tour appears automatically only once.',target:null,label:null,anchor:'none'},
+  {view:'home',icon:'📅',title:'Your MW Training Year',body:'The standard 41-week MW training year begins the day after Labor Day. If you join later, Smart Entry places you where your readiness supports instead of letting you randomly choose a week.',hint:'Coach-assigned athlete → coach calendar and placement. Independent athlete → Smart Entry. Standard-season starter → Week 1. Track + strength stay synchronized.',target:'#homeTrainingYear',label:'TRAINING YEAR',anchor:'card'},
+  {view:'home',icon:'◉',title:'Coach MW',body:'Your personal MW coach for today’s training, technique, recovery, race strategy, strength and pace questions.',hint:'Your Coach MW preference is saved in Profile and remembered automatically.',target:'.actionGrid .actionCard:nth-child(1)',label:'COACH MW',anchor:'card'},
+  {view:'home',icon:'▣',title:'Your Program + Strength',body:'See your official training week, complete sessions, review weight-room work and get calculated bar loads from your saved maxes.',hint:'Open today’s work, follow the plan, and execute.',target:'.actionGrid .actionCard:nth-child(2)',label:'MY PROGRAM',anchor:'card'},
+  {view:'home',icon:'⚡',title:'Sprint Pace AI',body:'Your PRs become individualized training targets so you know what time to hit before every paceable rep.',hint:'No second login. Open Pace AI and return to MW Dynasty with one tap.',target:'.actionGrid .actionCard:nth-child(3)',label:'SPRINT PACE AI',anchor:'card'},
+  {view:'home',icon:'📍',title:'Distance Pacer',body:'See where your rep ends on a track, football field or open space without guessing your distance.',hint:'Distance, reps, rest and targets can hand off directly from Pace AI.',target:'.actionGrid .actionCard:nth-child(4)',label:'DISTANCE PACER',anchor:'card'},
+  {view:'home',icon:'◫',title:'Progress',body:'Track completed work and see where you are in the 41-week MW journey without changing your official training status.',hint:'Your official week stays protected while you explore.',target:'.nav button[data-v="progress"]',label:'PROGRESS',anchor:'icon'},
+  {view:'home',icon:'♙',title:'Your Profile + Settings',body:'Keep your PRs, Coach MW preference and weight-room maxes current. You can replay this tutorial from Settings anytime.',hint:'After this, MW Dynasty opens normally on every future login.',target:'.nav button[data-v="athlete"]',label:'PROFILE',anchor:'icon'}
+]
+let tourIndex=0,tourFocusEl=null,tourResizeTimer=null;
+function tourStorageKey(){return 'mwOnboardingComplete:'+String(mwOnboardingUserKey||'local')}
+function clearTourFocus(){
+  tourFocusEl=null;
+  const s=$('#tourSpotlight'),a=$('#tourArrow'),l=$('#tourTargetLabel');
+  if(s)s.style.display='none';if(a)a.style.display='none';if(l)l.style.display='none';
+}
+function clampTour(v,min,max){return Math.max(min,Math.min(max,v))}
+function placeTourGuide(target,label,anchor='card'){
+  const spot=$('#tourSpotlight'),arrow=$('#tourArrow'),tag=$('#tourTargetLabel'),card=$('#tourCard');
+  if(!spot||!arrow||!tag||!card||!target){clearTourFocus();return}
+
+  [spot,arrow,tag].forEach(el=>el.classList.remove('welcomeHidden'));
+  const r=target.getBoundingClientRect();
+  const pad=anchor==='icon'?4:6;
+
+  const left=clampTour(r.left-pad,8,window.innerWidth-24);
+  const top=clampTour(r.top-pad,8,window.innerHeight-24);
+  const width=clampTour(r.width+pad*2,38,window.innerWidth-left-8);
+  const height=clampTour(r.height+pad*2,34,window.innerHeight-top-8);
+
+  spot.style.display='block';
+  spot.style.left=left+'px';spot.style.top=top+'px';
+  spot.style.width=width+'px';spot.style.height=height+'px';
+
+  tag.textContent=label||'MW TOOL';
+  tag.style.display='block';
+
+  const targetCenterY=r.top+r.height/2;
+  const targetLow=targetCenterY>window.innerHeight*.56;
+  card.classList.toggle('atTop',targetLow);
+  card.classList.toggle('atBottom',!targetLow);
+
+  requestAnimationFrame(()=>{
+    const cr=card.getBoundingClientRect();
+    const tagLeft=clampTour(r.left+(r.width-tag.offsetWidth)/2,8,window.innerWidth-tag.offsetWidth-8);
+    const tagTop=targetLow ? Math.max(8,r.top-28) : Math.min(window.innerHeight-34,r.bottom+6);
+    tag.style.left=tagLeft+'px';
+    tag.style.top=tagTop+'px';
+
+    const targetX=clampTour(r.left+r.width/2,18,window.innerWidth-18);
+    let arrowTop,rotation;
+    if(targetLow){
+      arrowTop=Math.max(cr.bottom+6,r.top-34);
+      rotation=0;
+    }else{
+      arrowTop=Math.min(cr.top-34,r.bottom+4);
+      rotation=180;
+    }
+    arrow.style.display='block';
+    arrow.style.left=(targetX-17)+'px';
+    arrow.style.top=clampTour(arrowTop,8,window.innerHeight-36)+'px';
+    arrow.style.transform=`rotate(${rotation}deg)`;
+  });
+}
+function renderTourStep(){
+  const t=TOUR_STEPS[tourIndex];
+  clearTourFocus();
+  openView(t.view);
+  $('#tourStepText').textContent=`${tourIndex+1} OF ${TOUR_STEPS.length}`;
+  $('#tourIcon').textContent=t.icon;
+  $('#tourTitle').textContent=t.title;
+  $('#tourBody').textContent=t.body;
+  $('#tourHint').textContent=t.hint;
+  $('#tourDots').innerHTML=TOUR_STEPS.map((_,i)=>`<i class="${i===tourIndex?'active':''}"></i>`).join('');
+  $('#tourNext').textContent=tourIndex===TOUR_STEPS.length-1?'ENTER MW DYNASTY':'NEXT';
+  $('#tourBack').disabled=tourIndex===0;
+
+  const spot=$('#tourSpotlight'),arrow=$('#tourArrow'),label=$('#tourTargetLabel'),card=$('#tourCard');
+  const welcome=!t.target;
+  [spot,arrow,label].forEach(el=>{if(el)el.classList.toggle('welcomeHidden',welcome)});
+  if(card){card.classList.remove('atTop');card.classList.add('atBottom')}
+  if(welcome)return;
+
+  setTimeout(()=>{
+    const el=document.querySelector(t.target);
+    if(el){
+      tourFocusEl=el;
+      try{el.scrollIntoView({behavior:'smooth',block:'center'})}catch{}
+      setTimeout(()=>placeTourGuide(el,t.label,t.anchor||'card'),260);
+    }
+  },120);
+}
+function finishTour(){
+  localStorage.setItem(tourStorageKey(),'1');clearTourFocus();
+  $('#mwTour').classList.remove('show');openView('home');
+}
+function startTour(force=false){
+  if(!force&&localStorage.getItem(tourStorageKey())==='1')return;
+  tourIndex=0;$('#mwTour').classList.add('show');renderTourStep();
+}
+$('#tourSkip').onclick=finishTour;
+$('#tourBack').onclick=()=>{if(tourIndex>0){tourIndex--;renderTourStep()}};
+$('#tourNext').onclick=()=>{
+  if(tourIndex>=TOUR_STEPS.length-1){finishTour();return}
+  tourIndex++;renderTourStep();
+};
+window.addEventListener('resize',()=>{
+  clearTimeout(tourResizeTimer);
+  tourResizeTimer=setTimeout(()=>{if($('#mwTour')?.classList.contains('show'))renderTourStep()},120);
+});
+if($('#replayTour'))$('#replayTour').onclick=()=>startTour(true);
+
+
+const QS_STEPS=[
+  {icon:'◉',eyebrow:'YOUR AI COACH',title:'Meet Coach MW',body:'Ask about today’s workout, technique, recovery, race strategy, strength, or pacing.',mini:'🧠',previewTitle:'COACH MW',previewBody:'Ask about training, pace, technique or recovery.'},
+  {icon:'▣',eyebrow:'YOUR TRAINING PLAN',title:'Your Program',body:'See your official week, review prescribed sessions, and mark completed work without changing your true training status.',mini:'📅',previewTitle:'MY PROGRAM',previewBody:'See your active week and mark workouts complete.'},
+  {icon:'🏋️',eyebrow:'STRENGTH + BAR LOADING',title:'Strength & Weights',body:'Save your maxes once. MW calculates weekly working loads and can show exactly what plates go on the bar.',mini:'🏋️',previewTitle:'STRENGTH & WEIGHTS',previewBody:'Sets, reps, working load, and plate setup.'},
+  {icon:'⚡',eyebrow:'INDIVIDUALIZED PACE',title:'Sprint Pace AI',body:'Your PRs become individualized training targets so you know what time to hit before every paceable rep.',mini:'⚡',previewTitle:'SPRINT PACE AI',previewBody:'Workout targets, rep execution and pace calculator.'},
+  {icon:'📍',eyebrow:'MEASURE THE REP',title:'Distance Pacer',body:'Know exactly where the rep ends on a track, football field or open space—without guessing.',mini:'📍',previewTitle:'DISTANCE PACER',previewBody:'Track, football field and GPS distance marks.'},
+  {icon:'✦',eyebrow:'YOU’RE READY',title:'Welcome to MW Dynasty',body:'Your training. Your pace. Your strength. Your coach. One system built to help you execute.',mini:'MW',previewTitle:'ONE LOGIN. ONE SYSTEM.',previewBody:'Coach MW • Program • Strength • Pace AI • Distance Pacer',ready:true,tagline:'TRAIN. UNDERSTAND. EXECUTE.'}
+];
+let qsIndex=0;
+function qsStorageKey(){return 'mwOnboardingComplete:'+String(mwOnboardingUserKey||'local')}
+function renderQuickStart(){
+  const s=QS_STEPS[qsIndex];
+  const main=$('#qsMain');
+  if(main){main.classList.remove('qsFade');void main.offsetWidth;main.classList.add('qsFade')}
+  $('#qsCount').textContent=`${qsIndex+1} OF ${QS_STEPS.length}`;
+  $('#qsProgressFill').style.width=`${((qsIndex+1)/QS_STEPS.length)*100}%`;
+  $('#qsIcon').textContent=s.icon;
+  $('#qsEyebrow').textContent=s.eyebrow;
+  $('#qsTitle').textContent=s.title;
+  $('#qsBody').textContent=s.body;
+  $('#qsMiniIcon').textContent=s.mini;
+  $('#qsPreviewTitle').textContent=s.previewTitle;
+  $('#qsPreviewBody').textContent=s.previewBody;
+  $('#qsTagline').textContent=s.tagline||'';
+  $('#qsMain').classList.toggle('qsReady',!!s.ready);
+  $('#qsBack').disabled=qsIndex===0;
+  $('#qsNext').textContent=s.ready?'ENTER MW DYNASTY':'NEXT';
+}
+function finishQuickStart(){
+  localStorage.setItem(qsStorageKey(),'1');
+  $('#mwQuickStart').classList.remove('show');
+  if(window.mwAssessmentComplete)openView('home');else {openView('entry');loadSeasonCalendar()}
+}
+function startQuickStart(force=false){
+  if(!force&&localStorage.getItem(qsStorageKey())==='1')return;
+  qsIndex=0;
+  $('#mwQuickStart').classList.add('show');
+  renderQuickStart();
+}
+$('#qsSkip').onclick=finishQuickStart;
+$('#qsBack').onclick=()=>{if(qsIndex>0){qsIndex--;renderQuickStart()}};
+$('#qsNext').onclick=()=>{
+  if(qsIndex>=QS_STEPS.length-1){finishQuickStart();return}
+  qsIndex++;renderQuickStart();
+};
+if($('#replayTour'))$('#replayTour').onclick=()=>startQuickStart(true);
+
+const DEFAULT_PREFS={voiceSpeed:'1',voiceMode:'fast',autoVoice:'on',workoutReminders:'on',meetReminders:'on',messageAlerts:'on'};
+function getPrefs(){return {...DEFAULT_PREFS,...JSON.parse(localStorage.getItem('mwPrefs')||'{}')}}
+let mwCompletionCache={};
+let mwCompletionLoaded=false;
+function getCompletion(){return mwCompletionCache}
+function completionHeaders(extra={}){
+  const raw=localStorage.getItem('mwSupabaseSession');
+  let sess=null;try{sess=JSON.parse(raw||'null')}catch{}
+  const access=sess?.access_token||'';
+  return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+access,...extra};
+}
+function completionAthleteId(){return (typeof mwRemoteProfile!=='undefined'&&mwRemoteProfile?.athleteId)?mwRemoteProfile.athleteId:null}
+function workoutKey(w,i){return `mw-track-w${Number(w)}-d${Number(i)}`}
+function rowsToCompletion(rows){
+  const out={};
+  for(const r of (Array.isArray(rows)?rows:[])){
+    const w=String(Number(r.program_week||0)),d=Number(r.program_day||0);
+    if(!w||!d||r.completion_status!=='completed')continue;
+    out[w]=out[w]||{};out[w]['s'+d]=true;
+  }
+  return out;
+}
+async function loadWorkoutCompletions(){
+  const aid=completionAthleteId();if(!aid)return;
+  const r=await fetch(SUPABASE_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,program_day,workout_key,completion_status,completed_at',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load workout completion history.');
+  mwCompletionCache=rowsToCompletion(rows);mwCompletionLoaded=true;
+}
+async function markWorkoutComplete(w,i,button){
+  const aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
+  if(getCompletion()[String(w)]?.['s'+i])return;
+  if(button){button.disabled=true;button.textContent='SAVING…'}
+  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',completed_at:new Date().toISOString()};
+  try{
+    const r=await fetch(SUPABASE_URL+'/rest/v1/workout_completions?on_conflict=athlete_id,workout_key',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
+    const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
+    mwCompletionCache[String(w)]=mwCompletionCache[String(w)]||{};mwCompletionCache[String(w)]['s'+i]=true;
+    try{await window.mwReloadAccount?.()}catch{}
+    renderCompletion();renderProgressUI();
+  }finally{if(button)button.disabled=false}
+}
+function weekDone(w){const c=getCompletion()[String(w)]||{};return [1,2,3,4].every(i=>!!c['s'+i])}
+function completedCount(){const c=getCompletion();return Object.values(c).reduce((n,w)=>n+Object.values(w).filter(Boolean).length,0)}
+function weeksComplete(){let n=0;for(let w=1;w<=41;w++)if(weekDone(w))n++;return n}
+function scheduledWeek(){const p=getProfile();const start=Number(p.startWeek||p.entryAssessment?.assignedWeek||1);const d=p.startDate?new Date(p.startDate+'T00:00:00'):new Date();const days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));return Math.min(41,start+Math.floor(days/7))}
+function unlockedThrough(){const p=getProfile();return Math.max(1,Math.min(41,Number(p.week||p.startWeek||1)))}
+function advanceCurrentWeek(){const p=getProfile();const u=unlockedThrough();let current=Math.max(1,Number(p.week||p.startWeek||1));if(current<u && weekDone(current))current=Math.min(u,current+1);p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
+function renderCompletion(){const w=advanceCurrentWeek();if($('#completionWeek'))$('#completionWeek').textContent=w;const c=getCompletion(), wc=c[String(w)]||{};const box=$('#weekChecklist');if(box){box.innerHTML='';for(let i=1;i<=4;i++){const row=document.createElement('div');row.className='checkRow'+(wc['s'+i]?' done':'');row.innerHTML=`<span><b>Workout ${i}</b><br><small class="muted">Week ${w} prescribed session</small></span><button data-session="${i}">${wc['s'+i]?'✓ COMPLETE':'MARK COMPLETE'}</button>`;box.appendChild(row)}box.querySelectorAll('button').forEach(b=>b.onclick=async()=>{try{await markWorkoutComplete(w,Number(b.dataset.session),b)}catch(e){b.textContent='SAVE FAILED — RETRY';if($('#unlockNote'))$('#unlockNote').textContent='Could not save to MW Dynasty: '+(e.message||'Please try again.')}})}const done=weekDone(w), u=unlockedThrough();if($('#unlockBadge'))$('#unlockBadge').textContent=done?'WEEK COMPLETE':'IN PROGRESS';if($('#unlockNote'))$('#unlockNote').textContent=done?(u>w?`Week ${Math.min(41,w+1)} is unlocked.`:`Work complete. Your next week unlocks on the official MW schedule.`):`Complete all 4 prescribed sessions to finish Week ${w}.`;}
+function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='checkRow'+(wc['s'+i]?' done':'');r.innerHTML=`<span>Workout ${i}</span><b>${wc['s'+i]?'✓ Complete':'Not completed'}</b>`;pb.appendChild(r)}}}
+$$('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open));$$('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings'));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry');
+const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);localStorage.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
+
+
+(function initLiftMaxes(){const m=getLiftMaxes();['maxHangSnatch','maxHangClean','maxFrontSquat','maxBackSquat','maxBench','maxHexBar','maxPushPress','maxTestDate','olympicBarWeight','hexBarWeight'].forEach(id=>{const el=document.getElementById(id);if(el&&m[id]!=null)el.value=m[id]});const b=document.getElementById('saveLiftMaxes');if(b)b.onclick=()=>{const x={};['maxHangSnatch','maxHangClean','maxFrontSquat','maxBackSquat','maxBench','maxHexBar','maxPushPress','maxTestDate','olympicBarWeight','hexBarWeight'].forEach(id=>x[id]=document.getElementById(id)?.value||'');localStorage.setItem(LIFT_MAX_KEY,JSON.stringify(x));const st=document.getElementById('liftMaxStatus');if(st)st.textContent='✓ Weight-room maxes saved. Weekly loads and plate-by-plate bar setups will now calculate automatically.';try{renderStrengthWeek(activeMWWeek())}catch{}}})();
+const MW={
+  christianFoundation:{
+    worldview:'Historic Trinitarian Christian',
+    beliefs:[
+      'There is one God in three persons: Father, Son and Holy Spirit.',
+      'Jesus Christ is God the Son and the Son of God.',
+      'Jesus lived without sin, died on the cross for our sins and rose on the third day, defeating death.',
+      'Salvation is received through faith in Christ, with repentance and a transformed life that bears good fruit.'
+    ],
+    boundaries:[
+      'Do not claim God privately revealed a message through Coach MW.',
+      'Do not replace medical, mental-health or safety guidance with prayer or Scripture.',
+      'Do not force faith content into ordinary training questions when it is not relevant.',
+      'When theological traditions differ, distinguish Scripture from interpretation.'
+    ]
+  },
+  redFlags:['pop','snapped','sharp pain','swelling','bruising','numb','cannot walk',"can't walk",'sudden weakness'],
+  intents:[
+    {name:'entry',keys:['where do i start','where should i start','just joined','middle of the season','mid season','smart entry','what week should i','which week should i']},
+    {name:'faith',keys:['jesus','god','holy spirit','bible','scripture','verse','pray','prayer','faith','christ','discouraged','hopeless','spiritual','church']},
+    {name:'celebrate',keys:['i won','i pr','new pr','personal best','i did it','great race','ran fast']},
+    {name:'tightness',keys:['tight','stiff','hamstring','hip feels','calf feels']},
+    {name:'medball',keys:['medicine ball','med ball','med-ball']},
+    {name:'warmup',keys:['warm up','warm-up','loosen','dynamic','flexibility','mobility']},
+    {name:'acceleration',keys:['acceleration','accelerate','first 30','first steps','start better']},
+    {name:'fatigue',keys:['fatigue','tired','heavy legs','legs feel heavy','should i lift','lifting today','do i have to lift','cooked','dead legs']},
+    {name:'pace',keys:['pace','target time','what time','how fast','percentage']},
+    {name:'rest',keys:['rest','recovery','how long between']},
+    {name:'why',keys:['why am i','why are we','purpose of','why this workout']},
+    {name:'mechanics',keys:['mechanics','technique','form','overstride','overstriding','frontside','backside','rhythm']}
+  ]
+};
+const MW_STRENGTH={};
+const MW_PROGRAM_CACHE={};
+async function loadMWProgramWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(MW_PROGRAM_CACHE[w])return MW_PROGRAM_CACHE[w];const tok=window.mwGetSessionToken?.()||'';if(!tok)return null;const r=await fetch('/api/program?week='+w,{headers:{Authorization:'Bearer '+tok},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW program is unavailable');MW_PROGRAM_CACHE[w]=d;if(d.strength)MW_STRENGTH[w]=d.strength;return d}
+const MW_WORDS=[
+  {ref:'Galatians 6:9',theme:'Stay faithful in the work. Growth can be happening before you can see it.'},
+  {ref:'Philippians 4:13',theme:'Your strength is not limited to self-confidence; keep your dependence on Christ.'},
+  {ref:'Isaiah 40:31',theme:'Waiting on the Lord is not wasted time. Renewal matters, especially when you feel depleted.'},
+  {ref:'James 1:2–4',theme:'Trials can produce endurance and maturity when you keep walking through them faithfully.'},
+  {ref:'Colossians 3:23',theme:'Bring wholehearted effort to the work in front of you, even when nobody is watching.'},
+  {ref:'1 Corinthians 9:24–27',theme:'Discipline has a purpose. Train intentionally instead of simply doing more.'},
+  {ref:'Proverbs 3:5–6',theme:'Trust God beyond what you can currently understand, and acknowledge Him in the path.'},
+  {ref:'Joshua 1:9',theme:'Courage is not the absence of pressure. Move faithfully through it knowing God is with you.'},
+  {ref:'Psalm 46:1',theme:'When pressure rises, remember where your help and strength ultimately come from.'},
+  {ref:'2 Timothy 1:7',theme:'Fear does not have to drive the day. Move with power, love, and self-control.'},
+  {ref:'Romans 5:3–5',theme:'Endurance develops character, and character strengthens hope.'},
+  {ref:'Hebrews 12:1–2',theme:'Run your race with endurance and keep your eyes fixed on Jesus.'}
+];
+function wordForToday(){const d=new Date();const seed=Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(d.getFullYear(),0,0))/86400000);return MW_WORDS[seed%MW_WORDS.length]}
+function renderWord(){const w=wordForToday(); if($('#verseRef'))$('#verseRef').textContent=w.ref;if($('#verseTheme'))$('#verseTheme').textContent=w.theme}
+function getProfile(){return JSON.parse(localStorage.getItem('mwPremiumProfile')||'{}')}
+function intentOf(x){for(const i of MW.intents)if(i.keys.some(k=>x.includes(k)))return i.name;return 'general'}
+
+function activeMWWeek(q=''){
+  const m=String(q).match(/week\s*(\d{1,2})/i);
+  if(m){const w=Math.max(1,Math.min(41,Number(m[1])));return w}
+  const p=getProfile(), ep=p.entryAssessment;
+  return Math.max(1,Math.min(41,Number(ep?.assignedWeek||p.week||1)));
+}
+function strengthQuestion(x){return /(lift|lifting|weight room|weights|strength|hang clean|hang snatch|front squat|back squat|hex bar|deadlift|push press|what.*monday|what.*wednesday|what.*friday)/i.test(x)}
+function strengthAnswer(q){
+  const w=activeMWWeek(q), d=MW_STRENGTH[w]; if(!d)return "I don’t have a verified MW strength prescription for that week.";
+  let day='';
+  if(/mon(day)?/i.test(q))day='MON'; else if(/wed(nesday)?/i.test(q))day='WED'; else if(/fri(day)?/i.test(q))day='FRI'; else if(/early week/i.test(q))day='EARLY WEEK';
+  let secs=d.sections.filter(s=>!day||s.title.startsWith(day));
+  if(!secs.length)secs=d.sections;
+  let lines=secs.map(s=>`${s.title}: ${s.entries.map(e=>`${e[0]} ${e[1]}`.trim()).join('; ')}`);
+  let out=`MW Week ${w} — Phase ${d.phase}: ${d.phaseName}. ${lines.join(' | ')}`;
+  if(d.coachNote) out+=` Coach MW note: ${d.coachNote}`;
+  return out;
+}
+async function renderStrengthWeek(w){
+  w=Math.max(1,Math.min(41,Number(w)||1));
+  const box=$('#strengthPlan');if(box)box.innerHTML='<div class="muted">Loading protected MW program…</div>';
+  try{if(!MW_STRENGTH[w])await loadMWProgramWeek(w)}catch(e){if(box)box.innerHTML='<div class="lockNote">'+(e.message||'This MW week is locked.')+'</div>';return}
+  const d=MW_STRENGTH[w]; if(!d)return;
+  $('#strengthPhaseLabel').textContent=`${(d.tierLabel||'Foundation').toUpperCase()} • PHASE ${d.phase} • ${d.phaseName.toUpperCase()}`;
+  const tg=d.tierGuidance||{};
+  $('#strengthPlan').innerHTML=`<div class="strengthPhase">${d.title}</div>`+
+    (d.tierLabel?`<div class="coachNoteBox"><b>${d.tierLabel.toUpperCase()} TIER:</b> ${[tg.volume,tg.effort,tg.loading,tg.priority].filter(Boolean).join(' ')}</div>`:'')+
+    d.sections.map(s=>`<div class="strengthSection"><h4>${s.title}</h4>${s.entries.map(e=>`<div class="strengthRow"><span>${e[0]}</span><span>${e[1]}${workingLoadHTML(e[0],e[1])}</span></div>`).join('')}</div>`).join('')+
+    (d.coachNote?`<div class="coachNoteBox"><b>COACH MW:</b> ${d.coachNote}</div>`:'');
+}
+function initStrength(){
+  const sel=$('#strengthWeek'); if(!sel)return;
+  const max=activeMWWeek();
+  sel.innerHTML=Array.from({length:41},(_,i)=>`<option value="${i+1}" ${i+1>max?'disabled':''}>Week ${i+1}${i+1>max?' • Locked':''}</option>`).join('');
+  sel.value=max; renderStrengthWeek(max);
+  sel.onchange=()=>renderStrengthWeek(sel.value);
+  $('#askStrength').onclick=()=>{openView('coach');send(`Coach, what is my weight-room plan for Week ${sel.value}?`)};
+}
+
+function response(q){
+ let x=q.toLowerCase(), p=getProfile(), week=p.week||'1';
+ if(MW.redFlags.some(w=>x.includes(w))) return "Stop the session. What you described is more concerning than ordinary training tightness. Don’t sprint, bound, jump, or aggressively stretch through it. Prayer and faith can absolutely be part of how you walk through this, but they do not replace appropriate medical evaluation before returning to high-speed work.";
+ if(strengthQuestion(x) && !/(fatigue|tired|heavy legs|cooked|dead legs|pain|tight|sore)/i.test(x)) return strengthAnswer(q);
+ switch(intentOf(x)){
+ case 'entry':
+   { const ep=getProfile().entryAssessment; if(ep && /what phase|what week|where am i/i.test(x)){return `Your MW Smart Entry assignment is Phase ${ep.assignedPhase} — ${PHASES[ep.assignedPhase].name}, Week ${ep.assignedWeek}. Your track and strength programs are synchronized at that same MW week. The overall season is currently Phase ${ep.seasonPhase}, Week ${ep.seasonWeek}.`; } setTimeout(()=>openView('entry'),300); return "Absolutely. I’m opening MW Smart Entry. We’re not playing training roulette 😂. I’ll compare where the MW season is now with your actual readiness and place track + strength together."; }
+ case 'faith': {
+   const w=wordForToday();
+   if(/discouraged|hopeless|down|give up|not good enough|failure|failed/.test(x)) return `I hear you. A bad day, a slow race, or a rough stretch does not get to define your identity. Your worth is bigger than a stopwatch. Today I want you to sit with ${w.ref}: ${w.theme} We can also look at the training objectively, because feeling stuck and actually being stuck are not always the same thing. ✝️`;
+   if(/pray|prayer/.test(x)) return "Yes. Prayer can be part of this. Bring the pressure, disappointment, gratitude, or uncertainty to God honestly. I can help you think through a biblical theme or passage, but I won’t pretend that I receive private messages from God for you. ✝️";
+   if(/who is jesus|jesus.*god|trinity|triune|holy spirit/.test(x)) return "Coach MW’s Christian foundation is Trinitarian: one God in three persons—Father, Son, and Holy Spirit. Jesus Christ is God the Son and the Son of God; He lived without sin, died for our sins, and rose on the third day, defeating death. Faith in Christ, repentance, and a transformed life that bears good fruit are central to that foundation. ✝️";
+   return `Absolutely. Faith is part of the MW foundation, and we can talk about it seriously. Today’s MW Word is ${w.ref}: ${w.theme} Ask me what you’re wrestling with—Scripture, Jesus, prayer, discipline, purpose, disappointment, gratitude, or something else.`;
+ }
+ case 'celebrate':
+   return "AYYYYY! 😂⚡️ That’s what I’m talking about! Enjoy the win, thank God for the opportunity and the work that got you here, then stay humble enough to keep building. Tell me what you ran and what the race felt like—we’re celebrating AND learning. ✝️";
+ case 'tightness':
+   return "Got you. I’m not going to guess from the word ‘tight.’ First tell me: is it just stiffness, or is there actual pain? And does it change the way you walk or run? If it is mild stiffness only, we can move through controlled MW mobility/dynamic preparation and reassess before speed work. If it becomes sharp, worsens, or changes your stride, we stop the speed work.";
+ case 'medball':
+   return "Absolutely. You don’t need to know a circuit name. Tell me what you trained today and whether you want explosive power, general strength, core work, or a lighter option. I’ll choose from the MW medicine-ball library instead of throwing random TikTok exercises at you 😂.";
+ case 'warmup':
+   return "I can build the warm-up from the MW library based on what you’re about to do. The goal is preparation—not winning the warm-up Olympics 😂. Raise temperature, open usable range, rehearse sprint positions, then progressively build speed. Tell me today’s main workout and whether anything feels unusually tight.";
+ case 'acceleration':
+   return "For acceleration, think PUSH → BUILD → ACCELERATE. Push the ground back instead of reaching, stay patient early, let the body rise gradually, drive the arms, and keep the upper body relaxed. Don’t try to win the 100 in the first three steps 😂. Set the race up correctly.";
+ case 'fatigue':
+   if(/do i have to lift|should i lift|lifting today/.test(x)) return `😂 You already knew I wasn’t letting you sneak out of the weight room that easily. But MW doesn’t lift just to check a box. Your verified Week ${activeMWWeek(q)} strength plan is connected. Track quality comes first, so tell me what you completed today, what you did yesterday, and rate your legs 1–10. If fatigue is excessive, we reduce the final accessory/support block first—not the sprint quality.`;
+   return "Yeah… yesterday may have sent your legs an invoice 😂. MW rule is still the same: protect sprint quality. If fatigue is excessive, accessory/support volume comes down before we sacrifice the high-quality sprint work. Tell me what you completed today, what you did yesterday, and rate your legs 1–10.";
+ case 'pace':
+   let prs=[p.p100&&`100m ${p.p100}`,p.p200&&`200m ${p.p200}`,p.p400&&`400m ${p.p400}`].filter(Boolean).join(', ');
+   return `You’re listed in Week ${week}${prs?` with PRs of ${prs}`:''}. I’m not pulling a pace out of thin air just to sound smart 😂. I should calculate it from the actual MW prescription plus your athlete data. Tell me the rep distance/session, or open today’s prescription once the full schedule connection is active.`;
+ case 'rest':
+   return "Recovery is part of the workout, not punishment for finishing a rep 😂. MW uses it to protect the purpose of the session and help you refocus. Tell me the exact rep distance and session type, and I’ll match the recovery to the prescribed MW work.";
+ case 'why':
+   return `You’re in Week ${week}. MW is progressive, so today has a job inside the bigger plan. We’re not collecting workouts like Pokémon cards 😂. Once the full prescription is connected, I’ll explain what quality we’re developing, why it belongs here, and what it prepares you for next.`;
+ case 'mechanics':
+   return "MW technical work is about staying efficient as speed and fatigue change. Tell me what you feel—reaching, tightening your shoulders, losing frequency, getting too backside—and I’ll coach the problem in athlete language. We’ll fix what matters without giving you seventeen cues at once 😂.";
+ default:
+   return "Talk to me exactly like you’d talk to a coach at practice. Training, racing, confidence, faith, frustration—bring it here. I’ll use the MW system behind the scenes, keep it practical, and I promise not to sound like a refrigerator manual 😂.";
+ }
+}
+let mwAudio=null;
+function voiceChunks(text,mode){if(mode==='standard')return [text];const parts=String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text];const out=[];let cur='';for(const x of parts){if((cur+x).length>360&&cur){out.push(cur.trim());cur=''}cur+=x}if(cur.trim())out.push(cur.trim());return out.slice(0,8)}
+async function voiceBlob(text,coachType){const r=await fetch('/api/speak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Natural voice unavailable')}return r.blob()}
+async function playBlob(blob,rate){return new Promise(async(resolve,reject)=>{const url=URL.createObjectURL(blob);mwAudio=new Audio(url);mwAudio.playbackRate=rate;mwAudio.onended=()=>{URL.revokeObjectURL(url);mwAudio=null;resolve()};mwAudio.onerror=()=>{URL.revokeObjectURL(url);mwAudio=null;reject(new Error('Voice playback error'))};try{await mwAudio.play()}catch(e){reject(e)}})}
+async function speak(t){if(!t)return;try{$('#coachAvatar')?.classList.add('speaking');if(mwAudio){mwAudio.pause();mwAudio=null}const p=getProfile(),prefs=getPrefs(),chunks=voiceChunks(t,prefs.voiceMode);$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='COACH MW IS RESPONDING…');const requests=chunks.map(x=>voiceBlob(x,p.coachType||p.coach||'neutral'));for(const req of requests){const blob=await req;await playBlob(blob,Number(prefs.voiceSpeed||1))}$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='41-WEEK PROGRAM · TRACK + WEIGHT ROOM SYNCED');$('#coachAvatar')?.classList.remove('speaking')}catch(err){$('#coachAvatar')?.classList.remove('speaking');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='NATURAL VOICE NEEDS CONNECTION');console.warn('Coach MW natural voice:',err)}}
+function add(t,c){let d=document.createElement('div');d.className='msg '+c;d.textContent=t;if(c==='coach'){let b=document.createElement('button');b.className='speak';b.textContent='🔊 HEAR COACH';b.onclick=()=>speak(t);d.appendChild(b);let v=document.createElement('span');v.className='voiceLabel';v.textContent='MW NATURAL VOICE';d.appendChild(v)}$('#chat').appendChild(d);$('#chat').scrollTop=$('#chat').scrollHeight}
+const conversation=JSON.parse(localStorage.getItem('mwConversation')||'[]');
+function saveConversation(){localStorage.setItem('mwConversation',JSON.stringify(conversation.slice(-30)))}
+function renderSavedConversation(){
+  if(!conversation.length)return;
+  $('#chat').innerHTML='';
+  for(const m of conversation)add(m.content,m.role==='assistant'?'coach':'me');
+}
+async function refreshPremiumStatus(){
+  const p=getProfile(), ep=p.entryAssessment||{};
+  if($('#ctxAthlete')) $('#ctxAthlete').textContent=p.name||'Athlete';
+  if($('#ctxWeek')) $('#ctxWeek').textContent='Week '+activeMWWeek();
+   if($('#ctxWeekInline')) $('#ctxWeekInline').textContent=activeMWWeek();
+  if($('#ctxStrength')) $('#ctxStrength').textContent=MW_STRENGTH[activeMWWeek()]?'Linked':'Not verified';
+  try{
+    const r=await fetch('/api/status',{cache:'no-store'});const s=await r.json();
+    if($('#aiChip')){$('#aiChip').textContent=s.ai?'● LIVE AI CONNECTED':'● COACH MW READY';$('#aiChip').classList.toggle('live',!!s.ai)}
+    if($('#connectionNotice')){$('#connectionNotice').textContent='';$('#connectionNotice').classList.remove('show')}
+  }catch{}
+}
+
+async function send(t){
+  t=(t||$('#q').value).trim();if(!t)return;
+  add(t,'me'); $('#q').value='';
+  conversation.push({role:'user',content:t}); saveConversation();
+  const thinking='Coach MW is thinking…'; add(thinking,'coach');
+  const bubble=$('#chat').lastElementChild;
+  try{
+    const profile=getProfile();
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation,profile,activeWeek:activeMWWeek(t)})});
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data.error||'AI connection failed');
+    const a=(data.text||'').trim(); if(!a) throw new Error('Empty AI response');
+    conversation.push({role:'assistant',content:a}); saveConversation();
+    bubble.remove(); add(a,'coach'); if(getPrefs().autoVoice==='on')speak(a);
+  }catch(err){
+    bubble.remove();
+    const msg=`I can't give you a fake canned answer and call it AI. The live Coach MW connection is unavailable right now. ${err.message}`;
+    add(msg,'coach');
+    const n=$('#connectionNotice'); if(n){n.textContent='LIVE COACH MW CONNECTION REQUIRED • '+err.message;n.classList.add('show')}
+  }
+}
+$('#go').onclick=()=>send();$('#q').onkeydown=e=>{if(e.key==='Enter')send()};$$('.quick button').forEach(b=>b.onclick=()=>send(b.dataset.q));
+renderWord(); initStrength(); if($('#encourageMe'))$('#encourageMe').onclick=()=>send('Coach, encourage me today. I need some faith-based encouragement.'); if($('#faithTalk'))$('#faithTalk').onclick=()=>{ $('#q').focus(); $('#q').placeholder='Ask Coach MW about faith, Scripture, prayer, purpose…'; };
+
+const PHASES={
+  1:{name:'Foundation',start:1,end:8},
+  2:{name:'Strength & Speed Development',start:9,end:16},
+  3:{name:'Power / Pre-Competition',start:17,end:24},
+  4:{name:'Competition',start:25,end:33},
+  5:{name:'Peak / Championship',start:34,end:41}
+};
+function phaseFromWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(w<=8)return 1;if(w<=16)return 2;if(w<=24)return 3;if(w<=33)return 4;return 5}
+let mwSeasonCalendar=null;
+function mwCalendarDate(iso){if(!iso)return '—';try{return new Date(iso+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}catch{return iso}}
+function renderSeasonCalendarSummary(){
+  const box=$('#seasonCalendarSummary'),home=$('#homeTrainingYear'),c=mwSeasonCalendar;
+  if(!c){
+    if(box)box.innerHTML='<b>MW Standard Training Year</b><span>Calendar position will load when your account is connected.</span>';
+    if(home)home.innerHTML='<span class="mwTyKicker">MW TRAINING YEAR</span><strong>Connect your account to load your official week.</strong><small>Standard calendar + Smart Entry protection</small><em>WHY AM I ON THIS WEEK? →</em>';
+    return;
+  }
+  const custom=c.mode==='custom';const title=custom?'Coach Custom Training Calendar':'MW Standard Training Year';
+  let main='';
+  if(c.status==='active')main=`Current position: <strong>Week ${c.week}</strong> · Phase ${c.phase} — ${PHASES[c.phase]?.name||'MW Progression'}`;
+  else if(c.status==='preseason')main=`Preseason · Week 1 entry logic is active until ${mwCalendarDate(c.nextStartDate||c.startDate)}`;
+  else main=`Between 41-week cycles · Smart Entry uses Foundation placement until the next training year`;
+  const foot=custom?`Coach calendar start: ${mwCalendarDate(c.startDate)}`:`Standard start: the day after Labor Day${c.nextStartDate&&c.status==='offseason'?` · Next start ${mwCalendarDate(c.nextStartDate)}`:` · ${mwCalendarDate(c.startDate)}`}`;
+  if(box)box.innerHTML=`<b>${title}</b><span>${main}</span><small>${foot}</small>`;
+  if(home){
+    let headline='Smart Entry protected';
+    let detail=custom?'Your assigned coach controls the training calendar.':'MW Standard calendar · starts the day after Labor Day';
+    if(c.status==='active')headline=`Week ${c.week} of 41 · ${PHASES[c.phase]?.name||`Phase ${c.phase}`}`;
+    else if(c.status==='preseason')headline='Preseason · Week 1 entry protected';
+    else headline='Between MW training years · Foundation entry protected';
+    home.innerHTML=`<span class="mwTyKicker">${custom?'COACH TRAINING CALENDAR':'MW TRAINING YEAR'}</span><strong>${headline}</strong><small>${detail}</small><em>WHY AM I ON THIS WEEK? →</em>`;
+  }
+}
+async function loadSeasonCalendar(){
+  try{
+    const tok=window.mwGetSessionToken?.()||'';if(!tok){renderSeasonCalendarSummary();return null}
+    const r=await fetch('/api/season-calendar',{cache:'no-store',headers:{Authorization:'Bearer '+tok}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Calendar unavailable');
+    mwSeasonCalendar=d.calendar||null;if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}renderSeasonCalendarSummary();syncEntrySeason();return mwSeasonCalendar;
+  }catch(e){renderSeasonCalendarSummary();return null}
+}
+function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=phaseFromWeek(w);$$('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
+$('#openEntry').onclick=()=>{openView('entry');loadSeasonCalendar()}; $('#backCoach').onclick=()=>openView('coach');
+function readinessPhase(){
+  const trainingAge=Number($('#trainingAge').value), continuity=Number($('#continuity').value), speed=Number($('#speedExposure').value), race=Number($('#recentRace').value), lift=Number($('#lifting').value), health=$('#health').value;
+  if(health==='pain') return {hold:true,phase:1,confidence:'HOLD',why:'Pain, a recent injury, or altered running mechanics must be resolved before high-speed placement.'};
+  if(trainingAge===0) return {phase:1,confidence:'HIGH',why:'A newer sprinter needs the MW Foundation gate before later-season speed, power, or competition demands.'};
+  if(continuity===0 || speed===0) return {phase:1,confidence:'HIGH',why:'Recent sprint continuity or true high-speed exposure is too low for a direct late-season jump.'};
+  if(continuity<=1) return {phase:1,confidence:'HIGH',why:'Training has been inconsistent, so MW rebuilds the foundation before higher sprint demands.'};
+  if(continuity===2 && speed===2) return {phase:2,confidence:'HIGH',why:'You have consistent training and recent speed exposure, supporting Strength & Speed Development, but not enough evidence yet for race-specific loading.'};
+  if(continuity>=2 && speed>=3 && lift>=1 && race===0) return {phase:3,confidence:'MODERATE',why:'Consistent training, repeated recent high-speed exposure and current lifting support Power / Pre-Competition readiness.'};
+  if(continuity>=3 && speed>=3 && race===1 && lift>=1 && trainingAge>=1) return {phase:4,confidence:'HIGH',why:'Consistent training, repeated high-speed exposure, current lifting and recent competition support Competition-phase readiness.'};
+  return {phase:2,confidence:'MODERATE',why:'Your recent work supports development, but there is not enough evidence to place you directly into race-specific competition work.'};
+}
+function entryPlacement(seasonWeek, readyPhase){
+  const seasonPhase=phaseFromWeek(seasonWeek);
+  if(readyPhase>=seasonPhase && seasonPhase<=4){
+    return {assignedPhase:seasonPhase,assignedWeek:seasonWeek,status:'DIRECT CURRENT-PHASE ENTRY',detail:`You meet the readiness gate for the current MW phase. Track + strength begin together at Week ${seasonWeek}.`,nextCheck:PHASES[seasonPhase].end};
+  }
+  if(seasonPhase===5 && readyPhase>=4){
+    return {assignedPhase:4,assignedWeek:25,status:'CHAMPIONSHIP ENTRY — COACH REVIEW',detail:'A new athlete is not auto-dropped into Peak / Championship. Enter through the Competition gate and require Coach MW verification before Phase 5.',nextCheck:33,review:true};
+  }
+  const assignedPhase=Math.min(readyPhase,seasonPhase);
+  return {assignedPhase,assignedWeek:PHASES[assignedPhase].start,status:'PHASE GATE ENTRY',detail:`The season is ahead of your verified readiness. Start at the official Phase ${assignedPhase} gateway instead of skipping into a later MW week.`,nextCheck:PHASES[assignedPhase].end};
+}
+function renderEntryStatus(){
+  const p=getProfile(), ep=p.entryAssessment, box=$('#entryStatus'); if(!box)return;
+  if(!ep){box.classList.remove('show'); box.innerHTML=''; return;}
+  box.classList.add('show');
+  box.innerHTML=`<small>⚡ MW SMART ENTRY ACTIVE</small><b>Phase ${ep.assignedPhase} • Week ${ep.assignedWeek} — ${PHASES[ep.assignedPhase].name}</b><span class="syncTag">TRACK + STRENGTH SYNCHRONIZED</span><span>Season calendar: Phase ${ep.seasonPhase} • Week ${ep.seasonWeek}. Next MW gate/checkpoint: after Week ${ep.nextCheckpoint}.</span>`;
+}
+async function assessEntry(){
+  await loadSeasonCalendar();
+  syncEntrySeason();
+  const btn=$('#assess'),out=$('#entryResult');out.classList.add('show');
+  const events=['100m','200m','400m'].filter(e=>$('#event'+e.replace('m',''))?.checked);
+  const payload={firstName:$('#entryFirstName').value.trim(),lastName:$('#entryLastName').value.trim(),dateOfBirth:$('#entryDob').value,events,prs:{'100m':$('#entryPr100').value,'200m':$('#entryPr200').value,'400m':$('#entryPr400').value},prTiming:{'100m':$('#entryPr100Timing').value,'200m':$('#entryPr200Timing').value,'400m':$('#entryPr400Timing').value},weightUnit:$('#entryWeightUnit').value,maxes:{powerClean:$('#entryPowerClean').value,frontSquat:$('#entryFrontSquat').value,backSquat:$('#entryBackSquat').value,deadlift:$('#entryDeadlift').value,deadliftType:$('#entryDeadliftType').value},eventGroup:events.includes('400m')?(events.includes('100m')?'multi':'long'):'short',trainingAge:Number($('#trainingAge').value),continuity:Number($('#continuity').value),speedExposure:Number($('#speedExposure').value),recentRace:Number($('#recentRace').value),lifting:Number($('#lifting').value),health:$('#health').value};
+  if(!payload.firstName||!payload.lastName||!payload.dateOfBirth||!events.length){out.innerHTML='<div class="warning">First name, last name, date of birth, and at least one event are required.</div>';return}
+  btn.disabled=true;btn.textContent='SAVING MW ENTRY…';
+  try{
+    const tok=window.mwGetSessionToken?.()||'';const r=await fetch('/api/smart-entry',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(payload)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Smart Entry could not be saved');
+    if(d.calendar){mwSeasonCalendar=d.calendar;$('#seasonWeek').value=Number(d.calendar.week||1);renderSeasonCalendarSummary();syncEntrySeason();}
+    if(d.locked){out.innerHTML='<div class="resultTop"><div><span class="badge">MW SMART ENTRY LOCKED</span><h3>Your official entry placement is already on file.</h3></div></div><div class="reason">Entry placement can only be changed by an authorized MW coach/admin after the first completed assessment.</div>';await window.mwReloadAccount?.();return}
+    if(d.hold){out.innerHTML=`<div class="resultTop"><div><span class="badge">COACH REVIEW REQUIRED</span><h3>Do not assign a sprint phase yet.</h3></div></div><div class="reason">${d.why||'A health review is required before high-speed placement.'}</div><div class="warning">MW Smart Entry does not medically clear an athlete. Resolve the pain/injury issue before assigning high-speed training.</div>`;return}
+    window.mwAssessmentComplete=true;window.mwAssessmentRequired=false;
+    out.innerHTML=`<div class="resultTop"><div><span class="badge">MW ATHLETE ASSESSMENT COMPLETE</span><h3>Start at <em>Week ${d.assignedWeek}</em></h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>ATHLETE ASSIGNMENT</small><b>Phase ${d.assignedPhase} • Week ${d.assignedWeek}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your profile, PRs, weight-room information, tiers, and official week are synchronized with the coaching dashboard.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY ASSIGNED PROGRAM</button>`;
+    await window.mwReloadAccount?.();
+  }catch(e){out.innerHTML='<div class="warning">'+(e.message||'Smart Entry save failed. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & ASSIGN MY PROGRAM'}
+}
+$('#assess').onclick=assessEntry; syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>$('#voiceState').textContent='LISTENING…';r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>$('#voiceState').textContent='TAP MIC TO SPEAK';$('#mic').onclick=()=>r.start()}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
+
+setTimeout(()=>{renderSavedConversation();refreshPremiumStatus()},50);
+const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.splice(0);saveConversation();$('#chat').innerHTML='<div class="msg coach">Fresh conversation. I still have your athlete profile and MW context. What are we working on?</div>'};
+
+</script>
+<script id="mw-supabase-auth-v1">
+(() => {
+  const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
+  const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SESSION_KEY='mwSupabaseSession';
+  let mwSession=null;
+  let mwRemoteProfile={userId:'',name:'Athlete',coachType:'male',p60:'',p100:'',p200:'',p300:'',p400:'',week:'1',currentDay:'1',currentPhase:'1',programStatus:'not_started',startDate:'',startWeek:'1'};window.mwAssessmentComplete=false;window.mwAssessmentRequired=false;
+
+  function authStatus(msg,bad=false){const el=document.querySelector('#mwAuthStatus');if(el){el.textContent=msg||'';el.style.color=bad?'#ff9caa':'#55c9ff'}}
+  function saveSession(s){mwSession=s;localStorage.setItem(SESSION_KEY,JSON.stringify(s))}
+  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY)}
+  function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
+  async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW connection failed');return d}
+  function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
+  function hydrate(d){
+    mwOnboardingUserKey=d.user?.id||d.user?.email||'local';
+    const pr=prsToProfile(d.prs||[]), ps=d.programState||{}, profile=d.profile||{};
+    const role=String(profile.role||'athlete');
+    const privileged=['founder_owner','admin','coach'].includes(role);
+    const hasAthlete=!!d.athlete;
+    window.mwAssessmentComplete=Boolean(ps.onboarding_assessment_completed_at);
+    window.mwAssessmentRequired=hasAthlete&&!window.mwAssessmentComplete;
+    const localVoice=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}');
+
+    mwRemoteProfile={
+      userId:d.user?.id||'',
+      name:profile.first_name||(role==='founder_owner'?'Founder':'Athlete'),
+      coachType:['male','female'].includes(localVoice.coachType)?localVoice.coachType:'male',
+      ...pr,
+      week:String(ps.current_week||1),
+      currentDay:String(ps.current_day||1),
+      currentPhase:String(ps.current_phase||1),
+      programStatus:ps.program_status||(hasAthlete?'not_started':'founder_preview'),
+      startDate:ps.start_date||'',
+      startWeek:String(ps.starting_week||ps.current_week||1),
+      role,
+      accountStatus:profile.account_status||'',
+      athleteId:d.athlete?.id||'',
+      email:d.user?.email||'',
+      mode:d.mode||(hasAthlete?'athlete':role)
+    };
+
+    if(window.getProfile) window.getProfile=()=>({...mwRemoteProfile});
+    else getProfile=()=>({...mwRemoteProfile});
+
+    try{activeMWWeek=(q='')=>Math.max(1,Math.min(41,Number(mwRemoteProfile.week||1)))}catch{}
+    try{advanceCurrentWeek=()=>Number(mwRemoteProfile.week||1)}catch{}
+    try{unlockedThrough=()=>Number(mwRemoteProfile.week||1)}catch{}
+
+    const map={name:mwRemoteProfile.name,entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,entryPr100:mwRemoteProfile.p100,entryPr200:mwRemoteProfile.p200,entryPr400:mwRemoteProfile.p400,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
+    for(const [id,val] of Object.entries(map)){const el=document.querySelector('#'+id);if(el)el.value=val||''}
+
+    ['week','startDate','startWeek'].forEach(id=>{
+      const el=document.querySelector('#'+id);
+      if(el){el.readOnly=true;el.title='Synced from MW Dynasty'}
+    });
+
+    const save=document.querySelector('#save');
+    if(save){
+      save.textContent='SAVE ATHLETE PROFILE';
+      save.onclick=async()=>{
+        const payload={
+          first_name:(document.querySelector('#name')?.value||'').trim(),
+          prs:{
+            '60m':document.querySelector('#p60')?.value||'',
+            '100m':document.querySelector('#p100')?.value||'',
+            '200m':document.querySelector('#p200')?.value||'',
+            '300m':document.querySelector('#p300')?.value||'',
+            '400m':document.querySelector('#p400')?.value||''
+          }
+        };
+        const c=document.querySelector('#coachType')?.value||'male';
+        localStorage.setItem('mwCoachPreference',JSON.stringify({coachType:c}));
+        mwRemoteProfile.coachType=c;
+        save.disabled=true; save.textContent='SAVING…';
+        try{
+          const out=await api('/api/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+          if(out?.profile?.first_name) mwRemoteProfile.name=out.profile.first_name;
+          const updated=prsToProfile(out?.prs||[]); Object.assign(mwRemoteProfile,updated);
+          save.textContent='✓ ATHLETE PROFILE SAVED';
+          const ps=document.querySelector('#profileSaveStatus');if(ps){ps.style.display='block';ps.style.color='#7ee2a8';ps.textContent='✓ Profile and sprint PRs saved to MW Dynasty.'}
+          sync();renderEntryStatus();
+          setTimeout(()=>save.textContent='SAVE ATHLETE PROFILE',1400);
+        }catch(e){
+          save.textContent='SAVE FAILED — TAP TO RETRY';
+          const ps=document.querySelector('#profileSaveStatus');if(ps){ps.style.display='block';ps.style.color='#ffb0bc';ps.textContent=e.message||'Profile save failed. Please try again.'}
+          authStatus(e.message||'Profile save failed',true);
+        }finally{save.disabled=false}
+      }
+    }
+
+    const coach=document.querySelector('#coachType');
+    if(coach){
+      coach.value=mwRemoteProfile.coachType;
+      coach.onchange=()=>{
+        mwRemoteProfile.coachType=coach.value;
+        localStorage.setItem('mwCoachPreference',JSON.stringify({coachType:coach.value}));
+        applyCoachVisual(coach.value)
+      }
+    }
+
+    if(document.querySelector('#helloName'))document.querySelector('#helloName').textContent=(mwRemoteProfile.name||'Athlete')+'.';
+    if(document.querySelector('#weekBadge'))document.querySelector('#weekBadge').textContent=mwRemoteProfile.week;
+    if(document.querySelector('#ctxAthlete'))document.querySelector('#ctxAthlete').textContent=mwRemoteProfile.name||'Athlete';
+    if(document.querySelector('#ctxWeek'))document.querySelector('#ctxWeek').textContent=hasAthlete?('Week '+mwRemoteProfile.week+' • Day '+mwRemoteProfile.currentDay):(role==='founder_owner'?'Founder Access':'Staff Access');
+    if(document.querySelector('#homeName'))document.querySelector('#homeName').textContent=mwRemoteProfile.name||'Athlete';
+    if(document.querySelector('#homeWeek'))document.querySelector('#homeWeek').textContent=hasAthlete?mwRemoteProfile.week:'—';
+    if(document.querySelector('#completionWeek'))document.querySelector('#completionWeek').textContent=mwRemoteProfile.week;
+    if(document.querySelector('#progressCurrentWeek'))document.querySelector('#progressCurrentWeek').textContent=hasAthlete?('WEEK '+mwRemoteProfile.week):'FOUNDER MODE';
+    if(document.querySelector('#strengthWeek')){
+      document.querySelector('#strengthWeek').value=mwRemoteProfile.week;
+      try{renderStrengthWeek(mwRemoteProfile.week)}catch{}
+    }
+    if(document.querySelector('#settingsCoachType'))document.querySelector('#settingsCoachType').value=mwRemoteProfile.coachType;
+    applyCoachVisual(mwRemoteProfile.coachType);
+
+    const ctx=document.querySelector('.contextTop');
+    if(ctx&&!ctx.querySelector('.mwOfficialTag')){
+      const t=document.createElement('span');
+      t.className='mwOfficialTag';
+      t.textContent=hasAthlete?'MW PROGRAM LINKED':(role==='founder_owner'?'FOUNDER ACCESS':'MW STAFF ACCESS');
+      ctx.appendChild(t)
+    }
+
+    if(privileged && !hasAthlete){
+      const top=document.querySelector('#home .top');
+      if(top && !top.querySelector('.mwRoleBadge')){
+        const b=document.createElement('div');
+        b.className='mwRoleBadge';
+        b.textContent=role==='founder_owner'?'◆ FOUNDER OWNER':'◆ '+role.toUpperCase();
+        top.appendChild(b);
+      }
+      const hero=document.querySelector('#home .heroCard');
+      if(hero && !hero.querySelector('.mwFounderNote')){
+        const n=document.createElement('div');
+        n.className='mwFounderNote';
+        n.textContent=role==='founder_owner'
+          ? 'Founder Mode is active. Your account is authorized without an athlete record. Athlete-specific data remains separate until you open or manage an athlete account.'
+          : 'Staff Mode is active. Athlete-specific data remains separate from this staff account.';
+        hero.appendChild(n);
+      }
+      const sub=document.querySelector('#home .sub');
+      if(sub)sub.textContent=role==='founder_owner'?'FOUNDER PERFORMANCE HUB':'MW STAFF PERFORMANCE HUB';
+    }
+
+    try{renderEntryStatus()}catch{}
+    try{renderProgressUI()}catch{}
+    try{renderCompletion()}catch{}
+
+    // Athletes get the first-login tutorial. Founder/staff accounts bypass athlete onboarding.
+    if(hasAthlete)setTimeout(()=>{startQuickStart(false);if(window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1')openView('entry')},350);
+    else openView('home');
+  }
+  const STRENGTH_FIELD_MAP={maxPowerClean:'power_clean_max',maxFrontSquat:'front_squat_max',maxBackSquat:'back_squat_max',maxDeadlift:'deadlift_max',profileDeadliftType:'deadlift_type',profileWeightUnit:'weight_unit'};
+  function strengthHeaders(extra={}){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+token(),...extra}}
+  async function loadStrengthMaxes(){
+    if(!mwRemoteProfile.athleteId||!token())return;
+    const url=SUPABASE_URL+'/rest/v1/athlete_strength_maxes?athlete_id=eq.'+encodeURIComponent(mwRemoteProfile.athleteId)+'&select=*';
+    const r=await fetch(url,{headers:strengthHeaders({'Accept':'application/json'})});
+    const rows=await r.json().catch(()=>[]);
+    if(!r.ok)throw new Error(rows?.message||'Could not load weight-room maxes.');
+    const row=Array.isArray(rows)?rows[0]:null;
+    if(row){
+      for(const [id,col] of Object.entries(STRENGTH_FIELD_MAP)){
+        const el=document.getElementById(id); if(el&&row[col]!=null)el.value=row[col];
+      }
+      localStorage.setItem(LIFT_MAX_KEY,JSON.stringify(Object.fromEntries(Object.keys(STRENGTH_FIELD_MAP).map(id=>[id,document.getElementById(id)?.value||'']))));
+    }
+    const b=document.getElementById('saveLiftMaxes');
+    if(b)b.onclick=saveStrengthMaxes;
+  }
+  function strengthValue(id){
+    const raw=(document.getElementById(id)?.value||'').trim();
+    if(id==='profileDeadliftType'||id==='profileWeightUnit')return raw||null;
+    if(raw==='')return null;
+    const n=Number(raw); return Number.isFinite(n)?n:null;
+  }
+  async function saveStrengthMaxes(){
+    const b=document.getElementById('saveLiftMaxes'),st=document.getElementById('liftMaxStatus');
+    if(!mwRemoteProfile.athleteId){if(st)st.textContent='Weight-room maxes could not be saved: athlete profile not found.';return}
+    const payload={athlete_id:mwRemoteProfile.athleteId,updated_at:new Date().toISOString()};
+    for(const [id,col] of Object.entries(STRENGTH_FIELD_MAP))payload[col]=strengthValue(id);
+    // Bar weights are required in Supabase; use standard 45 lb when left blank.
+    if(payload.olympic_bar_weight==null)payload.olympic_bar_weight=45;
+    if(payload.hex_bar_weight==null)payload.hex_bar_weight=45;
+    if(b){b.disabled=true;b.textContent='SAVING…'}
+    try{
+      const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_maxes?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
+      const out=await r.json().catch(()=>[]); if(!r.ok)throw new Error(out?.message||out?.details||'Weight-room save failed.');
+      const local={};for(const id of Object.keys(STRENGTH_FIELD_MAP))local[id]=document.getElementById(id)?.value||'';localStorage.setItem(LIFT_MAX_KEY,JSON.stringify(local));
+      if(st)st.textContent='✓ Weight-room maxes saved to MW Dynasty. They will stay synced across devices.';
+      if(b)b.textContent='✓ WEIGHT ROOM MAXES SAVED';
+      try{renderStrengthWeek(activeMWWeek())}catch{}
+      setTimeout(()=>{if(b)b.textContent='SAVE WEIGHT ROOM MAXES'},1400);
+    }catch(e){if(st)st.textContent='Save failed: '+(e.message||'Please try again.');if(b)b.textContent='SAVE FAILED — TAP TO RETRY'}finally{if(b)b.disabled=false}
+  }
+  async function loadSmartEntry(){
+    if(!mwRemoteProfile.athleteId||!token())return;
+    const d=await api('/api/smart-entry',{cache:'no-store'});const x=d?.assessment;if(!x)return;
+    mwRemoteProfile.entryAssessment={seasonWeek:Number(x.season_week||0),seasonPhase:Number(x.season_phase||0),readinessPhase:Number(x.readiness_phase||0),assignedPhase:Number(x.assigned_phase||0),assignedWeek:Number(x.assigned_week||0),status:x.status||'',nextCheckpoint:Number(x.next_checkpoint||0),confidence:x.confidence||'',eventGroup:x.event_group||'',date:x.created_at||''};window.mwAssessmentComplete=true;window.mwAssessmentRequired=false;
+    renderEntryStatus();
+  }
+  async function loadAthleteSettings(){
+    if(!mwRemoteProfile.athleteId||!token())return;
+    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?athlete_id=eq.'+encodeURIComponent(mwRemoteProfile.athleteId)+'&select=*',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
+    const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load athlete settings.');const x=Array.isArray(rows)?rows[0]:null;if(!x)return;
+    const cv=['male','female'].includes(x.coach_visual)?x.coach_visual:'male';mwRemoteProfile.coachType=cv;['coachType','settingsCoachType'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=cv});applyCoachVisual(cv);
+    const map={voiceSpeed:x.voice_speed,voiceMode:x.voice_mode,autoVoice:x.auto_voice?'on':'off',workoutReminders:x.workout_reminders?'on':'off',meetReminders:x.meet_reminders?'on':'off',messageAlerts:x.message_alerts?'on':'off'};
+    for(const [id,val] of Object.entries(map)){const el=document.getElementById(id);if(el&&val!=null)el.value=val}
+  }
+  async function saveAthleteSettings(){
+    if(!mwRemoteProfile.athleteId||!token())throw new Error('Athlete account is not connected.');
+    const v=id=>document.getElementById(id)?.value;
+    const payload={athlete_id:mwRemoteProfile.athleteId,coach_visual:v('settingsCoachType')||v('coachType')||'male',voice_speed:v('voiceSpeed')||'normal',voice_mode:v('voiceMode')||'natural',auto_voice:v('autoVoice')==='on',workout_reminders:v('workoutReminders')!=='off',meet_reminders:v('meetReminders')!=='off',message_alerts:v('messageAlerts')!=='off',updated_at:new Date().toISOString()};
+    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'Settings save failed.');mwRemoteProfile.coachType=payload.coach_visual;applyCoachVisual(payload.coach_visual);return d;
+  }
+  async function loadMe(){const d=await api('/api/me',{cache:'no-store'});hydrate(d);try{await loadSeasonCalendar()}catch(e){console.warn('MW training-year calendar unavailable',e)}try{await loadSmartEntry()}catch(e){console.warn('MW Smart Entry sync unavailable',e)}try{await loadAthleteSettings()}catch(e){console.warn('MW settings sync unavailable',e)}try{await loadStrengthMaxes()}catch(e){const st=document.getElementById('liftMaxStatus');if(st)st.textContent='MW strength sync unavailable: '+e.message}try{await loadWorkoutCompletions();renderCompletion();renderProgressUI()}catch(e){console.warn('MW completion sync unavailable',e);if($('#unlockNote'))$('#unlockNote').textContent='Workout history could not sync from MW Dynasty. Please refresh.'}const sb=document.getElementById('saveSettings');if(sb)sb.onclick=async()=>{sb.disabled=true;sb.textContent='SAVING…';try{await saveAthleteSettings();sb.textContent='✓ SETTINGS SAVED'}catch(e){sb.textContent='SAVE FAILED — TAP TO RETRY';authStatus(e.message,true)}finally{sb.disabled=false;setTimeout(()=>{if(sb.textContent.startsWith('✓'))sb.textContent='SAVE SETTINGS'},1300)}};return d}
+  window.mwReloadAccount=loadMe;
+  async function login(){
+    const email=document.querySelector('#mwAuthEmail').value.trim(),password=document.querySelector('#mwAuthPassword').value;
+    if(!email||!password){authStatus('Enter your email and password.',true);return}
+    authStatus('Signing in…');
+    try{
+      const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-in failed');
+      saveSession(d);await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('');
+    }catch(e){
+      clearSession();
+      const msg=String(e?.message||'');
+      authStatus(msg.includes('not active')?'This MW Dynasty account is not active. Check that you are using your authorized account email or contact MW support.':(msg||'Sign-in failed'),true)
+    }
+  }
+
+  function recoveryRedirect(){return location.origin+location.pathname}
+  async function requestPasswordReset(){
+    const email=document.querySelector('#mwAuthEmail').value.trim();
+    if(!email){authStatus('Enter your email first, then tap Forgot password.',true);return}
+    authStatus('Sending password reset email…');
+    try{
+      const r=await fetch(SUPABASE_URL+'/auth/v1/recover?redirect_to='+encodeURIComponent(recoveryRedirect()),{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email})});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.error_description||d.error||'Could not send reset email');
+      authStatus('Reset email sent. Open the link in your email to create a new password.');
+    }catch(e){authStatus(e.message||'Could not send reset email',true)}
+  }
+  function recoveryTokenFromUrl(){
+    const h=new URLSearchParams(location.hash.replace(/^#/,''));
+    const q=new URLSearchParams(location.search);
+    return {type:h.get('type')||q.get('type'),access_token:h.get('access_token')||q.get('access_token')||''};
+  }
+  async function saveRecoveredPassword(){
+    const a=document.querySelector('#mwNewPassword').value,b=document.querySelector('#mwConfirmPassword').value;
+    if(a.length<8){authStatus('Use at least 8 characters for your new password.',true);return}
+    if(a!==b){authStatus('The new passwords do not match.',true);return}
+    const rec=recoveryTokenFromUrl();if(!rec.access_token){authStatus('This reset link is invalid or expired. Request a new one.',true);return}
+    authStatus('Saving new password…');
+    try{
+      const r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+rec.access_token},body:JSON.stringify({password:a})});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.error_description||d.error||'Could not update password');
+      history.replaceState({},document.title,location.pathname);
+      document.querySelector('#mwAuthReset').classList.remove('show');
+      document.querySelector('#mwAuthLogin').style.display='block';
+      document.querySelector('#mwForgotPassword').style.display='inline-block';
+      document.querySelector('#mwAuthPassword').value='';
+      authStatus('Password updated. Sign in with your new password.');
+    }catch(e){authStatus(e.message||'Could not update password',true)}
+  }
+  function initRecoveryMode(){
+    const rec=recoveryTokenFromUrl();
+    if(rec.type==='recovery'&&rec.access_token){
+      document.querySelector('#mwAuthReset').classList.add('show');
+      document.querySelector('#mwAuthLogin').style.display='none';
+      document.querySelector('#mwForgotPassword').style.display='none';
+      authStatus('Create your new MW Dynasty password.');
+      return true;
+    }
+    return false;
+  }
+  async function resume(){
+    const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;
+    try{mwSession=JSON.parse(raw);await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready')}catch{clearSession()}
+  }
+
+  // Replace Coach MW network calls so browser-supplied profile/week can never be authoritative.
+  try{
+    voiceBlob=async function(text,coachType){const r=await fetch('/api/speak',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify({text,coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Natural voice unavailable')}return r.blob()};
+    send=async function(t){
+      t=(t||document.querySelector('#q').value).trim();if(!t)return;add(t,'me');document.querySelector('#q').value='';conversation.push({role:'user',content:t});saveConversation();add('Coach MW is thinking…','coach');const bubble=document.querySelector('#chat').lastElementChild;
+      try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify({messages:conversation})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'AI connection failed');const a=(data.text||'').trim();if(!a)throw new Error('Empty AI response');conversation.push({role:'assistant',content:a});saveConversation();bubble.remove();add(a,'coach');if(getPrefs().autoVoice==='on')speak(a)}catch(err){bubble.remove();const msg='Coach MW connection unavailable right now. '+err.message;add(msg,'coach');const n=document.querySelector('#connectionNotice');if(n){n.textContent='LIVE COACH MW CONNECTION REQUIRED • '+err.message;n.classList.add('show')}}
+    };
+    const go=document.querySelector('#go');if(go)go.onclick=()=>send();const q=document.querySelector('#q');if(q)q.onkeydown=e=>{if(e.key==='Enter')send()};document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>send(b.dataset.q));
+  }catch(e){console.warn('MW auth network override',e)}
+
+
+  const accessReason=new URLSearchParams(location.search).get('access');
+  if(accessReason==='membership'){authStatus('This account does not currently have active MW Dynasty access.',true)}
+
+  const pwToggle=document.querySelector('#mwTogglePassword');
+  if(pwToggle) pwToggle.onclick=()=>{const f=document.querySelector('#mwAuthPassword');const show=f.type==='password';f.type=show?'text':'password';pwToggle.textContent=show?'◌':'◉';pwToggle.setAttribute('aria-label',show?'Hide password':'Show password')};
+  document.querySelector('#mwAuthLogin').onclick=login;
+  document.querySelector('#mwAuthPassword').onkeydown=e=>{if(e.key==='Enter')login()};
+  document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='block';authStatus('');
+  document.querySelector('#mwSavePassword').onclick=saveRecoveredPassword;
+  const out=document.querySelector('#mwSignOut');if(out)out.onclick=()=>{clearSession();location.reload()};
+  if(!initRecoveryMode()) resume();
+})();
+</script>
+
+<div id="mwUtilityModal" class="mwUtilityModal" aria-hidden="true"><div class="mwUtilityBox"><button id="mwUtilityClose" class="mwUtilityClose">×</button><h2 id="mwUtilityTitle">MW Dynasty</h2><div id="mwUtilityBody"></div></div></div>
+<style>.mwUtilityModal{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.76);padding:18px;align-items:center;justify-content:center}.mwUtilityModal.open{display:flex}.mwUtilityBox{position:relative;width:min(620px,100%);max-height:85vh;overflow:auto;background:#07111a;border:1px solid #394857;border-radius:16px;padding:22px;color:#fff}.mwUtilityClose{position:absolute;right:12px;top:8px;border:0;background:transparent;color:#fff;font-size:28px}.mwUtilityBox p{color:#aab6c0;line-height:1.55}</style>
+<script id="mw-coach-connection-v249">
+(() => {
+  const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
+  const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const $=s=>document.querySelector(s);
+  let currentInvite=null;
+  function session(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+  function authHeaders(extra={}){const ss=session();return {apikey:SUPABASE_KEY,Authorization:`Bearer ${ss?.access_token||''}`,'Content-Type':'application/json',...extra}}
+  async function sb(path,opts={}){const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:authHeaders(opts.headers||{})});const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok)throw new Error(data?.message||data?.hint||data?.details||String(data||`Supabase ${r.status}`));return data}
+  function status(msg,kind=''){const el=$('#coachInvitePreview');if(!el)return;el.textContent=msg;el.className='coachConnectStatus show'+(kind?' '+kind:'')}
+  function inviteEmailMatches(inv){const mail=String(session()?.user?.email||'').trim().toLowerCase();return mail && String(inv?.athlete_email||'').trim().toLowerCase()===mail}
+  function expired(inv){return inv?.expires_at && new Date(inv.expires_at).getTime()<Date.now()}
+  async function reviewInvite(){
+    const code=String($('#coachInviteCode')?.value||'').trim(); currentInvite=null; $('#coachInviteAccept').style.display='none';
+    if(!code){status('Paste the invite code your coach sent you.','bad');return}
+    try{
+      const rows=await sb(`coach_invitations?select=id,coach_user_id,athlete_email,invite_type,team_id,status,invite_token,expires_at,accepted_at,accepted_by&invite_token=eq.${encodeURIComponent(code)}&limit=1`);
+      const inv=Array.isArray(rows)?rows[0]:null;
+      if(!inv){status('No invitation was found for this signed-in athlete. Check the code and the email account you used to sign in.','bad');return}
+      if(!inviteEmailMatches(inv)){status('This invitation was issued to a different email address. Sign in with the invited athlete account.','bad');return}
+      if(expired(inv)){status('This invitation has expired. Ask your coach to create a new invitation.','bad');return}
+      currentInvite=inv;
+      if(inv.status==='accepted' && inv.accepted_by===session()?.user?.id){status('This invitation has already been accepted. Your coach connection is active.','good');showConnected(inv);return}
+      if(inv.status!=='pending'){status(`This invitation is ${inv.status||'not available'} and cannot be accepted.`, 'bad');return}
+      const team=inv.team_id?' • Team invitation':' • Coach invitation';
+      status(`Invitation verified${team}. It expires ${inv.expires_at?new Date(inv.expires_at).toLocaleDateString():'soon'}. Accepting will connect this athlete profile to the coach who sent it.`,'good');
+      $('#coachInviteAccept').style.display='block';
+    }catch(e){status('Could not verify this invitation: '+e.message,'bad')}
+  }
+  function showConnected(inv){
+    $('#coachConnectedBadge')?.classList.add('show');
+    const t=$('#coachConnectedText');if(t)t.textContent=inv?.team_id?'Coach connection active • Team connection included':'Your MW coach connection is active.';
+    if($('#coachInviteControls'))$('#coachInviteControls').style.display='none';
+  }
+  async function acceptInvite(){
+    if(!currentInvite){status('Review the invitation first.','bad');return}
+    const ss=session(); if(!ss?.user?.id){status('Your MW session is missing. Sign out and sign in again.','bad');return}
+    const btn=$('#coachInviteAccept');btn.disabled=true;btn.textContent='Connecting…';
+    try{
+      const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:authHeaders({Prefer:'return=representation'}),body:JSON.stringify({p_invite_token:currentInvite.invite_token})});
+      const text=await r.text();let result=null;try{result=text?JSON.parse(text):null}catch{result=text}
+      if(!r.ok)throw new Error(result?.message||result?.hint||result?.details||String(result||`Supabase ${r.status}`));
+      const accepted={...currentInvite,status:'accepted',accepted_at:new Date().toISOString(),accepted_by:ss.user.id};
+      currentInvite=accepted; status('Invitation accepted. Your athlete profile is now connected to your coach.','good');showConnected(accepted);
+    }catch(e){status('Connection could not be completed: '+e.message,'bad');btn.disabled=false;btn.textContent='Accept Coach Invitation'}
+  }
+  async function loadExisting(){
+    const ss=session(); if(!ss?.access_token||!ss?.user?.email)return;
+    try{
+      const rows=await sb(`coach_invitations?select=id,coach_user_id,athlete_email,invite_type,team_id,status,invite_token,expires_at,accepted_at,accepted_by&status=eq.accepted&accepted_by=eq.${encodeURIComponent(ss.user.id)}&order=accepted_at.desc&limit=1`);
+      if(Array.isArray(rows)&&rows[0])showConnected(rows[0]);
+    }catch(e){console.warn('Coach connection status:',e.message)}
+  }
+  document.addEventListener('DOMContentLoaded',()=>{$('#coachInviteReview')?.addEventListener('click',reviewInvite);$('#coachInviteAccept')?.addEventListener('click',acceptInvite);setTimeout(loadExisting,900)});
+})();
+</script>
+<script>(function(){
+const m=document.getElementById('mwUtilityModal'),t=document.getElementById('mwUtilityTitle'),b=document.getElementById('mwUtilityBody');
+function o(x,h){t.textContent=x;b.innerHTML=h;m.classList.add('open')}function c(){m.classList.remove('open')}document.getElementById('mwUtilityClose')?.addEventListener('click',c);m?.addEventListener('click',e=>{if(e.target===m)c()});
+function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+document.getElementById('helpCenterBtn')?.addEventListener('click',()=>o('MW Help Center','<p><b>Profile:</b> Update sprint PRs and weight-room maxes, then save. Your official program week is controlled by MW Dynasty.</p><p><b>Program:</b> Complete prescribed sessions to record progress. Future weeks remain locked until official progression.</p><p><b>Coach MW:</b> Ask questions about training, pacing, strength, technique, recovery, race strategy, or the MW system.</p><p><b>Account:</b> Password reset, privacy information, support requests, and account deletion are available from Settings.</p>'));
+document.getElementById('reportIssueBtn')?.addEventListener('click',()=>{o('Report a Problem','<p>Send the MW team enough detail to reproduce the issue.</p><label>Category</label><select id="mwSupportCategory" style="width:100%;padding:10px;margin:6px 0 10px"><option value="app_issue">App issue</option><option value="account">Account</option><option value="training_data">Training data</option><option value="privacy">Privacy</option><option value="other">Other</option></select><label>What happened?</label><textarea id="mwSupportMessage" maxlength="4000" rows="6" style="width:100%;padding:10px;margin:6px 0 12px" placeholder="Tell us what happened and what you expected."></textarea><button id="mwSupportSend" class="save">SEND TO MW SUPPORT</button><p id="mwSupportStatus"></p>');document.getElementById('mwSupportSend').onclick=async()=>{const s=sess(),msg=document.getElementById('mwSupportMessage').value.trim(),st=document.getElementById('mwSupportStatus');if(!s?.access_token){st.textContent='Sign in again before sending a support request.';return}if(msg.length<5){st.textContent='Please add a little more detail.';return}const rp=window.mwGetRemoteProfile?.()||{};const payload={user_id:s.user?.id||rp.userId||null,athlete_id:rp.athleteId||null,category:document.getElementById('mwSupportCategory').value,message:msg,app_version:'24.18',device_info:navigator.userAgent};const r=await fetch(SB+'/rest/v1/support_requests',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});st.textContent=r.ok?'✓ Your support request was sent.':'Support request could not be sent. Please try again.';}});
+document.getElementById('privacyBtn')?.addEventListener('click',()=>location.href='/privacy.html');
+document.getElementById('termsBtn')?.addEventListener('click',()=>location.href='/terms.html');
+document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{const typed=prompt('Delete your MW Dynasty athlete account and associated training data? This cannot be undone. Type DELETE to continue.');if(typed!=='DELETE')return;const s=sess();if(!s?.access_token){alert('Sign in again before deleting your account.');return}if(!confirm('Final confirmation: permanently delete this MW Athlete account?'))return;const btn=document.getElementById('deleteAccountBtn');btn.disabled=true;btn.textContent='DELETING…';try{const r=await fetch(SB+'/functions/v1/mw-delete-account',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion failed');localStorage.clear();alert('Your MW Athlete account and associated account data were deleted.');location.replace('/')}catch(e){alert(e.message||'Account deletion failed.');btn.disabled=false;btn.textContent='DELETE ACCOUNT'}});
+})();</script>
+
+<script id="mw-production-invite-link-v1">
+(()=>{
+  async function autoCoachInvite(){
+    const q=new URLSearchParams(location.search), token=q.get('invite')||q.get('invite_token');
+    if(!token)return;
+    let ss=null;try{ss=JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{}
+    if(!ss?.access_token)return;
+    try{
+      const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
+      if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.message||d.details||'Invitation could not be accepted')}
+      q.delete('invite');q.delete('invite_token');const next=location.pathname+(q.toString()?'?'+q.toString():'');history.replaceState({},document.title,next);
+      document.querySelector('#coachConnectedBadge')?.classList.add('show');
+      const t=document.querySelector('#coachConnectedText');if(t)t.textContent='Your MW coach connection is active.';
+    }catch(e){console.warn('MW automatic coach invitation:',e.message)}
+  }
+  window.addEventListener('load',()=>setTimeout(autoCoachInvite,1600));
+})();
+</script>
+</body></html>

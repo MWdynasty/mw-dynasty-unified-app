@@ -1,0 +1,118 @@
+{
+  "knowledgeVersion": "coach-mw-supporting-science-2026-09-12",
+  "source": {
+    "title": "Track & Field Coaching Essentials",
+    "publisherContext": "USA Track & Field coaching text supplied by the MW Dynasty founder as screenshots",
+    "sourceImagesReviewed": 85,
+    "imageRange": "IMG_6779 through IMG_6864, including numbered duplicate-name variants",
+    "coverage": [
+      "contents and chapter routing",
+      "sport biomechanics, approximately book pages 27-37",
+      "sport physiology, approximately book pages 38-47",
+      "training design, approximately book pages 48-59",
+      "biomotor training for speed and power events, approximately book pages 60-82",
+      "sprint mechanics and sprint training material, approximately book pages 85-109"
+    ],
+    "storageRule": "Store and use distilled coaching principles and page provenance. Do not reproduce long textbook passages or imply that outside wording is original MW authorship."
+  },
+  "authority": {
+    "level1": "Coach Mustaqeem Williams' approved MW philosophy, exercise library, tier rules, and versioned 41-week prescriptions",
+    "level2": "The athlete's secured profile, official week/day, event, tier, readiness, completion, PR, and strength data",
+    "level3": "Supporting sport-science principles distilled from the supplied coaching text",
+    "conflictRule": "Never allow supporting material to silently replace an exact MW prescription. Identify a conflict, explain it, and route consequential program changes to the founder/coach approval workflow.",
+    "exerciseRule": "Do not introduce exercises outside the approved MW library as official MW work unless the founder approves them. Supporting material may explain purpose, progression, recovery, or technique."
+  },
+  "mwSynthesis": {
+    "corePhilosophy": [
+      "Track quality comes first; lifting and circuits support sprint performance.",
+      "Protect mechanics, posture, rhythm, and target execution before adding volume.",
+      "A workout must fit the athlete, event, phase, prior session, next session, and long-term peak.",
+      "Build acceleration before maximal velocity and maximal velocity before demanding speed endurance.",
+      "Manipulate volume, intensity, frequency, density, complexity, and recovery; pace alone does not create an appropriate tier.",
+      "Competition controls the week, and freshness becomes increasingly valuable near championship phases.",
+      "Do not use make-up work, extra lifting, or junk volume when it harms the next high-quality sprint exposure.",
+      "Develop the athlete for the long term; short-term performance must not compromise health or future development."
+    ],
+    "trainingDesign": [
+      "Periodization is purposeful planning of timing, sequence, interaction, and distribution of training stress toward competition goals.",
+      "Adaptation accumulates across consistent training; one session rarely creates an athlete, while one poorly chosen session can cause harm.",
+      "Variation should be planned rather than random. Modify volume, intensity, frequency, recovery, sequence, or exercise composition while preserving the phase objective.",
+      "Context governs programming: today's work must make sense after yesterday and must prepare rather than sabotage tomorrow.",
+      "Overload can come from volume, intensity, or frequency, but volume and intensity should not both rise carelessly.",
+      "Different qualities recover and adapt at different rates. High-neural work such as speed and maximal strength generally requires more complete recovery than metabolic capacity work.",
+      "Every session needs a clear theme, measurable objective, safe environment, available equipment, work-to-rest plan, and contingency adjustment.",
+      "Record volume, intensity, completion, and athlete response so future decisions are evidence-based."
+    ],
+    "biomechanics": [
+      "Use force in the intended direction. Backward force application against the ground contributes to forward displacement.",
+      "Impulse depends on force applied over available time; sprint drills should improve useful force application rather than chase appearance alone.",
+      "Efficient actions generally sequence from larger proximal segments toward smaller distal segments with overlapping timing.",
+      "Postural stability and alignment help transmit force, conserve energy, support relaxation, and reduce technical distortion.",
+      "Head and pelvic alignment influence arm action, leg efficiency, balance, and elastic energy use.",
+      "Mechanics must be evaluated at realistic speed because technical problems may appear or change as velocity and fatigue rise.",
+      "Use video and observation to identify the cause of an error before prescribing a correction; do not coach only the visible symptom."
+    ],
+    "sprintDevelopment": [
+      "Acceleration, maximal velocity, and speed endurance are connected but distinct abilities with different technical and recovery demands.",
+      "Acceleration develops through progressive projection, force application, increasing stride length, and a patient transition toward upright running.",
+      "Do not force an immediate upright posture or reach for stride length; allow the transition to unfold while maintaining useful force direction.",
+      "Maximal-velocity work requires relaxation, posture, elastic action, appropriate frontside mechanics, and generous recovery.",
+      "Speed endurance should be introduced after the athlete demonstrates acceleration and speed competence, then progressed by event and training age.",
+      "The 100m emphasizes acceleration and maximal velocity; the 200m adds curve execution and longer speed maintenance; the 400m retains speed foundations while requiring more race rhythm, special endurance, and lactate-tolerance preparation.",
+      "High-quality speed work should stop or be adjusted when times fall off materially or mechanics deteriorate."
+    ],
+    "warmupAndCooldown": [
+      "Warm-up content must match the theme and demands of the coming session.",
+      "Progress warm-ups from simple to complex, easy to hard, and slower to faster while developing temperature, mobility, coordination, and neuromuscular readiness.",
+      "Include athlete-specific remedial or injury-prevention needs without allowing warm-up volume to exhaust the athlete.",
+      "Cool-down reverses the demand: move from harder to easier and complex to simple, supporting a return toward readiness and recovery.",
+      "Pre-meet routines should be rehearsed so race-day preparation is familiar rather than experimental."
+    ],
+    "strengthPowerAndPlyometrics": [
+      "Strength work must be relevant to the event and coordinated with sprint stress rather than treated as a separate bodybuilding program.",
+      "Speed, strength, elastic strength, skill, and recovery can complement one another when sequenced well; high neural and high metabolic demands can conflict when combined carelessly.",
+      "Plyometrics develop stretch-shortening-cycle qualities and should progress by contacts, displacement, direction, speed, complexity, and athlete readiness.",
+      "In-place, short-response, and long-response plyometrics have different demands; young or inexperienced athletes begin with landing control and lower complexity.",
+      "Core training should support control in sagittal, frontal, and transverse planes and dynamic stabilization, not merely accumulate abdominal repetitions.",
+      "Circuit training can develop muscular endurance and work capacity, but load, duration, repetitions, and recovery must match the session purpose.",
+      "Use the athlete's established Power Clean, Front Squat, Back Squat, and Deadlift maximums when percentage loading is appropriate; absence of a max triggers technique-based loading rather than forced testing.",
+      "Reduce final accessories or support volume first when weight-room fatigue threatens sprint quality."
+    ],
+    "recoveryAndRestoration": [
+      "Recovery is part of training, not an optional addition.",
+      "Rest means absence of training; active rest uses different activity; restorative training uses low-demand movement to support readiness.",
+      "Schedule restoration especially around high-demand days, travel, competition, unusual soreness, or accumulated fatigue.",
+      "Hydration, nutrition, sleep, outside stress, and the athlete's full 24-hour environment influence adaptation and must inform decisions.",
+      "Never withhold water as punishment. Avoid diagnosing nutrition or medical conditions; refer concerning symptoms to qualified professionals."
+    ],
+    "youthAndDevelopment": [
+      "Chronological age does not equal biological maturity. Young athletes of the same age may differ substantially in readiness.",
+      "Athletes age 10-13 default to Foundation safeguards even when talented, with lower volume, simpler progressions, landing control, and supervised technique-based lifting.",
+      "Youth success or early maturation is not proof that adult training loads are appropriate.",
+      "Avoid overuse, excessive specialization, burnout, forced maximal sprinting, and required 1RM testing for children.",
+      "Provide equal developmental opportunity and adapt teaching to the individual rather than lowering the quality of instruction."
+    ]
+  },
+  "tierApplication": {
+    "foundation": [
+      "Preserve the weekly objective while reducing total volume, rep distance when necessary, impact contacts, equipment demands, and technical complexity.",
+      "Use longer recovery, teaching-oriented repetitions, simple start positions, and technique-based strength loads.",
+      "Do not interpret a fast youth PR as permission to bypass age and maturity safeguards."
+    ],
+    "development": [
+      "Preserve the phase objective with controlled volume, progressive blocks and plyometrics, moderate strength loading, and explicit quality gates.",
+      "Advance when recent consistency, high-speed exposure, technique, and recovery support the change—not merely because a calendar week arrived."
+    ],
+    "performance": [
+      "Use the complete event-specific MW prescription when health, technical readiness, recovery, and competition context support it.",
+      "Higher qualification permits specificity and precision, not unlimited volume. Stop while speed and mechanics remain sharp."
+    ]
+  },
+  "coachMwBehavior": [
+    "Explain why the assigned work fits the athlete's event, tier, phase, and recent state.",
+    "Distinguish an MW rule, an athlete-specific fact, and supporting textbook science when that distinction matters.",
+    "Do not quote or recreate extensive source text, tables, or complete sample programs.",
+    "For pain, altered gait, neurological symptoms, severe swelling, illness, or other red flags, stop high-speed recommendations and encourage appropriate evaluation.",
+    "AI may detect, analyze, and recommend. A consequential change for a coached athlete requires human coach approval before execution."
+  ]
+}

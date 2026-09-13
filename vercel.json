@@ -1,0 +1,103 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "functions": {
+    "api/mw.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/chat",
+      "destination": "/api/mw?route=chat"
+    },
+    {
+      "source": "/api/me",
+      "destination": "/api/mw?route=me"
+    },
+    {
+      "source": "/api/pace-chat",
+      "destination": "/api/mw?route=pace-chat"
+    },
+    {
+      "source": "/api/profile",
+      "destination": "/api/mw?route=profile"
+    },
+    {
+      "source": "/api/program",
+      "destination": "/api/mw?route=program"
+    },
+    {
+      "source": "/api/smart-entry",
+      "destination": "/api/mw?route=smart-entry"
+    },
+    {
+      "source": "/api/season-calendar",
+      "destination": "/api/mw?route=season-calendar"
+    },
+    {
+      "source": "/api/speak",
+      "destination": "/api/mw?route=speak"
+    },
+    {
+      "source": "/api/status",
+      "destination": "/api/mw?route=status"
+    },
+    {
+      "source": "/api/coach/access",
+      "destination": "/api/mw?route=coach/access"
+    },
+    {
+      "source": "/api/coach/athlete",
+      "destination": "/api/mw?route=coach/athlete"
+    },
+    {
+      "source": "/api/coach/attendance",
+      "destination": "/api/mw?route=coach/attendance"
+    },
+    {
+      "source": "/api/coach/coach-mw",
+      "destination": "/api/mw?route=coach/coach-mw"
+    },
+    {
+      "source": "/api/coach/program",
+      "destination": "/api/mw?route=coach/program"
+    },
+    {
+      "source": "/api/coach/progression",
+      "destination": "/api/mw?route=coach/progression"
+    },
+    {
+      "source": "/api/coach/roster",
+      "destination": "/api/mw?route=coach/roster"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), geolocation=(self), microphone=(self)"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://keqgunlfwhjgcsurynef.supabase.co; media-src 'self' data: blob:; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://keqgunlfwhjgcsurynef.supabase.co"
+        }
+      ]
+    }
+  ]
+}

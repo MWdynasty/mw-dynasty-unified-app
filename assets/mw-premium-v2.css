@@ -1,0 +1,304 @@
+/* MW Dynasty V2.0 — Premium Unified Product Design System
+   One visual language across Athlete, Coach, Pace, Distance, signup and legal/support.
+   No third-party brand marks or shoe-brand assets are used. */
+:root{
+  --mw-font:"Avenir Next","SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  --mw-black:#050403;
+  --mw-black-2:#090704;
+  --mw-ink:#0e0c09;
+  --mw-panel:#11100d;
+  --mw-panel-2:#17130d;
+  --mw-cream:#f7f1e2;
+  --mw-muted:#b8af9d;
+  --mw-gold:#e3ac35;
+  --mw-gold-hi:#f7d679;
+  --mw-gold-deep:#8a5b10;
+  --mw-line:rgba(227,172,53,.34);
+  --mw-line-hi:rgba(247,214,121,.68);
+  --mw-glow:rgba(227,172,53,.18);
+  --mw-radius:24px;
+  --mw-shadow:0 28px 80px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+html,body,button,input,select,textarea{font-family:var(--mw-font)!important}
+html{background:var(--mw-black)!important}
+body{
+  color:var(--mw-cream)!important;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(227,172,53,.09),transparent 31%),
+    radial-gradient(circle at 100% 0%,rgba(247,214,121,.035),transparent 24%),
+    linear-gradient(180deg,#0b0804 0%,#050403 38%,#020201 100%)!important;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.36;
+  background:
+    linear-gradient(118deg,transparent 0 47%,rgba(227,172,53,.035) 47.2%,transparent 47.7% 100%),
+    radial-gradient(circle at 12% 16%,rgba(255,255,255,.025),transparent 15%);
+}
+*{scrollbar-color:rgba(227,172,53,.36) rgba(255,255,255,.03)}
+::selection{background:rgba(227,172,53,.28);color:#fff}
+
+h1,h2,h3,h4,h5,h6,.logo,.title,.brand-title,.mwLoginBrandName,.coach-login-coach{
+  font-family:var(--mw-font)!important;
+  letter-spacing:-.035em!important;
+  font-weight:850!important;
+}
+p,.muted,.note,.sub,.brand-sub{letter-spacing:-.005em!important}
+.eyebrow,.kicker,.sub,.mwLoginBrandTag,.coach-login-tagline,.brand-tag,.mw-chip,.premiumChip{
+  letter-spacing:.16em!important;text-transform:uppercase!important;font-weight:800!important
+}
+
+/* One premium card language */
+.card,.heroCard,.entryHero,.question,.result,.entryStatus,.faithCard,.settingGroup,.panel,.tile,.section,.mini-card,.stat,.quick,.ai-card,.module,.overview,.mw-modal-card,.mw-week-banner,.mw-session-card,.mw-lift-section,.mw-coach-note,.mw-day-card,.mw-strength-block,.mwUtilityBox,.handoff,.gpsCard>div,.target,.repRow,.notice,.actionCard,.coachContext,.premiumRail{
+  background:linear-gradient(155deg,rgba(20,18,14,.97),rgba(7,7,6,.99))!important;
+  border:1px solid var(--mw-line)!important;
+  border-radius:var(--mw-radius)!important;
+  box-shadow:var(--mw-shadow)!important;
+}
+.card,.panel,.section,.heroCard,.entryHero,.settingGroup,.overview,.mw-modal-card{padding:20px!important}
+.card:hover,.tile:hover,.actionCard:hover,.module:hover,.quick:hover{border-color:rgba(247,214,121,.55)!important}
+
+/* Unified controls */
+input,select,textarea,.mwLoginField input,.coach-field input,.coach-apply-form input,.coach-apply-form select,.coach-apply-form textarea{
+  background:rgba(7,7,6,.92)!important;color:#fff!important;border:1px solid rgba(227,172,53,.32)!important;
+  border-radius:14px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important
+}
+input::placeholder,textarea::placeholder{color:#7f786c!important}
+input:focus,select:focus,textarea:focus,.mwLoginField input:focus,.coach-field input:focus{
+  border-color:var(--mw-gold-hi)!important;outline:none!important;box-shadow:0 0 0 3px rgba(227,172,53,.10)!important
+}
+button,.button,.action,.save,.submit,.entryAction,.mwLoginButton,.coach-login-submit,.primary{
+  border-radius:14px!important;font-family:var(--mw-font)!important;font-weight:850!important;letter-spacing:.035em!important
+}
+.mwLoginButton,.coach-login-submit,.submit,.entryAction,.action,button.primary,.primary,.save{
+  background:linear-gradient(105deg,#9d6812 0%,#e3ac35 28%,#f7d679 54%,#d89925 76%,#8b5910 100%)!important;
+  color:#080603!important;border:1px solid #f6d77f!important;
+  box-shadow:0 12px 34px rgba(227,172,53,.20),inset 0 1px 0 rgba(255,255,255,.42)!important;
+}
+.mwLoginButton:active,.coach-login-submit:active,.action:active,.save:active,button.primary:active{transform:translateY(1px)!important}
+.ghost,.secondary,.back,.switch,.signout,.entryGhost,.accountLink,.mode,.mwHubBack{
+  background:rgba(8,8,7,.88)!important;color:var(--mw-gold-hi)!important;border:1px solid var(--mw-line)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important
+}
+a,.link-btn,.mwLoginLink,.coach-forgot,.smalllink{color:var(--mw-gold-hi)!important}
+
+/* =========================================================
+   AUTH — Athlete and Coach deliberately share the SAME layout
+   ========================================================= */
+#mwAuth.mwAthleteLoginV26,.mwLoginStage,.mwLoginMain,.coach-login-screen,.coach-login-stage{
+  background:var(--mw-black)!important;color:var(--mw-cream)!important
+}
+.mwLoginStage,.coach-login-stage{
+  min-height:100svh!important;position:relative!important;overflow:hidden!important;
+  display:block!important;padding:0!important
+}
+.mwLoginMain,.coach-login-content{
+  min-height:100svh!important;position:relative!important;background:transparent!important;overflow:hidden!important
+}
+.mwLoginRunner,.coach-login-bg{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  background-size:cover!important;background-position:center 22%!important;background-repeat:no-repeat!important;
+  filter:saturate(.62) sepia(.16) contrast(1.08) brightness(.68)!important;transform:none!important
+}
+.mwLoginRunner{
+  background-image:linear-gradient(180deg,rgba(5,4,3,.06) 0%,rgba(5,4,3,.16) 34%,rgba(5,4,3,.88) 74%,#050403 100%),url('/assets/mw-v2-athlete-hero.jpg')!important
+}
+.coach-login-bg{
+  background-image:linear-gradient(180deg,rgba(5,4,3,.04) 0%,rgba(5,4,3,.12) 34%,rgba(5,4,3,.88) 74%,#050403 100%),url('/assets/mw-v2-coach-hero.jpg')!important
+}
+.mwLoginStory:after,.coach-login-stage:after,.coach-login-bg:after{
+  content:""!important;position:absolute!important;inset:0!important;pointer-events:none!important;
+  background:radial-gradient(circle at 50% 25%,transparent 0 18%,rgba(0,0,0,.12) 48%,rgba(0,0,0,.62) 100%)!important
+}
+.mwLoginTopbar,.coach-login-header{
+  position:absolute!important;z-index:8!important;left:20px!important;right:20px!important;top:max(20px,env(safe-area-inset-top))!important;
+  display:block!important;pointer-events:none!important
+}
+.mwLoginBrand,.coach-login-brand{display:block!important;line-height:.90!important}
+.mwLoginBrandMark,.coach-login-mw{
+  display:inline!important;color:var(--mw-gold-hi)!important;font-size:clamp(40px,9vw,62px)!important;font-style:italic!important;
+  font-weight:900!important;letter-spacing:-.10em!important;text-shadow:0 8px 26px rgba(0,0,0,.55)!important
+}
+.mwLoginBrandName,.coach-login-coach{
+  display:inline!important;margin-left:10px!important;color:#fff!important;font-size:clamp(30px,7vw,50px)!important;
+  font-weight:900!important;letter-spacing:-.055em!important
+}
+.mwLoginBrandTag,.coach-login-tagline{
+  margin-top:8px!important;color:var(--mw-gold)!important;font-size:10px!important;letter-spacing:.18em!important;font-weight:800!important
+}
+.mwLoginDesktopNav,.mwLoginFuture,.coach-login-nav,.coach-login-mission,.mwLoginStoryCopy,.coach-login-copy,.coach-login-features,.mwLoginFeatureBar,.coach-login-person{
+  display:none!important
+}
+.mwLoginCard,.coach-login-card{
+  position:absolute!important;z-index:12!important;left:16px!important;right:16px!important;bottom:max(20px,env(safe-area-inset-bottom))!important;
+  top:auto!important;transform:none!important;width:auto!important;max-width:520px!important;margin:0 auto!important;
+  padding:22px!important;border-radius:26px!important;border:1px solid var(--mw-line-hi)!important;
+  background:linear-gradient(180deg,rgba(14,12,9,.96),rgba(5,5,4,.995))!important;
+  box-shadow:0 30px 90px rgba(0,0,0,.66),inset 0 1px 0 rgba(255,255,255,.05)!important;
+  backdrop-filter:blur(20px)!important;-webkit-backdrop-filter:blur(20px)!important
+}
+.coach-login-card-wrap{position:static!important}
+.mwLoginCardHead h2,.coach-login-card h2{margin:0 0 7px!important;color:#fff!important;font-size:30px!important;line-height:1!important}
+.mwLoginCardHead p,.coach-login-card>p{margin:0 0 17px!important;color:var(--mw-muted)!important;font-size:13px!important;line-height:1.45!important}
+.mwLoginField,.coach-field{position:relative!important;margin:10px 0!important;border:0!important;background:transparent!important}
+.mwLoginField input,.coach-field input{height:54px!important;font-size:16px!important;padding-left:45px!important}
+.mwLoginField>span,.coach-field>span{position:absolute!important;z-index:2!important;left:16px!important;top:50%!important;transform:translateY(-50%)!important;color:#d8caa9!important}
+.mwLoginRow,.coach-login-options{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:12px!important;margin:10px 0!important}
+.mwLoginRemember,.coach-remember{color:#eee7d8!important;font-size:11px!important}
+.mwLoginButton,.coach-login-submit{height:56px!important;width:100%!important;font-size:17px!important;text-transform:none!important}
+.mwLoginDivider,.coach-login-divider{display:grid!important;grid-template-columns:1fr auto 1fr!important;gap:12px!important;align-items:center!important;margin:14px 0 7px!important;color:#d7cfbf!important;font-size:9px!important;letter-spacing:.14em!important}
+.mwLoginDivider span,.coach-login-divider span{height:1px!important;background:rgba(227,172,53,.26)!important}
+.mwLoginAccessNote,.coach-login-contact{font-size:10px!important;color:var(--mw-muted)!important;text-align:center!important;margin-top:8px!important}
+.coach-login-mobile-brand{display:none!important}
+.coach-login-content{display:block!important}
+
+@media(min-width:760px){
+  .mwLoginCard,.coach-login-card{left:auto!important;right:7vw!important;bottom:8vh!important;width:min(460px,38vw)!important}
+  .mwLoginTopbar,.coach-login-header{left:6vw!important;top:6vh!important}
+  .mwLoginRunner,.coach-login-bg{background-position:center 30%!important}
+}
+
+/* =========================================================
+   ATHLETE — premium editorial sports product system
+   ========================================================= */
+body.mw-auth-ready .app,.app{background:transparent!important}
+body.mw-auth-ready .app{max-width:620px!important;padding:22px 18px 118px!important}
+.top{padding:4px 2px 12px!important;border:0!important}
+.logo{font-size:26px!important;line-height:.95!important;color:#fff!important}
+.logo b{color:var(--mw-gold-hi)!important;font-style:italic!important}
+.sub{color:var(--mw-gold)!important;font-size:9px!important}
+.gearBtn{width:48px!important;height:48px!important;border-radius:16px!important;background:rgba(8,8,7,.88)!important;border:1px solid var(--mw-line)!important;color:var(--mw-gold-hi)!important}
+.homeBrand{
+  position:relative!important;height:260px!important;overflow:hidden!important;margin:4px 0 18px!important;
+  border:1px solid var(--mw-line-hi)!important;border-radius:28px!important;background:#090705!important;box-shadow:var(--mw-shadow)!important
+}
+.homeBrand img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 35%!important;display:block!important;filter:saturate(.68) sepia(.13) contrast(1.08) brightness(.82)!important}
+.homeBrand:after{content:"MW DYNASTY  ·  SPRINT PERFORMANCE";position:absolute;left:18px;right:18px;bottom:16px;color:#fff;font-size:10px;font-weight:850;letter-spacing:.17em;text-shadow:0 2px 16px #000;padding-top:70px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.76));}
+.homeGrid{display:grid!important;gap:14px!important}
+.heroCard h2{font-size:32px!important;line-height:1.03!important;margin:10px 0!important}
+.metricGrid{gap:9px!important}
+.metric{border:1px solid rgba(227,172,53,.22)!important;background:rgba(7,7,6,.72)!important;border-radius:18px!important;padding:14px 8px!important}
+.metric strong{color:var(--mw-gold-hi)!important}
+.actionGrid{gap:10px!important}
+.actionCard{min-height:112px!important;padding:17px!important;text-align:left!important;position:relative!important;overflow:hidden!important}
+.actionCard:after{content:"→";position:absolute;right:16px;top:15px;color:var(--mw-gold)!important;font-size:18px!important}
+.actionCard b{color:#fff!important;font-size:13px!important;letter-spacing:.04em!important;padding-right:24px!important}
+.actionCard .muted{color:var(--mw-muted)!important;margin-top:8px!important;display:block!important}
+.nav{
+  background:rgba(5,4,3,.92)!important;border-top:1px solid var(--mw-line)!important;
+  backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;
+  box-shadow:0 -20px 60px rgba(0,0,0,.55)!important;padding-top:9px!important
+}
+.nav button{color:#9f9789!important;font-weight:750!important;letter-spacing:.04em!important}
+.nav button.active{background:linear-gradient(180deg,rgba(247,214,121,.98),rgba(214,154,40,.95))!important;color:#0b0803!important;border-radius:14px!important}
+.nav b{font-size:20px!important}
+
+/* Athlete Coach AI — remove blue tech look */
+.hero{border:1px solid var(--mw-line)!important;border-radius:28px!important;background:linear-gradient(145deg,#15110a,#050403)!important;overflow:hidden!important;padding:18px!important;min-height:330px!important;box-shadow:var(--mw-shadow)!important}
+.aiHead{filter:saturate(.55) sepia(.18) contrast(1.08) brightness(.74)!important}
+.system,.premiumChip,.connectionNotice,.faithCard{border-color:var(--mw-line)!important;background:rgba(11,9,6,.84)!important}
+.system span,.voice,.speak,.quick i{color:var(--mw-gold-hi)!important}
+.ask{border-color:var(--mw-line-hi)!important;background:rgba(8,7,5,.96)!important;border-radius:20px!important}
+.round,.attach{border-color:var(--mw-line)!important;background:#0a0907!important;color:var(--mw-gold-hi)!important}
+.me,.coach{background:#12100c!important;border-color:rgba(227,172,53,.24)!important}
+.quick button{background:#0c0a07!important;border-color:var(--mw-line)!important;color:#fff!important;border-radius:16px!important}
+.coverage span{color:var(--mw-gold-hi)!important;border-color:var(--mw-line)!important;background:#11100c!important}
+.strengthSection h4{color:var(--mw-gold-hi)!important}
+
+/* =========================================================
+   COACH — same system, scaled for a professional workspace
+   ========================================================= */
+.frame,.page,.shell,.main{background:transparent!important}
+.frame{border-color:var(--mw-line)!important;background:#080705!important;box-shadow:var(--mw-shadow)!important}
+.sidebar,.side-nav,.side-account{background:#060504!important;border-color:var(--mw-line)!important}
+.side-logo .mw-mark,.brand-title,.brand-tag,.eyebrow,.link-btn{color:var(--mw-gold-hi)!important}
+.nav-btn{border-radius:12px!important;color:#bdb5a5!important}
+.nav-btn.active{background:linear-gradient(105deg,#a36a11,#e3ac35 52%,#f2cf70)!important;color:#090603!important}
+.hero{
+  background:linear-gradient(100deg,#181108,#0c0905 58%,#060504)!important;
+  border-color:var(--mw-line)!important;border-radius:28px!important;box-shadow:var(--mw-shadow)!important
+}
+.hero-art{filter:saturate(.62) sepia(.16) contrast(1.08) brightness(.80)!important;background-position:center!important}
+.hero-art:after{background:linear-gradient(90deg,#161008 0,rgba(16,11,5,.45) 45%,transparent 80%)!important}
+.hero-copy h1{letter-spacing:-.045em!important}
+.hero-badge{background:rgba(6,5,4,.78)!important;border-color:var(--mw-line)!important;color:var(--mw-gold-hi)!important;border-radius:14px!important}
+.page-wrap{max-width:1280px!important}
+.panel,.section,.tile,.mini-card,.stat,.quick,.ai-card,.module,.overview{border-radius:20px!important}
+.topbar,.page-top{border-color:rgba(227,172,53,.15)!important}
+.search{background:#090806!important;border-color:var(--mw-line)!important;border-radius:16px!important}
+
+/* coach application modal shares auth styling */
+.coach-apply-backdrop{background:rgba(0,0,0,.86)!important;backdrop-filter:blur(12px)!important}
+.coach-apply-card{background:linear-gradient(180deg,#12100c,#050403)!important;border-color:var(--mw-line-hi)!important;border-radius:28px!important;box-shadow:0 36px 100px rgba(0,0,0,.7)!important}
+.coach-apply-head p,.coach-apply-foot{color:var(--mw-muted)!important}
+.coach-apply-close{background:#090806!important;border-color:var(--mw-line)!important;color:#fff!important}
+
+/* =========================================================
+   PACE AI + DISTANCE PACER — same luxury product language
+   ========================================================= */
+main,.shell{color:var(--mw-cream)!important}
+.mwHubBack{top:max(12px,env(safe-area-inset-top))!important;border-radius:999px!important;background:rgba(5,4,3,.90)!important;backdrop-filter:blur(18px)!important}
+.brand-stage{
+  min-height:240px!important;border-radius:28px!important;border:1px solid var(--mw-line-hi)!important;
+  background-image:linear-gradient(180deg,rgba(5,4,3,.05),rgba(5,4,3,.78)),url('/assets/mw-v2-athlete-hero.jpg')!important;
+  background-size:cover!important;background-position:center 34%!important;box-shadow:var(--mw-shadow)!important
+}
+.brand-stage img{display:none!important}
+.brand-overlay{left:20px!important;right:20px!important;bottom:18px!important}
+.brand-overlay .brand-chip{background:rgba(5,4,3,.72)!important;border-color:var(--mw-line)!important}
+.targetBig{color:var(--mw-gold-hi)!important}
+.pill{border-color:var(--mw-line)!important;color:var(--mw-gold-hi)!important;background:#0d0b08!important}
+.bubble.me,.bubble.ai{background:#11100d!important;border-color:var(--mw-line)!important}
+
+/* Distance brand header: remove embedded-image dependency */
+.shell>.brand{position:relative!important;min-height:210px!important;padding:20px!important;border:1px solid var(--mw-line-hi)!important;border-radius:28px!important;overflow:hidden!important;background-image:linear-gradient(90deg,rgba(5,4,3,.92),rgba(5,4,3,.38)),url('/assets/mw-v2-performance-hero.jpg')!important;background-size:cover!important;background-position:center!important;box-shadow:var(--mw-shadow)!important;align-items:flex-end!important}
+.shell>.brand img{display:none!important}
+.shell>.brand h1{font-size:31px!important;line-height:1!important;margin:5px 0!important}
+.shell>.brand p{color:#e6ddca!important;margin:4px 0!important}
+.modes{gap:10px!important}
+.mode{border-radius:16px!important;background:#0b0907!important}
+.mode.active{background:linear-gradient(180deg,rgba(227,172,53,.17),rgba(8,7,5,.95))!important;color:var(--mw-gold-hi)!important;border-color:var(--mw-line-hi)!important}
+.accuracy{border-color:var(--mw-line)!important;color:var(--mw-gold-hi)!important;background:#0b0907!important}
+
+/* =========================================================
+   SIGNUP + SUPPORT/LEGAL
+   ========================================================= */
+.wrap{font-family:var(--mw-font)!important;color:var(--mw-cream)!important}
+.wrap .brand,.wrap .card{border-color:var(--mw-line)!important}
+.wrap .brand h1{font-size:38px!important;letter-spacing:-.045em!important}
+.wrap .card{border-radius:24px!important;background:linear-gradient(155deg,#12100d,#060504)!important;box-shadow:var(--mw-shadow)!important}
+body>h1:first-child{font-size:40px!important;letter-spacing:-.045em!important}
+body>h2{margin-top:30px!important;color:var(--mw-gold-hi)!important}
+
+/* responsive refinement */
+@media(max-width:640px){
+  body.mw-auth-ready .app{padding:16px 14px 110px!important}
+  .homeBrand{height:220px!important;border-radius:22px!important}
+  .heroCard h2{font-size:29px!important}
+  .card,.panel,.section,.heroCard,.entryHero,.settingGroup,.overview,.mw-modal-card{padding:16px!important}
+  .mwLoginCard,.coach-login-card{left:10px!important;right:10px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;padding:17px 15px!important;border-radius:22px!important}
+  .mwLoginBrandName,.coach-login-coach{font-size:30px!important}
+  .mwLoginBrandMark,.coach-login-mw{font-size:40px!important}
+  .mwLoginCardHead h2,.coach-login-card h2{font-size:25px!important}
+  .mwLoginField input,.coach-field input{height:50px!important}
+  .mwLoginButton,.coach-login-submit{height:52px!important}
+  .shell>.brand{min-height:180px!important;border-radius:22px!important}
+}
+
+/* Premium motion and finishing details */
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+button,.actionCard,.module,.tile,.card,.panel,.section,.heroCard,.gearBtn,.nav button{transition:transform .18s ease,border-color .18s ease,background-color .18s ease,box-shadow .18s ease,opacity .18s ease!important}
+button:active,.actionCard:active,.module:active,.tile:active{transform:scale(.985)!important}
+.view.active,.page,.coach-login-card,.mwLoginCard{animation:mwV2Reveal .34s cubic-bezier(.2,.8,.2,1) both}
+@keyframes mwV2Reveal{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.mwLoginCard,.coach-login-card{animation-name:mwV2CardReveal}
+@keyframes mwV2CardReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Decorative signature line used across product headings */
+.top:after,.page-top:after,.section-head:after{content:"";display:block;height:1px;background:linear-gradient(90deg,var(--mw-gold),rgba(227,172,53,.08),transparent);opacity:.62}
+.top{display:grid!important;grid-template-columns:1fr auto!important;gap:12px!important}.top:after{grid-column:1/-1}
+
+/* Prevent accidental blue remnants from older product themes */
+body.mw-auth-ready{--blue:var(--mw-gold)!important;--blue2:var(--mw-gold-hi)!important}
+.blue,.gold{--accent:var(--mw-gold)!important;--accent2:var(--mw-gold-deep)!important;--line:var(--mw-line)!important}

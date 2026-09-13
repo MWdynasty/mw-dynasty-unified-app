@@ -1,0 +1,59 @@
+/* MW Dynasty V2.3 — exact approved Athlete & Coach dashboard hero art */
+:root{--mw-v23-gold:#d8aa4c;--mw-v23-deep:#02070d}
+
+/* Athlete dashboard: show the exact approved Athlete Performance Hub artwork. */
+body.mw-auth-ready .homeBrand,
+.homeBrand{
+  margin-top:18px!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:0!important;
+  border:1px solid rgba(216,170,76,.72)!important;
+  border-radius:26px!important;
+  overflow:hidden!important;
+  background:#02070d!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.42),0 0 0 1px rgba(255,218,129,.04) inset!important;
+}
+body.mw-auth-ready .homeBrand img,
+.homeBrand img{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  filter:none!important;
+}
+body.mw-auth-ready .homeBrand:after,
+.homeBrand:after{content:none!important;display:none!important}
+
+/* Coach dashboard: same exact approved Coach Performance Hub visual for every coach tier. */
+.mw-coach-dashboard-visual{
+  width:100%;
+  margin:18px 0 22px;
+  padding:0;
+  border:1px solid rgba(216,170,76,.72);
+  border-radius:26px;
+  overflow:hidden;
+  background:#02070d;
+  box-shadow:0 24px 70px rgba(0,0,0,.42),0 0 0 1px rgba(255,218,129,.04) inset;
+}
+.mw-coach-dashboard-visual img{
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  object-position:center;
+}
+
+/* Preserve the premium black / gold / deep-blue design around the approved artwork. */
+.app,.page{background:linear-gradient(180deg,#05080c 0%,#02060a 100%)!important}
+.heroCard,.section,.panel,.tile,.mini-card,.stat,.module,.quick,.ai-card,.overview{
+  border-color:rgba(216,170,76,.34)!important;
+}
+
+@media(max-width:620px){
+  body.mw-auth-ready .homeBrand,.homeBrand,.mw-coach-dashboard-visual{border-radius:22px!important}
+  .mw-coach-dashboard-visual{margin-top:14px;margin-bottom:18px}
+}

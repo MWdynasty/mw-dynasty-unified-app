@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050403">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MW Dynasty">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/favicon.png" type="image/png">
+<title>MW Dynasty</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.role-wrap{position:fixed;inset:0;display:flex;justify-content:center;align-items:stretch;background:#050403}
+.role-stage{position:relative;height:100dvh;width:min(100vw,56.25dvh);max-width:100vw;overflow:hidden;background:#050403}
+.role-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.hotspot{position:absolute;top:55.0%;height:36.5%;border:0;background:transparent;color:transparent;cursor:pointer;z-index:5;-webkit-tap-highlight-color:transparent;border-radius:26px}.hotspot:active{background:rgba(241,198,107,.045)}
+.hotspot:focus-visible{outline:3px solid rgba(247,199,104,.95);outline-offset:-3px}
+#athleteChoice{left:5.1%;width:43.7%}
+#coachChoice{left:51.2%;width:43.7%}
+@media (min-width:700px){.role-stage{box-shadow:0 0 80px rgba(0,0,0,.78)}}
+</style>
+<link rel="stylesheet" href="/assets/mw-unified-theme.css">
+<link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
+<link rel="stylesheet" href="/assets/mw-responsive-v25.css">
+</head>
+<body>
+<div class="role-wrap">
+  <main class="role-stage" aria-label="Choose how you use MW Dynasty">
+    <img class="role-image" src="/assets/mw-role-entry-v21.jpg" alt="MW Dynasty role selection">
+    <button id="athleteChoice" class="hotspot" aria-label="I'm an Athlete">I'm an Athlete</button>
+    <button id="coachChoice" class="hotspot" aria-label="I'm a Coach">I'm a Coach</button>
+  </main>
+</div>
+<script>
+function enter(role,path){
+  try{ localStorage.setItem('mwDynastyRoleChoice',role); }catch(e){}
+  window.location.assign(path);
+}
+document.getElementById('athleteChoice').addEventListener('click',()=>enter('athlete','/athlete/'));
+document.getElementById('coachChoice').addEventListener('click',()=>enter('coach','/coach'));
+</script>
+</body>
+</html>
