@@ -1,0 +1,29 @@
+workflows:
+  ios-compile-check:
+    name: MW Dynasty iOS Compile Check
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      xcode: latest
+    scripts:
+      - name: Unpack MW Dynasty iOS project
+        script: |
+          set -e
+          rm -rf "$CM_BUILD_DIR/ios_build"
+          mkdir -p "$CM_BUILD_DIR/ios_build"
+          unzip -q "$CM_BUILD_DIR/MW_Dynasty_iOS_V3_0_13_Codemagic_Source.zip" -d "$CM_BUILD_DIR/ios_build"
+      - name: Show Xcode version
+        script: xcodebuild -version
+      - name: Compile MW Dynasty for iOS Simulator
+        script: |
+          set -o pipefail
+          xcodebuild \
+            -project "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj" \
+            -scheme MWDynasty \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+    artifacts:
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/*.app
