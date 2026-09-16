@@ -15,6 +15,8 @@ module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store, private');
   try{
     const {token}=await authenticate(req); const c=await getAthleteContext(req);
+    const access=c.features?.access||{};
+    if(access.smart_entry!==true)return res.status(403).json({error:'MW Smart Entry is available with the full MW Sprint Performance athlete experience.',feature:'smart_entry',accessMode:access.access_mode||'limited',upgradeRequired:true});
     if(req.method==='GET'){
       const rows=await sj(`athlete_entry_assessments?athlete_id=eq.${encodeURIComponent(c.athlete.id)}&select=*&order=created_at.desc&limit=1`,token,{method:'GET'});
       return res.status(200).json({assessment:Array.isArray(rows)?(rows[0]||null):null});
@@ -25,7 +27,7 @@ module.exports=async function handler(req,res){
     const dob=validDate(String(b.dateOfBirth||''));
     const events=[...new Set((Array.isArray(b.events)?b.events:[]).map(String))].filter(x=>['100m','200m','400m'].includes(x));
     if(!firstName||!lastName||!dob||!events.length)return res.status(400).json({error:'First name, last name, date of birth, and at least one event are required.'});
-    const age=ageOn(b.dateOfBirth);if(age==null||age<10)return res.status(400).json({error:'The MW athlete program is currently available for athletes age 10 and older.'});
+    const age=ageOn(b.dateOfBirth);if(age==null||age<13)return res.status(400).json({error:'MW Dynasty athlete accounts require age 13 or older.'});
     const timing=b.prTiming||{},prs=b.prs||{},maxes=b.maxes||{};
     const prRows=events.map(event=>({event,time_seconds:cleanNumber(prs[event],`${event} PR`),timing_method:['fat','hand','unknown'].includes(timing[event])?timing[event]:'unknown'})).filter(x=>x.time_seconds!=null);
     const weightUnit=['lb','kg'].includes(b.weightUnit)?b.weightUnit:'lb';

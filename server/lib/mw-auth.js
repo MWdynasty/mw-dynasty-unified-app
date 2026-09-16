@@ -11,6 +11,25 @@ async function sj(url, token){
   if(!r.ok) throw new Error(d?.message||d?.msg||d?.error_description||`Supabase request failed (${r.status})`);
   return d;
 }
+async function rpc(name,token,body={}){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
+    method:'POST',
+    headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+    body:JSON.stringify(body||{})
+  });
+  const d=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error(d?.message||d?.hint||`Supabase RPC failed (${r.status})`);
+  return d;
+}
+async function repTrackingAccess(token){
+  try{return (await rpc('mw_rep_tracking_access',token))===true}catch{return false}
+}
+async function athleteFeatureAccess(token){
+  try{
+    const d=await rpc('mw_my_feature_access',token);
+    return d&&typeof d==='object'?d:{};
+  }catch{return {}}
+}
 async function authenticate(req){
   const token=bearer(req); if(!token) throw Object.assign(new Error('Authentication required'),{status:401});
   try{const user=await sj(`${SUPABASE_URL}/auth/v1/user`,token);return {token,user}}catch(e){throw Object.assign(new Error('Your MW session is invalid or expired. Sign in again.'),{status:401})}
@@ -37,13 +56,18 @@ async function getAccountContext(req,{requireAthlete=false}={}){
       athlete:null,
       programState:null,
       prs:[],
-      mode:role==='founder_owner'?'founder':'staff'
+      mode:role==='founder_owner'?'founder':'staff',
+      features:{repTracking:privileged,access:{has_access:true,access_mode:role,athlete_app:false,ai_intelligence:privileged,mw_training_system:privileged,strength_power:privileged,sprint_school:privileged,smart_entry:privileged,advanced_performance_tools:privileged}}
     };
   }
 
   const programState=await one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at&athlete_id=eq.${encodeURIComponent(athlete.id)}&limit=1`,token);
-  const prs=await sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified&athlete_id=eq.${encodeURIComponent(athlete.id)}&order=event.asc`,token);
-  return {token,user:{id:user.id,email:user.email},profile,athlete,programState,prs:Array.isArray(prs)?prs:[],mode:'athlete'};
+  const [prs,repTracking,access]=await Promise.all([
+    sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified&athlete_id=eq.${encodeURIComponent(athlete.id)}&order=event.asc`,token),
+    repTrackingAccess(token),
+    athleteFeatureAccess(token)
+  ]);
+  return {token,user:{id:user.id,email:user.email},profile,athlete,programState,prs:Array.isArray(prs)?prs:[],mode:'athlete',features:{repTracking,access}};
 }
 async function getAthleteContext(req){return getAccountContext(req,{requireAthlete:true})}
-module.exports={SUPABASE_URL,SUPABASE_KEY,bearer,authenticate,getAccountContext,getAthleteContext};
+module.exports={SUPABASE_URL,SUPABASE_KEY,bearer,authenticate,getAccountContext,getAthleteContext,rpc};

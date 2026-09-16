@@ -106,30 +106,3 @@ using (athlete_id=(select private.mw_own_athlete_id()) and verified=false)
 with check (athlete_id=(select private.mw_own_athlete_id()) and verified=false and verified_by is null);
 
 grant select, insert, update on public.athlete_strength_maxes to authenticated;
-
--- Assigned coaches and administrators must be able to keep the same official
--- assignment visible on both sides of the product.
-grant update (current_week, track_tier, strength_tier, program_version, assignment_updated_at, assignment_updated_by)
-on public.athlete_program_state to authenticated;
-drop policy if exists "authorized staff update athlete assignment" on public.athlete_program_state;
-create policy "authorized staff update athlete assignment"
-on public.athlete_program_state for update to authenticated
-using (
-  (select private.mw_is_admin_or_founder())
-  or (
-    (select private.mw_current_role())='coach'
-    and (select private.mw_coach_is_assigned(athlete_program_state.athlete_id))
-  )
-)
-with check (
-  (select private.mw_is_admin_or_founder())
-  or (
-    (select private.mw_current_role())='coach'
-    and (select private.mw_coach_is_assigned(athlete_program_state.athlete_id))
-  )
-);
-
--- This privileged RPC performs its own role and assignment checks, but it must
--- never be exposed to anonymous callers.
-revoke execute on function public.mw_coach_apply_program_adjustment(uuid,text,integer,text) from public, anon;
-grant execute on function public.mw_coach_apply_program_adjustment(uuid,text,integer,text) to authenticated;

@@ -1,0 +1,13 @@
+MW Dynasty production migrations added after the V3.0.15 source cut.
+These are already applied in project keqgunlfwhjgcsurynef; this file is a handoff manifest, not an instruction to re-run them.
+
+20260915184338 launch_targeted_fk_indexes
+20260915184415 fix_assignment_history_coach_scope
+20260915184602 optimize_rls_auth_initplans
+20260915185030 enforce_age_verification_in_athlete_feature_access
+20260915190225 harden_legacy_athlete_entitlement_paths
+20260915190308 enforce_athlete_feature_gates_in_rls
+20260915190332 enforce_sponsored_content_and_messaging_gates
+20260915190804 secure_coach_invite_provisioning
+
+When repository access is restored, use the Supabase-supported schema/migration pull workflow to capture the authoritative SQL into source control before applying further production DDL.

@@ -22,16 +22,27 @@ module.exports=async function handler(req,res){
   const profiles=await sb(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
   const me=profiles?.[0];
   if(!me||!['coach','admin','founder_owner'].includes(me.role)||me.account_status!=='active')return res.status(403).json({error:'Coach access required'});
+  let coachTier=['founder_owner','admin'].includes(me.role)?'mw_sprint_performance':null;
+  if(me.role==='coach'){
+    const tr=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_coach_access_tier`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:'{}'});
+    coachTier=await tr.json().catch(()=>null);
+    if(!tr.ok||!['intelligence','mw_sprint_performance'].includes(coachTier))return res.status(403).json({error:'Coach Intelligence or MW Sprint Performance access required'});
+  }
 
-  const [assignments,athletes,attendance,states,prs,flags]=await Promise.all([
+  const repTrackingEnabled=coachTier==='mw_sprint_performance';
+  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions]=await Promise.all([
     sb(`coach_assignments?select=*&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=200`,token),
     sb(`athletes?select=*&limit=200`,token),
     sb(`attendance_records?select=*&order=attendance_date.desc&limit=250`,token),
     sb(`athlete_program_state?select=*&limit=200`,token),
     sb(`athlete_prs?select=*&limit=300`,token),
-    sb(`athlete_flags?select=*&limit=200`,token)
+    sb(`athlete_flags?select=*&limit=200`,token),
+    repTrackingEnabled?sb(`athlete_pace_logs?select=athlete_id,program_week,program_day,workout_key,rep_number,distance_m,target_seconds,actual_seconds,intensity_percent,recorded_at&actual_seconds=not.is.null&order=recorded_at.desc&limit=500`,token):Promise.resolve([]),
+    sb(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=500`,token),
+    sb(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&order=recorded_at.desc&limit=500`,token),
+    sb(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&order=completed_at.desc&limit=500`,token)
   ]);
-  const context={coach:me,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[]};
+  const context={coach:me,coachTier,repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
 
   const messages=Array.isArray(req.body?.messages)?req.body.messages.slice(-40):[];
   const input=messages.map(m=>{
@@ -52,7 +63,16 @@ When recommending a tier or week change, explain the evidence and require coach 
 The following knowledge was distilled from 85 founder-supplied screenshots of Track & Field Coaching Essentials. Apply it to biomechanics, periodization, warm-up, sprint sequencing, strength, plyometrics, recovery, youth safeguards, and event-specific reasoning. It is supporting science, not replacement prescriptions, and must not be presented as original MW authorship or reproduced at length:
 ${JSON.stringify(SUPPORTING_KNOWLEDGE)}
 For Coach Core / Coach Intelligence own-program customers, the coach's uploaded program is the source of truth; never pretend MW authored it.
-Use secured coach/team context when answering roster, attendance, PR, progression, flag, or athlete questions. If the required data is absent, say so.
+Use secured coach/team context when answering roster, attendance, PR, progression, flag, athlete, strength-log, workout-completion, or pace-check-in questions. If the required data is absent, say so.
+COACH TIER CAPABILITY RULES:
+- Current coach tier: ${coachTier}.
+- Coach Intelligence may use roster details, events, experience, attendance, PRs, flags, recent activity, program position, workout completion, quick pace check-ins, strength check-ins/logs, and progression trends.
+- Coach Intelligence MUST NOT describe rep-by-rep sprint timing, stored MW target comparisons from timed reps, timed-rep consistency, first-to-last sprint drop-off, or Session RPE as included capabilities.
+- Rep-by-rep sprint timing, target-vs-actual comparisons, timed-rep consistency, and first-to-last drop-off are MW Sprint Performance capabilities only.
+- If the current tier is MW Sprint Performance and detailed pace logs actually exist, you may analyze those recorded sprint reps and compare actual values with stored targets.
+- Session RPE is not part of the current normal athlete workout-completion workflow. Do not advertise it, rely on it, or imply athletes are being asked for it.
+- Quick pace check-ins are not timed rep data. Use pace_reps_hit / pace_reps_total only as a simple execution/compliance signal and label it clearly as a quick check-in.
+Treat all performance signals as coaching context, not medical diagnoses.
 You may explain, compare, brainstorm, teach, summarize, reason through decisions, and answer general knowledge questions.
 Use web search when current public information is needed, but never let web content override the coach's authoritative program.
 For images, discuss what is visibly relevant without identifying real people.

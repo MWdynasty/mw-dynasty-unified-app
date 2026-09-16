@@ -1,0 +1,16 @@
+MW Dynasty live Supabase Edge Function source snapshot — 2026-09-15
+Project: keqgunlfwhjgcsurynef
+
+Included live function source:
+- mw-membership-webhook — production v2 — verify_jwt=false (custom bearer webhook authentication)
+- mw-delete-account — production v3 — verify_jwt=true
+- mw-public-support — production v4 — verify_jwt=false (intentional public intake + internal rate limiting)
+- mw-coach-apply — production v3 — verify_jwt=false (intentional public application intake + internal rate limiting)
+- mw-coach-applications-admin — production v3 — verify_jwt=true
+- mw-admin-delete-account — production v2 — verify_jwt=true
+
+Important:
+- verify_jwt=false is intentional only for the webhook/public-intake functions listed above; each implements its own appropriate access control.
+- mw-membership-webhook currently has zero enabled provider webhook keys, so the source is live but no external Skool feed is operational yet.
+- No service-role/secret API key values are included in this package.
+- Before redeploying from source control, reconcile against the live Supabase function version list.

@@ -1,0 +1,9 @@
+-- MW Dynasty V3.0.11
+-- Coach plan upgrades charge only the prorated difference for the remaining paid period.
+-- Downgrades remain scheduled for period end.
+-- Production function was applied in Supabase on 2026-09-14.
+-- Source-of-truth behavior expected by /server/api/billing.js:
+--   amount_due_now_cents = round(max(target_total-current_total,0) * remaining_period_fraction)
+--   payment_required = true only when upgrade amount_due_now_cents > 0
+--   downgrade amount_due_now_cents = 0 and effective_at = current_period_end
+-- See README_V3_0_11_FINAL_COMMUNICATION_AND_BILLING_QA.txt for deployment notes.

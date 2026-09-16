@@ -47,7 +47,7 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
 <link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
 <link rel="stylesheet" href="/assets/mw-responsive-v25.css">
 <link rel="icon" href="/favicon.png" type="image/png">
-</head>
+<script src="/assets/mw-native.js"></script></head>
 <body>
 <main>
 <a class="mwHubBack" href="/" aria-label="Back to MW Dynasty home">← BACK TO MW DYNASTY</a>
@@ -202,8 +202,10 @@ function renderTargets(){
 function repLogKey(){return `${$('#week').value}-${$('#day').value}`}
 function getLogs(){const all=JSON.parse(localStorage.getItem(REPKEY)||'{}');return all[repLogKey()]||{}}
 function setLog(rep,val){const all=JSON.parse(localStorage.getItem(REPKEY)||'{}');all[repLogKey()]=all[repLogKey()]||{};all[repLogKey()][rep]=val;localStorage.setItem(REPKEY,JSON.stringify(all));renderRecorder()}
+window.MW_REP_TRACKING=null;
 function renderRecorder(){
  const box=$('#repRecorder');box.innerHTML='';
+ if(window.MW_REP_TRACKING===false){box.innerHTML='<div class="muted"><b>MW Sprint Performance exclusive.</b><br>Rep-by-rep performance tracking is available only to athletes training inside the MW Sprint Performance System.</div>';$('#sRecorded').textContent='—';$('#sInZone').textContent='—';$('#sPct').textContent='LOCKED';return}
  if(!currentPlan){box.innerHTML='<div class="muted">This session does not have a simple paceable rep prescription for automatic rep tracking.</div>';updateSummary();return}
  const logs=getLogs();
  for(let i=1;i<=currentPlan.reps;i++){const v=logs[i]??'',num=+v,ok=num&&num>=currentPlan.low&&num<=currentPlan.high,status=!num?'—':ok?'IN ZONE':'CHECK PACE';box.insertAdjacentHTML('beforeend',`<div class="repRow"><b>R${i}</b><span>Target <strong>${currentPlan.target.toFixed(2)}</strong></span><input data-rep="${i}" type="number" step=".01" placeholder="Actual" value="${v}"><span class="repStatus ${num?(ok?'in':'out'):''}">${status}</span></div>`)}
@@ -313,14 +315,14 @@ $('#sendPacer').onclick=()=>{
  }catch(e){alert('MW Distance Pacer handoff could not open.')}
 };
 $$('.nav button').forEach(b=>b.onclick=()=>{$$('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.view').forEach(v=>v.classList.remove('active'));$('#'+b.dataset.view).classList.add('active')});
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const r=new SR();r.lang='en-US';r.onstart=()=>$('#voiceState').textContent='Listening…';r.onresult=e=>{const t=e.results[0][0].transcript;$('#ask').value=t;askAI(t)};r.onend=()=>{if($('#voiceState').textContent==='Listening…')$('#voiceState').textContent='Tap mic to speak'};$('#mic').onclick=()=>r.start()}else $('#mic').onclick=()=>$('#voiceState').textContent='Mic input is not supported in this browser';
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){const r=new SR();r.lang='en-US';r.onstart=()=>$('#voiceState').textContent='Listening…';r.onresult=e=>{const t=e.results[0][0].transcript;$('#ask').value=t;askAI(t)};r.onend=()=>{if($('#voiceState').textContent==='Listening…')$('#voiceState').textContent='Tap mic to speak'};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='Mic input is not supported in this browser';
 init();
 </script>
 
 <script src="/lib/mw-tool-auth.js"></script>
 <script>
 document.addEventListener('mw-athlete-ready',e=>{
- const a=e.detail,s=a.state||{}; const pm={}; (a.prs||[]).forEach(x=>pm[String(x.event).toLowerCase()]=Number(x.time_seconds));
+ const a=e.detail,s=a.state||{}; window.MW_REP_TRACKING=a.repTracking===true; const pm={}; (a.prs||[]).forEach(x=>pm[String(x.event).toLowerCase()]=Number(x.time_seconds));
  const pick=(needle)=>{const k=Object.keys(pm).find(x=>x.includes(needle));return k?pm[k]:null};
  const p100=pick('100'),p200=pick('200'),p400=pick('400');
  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v){el.value=v;el.dispatchEvent(new Event('change'))}};
@@ -339,9 +341,9 @@ document.addEventListener('mw-athlete-ready',e=>{
  const sess=()=>window.MW_SESSION||(()=>{try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}})();
  const headers=(x={})=>({apikey:KEY,Authorization:'Bearer '+(sess()?.access_token||''),'Content-Type':'application/json',...x});
  function workoutKey(){return `mw-track-w${Number(document.getElementById('week')?.value||1)}-d${Number(document.getElementById('day')?.value||1)}`}
- async function loadHistory(){const a=window.MW_ATHLETE?.athlete;if(!a)return;const wk=workoutKey();const r=await fetch(URL+'/rest/v1/athlete_pace_logs?athlete_id=eq.'+encodeURIComponent(a.id)+'&workout_key=eq.'+encodeURIComponent(wk)+'&select=rep_number,actual_seconds',{headers:headers(),cache:'no-store'});const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Pace history sync failed');cache={};for(const x of rows)cache[x.rep_number]=x.actual_seconds??'';renderRecorder()}
+ async function loadHistory(){if(window.MW_ATHLETE?.repTracking!==true)return;const a=window.MW_ATHLETE?.athlete;if(!a)return;const wk=workoutKey();const r=await fetch(URL+'/rest/v1/athlete_pace_logs?athlete_id=eq.'+encodeURIComponent(a.id)+'&workout_key=eq.'+encodeURIComponent(wk)+'&select=rep_number,actual_seconds',{headers:headers(),cache:'no-store'});const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Pace history sync failed');cache={};for(const x of rows)cache[x.rep_number]=x.actual_seconds??'';renderRecorder()}
  window.getLogs=()=>cache;
- window.setLog=async(rep,val)=>{const a=window.MW_ATHLETE?.athlete;if(!a)return;const n=Number(val);cache[rep]=val;renderRecorder();const payload={athlete_id:a.id,program_week:Number(document.getElementById('week')?.value||1),program_day:Number(document.getElementById('day')?.value||1),workout_key:workoutKey(),rep_number:Number(rep),distance_m:currentPlan?.distance||null,target_seconds:currentPlan?.target||null,actual_seconds:Number.isFinite(n)&&n>0?n:null,intensity_percent:currentPlan?.intensity?currentPlan.intensity*100:null,recorded_at:new Date().toISOString()};const r=await fetch(URL+'/rest/v1/athlete_pace_logs?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:headers({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});if(!r.ok)console.warn('MW pace save',await r.text())};
+ window.setLog=async(rep,val)=>{if(window.MW_ATHLETE?.repTracking!==true)return;const a=window.MW_ATHLETE?.athlete;if(!a)return;const n=Number(val);cache[rep]=val;renderRecorder();const payload={athlete_id:a.id,program_week:Number(document.getElementById('week')?.value||1),program_day:Number(document.getElementById('day')?.value||1),workout_key:workoutKey(),rep_number:Number(rep),distance_m:currentPlan?.distance||null,target_seconds:currentPlan?.target||null,actual_seconds:Number.isFinite(n)&&n>0?n:null,intensity_percent:currentPlan?.intensity?currentPlan.intensity*100:null,recorded_at:new Date().toISOString()};const r=await fetch(URL+'/rest/v1/athlete_pace_logs?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:headers({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});if(!r.ok)console.warn('MW pace save',await r.text())};
  document.addEventListener('mw-athlete-ready',()=>setTimeout(loadHistory,180));
  document.getElementById('loadWorkout')?.addEventListener('click',()=>setTimeout(loadHistory,80));
 })();

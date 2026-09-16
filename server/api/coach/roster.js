@@ -22,7 +22,7 @@ module.exports=async(req,res)=>{
     if(role==='coach'){
       [assignments,pendingInvitations]=await Promise.all([
         get(`coach_assignments?select=athlete_id,assigned_at,status&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.active&order=assigned_at.asc`,c.token),
-        get(`coach_invitations?select=id,athlete_email,invite_type,status,created_at,expires_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.pending&order=created_at.desc`,c.token)
+        get(`coach_invitations?select=id,athlete_email,invite_type,status,created_at,expires_at,billing_type,sponsorship_ends_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.pending&order=created_at.desc`,c.token)
       ]);
       const ids=[...new Set(assignments.map(x=>x.athlete_id).filter(Boolean))];
       if(!ids.length)return res.status(200).json({ok:true,scope:'assigned',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
@@ -37,7 +37,7 @@ module.exports=async(req,res)=>{
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
     const [profiles,states,prs]=await Promise.all([
       userIds.length?get(`profiles?select=user_id,first_name,last_name&user_id=in.${inList(userIds)}`,c.token):Promise.resolve([]),
-      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at,track_tier,strength_tier,program_version,onboarding_assessment_completed_at,assignment_updated_at&athlete_id=in.${inList(athleteIds)}`,c.token),
+      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at&athlete_id=in.${inList(athleteIds)}`,c.token),
       get(`athlete_prs?select=athlete_id,event,time_seconds,date_recorded,verified&athlete_id=in.${inList(athleteIds)}&order=event.asc`,c.token)
     ]);
 
@@ -62,11 +62,6 @@ module.exports=async(req,res)=>{
         current_day:st.current_day||1,
         current_phase:st.current_phase||null,
         status:st.program_status||'On Track',
-        track_tier:st.track_tier||'foundation',
-        strength_tier:st.strength_tier||'foundation',
-        program_version:st.program_version||'mw-41-tiered-v2.9',
-        assessment_completed_at:st.onboarding_assessment_completed_at||null,
-        assignment_updated_at:st.assignment_updated_at||null,
         last_completed_workout_at:st.last_completed_workout_at||null,
         assigned_at:aMap.get(a.id)?.assigned_at||null,
         prs:athletePrs,

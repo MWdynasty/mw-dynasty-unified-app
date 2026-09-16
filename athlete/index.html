@@ -48,6 +48,7 @@
 /* MW 2026 focused add-ons: spacious navigation, progress, settings */
 .topActions{display:flex;align-items:center;gap:8px}.gearBtn{border:1px solid #34414d;background:#071019;color:#fff;border-radius:10px;width:38px;height:38px;font-size:18px}.homeGrid{display:grid;gap:12px;margin-top:14px}.heroCard{border:1px solid rgba(245,185,46,.45);border-radius:18px;padding:18px;background:linear-gradient(145deg,#0a1722,#05090e)}.heroCard h2{font-size:25px;margin:4px 0 7px}.metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.metric{border:1px solid #2b3945;border-radius:12px;padding:12px 8px;background:#06101a;text-align:center}.metric strong{display:block;color:var(--gold);font-size:20px}.metric small{color:var(--muted);font-size:8px}.actionGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actionCard{border:1px solid #34414d;border-radius:14px;background:linear-gradient(#09131d,#050b11);color:#fff;padding:16px;text-align:left;min-height:105px}.actionCard b{display:block;color:var(--gold);font-size:14px;margin-bottom:5px}.progressBar{height:9px;background:#1b2732;border-radius:999px;overflow:hidden;margin-top:10px}.progressBar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--gold));width:0}.checkList{display:grid;gap:9px;margin-top:12px}.checkRow{display:flex;align-items:center;justify-content:space-between;border:1px solid #2d3a46;border-radius:12px;padding:12px;background:#06101a}.checkRow.done{border-color:rgba(53,232,120,.45)}.checkRow button{border:1px solid #42515f;background:#09131d;color:#fff;border-radius:9px;padding:8px 10px}.checkRow.done button{color:#35e878}.lockNote{margin-top:10px;padding:10px;border-radius:10px;background:#111821;color:var(--muted);font-size:10px;line-height:1.45}.settingGroup{margin-top:14px}.settingGroup h3{color:var(--gold);font-size:12px;margin:0 0 8px}.settingRow{border:1px solid #2d3a46;border-radius:12px;padding:12px;margin:8px 0;background:#06101a}.settingRow label{display:block;font-size:11px;font-weight:800;margin-bottom:7px}.settingRow select,.settingRow input{width:100%;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:9px;padding:11px;font-size:15px}.nav{grid-template-columns:repeat(5,1fr)}
 .homeBrand{margin-top:12px;border:1px solid rgba(245,185,46,.35);border-radius:18px;overflow:hidden;background:#020406}.homeBrand img{display:block;width:100%;height:auto;max-height:245px;object-fit:cover;object-position:center 38%}
+.performanceHint{margin-top:10px;border-left:3px solid var(--blue);background:#061522;border-radius:8px;padding:10px;color:#c9d7e2;font-size:10px;line-height:1.45}.performanceHint b{color:var(--blue2)}.completionActions{display:flex;align-items:center;gap:7px}.rpeSelect{width:76px;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:9px;padding:8px 5px;font-size:12px}.strengthLogGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.strengthLogGrid label{display:block;font-size:9px;color:var(--muted)}.strengthLogGrid input,.strengthLogGrid select{width:100%;margin-top:4px;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:9px;padding:10px;font-size:14px}.strengthLogRecent{display:grid;gap:7px;margin-top:10px}.strengthLogItem{border:1px solid #2c3945;border-radius:10px;background:#06101a;padding:9px;font-size:10px;line-height:1.4}.strengthLogItem b{color:var(--gold)}@media(max-width:380px){.completionActions{flex-direction:column;align-items:flex-end}.strengthLogGrid{grid-template-columns:1fr}}
 
 /* MW first-login onboarding — V11 Premium Guided Tour */
 .tourOverlay{
@@ -496,6 +497,33 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
 <link rel="stylesheet" href="/assets/mw-dashboard-v23.css">
 <link rel="stylesheet" href="/assets/mw-responsive-v25.css">
+
+<style id="mw-simple-v303">
+.actionGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.actionCard{min-height:118px!important;font-size:15px!important}.actionCard b{font-size:15px}.actionCard .muted{font-size:12px}
+.performanceHint{border:1px solid rgba(245,185,46,.3);background:#111923;border-radius:14px;padding:12px;margin:10px 0;color:#dce6ef;font-size:12px;line-height:1.45}
+.completionActions{display:flex;align-items:center;gap:8px}.completionActions button{min-width:120px}
+.paceModal{position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,.78);display:none;align-items:flex-end;justify-content:center;padding:16px 14px calc(18px + env(safe-area-inset-bottom));backdrop-filter:blur(8px)}
+.paceModal.show{display:flex}.paceSheet{width:min(480px,100%);background:linear-gradient(155deg,#0b1823,#05090e);border:1px solid rgba(245,185,46,.55);border-radius:24px;padding:20px;box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.paceSheet .eyebrow{color:var(--gold);font-size:10px;font-weight:900;letter-spacing:.13em}.paceSheet h2{font-size:26px;line-height:1.08;margin:10px 0 6px}.paceSheet p{color:#c3d0db;font-size:13px;line-height:1.5}.paceChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.paceChoices button,.repChoice{min-height:64px;border-radius:16px;font-weight:950;font-size:15px}.paceYes{background:linear-gradient(#ffd65d,#d89412);color:#101010;border:0}.paceNo{background:#0b141d;color:#fff;border:1px solid #425363}.repChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}.repChoice{background:#0a141d;color:#fff;border:1px solid #40515f}.repChoice strong{display:block;color:var(--gold);font-size:17px}.paceBack{margin-top:12px;width:100%;background:none;border:1px solid #34424e;color:#c9d3dc;min-height:46px;border-radius:12px}
+.quickStrength{display:flex;flex-direction:column;gap:10px;margin-top:12px}.strengthCheckRow{border:1px solid #2b3944;background:#07111a;border-radius:16px;padding:13px}.strengthCheckRow .rowTop{display:flex;align-items:center;justify-content:space-between;gap:10px}.strengthCheckRow b{font-size:13px}.strengthCheckRow small{color:#90a1af}.strengthCheckActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.strengthCheckActions button{border-radius:12px;min-height:46px;font-weight:900}.strengthDone{background:linear-gradient(#ffd65d,#d89412);color:#111;border:0}.strengthChanged{background:#0c1720;color:#d9e3eb;border:1px solid #3a4b58}.strengthCheckRow.saved{border-color:#5c8c68}.advancedLog{margin-top:14px;border-top:1px solid #263641;padding-top:12px}.advancedLog summary{cursor:pointer;color:#9eacb8;font-size:11px;font-weight:900}.advancedLog[open] summary{margin-bottom:12px}
+.simpleCoachNote{font-size:12px;color:#aebdca;line-height:1.5}.nav button{font-size:11px!important}.nav b{font-size:22px!important}
+@media(max-width:620px){.actionGrid{grid-template-columns:1fr!important}.actionCard{min-height:84px!important}.paceChoices{grid-template-columns:1fr 1fr}.repChoices{grid-template-columns:repeat(3,1fr)}}
+</style>
+<script src="/assets/mw-native.js"></script>
+<style id="mw-messages-v309">
+/* V3.0.9 — athlete messages + readability */
+#messages,#messages *{color:#f6f9fb}.mwMessageCard p,.mwAthleteMessageList small,#messages .muted{color:#b9c6d0!important}
+.mwMessageBadge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-left:6px;border-radius:999px;background:#a67c16;color:#fff!important;font-size:10px;font-style:normal;vertical-align:middle}.mwMessageBadge[hidden]{display:none}
+.mwAthleteMessageList{display:grid;gap:10px;margin-top:12px}.mwMessageBubble{border:1px solid #34424f;border-radius:14px;padding:13px 14px;background:#06101a}.mwMessageBubble.coach{border-color:rgba(245,185,46,.42)}.mwMessageBubble.me{margin-left:10%;background:#0b1822}.mwMessageBubble.unread{box-shadow:0 0 0 1px rgba(245,185,46,.28) inset}.mwMessageMeta{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px}.mwMessageMeta b{color:#fff}.mwMessageMeta small{color:#aebcc6!important}.mwMessageBody{white-space:pre-wrap;line-height:1.5;color:#f7fbff}.mwMessageReplyBtn{margin-top:10px;border:1px solid #6e5b1d;background:#0b151d;color:#f5d067;border-radius:9px;padding:8px 10px;font-weight:800}.mwMessageHomeCard b{color:var(--gold)!important}
+#mwReplyText{width:100%;background:#02070c;border:1px solid #34424f;color:#fff;border-radius:10px;padding:12px;font-size:16px}
+.app button,.nav button,.actionCard,.gearBtn,.save,.entryGhost,.smartBtn{color:#fff}.actionCard span,.card,.card h1,.card h2,.card h3,.card b,.settingRow label{color:#fff}.muted,.lockNote,.settingRow small{color:#aebbc5!important}
+@media(max-width:599px){.mwMessageBubble.me{margin-left:4%}.mwMessageMeta{display:block}.mwMessageMeta small{display:block;margin-top:3px}}
+</style>
+
+<style id="mw-v311-athlete-communication-search">
+#messages,#messages *{color:#f6f9fb}.mwAthleteSearchTools{display:grid;grid-template-columns:1fr 48px;gap:9px;margin:12px 0}.mwAthleteSearchWrap{position:relative;display:flex;align-items:center;gap:8px;border:1px solid #34424f;border-radius:14px;background:#07131d;padding:0 12px;min-height:48px}.mwAthleteSearchWrap input,.mwAthleteMessageSearch input{width:100%;border:0;outline:0;background:transparent;color:#fff;font-size:14px}.mwAthleteSearchResults{position:absolute;z-index:40;left:0;right:0;top:54px;border:1px solid #34424f;border-radius:13px;background:#061019;box-shadow:0 16px 45px rgba(0,0,0,.45);overflow:hidden}.mwAthleteSearchResults button{width:100%;display:block;border:0;border-bottom:1px solid #22303a;background:transparent;color:#fff;text-align:left;padding:11px 13px}.mwAthleteSearchResults button:last-child{border-bottom:0}.mwAthleteSearchResults button small{display:block;color:#9fadb8;margin-top:2px}.mwAthleteMessageShortcut{position:relative;border:1px solid var(--gold);border-radius:14px;background:#10130f;color:#fff;font-size:19px}.mwAthleteMessageShortcut .mwMessageBadge{position:absolute;right:-6px;top:-6px}.mwAthleteMessageSearch{display:flex;align-items:center;gap:8px;border:1px solid #34424f;border-radius:12px;background:#02070c;padding:10px 11px;margin:10px 0 12px}.mwConversationList{display:grid}.mwAthleteConversationRow{width:100%;display:grid;grid-template-columns:44px 1fr 10px;gap:11px;align-items:center;border:0;border-bottom:1px solid #22303a;background:transparent;padding:12px 5px;color:#fff;text-align:left}.mwAthleteConversationRow:last-child{border-bottom:0}.mwAthleteConversationAvatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#0a1b29;border:1px solid rgba(245,185,46,.5);color:var(--gold);font-weight:900}.mwAthleteConversationCopy{min-width:0}.mwAthleteConversationTop{display:flex;align-items:center;justify-content:space-between;gap:8px}.mwAthleteConversationTop small{color:#9fadb7!important}.mwAthleteConversationPreview{display:block;margin-top:4px;color:#b7c4cd!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mwAthleteUnreadDot{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px rgba(21,156,255,.12)}.mwAthleteThreadHead{display:flex;align-items:center;gap:12px;border-bottom:1px solid #26343e;padding-bottom:11px;margin-bottom:10px}.mwAthleteThreadHead .entryGhost{width:auto;margin:0;padding:8px 10px}.mwAthleteThreadHead small{display:block;color:#9facb7!important;margin-top:2px}.mwAthleteThreadList{height:min(52vh,480px);overflow:auto;display:flex;flex-direction:column;gap:9px;padding:6px 2px 13px}.mwAthleteThreadBubble{max-width:82%;padding:10px 12px;border-radius:16px;line-height:1.45}.mwAthleteThreadBubble.coach{align-self:flex-start;background:#0b1720;border:1px solid rgba(245,185,46,.33);border-bottom-left-radius:5px}.mwAthleteThreadBubble.me{align-self:flex-end;background:#13314a;border-bottom-right-radius:5px}.mwAthleteThreadBubble small{display:block;margin-top:5px;color:#a8b7c2!important;font-size:10px}.app,.card,.actionCard,.settingGroup,.lockNote,.mwAthleteConversationRow,.mwAthleteThreadBubble{color:#f6f9fb}.muted,.lockNote,.settingRow small,.mwAthleteConversationPreview{color:#aebcc6!important}.send,.entryAction,.tourNext,.paceYes,.strengthDone,.mwAuthBtn{color:#10202b!important}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -573,12 +601,19 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <main class="app">
 <section class="view active" id="home">
 <div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE HUB</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
+<div class="mwAthleteSearchTools"><div class="mwAthleteSearchWrap"><span>⌕</span><input id="mwAthleteSearch" autocomplete="off" placeholder="Search training, messages, Coach MW, tools…"><div id="mwAthleteSearchResults" class="mwAthleteSearchResults" hidden></div></div><button class="mwAthleteMessageShortcut" type="button" data-open="messages" aria-label="Messages">💬<em id="mwSearchMessageBadge" class="mwMessageBadge" hidden>0</em></button></div>
 <div class="homeBrand"><img src="/assets/mw-athlete-dashboard-v23.jpg" alt="MW Dynasty Athlete Performance Hub" onerror="this.onerror=null;this.src='/athlete/mw-athlete-crouch-clean.jpg'"></div>
 <div class="homeGrid">
   <div class="heroCard"><div class="sub">YOUR MW JOURNEY</div><h2>Welcome back, <span id="homeName">Athlete</span>.</h2><p class="muted">One clear place for your current week, completed work, and what unlocks next.</p><div class="metricGrid"><div class="metric"><strong id="homeWeek">1</strong><small>CURRENT WEEK</small></div><div class="metric"><strong id="homeDone">0/4</strong><small>WORKOUTS DONE</small></div><div class="metric"><strong id="homePct">0%</strong><small>PROGRAM PROGRESS</small></div></div><div class="progressBar"><i id="homeProgressBar"></i></div><button type="button" class="mwTrainingYearCard" id="homeTrainingYear" data-open="entry"><span class="mwTyKicker">MW TRAINING YEAR</span><strong>Loading your training position…</strong><small>Standard calendar + Smart Entry protection</small><em>WHY AM I ON THIS WEEK? →</em></button></div>
-  <div class="actionGrid"><button class="actionCard" data-open="coach"><b>🧠 COACH MW</b><span class="muted">Ask about training, pace, technique or recovery.</span></button><button class="actionCard" data-open="workouts"><b>📅 MY PROGRAM</b><span class="muted">See your active week and mark workouts complete.</span></button><button class="actionCard" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span class="muted">Workout targets, rep execution and pace calculator.</span></button><button class="actionCard" onclick="location.href='/distance-pacer/'"><b>📍 DISTANCE PACER</b><span class="muted">Track, football field and GPS distance marks.</span></button><button class="actionCard" data-open="athlete"><b>👤 PROFILE</b><span class="muted">PRs, athlete info and Smart Entry.</span></button></div>
+  <div class="actionGrid"><button class="actionCard" data-open="workouts"><b>🏃 START TRAINING</b><span class="muted">See today’s program and check in when you finish.</span></button><button class="actionCard" data-open="coach"><b>🧠 ASK COACH MW</b><span class="muted">Need help? Just ask your coach.</span></button><button class="actionCard" data-open="pacer"><b>⚡ TRAINING TOOLS</b><span class="muted">Pace and distance tools in one place.</span></button><button class="actionCard mwMessageHomeCard" data-open="messages"><b>💬 MESSAGES <em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></b><span class="muted">Read messages from your coach and reply in one place.</span></button></div>
 </div>
 </section>
+<section class="view" id="messages">
+<div class="top"><div><div class="logo"><b>MW</b> MESSAGES</div><div class="sub">COACH COMMUNICATION</div></div><div class="topActions"><div class="online"><span class="dot">●</span> CONNECTED</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+<div id="mwAthleteInboxCard" class="card mwMessageCard"><div class="cardHead"><span>MESSAGES</span><span id="mwMessageUnreadLabel" class="smalllink">0 UNREAD</span></div><div class="mwAthleteMessageSearch"><span>⌕</span><input id="mwAthleteMessageSearch" autocomplete="off" placeholder="Search coach conversations"></div><div id="mwAthleteInbox" class="mwConversationList"><div class="lockNote">Loading conversations…</div></div></div>
+<div id="mwAthleteThreadCard" class="card mwAthleteThreadCard" style="display:none"><div class="mwAthleteThreadHead"><button id="mwAthleteThreadBack" class="entryGhost" type="button">← MESSAGES</button><div><b id="mwAthleteThreadCoach">MW Coach</b><small>Coach conversation</small></div></div><div id="mwAthleteThreadList" class="mwAthleteThreadList"></div><textarea id="mwReplyText" rows="3" placeholder="Message your coach…"></textarea><button id="mwSendReply" class="save" style="margin-top:10px">SEND</button><div id="mwReplyStatus" class="lockNote" style="display:none;margin-top:10px"></div></div>
+</section>
+
 <section class="view" id="coach">
 <div class="top"><div><div class="logo"><b>MW</b> COACH AI</div><div class="sub">POWERED BY MW SPRINT PERFORMANCE</div></div><div class="topActions"><div class="online"><span class="dot">●</span> ONLINE</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
 <div class="premiumRail">
@@ -643,19 +678,34 @@ body.mw-auth-ready #mwAuth{display:none!important}
 
 <section class="view" id="workouts">
 <div class="top"><div><div class="logo"><b>MW</b> WORKOUTS</div><div class="sub">MW PERFORMANCE SYSTEM</div></div><div class="online"><span class="dot">●</span> MW DATA</div></div>
-<div class="card"><div class="cardHead"><span>WEEK <span id="completionWeek">1</span> COMPLETION</span><span id="unlockBadge" class="smalllink">IN PROGRESS</span></div><p class="muted">Check off each prescribed training session as you finish it. Your MW progression uses these completions with your selected unlock rule.</p><div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div></div>
-<div class="card knowledgeStatus"><div class="cardHead">MW SOURCE CONNECTION <span class="smalllink">VERIFIED</span></div>
-<h2>41 / 41 strength weeks connected</h2>
-<p class="muted">Coach MW can now retrieve the exact MW Strength & Power prescription for every week, including phase, lifting sessions, circuits, loads, checkpoint logic and Coach MW notes. Track-first remains the governing rule.</p>
-<div class="coverage"><span>✓ W1–8 FOUNDATION</span><span>✓ W9–16 STRENGTH</span><span>✓ W17–24 POWER</span><span>✓ W25–33 COMP</span><span>✓ W34–41 PEAK</span></div></div>
+<div class="card"><div class="cardHead"><span>WEEK <span id="completionWeek">1</span></span><span id="unlockBadge" class="smalllink">IN PROGRESS</span></div><h2>Finish training. Tap DONE. That’s it. 🔥</h2><p class="muted" id="completionRepHint">If today has a target pace, MW will ask one quick question. No typing. No homework.</p><div class="performanceHint" id="performanceHint"><b>QUICK CHECK-IN:</b> “Did you hit your target pace?” → Yes, or tap how many reps you hit.</div><div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div></div>
 <div class="card">
 <div class="cardHead">WEEKLY WEIGHT ROOM <span id="strengthPhaseLabel" class="smalllink"></span></div>
 <div class="weekChooser"><label>MW WEEK</label><select id="strengthWeek"></select></div>
 <div id="strengthPlan" class="strengthPlan"></div>
 <button id="askStrength" class="smartBtn">ASK COACH MW ABOUT THIS WEEK</button>
 </div>
-<div class="card"><div class="cardHead">TRACK KNOWLEDGE STATUS <span class="smalllink">INTEGRATION ACTIVE</span></div>
-<p class="muted">Verified MW track assets currently connected include Week 1 acceleration material, Week 17 race-specific work, Week 21 training material, Competition Warm-Up, and selected workout/drill assets. Coach MW will not invent a missing track prescription. Coach MW will not invent a missing track prescription and will ask for the prescribed session when exact week data is unavailable.</p></div>
+<div class="card" id="strengthPerformanceCard">
+<div class="cardHead"><span>QUICK STRENGTH CHECK-IN</span><span class="smalllink">2 TAPS</span></div>
+<h2>Did you do the strength workout?</h2>
+<p class="muted">Tap what happened. Detailed set logging is optional.</p>
+<div id="strengthQuickCheckins" class="quickStrength"><div class="muted">Loading this week’s strength days…</div></div>
+<div id="strengthPerformanceStatus" class="lockNote">Your coach sees these check-ins automatically.</div>
+<details class="advancedLog"><summary>OPTIONAL: LOG A SPECIFIC SET</summary>
+<div class="strengthLogGrid">
+<label>TRAINING DAY<select id="strengthLogDay"><option value="1">Day 1</option><option value="2">Day 2</option><option value="3">Day 3</option><option value="4">Day 4</option></select></label>
+<label>EXERCISE<input id="strengthLogExercise" list="strengthExerciseList" placeholder="e.g. Back Squat"><datalist id="strengthExerciseList"></datalist></label>
+<label>SET #<input id="strengthLogSet" type="number" min="1" max="20" value="1"></label>
+<label>REPS<input id="strengthLogReps" type="number" min="0" max="100" placeholder="5"></label>
+<label>TARGET <span style="color:#6f8190">optional</span><input id="strengthLogTarget" type="number" min="0" step="0.5" placeholder="225"></label>
+<label>ACTUAL LOAD<input id="strengthLogActual" type="number" min="0" step="0.5" placeholder="225"></label>
+<label>UNIT<select id="strengthLogUnit"><option value="lb">lb</option><option value="kg">kg</option></select></label>
+<label>SET RPE <span style="color:#6f8190">optional</span><select id="strengthLogRpe"><option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></label>
+</div>
+<button id="saveStrengthPerformance" class="save">SAVE SPECIFIC SET</button>
+<div id="strengthLogRecent" class="strengthLogRecent"></div>
+</details>
+</div>
 </section>
 <section class="view" id="pacer"><div class="top"><div class="logo"><b>MW</b> PACER</div></div><div class="card"><h2>MW Performance Tools</h2><p class="muted">Your pacing tools are connected to this MW account.</p><button class="save" onclick="location.href='/pace-ai/'">OPEN SPRINT PACE AI</button><button class="save" onclick="location.href='/distance-pacer/'">OPEN DISTANCE PACER</button></div></section>
 <section class="view" id="athlete"><div class="top"><div class="logo"><b>MW</b> ATHLETE</div></div>
@@ -694,7 +744,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
 </div><div class="lockNote" style="margin-top:10px">MW calculates working loads from these four established maximums. Technique, age, and readiness still control the prescription.</div><button id="saveLiftMaxes" class="save">SAVE WEIGHT ROOM MAXES</button><div id="liftMaxStatus" class="lockNote">These maxes stay synchronized with the coaching dashboard and Coach MW.</div></div></section>
 
 <section class="view" id="progress"><div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">YOUR TRAINING JOURNEY</div></div><button class="gearBtn" data-open-settings>⚙</button></div><div class="heroCard"><div class="cardHead"><span>PROGRAM PROGRESS</span><span id="progressPct" class="smalllink">0%</span></div><h2 id="progressHeadline">Week 1</h2><div class="progressBar"><i id="progressBarFill"></i></div><div class="metricGrid"><div class="metric"><strong id="progressStart">—</strong><small>START DATE</small></div><div class="metric"><strong id="progressCompleted">0</strong><small>WORKOUTS DONE</small></div><div class="metric"><strong id="progressWeeks">0</strong><small>WEEKS COMPLETE</small></div></div></div><div class="card"><div class="cardHead">CURRENT WEEK <span id="progressCurrentWeek" class="smalllink">WEEK 1</span></div><div id="progressChecklist" class="checkList"></div></div></section>
-<section class="view" id="settings"><div class="top"><div><div class="logo"><b>MW</b> SETTINGS</div><div class="sub">YOUR MW EXPERIENCE</div></div><button class="gearBtn" data-open="home">×</button></div><div class="settingGroup"><h3>YOUR COACH MW</h3><div class="settingRow"><label>COACH PREFERENCE</label><select id="settingsCoachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div><div class="lockNote">Choose once during setup. You can change your Coach MW here anytime.</div></div><div class="settingGroup"><h3>COACH MW VOICE</h3><div class="settingRow"><label>VOICE SPEED</label><select id="voiceSpeed"><option value="0.9">0.9× Relaxed</option><option value="1" selected>1.0× Natural</option><option value="1.1">1.1× Quick</option><option value="1.2">1.2× Fast</option></select></div><div class="settingRow"><label>VOICE RESPONSE</label><select id="voiceMode"><option value="fast" selected>Fast — start speaking sooner</option><option value="standard">Standard — full response audio</option></select></div><div class="settingRow"><label>AUTO-PLAY COACH VOICE</label><select id="autoVoice"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>ACCOUNT & NOTIFICATIONS</h3><div class="settingRow"><label>WORKOUT REMINDERS</label><select id="workoutReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>MEET REMINDERS</label><select id="meetReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>COACH MESSAGE ALERTS</label><select id="messageAlerts"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>HELP & ACCOUNT</h3><div class="accountLinkGrid"><button type="button" class="accountLink" id="helpCenterBtn">HELP CENTER</button><button type="button" class="accountLink" id="reportIssueBtn">REPORT A PROBLEM</button><button type="button" class="accountLink" id="privacyBtn">PRIVACY</button><button type="button" class="accountLink" id="termsBtn">TERMS</button><button type="button" class="accountLink" id="deleteAccountBtn">DELETE ACCOUNT</button></div></div><div class="settingGroup"><h3>PROGRAM PROGRESSION</h3><div class="lockNote"><b>MW-controlled progression.</b><br>Your official week is synced from MW Dynasty. Athletes cannot unlock future weeks or change progression rules.</div></div><button id="saveSettings" class="save">SAVE SETTINGS</button><button id="replayTour" class="entryGhost">REPLAY APP TUTORIAL</button><button id="mwSignOut" class="mwSignOut">SIGN OUT</button></section>
+<section class="view" id="settings"><div class="top"><div><div class="logo"><b>MW</b> SETTINGS</div><div class="sub">YOUR MW EXPERIENCE</div></div><button class="gearBtn" data-open="home">×</button></div><div class="settingGroup"><h3>YOUR COACH MW</h3><div class="settingRow"><label>COACH PREFERENCE</label><select id="settingsCoachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div><div class="lockNote">Choose once during setup. You can change your Coach MW here anytime.</div></div><div class="settingGroup"><h3>COACH MW VOICE</h3><div class="settingRow"><label>VOICE SPEED</label><select id="voiceSpeed"><option value="0.9">0.9× Relaxed</option><option value="1" selected>1.0× Natural</option><option value="1.1">1.1× Quick</option><option value="1.2">1.2× Fast</option></select></div><div class="settingRow"><label>VOICE RESPONSE</label><select id="voiceMode"><option value="fast" selected>Fast — start speaking sooner</option><option value="standard">Standard — full response audio</option></select></div><div class="settingRow"><label>AUTO-PLAY COACH VOICE</label><select id="autoVoice"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>ACCOUNT & NOTIFICATIONS</h3><div class="settingRow"><label>WORKOUT REMINDERS</label><select id="workoutReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>MEET REMINDERS</label><select id="meetReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>COACH MESSAGE ALERTS</label><select id="messageAlerts"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>MEMBERSHIP</h3><div class="lockNote"><b id="mwAthleteMembershipPrice">MW Athlete · $19/month</b><br><span id="mwAthleteBillingStatus">Loading secure membership status…</span></div><button type="button" class="accountLink" id="mwContinueSelfPay" style="display:none;margin-top:10px">CONTINUE ON MY OWN</button><div class="lockNote" id="mwBillingTransitionNote" style="display:none;margin-top:10px"></div></div><div class="settingGroup"><h3>HELP & ACCOUNT</h3><div class="lockNote">MW Dynasty 3.0.16 · iOS Build 7</div><div class="accountLinkGrid"><button type="button" class="accountLink" id="helpCenterBtn">HELP CENTER</button><button type="button" class="accountLink" id="reportIssueBtn">REPORT A PROBLEM</button><button type="button" class="accountLink" id="privacyBtn">PRIVACY</button><button type="button" class="accountLink" id="termsBtn">TERMS</button><button type="button" class="accountLink" id="deleteAccountBtn">DELETE ACCOUNT</button></div></div><div class="settingGroup"><h3>PROGRAM PROGRESSION</h3><div class="lockNote"><b>MW-controlled progression.</b><br>Your official week is synced from MW Dynasty. Athletes cannot unlock future weeks or change progression rules.</div></div><button id="saveSettings" class="save">SAVE SETTINGS</button><button id="replayTour" class="entryGhost">REPLAY APP TUTORIAL</button><button id="mwSignOut" class="mwSignOut">SIGN OUT</button></section>
 </main>
 
 <div class="tourOverlay" id="mwTour" aria-modal="true" role="dialog" aria-label="MW Dynasty guided app tour">
@@ -751,7 +801,24 @@ body.mw-auth-ready #mwAuth{display:none!important}
   </div>
 </div>
 
-<nav class="nav"><button class="active" data-v="home"><b>⌂</b>HOME</button><button data-v="coach"><b>◉</b>COACH</button><button data-v="workouts"><b>▣</b>PROGRAM</button><button data-v="progress"><b>◫</b>PROGRESS</button><button data-v="athlete"><b>♙</b>PROFILE</button></nav>
+
+<div class="paceModal" id="mwPaceModal" role="dialog" aria-modal="true" aria-label="Quick performance check-in">
+  <div class="paceSheet">
+    <div class="eyebrow">MW QUICK CHECK-IN</div>
+    <h2 id="paceQuestion">Did you hit your target pace for every rep?</h2>
+    <p id="paceHelp">One tap. Your coach gets the performance signal.</p>
+    <div id="paceYesNo" class="paceChoices">
+      <button type="button" class="paceYes" id="paceAllYes">✅ YES — ALL REPS</button>
+      <button type="button" class="paceNo" id="paceSomeNo">NO — SOME REPS</button>
+    </div>
+    <div id="paceRepStep" style="display:none">
+      <p><b>How many reps did you hit on pace?</b></p>
+      <div class="repChoices" id="paceRepChoices"></div>
+      <button type="button" class="paceBack" id="paceBack">← BACK</button>
+    </div>
+  </div>
+</div>
+<nav class="nav"><button class="active" data-v="home"><b>⌂</b>HOME</button><button data-v="coach"><b>◉</b>COACH</button><button data-v="workouts"><b>🏃</b>TRAIN</button><button data-v="progress"><b>◫</b>PROGRESS</button><button data-v="athlete"><b>♙</b>ME</button></nav>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const saved=JSON.parse(localStorage.getItem('mwPremiumProfile')||'{}');
@@ -785,7 +852,62 @@ function setCoachChoice(choice){
 }
 function sync(){let n=$('#name').value.trim();$('#helloName').textContent=(n||'Athlete')+'.';$('#weekBadge').textContent=$('#week').value||'1';applyCoachVisual(coachVisualChoice())}sync();
 $('#save').onclick=()=>{let d=getProfile();['name','coachType','p60','p100','p200','p300','p400','week','startDate','startWeek','maxPowerClean','maxFrontSquat','maxBackSquat','maxDeadlift'].forEach(k=>{if($('#'+k))d[k]=$('#'+k).value});localStorage.setItem('mwPremiumProfile',JSON.stringify(d));sync();renderEntryStatus();$('#save').textContent='✓ PROFILE SAVED';setTimeout(()=>$('#save').textContent='SAVE ATHLETE PROFILE',1200)};
-function openView(id){if(id==='workouts'&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Assessment required.</b><br>Complete your Athlete Profile Assessment to receive your MW training assignment.</div>'}}$$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));$$('.view').forEach(x=>x.classList.toggle('active',x.id===id)); if(id==='entry') syncEntrySeason(); if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();} if(id==='home'||id==='progress')renderProgressUI();}
+function mwFeatureEnabled(key){return window.mwFeatureAccess?.[key]===true}
+function mwFeatureLock(title,message){if(typeof window.o==='function')window.o(title,`<p>${message}</p><button class="save" onclick="document.querySelector('#mwUtilityClose')?.click()">GOT IT</button>`);else alert(message)}
+function mwMaxEligibleDob(){const d=new Date();d.setFullYear(d.getFullYear()-13);return d.toISOString().slice(0,10)}
+function mwPromptDobVerification(){
+  if(!window.mwDobRequired)return;
+  o('Confirm Age Eligibility',`<p>MW Dynasty athlete accounts require age 13 or older. Add your date of birth once to finish age verification.</p><label style="display:block;font-weight:800;margin:10px 0 6px">DATE OF BIRTH</label><input id="mwDobVerifyInput" type="date" max="${mwMaxEligibleDob()}" style="width:100%;padding:12px;border-radius:10px;border:1px solid #315064;background:#071923;color:white"><button id="mwDobVerifySave" class="save" style="margin-top:12px">VERIFY & CONTINUE</button><p id="mwDobVerifyState" class="lockNote" style="display:none;margin-top:10px"></p>`);
+  const btn=document.getElementById('mwDobVerifySave'),state=document.getElementById('mwDobVerifyState');
+  if(!btn)return;
+  btn.onclick=async()=>{
+    const dob=document.getElementById('mwDobVerifyInput')?.value||'';
+    if(!dob){state.style.display='block';state.textContent='Enter your date of birth.';return}
+    if(dob>mwMaxEligibleDob()){state.style.display='block';state.textContent='MW Dynasty athlete accounts require age 13 or older.';return}
+    btn.disabled=true;btn.textContent='VERIFYING…';state.style.display='block';state.textContent='';
+    try{
+      const s=sess();if(!s?.access_token)throw new Error('Sign in again to verify your age.');
+      const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_set_athlete_date_of_birth',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_date_of_birth:dob})});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.error||'Age verification failed.');
+      window.mwDobRequired=false;if(window.mwRemoteProfile)window.mwRemoteProfile.dateOfBirth=dob;
+      state.textContent='✓ Age verified.';setTimeout(()=>c(),450)
+    }catch(e){state.textContent=e.message||'Age verification failed.'}
+    finally{btn.disabled=false;btn.textContent='VERIFY & CONTINUE'}
+  };
+}
+function mwEsc(v){return String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]))}
+async function mwRenderCoachAssignedTraining(){
+  const view=document.querySelector('#workouts');if(!view)return;
+  view.innerHTML=`<div class="top"><div><div class="logo"><b>MW</b> TRAINING</div><div class="sub">COACH-ASSIGNED PROGRAM</div></div><div class="online"><span class="dot">●</span> CONNECTED</div></div><div id="mwAssignedTrainingState" class="card"><h2>Loading your coach-assigned training…</h2></div>`;
+  const state=document.querySelector('#mwAssignedTrainingState');
+  try{
+    const t=window.mwGetSessionToken?.()||'';const r=await fetch('/api/assigned-program',{headers:{Authorization:`Bearer ${t}`},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training could not be loaded.');
+    const programs=Array.isArray(d.programs)?d.programs:[],checkins=Array.isArray(d.checkins)?d.checkins:[];
+    const tier=window.mwFeatureAccess?.access_mode==='coach_intelligence'?'Coach Intelligence':'Coach Core';
+    const intro=`<div class="card"><div class="cardHead"><span>${mwEsc(tier.toUpperCase())}</span><span class="smalllink">SPONSORED ATHLETE</span></div><h2>Your coach's program lives here.</h2><p class="muted">Your coach controls the training. Use Coach MW for the help included with your coach's plan, message your coach when needed, and log what happened after training.</p></div>`;
+    const cards=programs.length?programs.map(p=>{const text=typeof p.content==='string'?p.content:(p.content?.text||'Program details are managed by your coach.');const latest=checkins.find(x=>x.assignment_id===p.assignment_id);return `<div class="card" data-mw-assignment="${mwEsc(p.assignment_id)}"><div class="cardHead"><span>${mwEsc(p.program_name||'Coach Program')}</span><span class="smalllink">${mwEsc((p.program_type||'training').toUpperCase())}</span></div><p class="muted">Coach ${mwEsc(p.coach_name||'MW Coach')}${p.group_name?` · ${mwEsc(p.group_name)}`:''}${p.start_date?` · Starts ${mwEsc(p.start_date)}`:''}</p><div class="lockNote" style="white-space:pre-wrap;text-align:left">${mwEsc(text)}</div>${latest?`<div class="lockNote" style="margin-top:10px"><b>Latest check-in:</b> ${mwEsc(String(latest.status||'completed').replaceAll('_',' '))}${latest.session_rpe?` · RPE ${latest.session_rpe}/10`:''}${latest.pace_check_status?` · ${mwEsc(String(latest.pace_check_status).replaceAll('_',' '))}`:''}</div>`:''}<details style="margin-top:12px"><summary style="cursor:pointer;color:#55c9ff;font-weight:800">LOG TODAY'S TRAINING</summary><div class="profilegrid" style="margin-top:10px"><div class="field"><label>COMPLETION</label><select data-checkin-status><option value="completed">Completed</option><option value="partial">Partial</option><option value="modified">Modified</option><option value="skipped">Skipped</option></select></div><div class="field"><label>SESSION RPE</label><select data-checkin-rpe><option value="">—</option>${Array.from({length:10},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select></div><div class="field"><label>PACE</label><select data-checkin-pace><option value="not_applicable">Not applicable</option><option value="on_pace">Hit target pace</option><option value="missed">Missed target pace</option></select></div><div class="field"><label>REPS TOTAL</label><input data-checkin-total type="number" min="0" max="999" inputmode="numeric"></div><div class="field"><label>REPS HIT</label><input data-checkin-hit type="number" min="0" max="999" inputmode="numeric"></div></div><div class="field" style="margin-top:8px"><label>NOTE (OPTIONAL)</label><textarea data-checkin-note rows="3" maxlength="2000" placeholder="Anything your coach should know?"></textarea></div><button class="save" data-submit-checkin style="margin-top:10px">SAVE CHECK-IN</button><div data-checkin-state class="lockNote" style="display:none;margin-top:8px"></div></details></div>`}).join(''):`<div class="card"><h2>No active coach program assigned yet.</h2><p class="muted">Your coach connection is active, but there is not an active program assignment to display. Message your coach from MW Dynasty.</p><button class="save" onclick="openView('messages')">MESSAGE MY COACH</button></div>`;
+    state.outerHTML=intro+cards;
+    document.querySelectorAll('[data-mw-assignment]').forEach(card=>{card.querySelector('[data-submit-checkin]')?.addEventListener('click',async()=>{const btn=card.querySelector('[data-submit-checkin]'),st=card.querySelector('[data-checkin-state]');btn.disabled=true;btn.textContent='SAVING…';st.style.display='block';st.textContent='';try{const body={assignmentId:card.dataset.mwAssignment,status:card.querySelector('[data-checkin-status]').value,sessionRpe:card.querySelector('[data-checkin-rpe]').value||null,paceStatus:card.querySelector('[data-checkin-pace]').value||null,repsTotal:card.querySelector('[data-checkin-total]').value||null,repsHit:card.querySelector('[data-checkin-hit]').value||null,note:card.querySelector('[data-checkin-note]').value.trim()};const rr=await fetch('/api/assigned-program',{method:'POST',headers:{Authorization:`Bearer ${window.mwGetSessionToken?.()||''}`,'Content-Type':'application/json'},body:JSON.stringify(body)});const out=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(out.error||'Check-in could not be saved.');st.textContent='✓ Check-in saved. Your coach can see it.';setTimeout(()=>mwRenderCoachAssignedTraining(),700)}catch(e){st.textContent=e.message||'Check-in failed.'}finally{btn.disabled=false;btn.textContent='SAVE CHECK-IN'}})});
+  }catch(e){state.innerHTML=`<h2>Training unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p>`}
+}
+async function mwRenderSponsoredProgress(){
+  const view=document.querySelector('#progress');if(!view)return;view.innerHTML=`<div class="top"><div><div class="logo"><b>MW</b> ACTIVITY</div><div class="sub">COACH-CONNECTED CHECK-INS</div></div><button class="gearBtn" data-open-settings>⚙</button></div><div id="mwActivityState" class="card"><h2>Loading your activity…</h2></div>`;
+  const state=document.querySelector('#mwActivityState');try{const r=await fetch('/api/assigned-program',{headers:{Authorization:`Bearer ${window.mwGetSessionToken?.()||''}`},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Activity could not be loaded.');const c=Array.isArray(d.checkins)?d.checkins:[];state.innerHTML=`<div class="cardHead"><span>TRAINING CHECK-INS</span><span class="smalllink">${c.length} RECORDED</span></div>${c.length?`<div class="checkList">${c.slice(0,30).map(x=>`<div class="checkItem"><b>${mwEsc(String(x.status||'completed').replaceAll('_',' ').toUpperCase())}</b><span class="muted">${mwEsc(new Date(x.completed_at).toLocaleDateString())}${x.session_rpe?` · RPE ${x.session_rpe}/10`:''}${x.pace_check_status?` · ${mwEsc(String(x.pace_check_status).replaceAll('_',' '))}`:''}${x.pace_reps_total!=null?` · ${Number(x.pace_reps_hit||0)}/${Number(x.pace_reps_total)} reps`:''}</span>${x.athlete_note?`<small>${mwEsc(x.athlete_note)}</small>`:''}</div>`).join('')}</div>`:'<p class="muted">No check-ins yet. Open Training after your coach assigns a program.</p>'}`;}catch(e){state.innerHTML=`<h2>Activity unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p>`}}
+function openView(id){
+  const access=window.mwFeatureAccess||{};
+  if(window.mwDobRequired){mwPromptDobVerification();return}
+  if(id==='entry'&&access.smart_entry!==true){mwFeatureLock('MW Smart Entry','Smart Entry is part of the complete MW Sprint Performance athlete experience. Your current sponsored access follows your coach’s assigned program.');return}
+  if(id==='pacer'&&access.advanced_performance_tools!==true){mwFeatureLock('MW Performance Tools','The full MW pacing and advanced performance-tool suite is unlocked with MW Sprint Performance. Your coach-sponsored plan still supports training check-ins inside your assigned program.');return}
+  const coachAssigned=id==='workouts'&&access.mw_training_system!==true&&access.coach_assigned_training===true;
+  if(id==='workouts'&&!coachAssigned&&access.mw_training_system!==true&&access.athlete_app===true){mwFeatureLock('Training Access','Your account is active, but no training source is currently available.');return}
+  if(id==='workouts'&&!coachAssigned&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Assessment required.</b><br>Complete your Athlete Profile Assessment to receive your MW training assignment.</div>'}}
+  $$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));$$('.view').forEach(x=>x.classList.toggle('active',x.id===id));
+  if(id==='entry')syncEntrySeason();
+  if(id==='workouts'&&coachAssigned){mwRenderCoachAssignedTraining();}
+  else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
+  if(id==='progress'&&access.mw_training_system!==true&&access.coach_assigned_training===true)mwRenderSponsoredProgress();else if(id==='home'||id==='progress')renderProgressUI();
+  if(id==='messages')window.mwLoadCoachMessages?.(true);
+}
 $$('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v));
 
 
@@ -905,12 +1027,10 @@ if($('#replayTour'))$('#replayTour').onclick=()=>startTour(true);
 
 
 const QS_STEPS=[
-  {icon:'◉',eyebrow:'YOUR AI COACH',title:'Meet Coach MW',body:'Ask about today’s workout, technique, recovery, race strategy, strength, or pacing.',mini:'🧠',previewTitle:'COACH MW',previewBody:'Ask about training, pace, technique or recovery.'},
-  {icon:'▣',eyebrow:'YOUR TRAINING PLAN',title:'Your Program',body:'See your official week, review prescribed sessions, and mark completed work without changing your true training status.',mini:'📅',previewTitle:'MY PROGRAM',previewBody:'See your active week and mark workouts complete.'},
-  {icon:'🏋️',eyebrow:'STRENGTH + BAR LOADING',title:'Strength & Weights',body:'Save your maxes once. MW calculates weekly working loads and can show exactly what plates go on the bar.',mini:'🏋️',previewTitle:'STRENGTH & WEIGHTS',previewBody:'Sets, reps, working load, and plate setup.'},
-  {icon:'⚡',eyebrow:'INDIVIDUALIZED PACE',title:'Sprint Pace AI',body:'Your PRs become individualized training targets so you know what time to hit before every paceable rep.',mini:'⚡',previewTitle:'SPRINT PACE AI',previewBody:'Workout targets, rep execution and pace calculator.'},
-  {icon:'📍',eyebrow:'MEASURE THE REP',title:'Distance Pacer',body:'Know exactly where the rep ends on a track, football field or open space—without guessing.',mini:'📍',previewTitle:'DISTANCE PACER',previewBody:'Track, football field and GPS distance marks.'},
-  {icon:'✦',eyebrow:'YOU’RE READY',title:'Welcome to MW Dynasty',body:'Your training. Your pace. Your strength. Your coach. One system built to help you execute.',mini:'MW',previewTitle:'ONE LOGIN. ONE SYSTEM.',previewBody:'Coach MW • Program • Strength • Pace AI • Distance Pacer',ready:true,tagline:'TRAIN. UNDERSTAND. EXECUTE.'}
+  {icon:'🏃',eyebrow:'1. TRAIN',title:'Your Training',body:'Open TRAIN. Do the workout. Tap DONE when you finish.',mini:'🏃',previewTitle:'TRAIN',previewBody:'Your current MW week and strength plan.'},
+  {icon:'🧠',eyebrow:'2. ASK',title:'Coach MW',body:'If you need help, ask Coach MW like you would ask a coach at practice.',mini:'🧠',previewTitle:'COACH MW',previewBody:'Ask a question. Get help.'},
+  {icon:'⚡',eyebrow:'3. USE',title:'Training Tools',body:'Use Pace AI when you need a target and Distance Pacer when you need a mark.',mini:'⚡',previewTitle:'TOOLS',previewBody:'Pace + distance. Simple.'},
+  {icon:'✦',eyebrow:'YOU’RE READY',title:'That’s It',body:'Train. Check in. Keep getting better.',mini:'MW',previewTitle:'MW DYNASTY',previewBody:'TRAIN • UNDERSTAND • EXECUTE',ready:true,tagline:'LET’S WORK. 🔥'}
 ];
 let qsIndex=0;
 function qsStorageKey(){return 'mwOnboardingComplete:'+String(mwOnboardingUserKey||'local')}
@@ -954,7 +1074,10 @@ if($('#replayTour'))$('#replayTour').onclick=()=>startQuickStart(true);
 const DEFAULT_PREFS={voiceSpeed:'1',voiceMode:'fast',autoVoice:'on',workoutReminders:'on',meetReminders:'on',messageAlerts:'on'};
 function getPrefs(){return {...DEFAULT_PREFS,...JSON.parse(localStorage.getItem('mwPrefs')||'{}')}}
 let mwCompletionCache={};
+let mwSessionRpeCache={};
+let mwPaceCheckCache={};
 let mwCompletionLoaded=false;
+let mwPendingCompletion=null;
 function getCompletion(){return mwCompletionCache}
 function completionHeaders(extra={}){
   const raw=localStorage.getItem('mwSupabaseSession');
@@ -965,40 +1088,97 @@ function completionHeaders(extra={}){
 function completionAthleteId(){return (typeof mwRemoteProfile!=='undefined'&&mwRemoteProfile?.athleteId)?mwRemoteProfile.athleteId:null}
 function workoutKey(w,i){return `mw-track-w${Number(w)}-d${Number(i)}`}
 function rowsToCompletion(rows){
-  const out={};
+  const out={};mwPaceCheckCache={};
   for(const r of (Array.isArray(rows)?rows:[])){
     const w=String(Number(r.program_week||0)),d=Number(r.program_day||0);
-    if(!w||!d||r.completion_status!=='completed')continue;
+    if(!w||!d||r.completion_status!=='completed'||!String(r.workout_key||'').startsWith('mw-track-'))continue;
     out[w]=out[w]||{};out[w]['s'+d]=true;
+    if(r.session_rpe!=null){mwSessionRpeCache[w]=mwSessionRpeCache[w]||{};mwSessionRpeCache[w]['s'+d]=Number(r.session_rpe)}
+    if(Number(r.pace_reps_total)>0){mwPaceCheckCache[w]=mwPaceCheckCache[w]||{};mwPaceCheckCache[w]['s'+d]={status:r.pace_check_status||'',hit:Number(r.pace_reps_hit||0),total:Number(r.pace_reps_total||0)}}
   }
   return out;
 }
 async function loadWorkoutCompletions(){
   const aid=completionAthleteId();if(!aid)return;
-  const r=await fetch(SUPABASE_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,program_day,workout_key,completion_status,completed_at',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(SUPABASE_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load workout completion history.');
   mwCompletionCache=rowsToCompletion(rows);mwCompletionLoaded=true;
 }
-async function markWorkoutComplete(w,i,button){
+async function paceRepTotalForWorkout(w,d){
+  try{
+    const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===Number(d));
+    const m=String(session?.work||'').match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
+    return m?Math.max(1,Math.min(60,Number(m[1]))):null;
+  }catch{return null}
+}
+async function markWorkoutComplete(w,i,button,pace={status:'not_applicable',hit:null,total:null}){
   const aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
+  const repEnabled=!!getProfile().repTracking;
   if(getCompletion()[String(w)]?.['s'+i])return;
   if(button){button.disabled=true;button.textContent='SAVING…'}
-  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',completed_at:new Date().toISOString()};
+  const total=repEnabled&&Number(pace?.total)>0?Number(pace.total):null,hit=total==null?null:Math.max(0,Math.min(total,Number(pace?.hit)||0));
+  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',session_rpe:null,pace_check_status:repEnabled?(pace?.status||'not_applicable'):'not_applicable',pace_reps_total:total,pace_reps_hit:hit,performance_checked_at:repEnabled&&total?new Date().toISOString():null,completed_at:new Date().toISOString()};
   try{
     const r=await fetch(SUPABASE_URL+'/rest/v1/workout_completions?on_conflict=athlete_id,workout_key',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
     const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
     mwCompletionCache[String(w)]=mwCompletionCache[String(w)]||{};mwCompletionCache[String(w)]['s'+i]=true;
+    if(total){mwPaceCheckCache[String(w)]=mwPaceCheckCache[String(w)]||{};mwPaceCheckCache[String(w)]['s'+i]={status:payload.pace_check_status,hit,total}}
     try{await window.mwReloadAccount?.()}catch{}
     renderCompletion();renderProgressUI();
   }finally{if(button)button.disabled=false}
 }
+function closePaceCheckin(){document.getElementById('mwPaceModal')?.classList.remove('show');mwPendingCompletion=null}
+function showPaceRepChoices(total){
+  const box=document.getElementById('paceRepChoices');if(!box)return;box.innerHTML='';
+  for(let hit=0;hit<=total;hit++){
+    const b=document.createElement('button');b.type='button';b.className='repChoice';b.innerHTML=`<strong>${hit}/${total}</strong>${hit===0?'NONE':hit===total?'ALL':'ON PACE'}`;
+    b.onclick=async()=>{const p=mwPendingCompletion;if(!p)return;closePaceCheckin();const status=hit===total?'all':hit===0?'none':'some';try{await markWorkoutComplete(p.w,p.i,p.button,{status,hit,total})}catch(e){if(p.button)p.button.textContent='TRY AGAIN';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}};box.appendChild(b)
+  }
+}
+async function beginWorkoutCheckin(w,i,button){
+  if(getCompletion()[String(w)]?.['s'+i])return;
+  if(!getProfile().repTracking){try{await markWorkoutComplete(w,i,button,{status:'not_applicable'})}catch(e){if(button)button.textContent='TRY AGAIN';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}return}
+  if(button){button.disabled=true;button.textContent='CHECKING…'}
+  const total=await paceRepTotalForWorkout(w,i);
+  if(button){button.disabled=false;button.textContent='DONE'}
+  if(!total){try{await markWorkoutComplete(w,i,button,{status:'not_applicable'})}catch(e){button.textContent='TRY AGAIN';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}return}
+  mwPendingCompletion={w,i,button,total};
+  const modal=document.getElementById('mwPaceModal'),yesNo=document.getElementById('paceYesNo'),repStep=document.getElementById('paceRepStep');
+  if(yesNo)yesNo.style.display='grid';if(repStep)repStep.style.display='none';
+  document.getElementById('paceQuestion').textContent=`Did you hit your target pace for all ${total} reps?`;
+  document.getElementById('paceHelp').textContent='One tap. No times to type unless you want detailed tracking.';
+  modal?.classList.add('show');
+}
+document.getElementById('paceAllYes')?.addEventListener('click',async()=>{const p=mwPendingCompletion;if(!p)return;closePaceCheckin();try{await markWorkoutComplete(p.w,p.i,p.button,{status:'all',hit:p.total,total:p.total})}catch(e){if(p.button)p.button.textContent='TRY AGAIN'}});
+document.getElementById('paceSomeNo')?.addEventListener('click',()=>{const p=mwPendingCompletion;if(!p)return;document.getElementById('paceYesNo').style.display='none';document.getElementById('paceRepStep').style.display='block';showPaceRepChoices(p.total)});
+document.getElementById('paceBack')?.addEventListener('click',()=>{document.getElementById('paceYesNo').style.display='grid';document.getElementById('paceRepStep').style.display='none'});
+document.getElementById('mwPaceModal')?.addEventListener('click',e=>{if(e.target?.id==='mwPaceModal')closePaceCheckin()});
 function weekDone(w){const c=getCompletion()[String(w)]||{};return [1,2,3,4].every(i=>!!c['s'+i])}
 function completedCount(){const c=getCompletion();return Object.values(c).reduce((n,w)=>n+Object.values(w).filter(Boolean).length,0)}
 function weeksComplete(){let n=0;for(let w=1;w<=41;w++)if(weekDone(w))n++;return n}
 function scheduledWeek(){const p=getProfile();const start=Number(p.startWeek||p.entryAssessment?.assignedWeek||1);const d=p.startDate?new Date(p.startDate+'T00:00:00'):new Date();const days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));return Math.min(41,start+Math.floor(days/7))}
 function unlockedThrough(){const p=getProfile();return Math.max(1,Math.min(41,Number(p.week||p.startWeek||1)))}
 function advanceCurrentWeek(){const p=getProfile();const u=unlockedThrough();let current=Math.max(1,Number(p.week||p.startWeek||1));if(current<u && weekDone(current))current=Math.min(u,current+1);p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
-function renderCompletion(){const w=advanceCurrentWeek();if($('#completionWeek'))$('#completionWeek').textContent=w;const c=getCompletion(), wc=c[String(w)]||{};const box=$('#weekChecklist');if(box){box.innerHTML='';for(let i=1;i<=4;i++){const row=document.createElement('div');row.className='checkRow'+(wc['s'+i]?' done':'');row.innerHTML=`<span><b>Workout ${i}</b><br><small class="muted">Week ${w} prescribed session</small></span><button data-session="${i}">${wc['s'+i]?'✓ COMPLETE':'MARK COMPLETE'}</button>`;box.appendChild(row)}box.querySelectorAll('button').forEach(b=>b.onclick=async()=>{try{await markWorkoutComplete(w,Number(b.dataset.session),b)}catch(e){b.textContent='SAVE FAILED — RETRY';if($('#unlockNote'))$('#unlockNote').textContent='Could not save to MW Dynasty: '+(e.message||'Please try again.')}})}const done=weekDone(w), u=unlockedThrough();if($('#unlockBadge'))$('#unlockBadge').textContent=done?'WEEK COMPLETE':'IN PROGRESS';if($('#unlockNote'))$('#unlockNote').textContent=done?(u>w?`Week ${Math.min(41,w+1)} is unlocked.`:`Work complete. Your next week unlocks on the official MW schedule.`):`Complete all 4 prescribed sessions to finish Week ${w}.`;}
+function renderCompletion(){
+  const w=advanceCurrentWeek(),repEnabled=!!getProfile().repTracking;
+  const hint=$('#completionRepHint'),perfHint=$('#performanceHint');
+  if(hint)hint.textContent=repEnabled?'If today has a target pace, MW will ask one quick question. No typing. No homework.':'Rep-by-rep pace tracking is exclusive to athletes training inside the MW Sprint Performance System.';
+  if(perfHint)perfHint.style.display=repEnabled?'block':'none';
+  if($('#completionWeek'))$('#completionWeek').textContent=w;
+  const c=getCompletion(),wc=c[String(w)]||{},pace=mwPaceCheckCache[String(w)]||{},box=$('#weekChecklist');
+  if(!box)return;
+  box.innerHTML='';
+  for(let i=1;i<=4;i++){
+    const isDone=!!wc['s'+i],pc=pace['s'+i],row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
+    const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
+    row.innerHTML=`<span><b>Workout ${i}</b><br><small class="muted">Week ${w}${paceNote}</small></span><span class="completionActions"><button data-session="${i}">${isDone?'✓ DONE':'DONE'}</button></span>`;
+    box.appendChild(row);
+  }
+  box.querySelectorAll('button[data-session]').forEach(b=>b.onclick=()=>beginWorkoutCheckin(w,Number(b.dataset.session),b));
+  const isWeekDone=weekDone(w),u=unlockedThrough();
+  if($('#unlockBadge'))$('#unlockBadge').textContent=isWeekDone?'WEEK COMPLETE':'IN PROGRESS';
+  if($('#unlockNote'))$('#unlockNote').textContent=isWeekDone?(u>w?`Week ${Math.min(41,w+1)} is unlocked.`:'Nice work. Your next week follows the official MW schedule.'):`Finish your sessions and tap DONE. MW handles the rest.`;
+}
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='checkRow'+(wc['s'+i]?' done':'');r.innerHTML=`<span>Workout ${i}</span><b>${wc['s'+i]?'✓ Complete':'Not completed'}</b>`;pb.appendChild(r)}}}
 $$('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open));$$('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings'));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry');
 const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);localStorage.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
@@ -1088,6 +1268,28 @@ async function renderStrengthWeek(w){
     (d.tierLabel?`<div class="coachNoteBox"><b>${d.tierLabel.toUpperCase()} TIER:</b> ${[tg.volume,tg.effort,tg.loading,tg.priority].filter(Boolean).join(' ')}</div>`:'')+
     d.sections.map(s=>`<div class="strengthSection"><h4>${s.title}</h4>${s.entries.map(e=>`<div class="strengthRow"><span>${e[0]}</span><span>${e[1]}${workingLoadHTML(e[0],e[1])}</span></div>`).join('')}</div>`).join('')+
     (d.coachNote?`<div class="coachNoteBox"><b>COACH MW:</b> ${d.coachNote}</div>`:'');
+  const list=$('#strengthExerciseList');if(list){const names=[...new Set((d.sections||[]).flatMap(sec=>(sec.entries||[]).map(e=>String(e[0]||'').trim())).filter(Boolean))];list.innerHTML=names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('')}
+  try{await renderStrengthQuickCheckins(w)}catch{}
+}
+
+let mwStrengthQuickCache={};
+function strengthDayNumber(label,index){const x=String(label||'').toUpperCase();if(x.includes('MON')||x.includes('EARLY'))return 1;if(x.includes('TUE'))return 2;if(x.includes('WED'))return 3;if(x.includes('THU'))return 4;if(x.includes('FRI')||x.includes('LATE'))return 5;if(x.includes('SAT'))return 6;if(x.includes('SUN'))return 7;return Math.min(7,index+1)}
+async function loadStrengthQuickCheckins(){
+  const aid=completionAthleteId();if(!aid||!window.mwGetSessionToken?.())return;
+  const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,strength_day,day_label,status,note,recorded_at&order=recorded_at.desc&limit=200',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength check-ins.');mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}
+}
+async function saveStrengthQuickCheckin(w,day,label,status,button){
+  const aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');if(button){button.disabled=true;button.textContent='SAVING…'}
+  const payload={athlete_id:aid,program_week:Number(w),strength_day:Number(day),day_label:String(label||`Day ${day}`).slice(0,80),status,recorded_at:new Date().toISOString()};
+  try{const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_checkins?on_conflict=athlete_id,program_week,strength_day',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Strength check-in failed.');mwStrengthQuickCache[`${Number(w)}-${Number(day)}`]=payload;await renderStrengthQuickCheckins(w);const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent=status==='as_prescribed'?'✓ Got it. Your coach can see that you completed it as written.':'✓ Got it. Your coach can see that you modified the session.';}finally{if(button)button.disabled=false}
+}
+async function renderStrengthQuickCheckins(w){
+  const box=document.getElementById('strengthQuickCheckins');if(!box)return;const d=MW_STRENGTH[Number(w)];if(!d){box.innerHTML='<div class="muted">Strength plan not available yet.</div>';return}
+  if(!Object.keys(mwStrengthQuickCache).length){try{await loadStrengthQuickCheckins()}catch{}}
+  const sections=(d.sections||[]).filter(s=>Array.isArray(s.entries)&&s.entries.length);const seen=new Set(),days=[];sections.forEach((sec,idx)=>{const day=strengthDayNumber(sec.title,idx);if(seen.has(day))return;seen.add(day);days.push({day,label:String(sec.title||`Day ${day}`).replace(/[:–-].*$/,'').trim()||`Day ${day}`})});if(!days.length)days.push({day:1,label:'Strength Day'});
+  box.innerHTML=days.map(x=>{const saved=mwStrengthQuickCache[`${Number(w)}-${x.day}`],txt=saved?.status==='as_prescribed'?'✓ Done as written':saved?.status==='modified'?'↔ Modified':'Not checked in yet';return `<div class="strengthCheckRow ${saved?'saved':''}"><div class="rowTop"><span><b>${x.label}</b><br><small>${txt}</small></span><small>Week ${w}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${x.day}" data-label="${String(x.label).replace(/"/g,'&quot;')}" data-status="as_prescribed">✅ DID IT</button><button class="strengthChanged" data-sday="${x.day}" data-label="${String(x.label).replace(/"/g,'&quot;')}" data-status="modified">↔ CHANGED IT</button></div></div>`}).join('');
+  box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b)}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
 }
 function initStrength(){
   const sel=$('#strengthWeek'); if(!sel)return;
@@ -1277,7 +1479,7 @@ async function assessEntry(){
   }catch(e){out.innerHTML='<div class="warning">'+(e.message||'Smart Entry save failed. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & ASSIGN MY PROGRAM'}
 }
 $('#assess').onclick=assessEntry; syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>$('#voiceState').textContent='LISTENING…';r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>$('#voiceState').textContent='TAP MIC TO SPEAK';$('#mic').onclick=()=>r.start()}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>$('#voiceState').textContent='LISTENING…';r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>$('#voiceState').textContent='TAP MIC TO SPEAK';$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
 
 setTimeout(()=>{renderSavedConversation();refreshPremiumStatus()},50);
 const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.splice(0);saveConversation();$('#chat').innerHTML='<div class="msg coach">Fresh conversation. I still have your athlete profile and MW context. What are we working on?</div>'};
@@ -1289,7 +1491,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
   const SESSION_KEY='mwSupabaseSession';
   let mwSession=null;
-  let mwRemoteProfile={userId:'',name:'Athlete',coachType:'male',p60:'',p100:'',p200:'',p300:'',p400:'',week:'1',currentDay:'1',currentPhase:'1',programStatus:'not_started',startDate:'',startWeek:'1'};window.mwAssessmentComplete=false;window.mwAssessmentRequired=false;
+  let mwRemoteProfile={userId:'',name:'Athlete',coachType:'male',p60:'',p100:'',p200:'',p300:'',p400:'',week:'1',currentDay:'1',currentPhase:'1',programStatus:'not_started',startDate:'',startWeek:'1'};window.mwAssessmentComplete=false;window.mwAssessmentRequired=false;window.mwDobRequired=false;window.mwFeatureAccess={};
 
   function authStatus(msg,bad=false){const el=document.querySelector('#mwAuthStatus');if(el){el.textContent=msg||'';el.style.color=bad?'#ff9caa':'#55c9ff'}}
   function saveSession(s){mwSession=s;localStorage.setItem(SESSION_KEY,JSON.stringify(s))}
@@ -1297,14 +1499,59 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW connection failed');return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
+  function applyAthleteAccessUI(){
+    const a=window.mwFeatureAccess||{};
+    const full=a.mw_training_system===true;
+    const intelligence=a.ai_intelligence===true&&!full;
+    const sponsored=String(a.access_mode||'').startsWith('coach_');
+    const home=document.querySelector('#home');
+    const trainCard=home?.querySelector('[data-open="workouts"]');
+    const toolsCard=home?.querySelector('[data-open="pacer"]');
+    const trainingYear=document.querySelector('#homeTrainingYear');
+    const progressBtn=document.querySelector('.nav button[data-v="progress"]');
+    const entryBtn=document.querySelector('#openEntry');
+    if(trainingYear)trainingYear.style.display=a.smart_entry===true?'':'none';
+    if(entryBtn)entryBtn.style.display=a.smart_entry===true?'':'none';
+    if(toolsCard)toolsCard.style.display=a.advanced_performance_tools===true?'':'none';
+    if(progressBtn&&!full&&sponsored){progressBtn.innerHTML='<b>◫</b>ACTIVITY'}
+    if(!full&&sponsored){
+      const hero=home?.querySelector('.heroCard');
+      const sub=hero?.querySelector('.sub');if(sub)sub.textContent='YOUR COACH-CONNECTED TRAINING';
+      const desc=hero?.querySelector('p.muted');if(desc)desc.textContent='Your coach controls the program. MW Dynasty keeps training, messages, check-ins, and the Coach MW access included with your coach plan in one place.';
+      hero?.querySelector('.metricGrid')?.style.setProperty('display','none');
+      hero?.querySelector('.progressBar')?.style.setProperty('display','none');
+      if(trainCard){trainCard.querySelector('b').textContent='🏃 COACH-ASSIGNED TRAINING';trainCard.querySelector('.muted').textContent='Open your coach’s active program and log what happened after training.'}
+      ['week','startDate','startWeek'].forEach(id=>document.getElementById(id)?.closest('.field')?.style.setProperty('display','none'));
+      const chips=[...document.querySelectorAll('#coach .premiumChip')];
+      if(chips[0])chips[0].textContent=intelligence?'● COACH INTELLIGENCE':'● COACH CORE';
+      if(chips[1])chips[1].textContent=intelligence?'PERFORMANCE INTELLIGENCE':'COACH-ASSIGNED TRAINING';
+      if(chips[2])chips[2].textContent=intelligence?'ATHLETE DATA CONTEXT':'BASIC COACH MW';
+      if(chips[3])chips[3].textContent='NATURAL VOICE';
+      const ctxTop=document.querySelector('#coach .contextTop span');if(ctxTop)ctxTop.textContent=intelligence?'COACH PROGRAM • MW INTELLIGENCE':'COACH PROGRAM • BASIC MW HELP';
+      const ctxWeek=document.querySelector('#ctxWeek');if(ctxWeek)ctxWeek.textContent='COACH-ASSIGNED';
+      const ctxStrength=document.querySelector('#ctxStrength');if(ctxStrength)ctxStrength.textContent='COACH PLAN';
+      const voiceState=document.querySelector('#premiumVoiceState');if(voiceState)voiceState.textContent=intelligence?'COACH PROGRAM • PERFORMANCE INTELLIGENCE':'COACH PROGRAM • BASIC COACH MW';
+      const heroP=document.querySelector('#coach .heroText p');if(heroP)heroP.textContent=intelligence?'I can explain your coach-assigned training and help you understand your own performance data.':'I can explain your coach-assigned training, sprint concepts, technique, recovery basics, and how to use MW Dynasty.';
+      const system=document.querySelector('#coach .system');if(system)system.innerHTML=intelligence?'<b>⚡ COACH INTELLIGENCE ACTIVE</b><span>YOUR COACH OWNS THE PROGRAM</span>':'<b>⚡ COACH CORE ACTIVE</b><span>YOUR COACH OWNS THE PROGRAM</span>';
+      const firstMsg=document.querySelector('#chat .msg.coach');if(firstMsg)firstMsg.textContent=intelligence?'I’m Coach MW. I can help you understand your coach-assigned program and make sense of your own training data. Your human coach still controls training changes.':'I’m Coach MW. I can explain what your coach assigned, answer training questions, help with technique and recovery basics, and guide you around the app. Your human coach controls the program.';
+      const membership=document.querySelector('#mwAthleteMembershipPrice');if(membership)membership.textContent=intelligence?'Coach Sponsored · Coach Intelligence':'Coach Sponsored · Coach Core';
+      const progressionGroup=[...document.querySelectorAll('#settings .settingGroup')].find(x=>x.querySelector('h3')?.textContent?.includes('PROGRAM PROGRESSION'));if(progressionGroup)progressionGroup.style.display='none';
+    }else if(full){
+      const membership=document.querySelector('#mwAthleteMembershipPrice');
+      if(membership){membership.textContent=a.access_mode==='coach_sprint_performance'?'Coach Sponsored · MW Sprint Performance':'MW Athlete · $19/month'}
+    }
+    const dob=document.querySelector('#entryDob');if(dob){const max=new Date();max.setFullYear(max.getFullYear()-13);dob.max=max.toISOString().slice(0,10)}
+  }
   function hydrate(d){
     mwOnboardingUserKey=d.user?.id||d.user?.email||'local';
     const pr=prsToProfile(d.prs||[]), ps=d.programState||{}, profile=d.profile||{};
     const role=String(profile.role||'athlete');
     const privileged=['founder_owner','admin','coach'].includes(role);
     const hasAthlete=!!d.athlete;
+    const featureAccess=d.features?.access||{};window.mwFeatureAccess=featureAccess;
     window.mwAssessmentComplete=Boolean(ps.onboarding_assessment_completed_at);
-    window.mwAssessmentRequired=hasAthlete&&!window.mwAssessmentComplete;
+    window.mwAssessmentRequired=hasAthlete&&featureAccess.smart_entry===true&&!window.mwAssessmentComplete;
+    window.mwDobRequired=hasAthlete&&!d.athlete?.date_of_birth&&featureAccess.access_mode!=='internal_test';
     const localVoice=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}');
 
     mwRemoteProfile={
@@ -1321,8 +1568,11 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       role,
       accountStatus:profile.account_status||'',
       athleteId:d.athlete?.id||'',
+      dateOfBirth:d.athlete?.date_of_birth||'',
       email:d.user?.email||'',
-      mode:d.mode||(hasAthlete?'athlete':role)
+      mode:d.mode||(hasAthlete?'athlete':role),
+      repTracking:d.features?.repTracking===true,
+      featureAccess
     };
 
     if(window.getProfile) window.getProfile=()=>({...mwRemoteProfile});
@@ -1398,12 +1648,13 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }
     if(document.querySelector('#settingsCoachType'))document.querySelector('#settingsCoachType').value=mwRemoteProfile.coachType;
     applyCoachVisual(mwRemoteProfile.coachType);
+    applyAthleteAccessUI();
 
     const ctx=document.querySelector('.contextTop');
     if(ctx&&!ctx.querySelector('.mwOfficialTag')){
       const t=document.createElement('span');
       t.className='mwOfficialTag';
-      t.textContent=hasAthlete?'MW PROGRAM LINKED':(role==='founder_owner'?'FOUNDER ACCESS':'MW STAFF ACCESS');
+      t.textContent=hasAthlete?(featureAccess.mw_training_system===true?'MW PROGRAM LINKED':featureAccess.coach_assigned_training===true?'COACH PROGRAM LINKED':'ATHLETE ACCESS'):(role==='founder_owner'?'FOUNDER ACCESS':'MW STAFF ACCESS');
       ctx.appendChild(t)
     }
 
@@ -1433,7 +1684,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{renderCompletion()}catch{}
 
     // Athletes get the first-login tutorial. Founder/staff accounts bypass athlete onboarding.
-    if(hasAthlete)setTimeout(()=>{startQuickStart(false);if(window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1')openView('entry')},350);
+    if(hasAthlete&&featureAccess.mw_training_system===true)setTimeout(()=>{startQuickStart(false);if(window.mwDobRequired)mwPromptDobVerification();else if(window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1')openView('entry')},350);
+    else if(hasAthlete&&window.mwDobRequired)setTimeout(()=>mwPromptDobVerification(),350);
     else openView('home');
   }
   const STRENGTH_FIELD_MAP={maxPowerClean:'power_clean_max',maxFrontSquat:'front_squat_max',maxBackSquat:'back_squat_max',maxDeadlift:'deadlift_max',profileDeadliftType:'deadlift_type',profileWeightUnit:'weight_unit'};
@@ -1479,6 +1731,23 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       setTimeout(()=>{if(b)b.textContent='SAVE WEIGHT ROOM MAXES'},1400);
     }catch(e){if(st)st.textContent='Save failed: '+(e.message||'Please try again.');if(b)b.textContent='SAVE FAILED — TAP TO RETRY'}finally{if(b)b.disabled=false}
   }
+  async function loadStrengthPerformanceLogs(){
+    const aid=mwRemoteProfile.athleteId,box=document.getElementById('strengthLogRecent');if(!aid||!token())return;
+    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?athlete_id=eq.'+encodeURIComponent(aid)+'&select=id,program_week,program_day,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=8',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
+    const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength performance.');
+    if(box)box.innerHTML=rows.map(x=>`<div class="strengthLogItem"><b>Week ${Number(x.program_week||1)} · Day ${Number(x.program_day||1)} · ${escapeHtmlLocal(x.exercise_name)}</b><br>Set ${Number(x.set_number||1)} · ${x.reps_completed??'—'} reps @ ${x.actual_load??'—'} ${escapeHtmlLocal(x.weight_unit||'lb')}${x.target_load!=null?` · Target ${x.target_load}`:''}${x.set_rpe!=null?` · RPE ${x.set_rpe}/10`:''}</div>`).join('');
+  }
+  function escapeHtmlLocal(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
+  async function saveStrengthPerformance(){
+    const aid=mwRemoteProfile.athleteId,btn=document.getElementById('saveStrengthPerformance'),st=document.getElementById('strengthPerformanceStatus');if(!aid)throw new Error('Athlete profile not found.');
+    const exercise=(document.getElementById('strengthLogExercise')?.value||'').trim(),actual=Number(document.getElementById('strengthLogActual')?.value),reps=Number(document.getElementById('strengthLogReps')?.value),setNo=Number(document.getElementById('strengthLogSet')?.value),targetRaw=(document.getElementById('strengthLogTarget')?.value||'').trim(),rpeRaw=(document.getElementById('strengthLogRpe')?.value||'').trim();
+    if(!exercise)throw new Error('Choose or enter the exercise.');if(!Number.isFinite(actual)||actual<0)throw new Error('Enter the actual load you used.');if(!Number.isFinite(reps)||reps<0)throw new Error('Enter reps completed.');if(!Number.isFinite(setNo)||setNo<1)throw new Error('Enter a valid set number.');
+    const payload={athlete_id:aid,program_week:activeMWWeek(),program_day:Number(document.getElementById('strengthLogDay')?.value||1),session_label:`Week ${activeMWWeek()} Strength`,exercise_name:exercise,set_number:setNo,reps_completed:reps,target_load:targetRaw===''?null:Number(targetRaw),actual_load:actual,weight_unit:document.getElementById('strengthLogUnit')?.value||'lb',set_rpe:rpeRaw===''?null:Number(rpeRaw),recorded_at:new Date().toISOString()};
+    if(btn){btn.disabled=true;btn.textContent='SAVING…'}if(st)st.textContent='Saving completed set to MW Dynasty…';
+    try{const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(payload)});const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Strength performance save failed.');if(st)st.textContent='✓ Set saved. Coach Intelligence can now use this result.';document.getElementById('strengthLogSet').value=String(setNo+1);await loadStrengthPerformanceLogs();}
+    finally{if(btn){btn.disabled=false;btn.textContent='SAVE COMPLETED SET'}}
+  }
+  function bindStrengthPerformanceLogger(){const b=document.getElementById('saveStrengthPerformance');if(b)b.onclick=async()=>{try{await saveStrengthPerformance()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Save failed: '+(e.message||'Please try again.')}}}
   async function loadSmartEntry(){
     if(!mwRemoteProfile.athleteId||!token())return;
     const d=await api('/api/smart-entry',{cache:'no-store'});const x=d?.assessment;if(!x)return;
@@ -1499,7 +1768,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const payload={athlete_id:mwRemoteProfile.athleteId,coach_visual:v('settingsCoachType')||v('coachType')||'male',voice_speed:v('voiceSpeed')||'normal',voice_mode:v('voiceMode')||'natural',auto_voice:v('autoVoice')==='on',workout_reminders:v('workoutReminders')!=='off',meet_reminders:v('meetReminders')!=='off',message_alerts:v('messageAlerts')!=='off',updated_at:new Date().toISOString()};
     const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'Settings save failed.');mwRemoteProfile.coachType=payload.coach_visual;applyCoachVisual(payload.coach_visual);return d;
   }
-  async function loadMe(){const d=await api('/api/me',{cache:'no-store'});hydrate(d);try{await loadSeasonCalendar()}catch(e){console.warn('MW training-year calendar unavailable',e)}try{await loadSmartEntry()}catch(e){console.warn('MW Smart Entry sync unavailable',e)}try{await loadAthleteSettings()}catch(e){console.warn('MW settings sync unavailable',e)}try{await loadStrengthMaxes()}catch(e){const st=document.getElementById('liftMaxStatus');if(st)st.textContent='MW strength sync unavailable: '+e.message}try{await loadWorkoutCompletions();renderCompletion();renderProgressUI()}catch(e){console.warn('MW completion sync unavailable',e);if($('#unlockNote'))$('#unlockNote').textContent='Workout history could not sync from MW Dynasty. Please refresh.'}const sb=document.getElementById('saveSettings');if(sb)sb.onclick=async()=>{sb.disabled=true;sb.textContent='SAVING…';try{await saveAthleteSettings();sb.textContent='✓ SETTINGS SAVED'}catch(e){sb.textContent='SAVE FAILED — TAP TO RETRY';authStatus(e.message,true)}finally{sb.disabled=false;setTimeout(()=>{if(sb.textContent.startsWith('✓'))sb.textContent='SAVE SETTINGS'},1300)}};return d}
+  async function loadMe(){const d=await api('/api/me',{cache:'no-store'});hydrate(d);try{await loadSeasonCalendar()}catch(e){console.warn('MW training-year calendar unavailable',e)}try{await loadSmartEntry()}catch(e){console.warn('MW Smart Entry sync unavailable',e)}try{await loadAthleteSettings()}catch(e){console.warn('MW settings sync unavailable',e)}try{await loadStrengthMaxes()}catch(e){const st=document.getElementById('liftMaxStatus');if(st)st.textContent='MW strength sync unavailable: '+e.message}try{await loadStrengthQuickCheckins();bindStrengthPerformanceLogger();await loadStrengthPerformanceLogs()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Strength performance sync unavailable: '+e.message}try{await loadWorkoutCompletions();renderCompletion();renderProgressUI()}catch(e){console.warn('MW completion sync unavailable',e);if($('#unlockNote'))$('#unlockNote').textContent='Workout history could not sync from MW Dynasty. Please refresh.'}const sb=document.getElementById('saveSettings');if(sb)sb.onclick=async()=>{sb.disabled=true;sb.textContent='SAVING…';try{await saveAthleteSettings();sb.textContent='✓ SETTINGS SAVED'}catch(e){sb.textContent='SAVE FAILED — TAP TO RETRY';authStatus(e.message,true)}finally{sb.disabled=false;setTimeout(()=>{if(sb.textContent.startsWith('✓'))sb.textContent='SAVE SETTINGS'},1300)}};return d}
   window.mwReloadAccount=loadMe;
   async function login(){
     const email=document.querySelector('#mwAuthEmail').value.trim(),password=document.querySelector('#mwAuthPassword').value;
@@ -1608,7 +1877,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const code=String($('#coachInviteCode')?.value||'').trim(); currentInvite=null; $('#coachInviteAccept').style.display='none';
     if(!code){status('Paste the invite code your coach sent you.','bad');return}
     try{
-      const rows=await sb(`coach_invitations?select=id,coach_user_id,athlete_email,invite_type,team_id,status,invite_token,expires_at,accepted_at,accepted_by&invite_token=eq.${encodeURIComponent(code)}&limit=1`);
+      const rows=await sb(`coach_invitations?select=id,coach_user_id,athlete_email,invite_type,team_id,status,invite_token,expires_at,accepted_at,accepted_by,billing_type,sponsorship_ends_at&invite_token=eq.${encodeURIComponent(code)}&limit=1`);
       const inv=Array.isArray(rows)?rows[0]:null;
       if(!inv){status('No invitation was found for this signed-in athlete. Check the code and the email account you used to sign in.','bad');return}
       if(!inviteEmailMatches(inv)){status('This invitation was issued to a different email address. Sign in with the invited athlete account.','bad');return}
@@ -1617,7 +1886,9 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       if(inv.status==='accepted' && inv.accepted_by===session()?.user?.id){status('This invitation has already been accepted. Your coach connection is active.','good');showConnected(inv);return}
       if(inv.status!=='pending'){status(`This invitation is ${inv.status||'not available'} and cannot be accepted.`, 'bad');return}
       const team=inv.team_id?' • Team invitation':' • Coach invitation';
-      status(`Invitation verified${team}. It expires ${inv.expires_at?new Date(inv.expires_at).toLocaleDateString():'soon'}. Accepting will connect this athlete profile to the coach who sent it.`,'good');
+      const sponsored=inv.billing_type==='coach_sponsored';
+      const payCopy=sponsored?'Your coach is sponsoring your MW access, so no membership checkout is required to create or connect this profile.':'You will be responsible for your own MW Athlete membership after connecting to this coach.';
+      status(`Invitation verified${team}. ${payCopy} It expires ${inv.expires_at?new Date(inv.expires_at).toLocaleDateString():'soon'}.`,'good');
       $('#coachInviteAccept').style.display='block';
     }catch(e){status('Could not verify this invitation: '+e.message,'bad')}
   }
@@ -1635,13 +1906,14 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       const text=await r.text();let result=null;try{result=text?JSON.parse(text):null}catch{result=text}
       if(!r.ok)throw new Error(result?.message||result?.hint||result?.details||String(result||`Supabase ${r.status}`));
       const accepted={...currentInvite,status:'accepted',accepted_at:new Date().toISOString(),accepted_by:ss.user.id};
-      currentInvite=accepted; status('Invitation accepted. Your athlete profile is now connected to your coach.','good');showConnected(accepted);
+      currentInvite=accepted; status(currentInvite.billing_type==='coach_sponsored'?'Invitation accepted. Your profile is connected and your coach-sponsored access is active.':'Invitation accepted. Your athlete profile is connected to your coach.','good');showConnected(accepted);
+      window.setTimeout(()=>window.mwLoadBillingStatus?.(),350);
     }catch(e){status('Connection could not be completed: '+e.message,'bad');btn.disabled=false;btn.textContent='Accept Coach Invitation'}
   }
   async function loadExisting(){
     const ss=session(); if(!ss?.access_token||!ss?.user?.email)return;
     try{
-      const rows=await sb(`coach_invitations?select=id,coach_user_id,athlete_email,invite_type,team_id,status,invite_token,expires_at,accepted_at,accepted_by&status=eq.accepted&accepted_by=eq.${encodeURIComponent(ss.user.id)}&order=accepted_at.desc&limit=1`);
+      const rows=await sb(`coach_invitations?select=id,coach_user_id,athlete_email,invite_type,team_id,status,invite_token,expires_at,accepted_at,accepted_by,billing_type,sponsorship_ends_at&status=eq.accepted&accepted_by=eq.${encodeURIComponent(ss.user.id)}&order=accepted_at.desc&limit=1`);
       if(Array.isArray(rows)&&rows[0])showConnected(rows[0]);
     }catch(e){console.warn('Coach connection status:',e.message)}
   }
@@ -1653,13 +1925,43 @@ const m=document.getElementById('mwUtilityModal'),t=document.getElementById('mwU
 function o(x,h){t.textContent=x;b.innerHTML=h;m.classList.add('open')}function c(){m.classList.remove('open')}document.getElementById('mwUtilityClose')?.addEventListener('click',c);m?.addEventListener('click',e=>{if(e.target===m)c()});
 function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
 const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+async function mwLoadPublicPricing(){try{const r=await fetch('/api/pricing',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.plans))throw new Error(d.error||'Pricing unavailable');const p=d.plans.find(x=>x.plan_code==='mw_athlete');if(!p)return;const monthly=Number(p.monthly_price_cents),annual=Number(p.annual_price_cents);window.__mwAthletePricing={monthly,annual,annualEnabled:!!p.annual_enabled};if(Number.isFinite(monthly)){const el=document.getElementById('mwAthleteMembershipPrice');if(el)el.textContent=`MW Athlete · $${(monthly/100).toFixed(monthly%100===0?0:2)}/month${Number.isFinite(annual)&&p.annual_enabled?` · $${(annual/100).toFixed(annual%100===0?0:2)}/year`:''}`;}}catch(e){console.warn('MW public pricing sync unavailable; using locked fallback price.',e)}}
+async function mwBillingRequest(method='GET',body=null){const s=sess();if(!s?.access_token)throw new Error('Sign in again to manage your membership.');const r=await fetch('/api/billing',{method,headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Membership request failed');return d}
+function mwMoney(c){const n=Number(c);return Number.isFinite(n)?'$'+(n/100).toFixed(n%100===0?0:2):''}
+async function mwLoadBillingStatus(){const el=document.getElementById('mwAthleteBillingStatus'),btn=document.getElementById('mwContinueSelfPay'),note=document.getElementById('mwBillingTransitionNote');if(!el)return;try{const d=await mwBillingRequest(),st=d.status||{},pending=st.pending_transition,end=st.current_period_end?new Date(st.current_period_end):null,checkout=pending?.checkout_opens_at?new Date(pending.checkout_opens_at):null,paymentConfirmed=String(pending?.payment_confirmed||'false')==='true';if(st.billing_type==='coach_sponsored'){el.innerHTML=`<b>Coach-sponsored access</b>${end?`<br>Sponsored through ${end.toLocaleDateString()}`:'<br>Your coach currently covers your MW membership.'}<br>Your profile, PRs, history and coach connection stay with you even if billing responsibility changes.`;if(btn){if(!pending&&end){btn.style.display='block';btn.textContent='CONTINUE ON MY OWN'}else if(pending&&!paymentConfirmed&&checkout&&Date.now()>=checkout.getTime()){btn.style.display='block';btn.textContent='COMPLETE PAYMENT'}else btn.style.display='none'}}else if(st.billing_type==='transition_grace'){el.innerHTML='<b>Membership transition grace</b><br>Your coach sponsorship ended, but MW is keeping your account active briefly while you complete individual payment.';if(btn){btn.style.display='block';btn.textContent='COMPLETE PAYMENT'}}else{el.innerHTML=`<b>${st.subscription_status==='awaiting_activation'?'Individual membership not activated':'Individual membership'}</b><br>You are responsible for your MW Athlete membership. Your account and training history stay the same through renewals or plan changes.`;if(btn)btn.style.display='none'}if(note){if(pending){note.style.display='block';const early=checkout&&Date.now()<checkout.getTime();note.innerHTML=`<b>Membership transition protected</b><br>${pending.to_billing_type==='individual'?'Your switch to individual billing is prepared. ':''}${pending.effective_at?`Coach-sponsored access remains active through ${new Date(pending.effective_at).toLocaleDateString()}. `:''}${early?`Payment will open on ${checkout.toLocaleDateString()} so you are not charged early. `:''}${pending.grace_ends_at?`MW transition protection runs through ${new Date(pending.grace_ends_at).toLocaleDateString()} if checkout needs extra time. `:''}${paymentConfirmed?'Payment is confirmed.':''}`;}else note.style.display='none'}}catch(e){el.textContent=e.message;if(btn)btn.style.display='none'}}
+window.mwLoadBillingStatus=mwLoadBillingStatus;
+async function mwPrepareSelfPay(cycle){const status=document.getElementById('mwBillingTransitionNote');try{const d=await mwBillingRequest('POST',{action:'athlete_self_pay',billingCycle:cycle}),r=d.result||{};c();const checkout=r.checkout_opens_at?new Date(r.checkout_opens_at):null,due=!checkout||Date.now()>=checkout.getTime();if(status){status.style.display='block';status.innerHTML=`<b>Transition prepared</b><br>Your coach-sponsored access stays active through ${r.effective_at?new Date(r.effective_at).toLocaleDateString():'the sponsorship end date'}. ${due?`${mwMoney(r.amount_cents)} ${cycle==='annual'?'yearly':'monthly'} payment can now be completed.`:`Payment will open on ${checkout.toLocaleDateString()} so you are not charged before sponsorship ends.`}${r.grace_ends_at?` MW keeps transition protection through ${new Date(r.grace_ends_at).toLocaleDateString()}.`:''}`}if(due&&window.mwNativeBilling){const native=await window.mwNativeBilling({action:'start_checkout',audience:'athlete',planCode:'mw_athlete',billingCycle:cycle,transitionId:r.transition_id,amountCents:r.amount_cents,currency:r.currency||'USD'});if(native?.started)return}await mwLoadBillingStatus()}catch(e){if(status){status.style.display='block';status.textContent=e.message}}}
+function mwOpenSelfPayChoices(){const p=window.__mwAthletePricing||{monthly:1900,annual:null,annualEnabled:false};o('Continue Your MW Membership',`<p>Your coach sponsorship stays active until its end date. Choose how you want your individual membership to begin after that — no new account and no duplicate access period.</p><button class="save" id="mwSelfPayMonthly">MONTHLY · ${mwMoney(p.monthly)}</button>${p.annualEnabled?`<button class="entryGhost" id="mwSelfPayAnnual" style="margin-top:10px">YEARLY · ${mwMoney(p.annual)}</button>`:''}<p><small>Preparing the transition does not end your coach sponsorship early.</small></p>`);document.getElementById('mwSelfPayMonthly').onclick=()=>mwPrepareSelfPay('monthly');document.getElementById('mwSelfPayAnnual')?.addEventListener('click',()=>mwPrepareSelfPay('annual'))}
+document.addEventListener('DOMContentLoaded',()=>{mwLoadPublicPricing();mwLoadBillingStatus();document.getElementById('mwContinueSelfPay')?.addEventListener('click',mwOpenSelfPayChoices)});
 document.getElementById('helpCenterBtn')?.addEventListener('click',()=>o('MW Help Center','<p><b>Profile:</b> Update sprint PRs and weight-room maxes, then save. Your official program week is controlled by MW Dynasty.</p><p><b>Program:</b> Complete prescribed sessions to record progress. Future weeks remain locked until official progression.</p><p><b>Coach MW:</b> Ask questions about training, pacing, strength, technique, recovery, race strategy, or the MW system.</p><p><b>Account:</b> Password reset, privacy information, support requests, and account deletion are available from Settings.</p>'));
-document.getElementById('reportIssueBtn')?.addEventListener('click',()=>{o('Report a Problem','<p>Send the MW team enough detail to reproduce the issue.</p><label>Category</label><select id="mwSupportCategory" style="width:100%;padding:10px;margin:6px 0 10px"><option value="app_issue">App issue</option><option value="account">Account</option><option value="training_data">Training data</option><option value="privacy">Privacy</option><option value="other">Other</option></select><label>What happened?</label><textarea id="mwSupportMessage" maxlength="4000" rows="6" style="width:100%;padding:10px;margin:6px 0 12px" placeholder="Tell us what happened and what you expected."></textarea><button id="mwSupportSend" class="save">SEND TO MW SUPPORT</button><p id="mwSupportStatus"></p>');document.getElementById('mwSupportSend').onclick=async()=>{const s=sess(),msg=document.getElementById('mwSupportMessage').value.trim(),st=document.getElementById('mwSupportStatus');if(!s?.access_token){st.textContent='Sign in again before sending a support request.';return}if(msg.length<5){st.textContent='Please add a little more detail.';return}const rp=window.mwGetRemoteProfile?.()||{};const payload={user_id:s.user?.id||rp.userId||null,athlete_id:rp.athleteId||null,category:document.getElementById('mwSupportCategory').value,message:msg,app_version:'24.18',device_info:navigator.userAgent};const r=await fetch(SB+'/rest/v1/support_requests',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});st.textContent=r.ok?'✓ Your support request was sent.':'Support request could not be sent. Please try again.';}});
+document.getElementById('reportIssueBtn')?.addEventListener('click',()=>{o('Report a Problem','<p>Send the MW team enough detail to reproduce the issue.</p><label>Category</label><select id="mwSupportCategory" style="width:100%;padding:10px;margin:6px 0 10px"><option value="app_issue">App issue</option><option value="account">Account</option><option value="training_data">Training data</option><option value="privacy">Privacy</option><option value="other">Other</option></select><label>What happened?</label><textarea id="mwSupportMessage" maxlength="4000" rows="6" style="width:100%;padding:10px;margin:6px 0 12px" placeholder="Tell us what happened and what you expected."></textarea><button id="mwSupportSend" class="save">SEND TO MW SUPPORT</button><p id="mwSupportStatus"></p>');document.getElementById('mwSupportSend').onclick=async()=>{const s=sess(),msg=document.getElementById('mwSupportMessage').value.trim(),st=document.getElementById('mwSupportStatus');if(!s?.access_token){st.textContent='Sign in again before sending a support request.';return}if(msg.length<5){st.textContent='Please add a little more detail.';return}const rp=window.mwGetRemoteProfile?.()||{};const payload={user_id:s.user?.id||rp.userId||null,athlete_id:rp.athleteId||null,category:document.getElementById('mwSupportCategory').value,message:msg,app_version:(window.MW_APP_VERSION||'3.0.16'),device_info:navigator.userAgent};const r=await fetch(SB+'/rest/v1/support_requests',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});st.textContent=r.ok?'✓ Your support request was sent.':'Support request could not be sent. Please try again.';}});
 document.getElementById('privacyBtn')?.addEventListener('click',()=>location.href='/privacy.html');
 document.getElementById('termsBtn')?.addEventListener('click',()=>location.href='/terms.html');
-document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{const typed=prompt('Delete your MW Dynasty athlete account and associated training data? This cannot be undone. Type DELETE to continue.');if(typed!=='DELETE')return;const s=sess();if(!s?.access_token){alert('Sign in again before deleting your account.');return}if(!confirm('Final confirmation: permanently delete this MW Athlete account?'))return;const btn=document.getElementById('deleteAccountBtn');btn.disabled=true;btn.textContent='DELETING…';try{const r=await fetch(SB+'/functions/v1/mw-delete-account',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion failed');localStorage.clear();alert('Your MW Athlete account and associated account data were deleted.');location.replace('/')}catch(e){alert(e.message||'Account deletion failed.');btn.disabled=false;btn.textContent='DELETE ACCOUNT'}});
+document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{const typed=prompt('Delete your MW Dynasty athlete account and associated training data? This cannot be undone. If you have an Apple-billed subscription, account deletion does NOT cancel Apple billing; manage that subscription separately. You may still delete immediately now. Type DELETE to continue.');if(typed!=='DELETE')return;const s=sess();if(!s?.access_token){alert('Sign in again before deleting your account.');return}if(!confirm('Final confirmation: permanently delete this MW Athlete account?'))return;const btn=document.getElementById('deleteAccountBtn');btn.disabled=true;btn.textContent='DELETING…';try{const r=await fetch(SB+'/functions/v1/mw-delete-account',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion failed');localStorage.clear();alert('Your MW Athlete account and associated account data were deleted.');location.replace('/')}catch(e){alert(e.message||'Account deletion failed.');btn.disabled=false;btn.textContent='DELETE ACCOUNT'}});
 })();</script>
 
+
+<script id="mw-email-invite-session-v310">
+(()=>{
+  const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  async function capture(){
+    const h=new URLSearchParams(location.hash.replace(/^#/,''));
+    const access=h.get('access_token'),refresh=h.get('refresh_token');
+    if(!access)return false;
+    try{
+      const r=await fetch(SB+'/auth/v1/user',{headers:{apikey:PK,Authorization:'Bearer '+access}});
+      const user=await r.json().catch(()=>null);
+      if(!r.ok||!user?.id)throw new Error('Invite sign-in could not be completed.');
+      const expiresIn=Number(h.get('expires_in')||3600);
+      const session={access_token:access,refresh_token:refresh||'',token_type:h.get('token_type')||'bearer',expires_in:expiresIn,expires_at:Math.floor(Date.now()/1000)+expiresIn,user};
+      localStorage.setItem('mwSupabaseSession',JSON.stringify(session));
+      history.replaceState({},document.title,location.pathname+location.search);
+      return true;
+    }catch(e){console.warn('MW invite session capture:',e.message);return false}
+  }
+  window.addEventListener('load',async()=>{if(await capture())setTimeout(()=>location.reload(),250)});
+})();
+</script>
 <script id="mw-production-invite-link-v1">
 (()=>{
   async function autoCoachInvite(){
@@ -1669,13 +1971,52 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
     if(!ss?.access_token)return;
     try{
       const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
-      if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.message||d.details||'Invitation could not be accepted')}
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.details||'Invitation could not be accepted');
       q.delete('invite');q.delete('invite_token');const next=location.pathname+(q.toString()?'?'+q.toString():'');history.replaceState({},document.title,next);
       document.querySelector('#coachConnectedBadge')?.classList.add('show');
-      const t=document.querySelector('#coachConnectedText');if(t)t.textContent='Your MW coach connection is active.';
+      const t=document.querySelector('#coachConnectedText');if(t)t.textContent=d.billing_type==='coach_sponsored'?'Your MW coach connection is active · Coach-sponsored access':'Your MW coach connection is active.';
+      window.setTimeout(()=>window.mwLoadBillingStatus?.(),300);
     }catch(e){console.warn('MW automatic coach invitation:',e.message)}
   }
   window.addEventListener('load',()=>setTimeout(autoCoachInvite,1600));
+})();
+</script>
+
+<script id="mw-athlete-messages-v311">
+(()=>{
+  const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  let coachRows=[],replyRows=[],selectedCoachId=null;
+  function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+  function headers(){const s=sess();return {apikey:PK,Authorization:'Bearer '+(s?.access_token||''),'Content-Type':'application/json'}}
+  async function rpc(name,body={}){const r=await fetch(`${SB}/rest/v1/rpc/${name}`,{method:'POST',headers:headers(),body:JSON.stringify(body)}),text=await r.text();let d=null;try{d=text?JSON.parse(text):null}catch{d=text}if(!r.ok)throw new Error(d?.message||d?.details||d?.hint||`MW message request failed (${r.status})`);return d}
+  async function rest(path){const r=await fetch(`${SB}/rest/v1/${path}`,{headers:headers()}),text=await r.text();let d=null;try{d=text?JSON.parse(text):null}catch{d=text}if(!r.ok)throw new Error(d?.message||d?.details||`MW message request failed (${r.status})`);return d}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+  function initials(v){return String(v||'MW Coach').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]?.toUpperCase()).join('')||'MW'}
+  function allForCoach(cid){return [...coachRows.filter(x=>x.coach_user_id===cid).map(x=>({...x,kind:'coach'})),...replyRows.filter(x=>x.coach_user_id===cid).map(x=>({...x,kind:'me'}))].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))}
+  function coachIds(){return [...new Set(coachRows.map(x=>x.coach_user_id).concat(replyRows.map(x=>x.coach_user_id)).filter(Boolean))]}
+  function nameFor(cid){return coachRows.find(x=>x.coach_user_id===cid)?.coach_name||'MW Coach'}
+  function unreadFor(cid){return coachRows.filter(x=>x.coach_user_id===cid&&!x.read_at).length}
+  function totalUnread(){return coachRows.filter(x=>!x.read_at).length}
+  function updateBadges(){const n=totalUnread();['mwMessageHomeBadge','mwSearchMessageBadge'].forEach(id=>{const b=document.getElementById(id);if(b){b.hidden=n<1;b.textContent=n>99?'99+':String(n)}});const l=document.getElementById('mwMessageUnreadLabel');if(l)l.textContent=`${n} UNREAD`}
+  function renderInbox(){const el=document.getElementById('mwAthleteInbox');if(!el)return;const q=String(document.getElementById('mwAthleteMessageSearch')?.value||'').trim().toLowerCase();const ids=coachIds().filter(cid=>nameFor(cid).toLowerCase().includes(q)).sort((a,b)=>{const aa=allForCoach(a).at(-1)?.created_at||0,bb=allForCoach(b).at(-1)?.created_at||0;return new Date(bb)-new Date(aa)});el.innerHTML=ids.length?ids.map(cid=>{const thread=allForCoach(cid),last=thread.at(-1),n=unreadFor(cid),name=nameFor(cid);return `<button class="mwAthleteConversationRow" data-coach-thread="${esc(cid)}"><span class="mwAthleteConversationAvatar">${esc(initials(name))}</span><span class="mwAthleteConversationCopy"><span class="mwAthleteConversationTop"><b>${esc(name)}</b><small>${last?new Date(last.created_at).toLocaleDateString([], {month:'short',day:'numeric'}):''}</small></span><span class="mwAthleteConversationPreview">${esc(last?.body||'Coach conversation')}</span></span>${n?'<span class="mwAthleteUnreadDot"></span>':''}</button>`}).join(''):'<div class="lockNote">No coach conversations yet. New coach messages will appear here automatically.</div>';el.querySelectorAll('[data-coach-thread]').forEach(b=>b.onclick=()=>openThread(b.dataset.coachThread))}
+  function renderThread(){const card=document.getElementById('mwAthleteThreadCard'),inbox=document.getElementById('mwAthleteInboxCard');if(!card||!inbox)return;if(!selectedCoachId){card.style.display='none';inbox.style.display='block';return}const rows=allForCoach(selectedCoachId),name=nameFor(selectedCoachId);document.getElementById('mwAthleteThreadCoach').textContent=name;const list=document.getElementById('mwAthleteThreadList');list.innerHTML=rows.length?rows.map(x=>`<article class="mwAthleteThreadBubble ${x.kind}"><div>${esc(x.body)}</div><small>${x.kind==='coach'?esc(name):'You'} · ${new Date(x.created_at).toLocaleString()}</small></article>`).join(''):'<div class="lockNote">No messages in this conversation yet.</div>';card.style.display='block';inbox.style.display='none';list.scrollTop=list.scrollHeight}
+  async function markRead(cid){const unread=coachRows.filter(x=>x.coach_user_id===cid&&!x.read_at);if(!unread.length)return;await Promise.all(unread.map(x=>rpc('mw_athlete_mark_coach_message_read',{p_message_id:x.id}).catch(()=>null)));unread.forEach(x=>x.read_at=new Date().toISOString());updateBadges();renderInbox()}
+  async function openThread(cid){selectedCoachId=cid;renderThread();await markRead(cid)}
+  async function sendReply(){const box=document.getElementById('mwReplyText'),status=document.getElementById('mwReplyStatus'),btn=document.getElementById('mwSendReply'),body=box?.value.trim();if(!selectedCoachId||!body)return;const latestCoach=[...coachRows].reverse().find(x=>x.coach_user_id===selectedCoachId);if(!latestCoach){status.style.display='block';status.textContent='Your coach needs to start this conversation first.';return}status.style.display='block';status.textContent='Sending…';btn.disabled=true;try{await rpc('mw_athlete_reply_to_coach',{p_coach_user_id:selectedCoachId,p_body:body,p_message_id:latestCoach.id});box.value='';status.textContent='✓ Sent';await load(false);renderThread()}catch(e){status.textContent=e.message}finally{btn.disabled=false}}
+  async function load(opened=false){const s=sess();if(!s?.access_token)return;try{const [c,r]=await Promise.all([rpc('mw_athlete_coach_messages'),rest('athlete_coach_replies?select=id,coach_user_id,in_reply_to,body,created_at&order=created_at.asc')]);coachRows=Array.isArray(c)?c:[];replyRows=Array.isArray(r)?r:[];updateBadges();renderInbox();if(selectedCoachId){renderThread();if(opened)await markRead(selectedCoachId)}}catch(e){const el=document.getElementById('mwAthleteInbox');if(el)el.innerHTML=`<div class="lockNote">${esc(e.message)}</div>`}}
+  window.mwLoadCoachMessages=load;
+  document.addEventListener('DOMContentLoaded',()=>{document.getElementById('mwSendReply')?.addEventListener('click',sendReply);document.getElementById('mwAthleteThreadBack')?.addEventListener('click',()=>{selectedCoachId=null;renderThread()});document.getElementById('mwAthleteMessageSearch')?.addEventListener('input',renderInbox);setTimeout(()=>load(false),1500);setInterval(()=>load(false),15000)});
+})();
+</script>
+
+<script id="mw-athlete-search-v311">
+(()=>{
+ const items=[
+  ['workouts','Training','Today’s MW track + strength program'],['coach','Coach MW','Ask your MW AI coach'],['messages','Messages','Coach conversations'],['progress','Progress','Program completion and progress'],['athlete','Athlete Profile','PRs, maxes and goals'],['settings','Settings','Voice, notifications and membership'],['pacer','Training Tools','Pace AI and Distance Pacer'],['entry','Training Year','Smart Entry and official week']
+ ];
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+ function bind(){const input=document.getElementById('mwAthleteSearch'),box=document.getElementById('mwAthleteSearchResults');if(!input||!box)return;const render=()=>{const q=input.value.trim().toLowerCase();if(!q){box.hidden=true;box.innerHTML='';return}const r=items.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q));box.innerHTML=r.length?r.map(x=>`<button type="button" data-athlete-search-open="${x[0]}"><b>${esc(x[1])}</b><small>${esc(x[2])}</small></button>`).join(''):'<button type="button"><b>No results</b><small>Try training, messages, Coach MW, progress, or settings.</small></button>';box.hidden=false;box.querySelectorAll('[data-athlete-search-open]').forEach(b=>b.onclick=()=>{box.hidden=true;input.value='';openView(b.dataset.athleteSearchOpen)})};input.addEventListener('input',render);input.addEventListener('focus',render);document.addEventListener('click',e=>{if(!e.target.closest('.mwAthleteSearchWrap'))box.hidden=true})}
+ document.addEventListener('DOMContentLoaded',bind);
 })();
 </script>
 </body></html>

@@ -1,6 +1,6 @@
 const PROGRAM=require('../api/_mw-program-data');
 
-const PROGRAM_VERSION='mw-41-original-tiered-v3.2';
+const PROGRAM_VERSION='mw-41-tiered-v2.9';
 const TIERS={
   foundation:{label:'Foundation',volumeFactor:0.65,recoveryFactor:1.25,rpeCap:6,description:'Youth, new, returning, or low-readiness athletes. Technique and consistency lead.'},
   development:{label:'Development',volumeFactor:0.85,recoveryFactor:1.10,rpeCap:7,description:'Trained athletes building capacity, speed, and strength with controlled progression.'},
@@ -33,26 +33,16 @@ function strengthGuidance(tier){
     priority:'Track quality governs the weight room. Reduce the final accessory block first when fatigue is excessive.'
   };
 }
-function selectedEvents(value){
-  const values=Array.isArray(value)?value:String(value||'').split(',');
-  return values.map(v=>String(v).trim()).filter(v=>['100','200','400'].includes(v));
-}
-function compactTrack(week,tier,events){
+function compactTrack(week,tier){
   const w=PROGRAM.TRACK?.weeks?.[String(week)];if(!w)return null;
   const key=normalizeTier(tier);
-  const athleteEvents=selectedEvents(events);
-  return {week:w.week,phase:w.phase,phaseName:w.phaseName,provenance:w.provenance,tier:key,tierLabel:TIERS[key].label,programVersion:PROGRAM_VERSION,selectedEvents:athleteEvents,tierGuidance:trackGuidance(key),sessions:(w.sessions||[]).map(s=>({...s,baseWork:s.work,baseRecovery:s.recovery,work:s.tierWork?.[key]||s.work,recovery:s.tierRecovery?.[key]||s.recovery,eventGuidance:s.eventWork&&athleteEvents.length?athleteEvents.map(event=>({event,guidance:s.eventWork[event]})).filter(x=>x.guidance):[],tier:key,tierGuidance:trackGuidance(key)}))};
-}
-function tierStrengthPrescription(value,key){
-  if(key==='performance')return value;
-  if(key==='development')return `2–3 quality sets; use 75–85% of listed volume (${value})`;
-  return `1–2 technical sets; light, supervised load (${value})`;
+  return {week:w.week,phase:w.phase,phaseName:w.phaseName,provenance:w.provenance,tier:key,tierLabel:TIERS[key].label,programVersion:PROGRAM_VERSION,tierGuidance:trackGuidance(key),sessions:(w.sessions||[]).map(s=>({...s,baseWork:s.work,baseRecovery:s.recovery,tier:key,tierGuidance:trackGuidance(key)}))};
 }
 function compactStrength(week,tier){
   const s=PROGRAM.STRENGTH?.[String(week)];if(!s)return null;
   const key=normalizeTier(tier);
-  return {...s,sections:(s.sections||[]).map(section=>({...section,entries:(section.entries||[]).map(([movement,value])=>[movement,tierStrengthPrescription(value,key)])})),tier:key,tierLabel:TIERS[key].label,programVersion:PROGRAM_VERSION,tierGuidance:strengthGuidance(key)};
+  return {...s,tier:key,tierLabel:TIERS[key].label,programVersion:PROGRAM_VERSION,tierGuidance:strengthGuidance(key)};
 }
-function programWeek(week,trackTier,strengthTier,events){return {track:compactTrack(week,trackTier,events),strength:compactStrength(week,strengthTier)}}
+function programWeek(week,trackTier,strengthTier){return {track:compactTrack(week,trackTier),strength:compactStrength(week,strengthTier)}}
 
 module.exports={PROGRAM,PROGRAM_VERSION,TIERS,normalizeTier,programWeek,compactTrack,compactStrength};

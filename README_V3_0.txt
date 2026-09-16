@@ -9,7 +9,7 @@ NEW ATHLETE FLOW
 
 REQUIRED ASSESSMENT DATA
 - First and last name
-- Date of birth (program currently supports age 10+)
+- Date of birth (Athlete app eligibility is 13+)
 - One or more selected events: 100m, 200m, 400m
 - Consistent track-training history and recent readiness inputs
 

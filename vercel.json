@@ -21,6 +21,14 @@
       "destination": "/api/mw?route=pace-chat"
     },
     {
+      "source": "/api/pricing",
+      "destination": "/api/mw?route=pricing"
+    },
+    {
+      "source": "/api/billing",
+      "destination": "/api/mw?route=billing"
+    },
+    {
       "source": "/api/profile",
       "destination": "/api/mw?route=profile"
     },
@@ -53,6 +61,18 @@
       "destination": "/api/mw?route=coach/athlete"
     },
     {
+      "source": "/api/coach/invite",
+      "destination": "/api/mw?route=coach/invite"
+    },
+    {
+      "source": "/api/coach/notifications",
+      "destination": "/api/mw?route=coach/notifications"
+    },
+    {
+      "source": "/api/coach/program-import",
+      "destination": "/api/mw?route=coach/program-import"
+    },
+    {
       "source": "/api/coach/attendance",
       "destination": "/api/mw?route=coach/attendance"
     },
@@ -63,6 +83,10 @@
     {
       "source": "/api/coach/program",
       "destination": "/api/mw?route=coach/program"
+    },
+    {
+      "source": "/api/coach/performance",
+      "destination": "/api/mw?route=coach/performance"
     },
     {
       "source": "/api/coach/progression",

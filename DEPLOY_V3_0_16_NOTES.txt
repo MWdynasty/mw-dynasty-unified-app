@@ -1,0 +1,15 @@
+MW Dynasty V3.0.16 repository deployment bundle
+
+Purpose:
+- Synchronize the repository web/server source to the prepared V3.0.16 launch-hardening package.
+- Preserve the existing V3.0.13 iOS base ZIP already in the repository.
+- Apply the four V3.0.16 native iOS text-file changes during Codemagic build so the resulting project is exactly V3.0.16 / build 7.
+
+Deployment mechanism:
+- Upload this bundle to the repository using the exact filename expected by the existing GitHub Action:
+  MW_Dynasty_V3_2_Final_MW_Only_41_Week_Deploy.zip
+- The existing workflow unpacks the ZIP into repository root, removes the ZIP, commits the updated source, and pushes.
+
+Important:
+- Production Supabase migrations included in source are archival/source-control synchronization. They have already been applied to production. Do not blindly re-run them.
+- StoreKit production products, signed App Store build, production email provider, leaked-password protection, and TestFlight real-device QA remain separate launch gates.

@@ -1,1 +1,1 @@
-module.exports=async function handler(req,res){res.setHeader('Cache-Control','no-store');return res.status(200).json({ok:true,ai:Boolean(process.env.OPENAI_API_KEY),auth:true,version:'mw-athlete-24.18'});};
+module.exports=async function handler(req,res){res.setHeader('Cache-Control','no-store');return res.status(200).json({ok:true,ai:Boolean(process.env.OPENAI_API_KEY),auth:true,version:'mw-dynasty-3.0.16'});};
