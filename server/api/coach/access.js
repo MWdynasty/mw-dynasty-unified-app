@@ -10,9 +10,8 @@ module.exports=async(req,res)=>{
     if(req.method==='PATCH'){
       const b=req.body||{},firstName=clean(b.firstName,80),lastName=clean(b.lastName,80),organization=clean(b.organization,160),coachTitle=clean(b.coachTitle,120);
       if(!firstName||!lastName)return res.status(400).json({error:'First and last name are required.'});
-      const rows=await request(`profiles?user_id=eq.${encodeURIComponent(c.user.id)}&select=user_id,first_name,last_name,coach_organization,coach_title`,c.token,{method:'PATCH',body:{first_name:firstName,last_name:lastName,coach_organization:organization||null,coach_title:coachTitle||null,updated_at:new Date().toISOString()}});
-      const p=Array.isArray(rows)?rows[0]:null;if(!p)return res.status(500).json({error:'Coach profile could not be updated.'});
-      return res.status(200).json({ok:true,firstName:p.first_name||'',lastName:p.last_name||'',organization:p.coach_organization||'',coachTitle:p.coach_title||'',email:c.user.email||''});
+      const result=await request('rpc/mw_update_coach_profile',c.token,{method:'POST',body:{p_first_name:firstName,p_last_name:lastName,p_organization:organization||null,p_coach_title:coachTitle||null}});
+      return res.status(200).json({ok:true,firstName:result?.firstName||firstName,lastName:result?.lastName||lastName,organization:result?.organization||'',coachTitle:result?.coachTitle||'',email:c.user.email||''});
     }
     let tier='mw_sprint_performance',isFounder=role==='founder_owner';
     if(role==='coach'){const rows=await request(`coach_access_entitlements?select=access_tier,status&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.active&limit=1`,c.token);const e=Array.isArray(rows)?rows[0]:null;if(!e)return res.status(403).json({error:'This coach account does not have an active MW Coach entitlement.'});tier=e.access_tier}
