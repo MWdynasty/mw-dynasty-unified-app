@@ -110,7 +110,8 @@ function morePage(){
   const mw=experience==='performance'?[['strength','🏋️','Strength & Power'],['school','🎓','Sprint School'],['race','🏁','Race Strategy'],['pacing','⏱️','Pacing Tools']]:[];
   const founder=accountAccess.isFounder?[['coachapps','✓','Coach Applications']]:[];
   const items=[...mw,...smart,...common,...founder];
-  pageBase('More','Everything else is here when you need it.',`<div class="simple-more-grid">${items.map(([id,ic,label])=>`<button data-page="${id}"><b>${ic}</b><span>${label}</span><em>→</em></button>`).join('')}</div>`)
+  pageBase('More','Everything else is here when you need it.',`<div class="simple-more-grid">${items.map(([id,ic,label])=>`<button data-page="${id}"><b>${ic}</b><span>${label}</span><em>→</em></button>`).join('')}</div><div class="tile" style="margin-top:14px"><h3>Coach Session</h3><p>Securely sign out of this Coach account on this device.</p><button class="back" id="coachMoreSignout" style="margin-top:10px">Sign Out</button></div>`)
+  const moreSignout=document.getElementById('coachMoreSignout');if(moreSignout)moreSignout.onclick=signOut;
 }
 function teamsPage(){pageBase('Teams','Manage squads, groups and coach assignments.',`<div class="panel-grid">${['Varsity Sprint Group','Development Group','400m Group','Relays'].map(n=>`<div class="tile"><h3>${n}</h3><p>Roster, attendance, messages and assignments.</p><button class="action" data-toast="Opened ${n}" style="margin-top:12px">Open Team</button></div>`).join('')}</div>`)}
 function programsPage(){pageBase(experience==='performance'?'MW Track Program':'My Program',experience==='performance'?'41-week MW training system.':'Bring your own program and manage workouts.',`<div class="form"><textarea rows="9">Monday — Acceleration\nTuesday — Tempo + Strength\nWednesday — Recovery\nThursday — Max Velocity\nFriday — Speed Endurance</textarea><button class="action" data-toast="Program saved">Save Program</button></div>`)}
