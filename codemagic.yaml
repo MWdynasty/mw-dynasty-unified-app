@@ -102,6 +102,8 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
 
-    publishing:
-      app_store_connect:
-        auth: integration
+    # Build 10 RC: keep the signed IPA as a Codemagic artifact first.
+    # Automatic App Store Connect publishing is intentionally disabled here
+    # because Apple already has build number 10 for version 3.0.16.
+    # After device QA, publish a fresh incremented build to TestFlight.
+
