@@ -3,6 +3,7 @@ import WebKit
 import CoreLocation
 import Speech
 import AVFoundation
+import UserNotifications
 
 final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, CLLocationManagerDelegate {
     private var webView: WKWebView!
@@ -55,7 +56,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     private func showConfigurationMessage() {
         let html = """
-        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.16 · Build 7</p></body></html>
+        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.16 · Build 9</p></body></html>
         """
         webView.loadHTMLString(html, baseURL: nil)
     }
@@ -68,6 +69,8 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             requestLocationPermission()
         case "voice":
             requestVoicePermission()
+        case "notifications":
+            requestNotificationPermission()
         default:
             sendPermissionResult(["native": true, "granted": false, "type": type])
         }
@@ -111,6 +114,31 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         }
 
         AVAudioSession.sharedInstance().requestRecordPermission { granted in finish(granted) }
+    }
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                DispatchQueue.main.async {
+                    self?.sendPermissionResult(["native": true, "granted": true, "type": "notifications"])
+                }
+            case .denied:
+                DispatchQueue.main.async {
+                    self?.sendPermissionResult(["native": true, "granted": false, "type": "notifications"])
+                }
+            case .notDetermined:
+                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+                    DispatchQueue.main.async {
+                        self?.sendPermissionResult(["native": true, "granted": granted, "type": "notifications"])
+                    }
+                }
+            @unknown default:
+                DispatchQueue.main.async {
+                    self?.sendPermissionResult(["native": true, "granted": false, "type": "notifications"])
+                }
+            }
+        }
     }
 
     private func sendPermissionResult(_ result: [String: Any]) {
