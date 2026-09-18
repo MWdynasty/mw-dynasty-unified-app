@@ -600,6 +600,57 @@ body.mw-auth-ready #mwAuth{display:none!important}
 @media(max-width:370px){.mwDepthNav{gap:3px!important}.mwDepthNav button span{font-size:7px}.mwDepthNav button b{width:29px;height:29px}.mwDepthNav .mwCoachOrb b{width:39px;height:39px}}
 @media(prefers-reduced-motion:reduce){.mwDepthNav button,.mwDepthNav .mwCoachOrb b{transition:none!important;animation:none!important}}
 </style>
+
+<style id="mw-3d-4d-action-system">
+/* MW 3D/4D action system — same visual language as bottom navigation */
+.actionCard,.mwTrainingYearCard,.smartBtn,.save,.entryAction,.entryGhost,.pacer{
+  position:relative;overflow:hidden;
+  transform:translateZ(0);
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,filter .16s ease!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.actionCard{
+  border:1px solid rgba(91,125,149,.42)!important;
+  background:linear-gradient(145deg,rgba(17,35,49,.98),rgba(4,10,16,.99) 72%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.085),inset 0 -8px 16px rgba(0,0,0,.24),0 8px 0 rgba(1,4,7,.72),0 13px 22px rgba(0,0,0,.30)!important;
+}
+.actionCard:before,.mwTrainingYearCard:before,.smartBtn:before,.save:before,.entryAction:before,.entryGhost:before,.pacer:before{
+  content:"";position:absolute;left:5px;right:5px;top:2px;height:38%;border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),transparent);pointer-events:none;
+}
+.actionCard b,.actionCard span,.mwTrainingYearCard>*{position:relative;z-index:2}
+.actionCard:active,.mwTrainingYearCard:active,.smartBtn:active,.save:active,.entryAction:active,.entryGhost:active,.pacer:active{
+  transform:translateY(4px) scale(.985)!important;
+  box-shadow:inset 0 3px 10px rgba(0,0,0,.42),0 3px 5px rgba(0,0,0,.28)!important;
+}
+/* Coach MW gets the signature gold-energy treatment while staying part of the same family */
+.actionCard[data-open="coach"]{
+  border-color:rgba(245,185,46,.64)!important;
+  background:radial-gradient(circle at 86% 10%,rgba(255,211,91,.18),transparent 35%),linear-gradient(145deg,#21190a,#070b0f 72%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,237,174,.16),inset 0 -8px 16px rgba(0,0,0,.28),0 8px 0 #4e3308,0 13px 24px rgba(0,0,0,.34),0 0 20px rgba(245,185,46,.10)!important;
+}
+.actionCard[data-open="coach"] b{color:#ffd86b!important;text-shadow:0 0 14px rgba(245,185,46,.25)}
+.actionCard[data-open="coach"]:after{
+  content:"";position:absolute;width:74px;height:74px;right:-18px;bottom:-26px;border-radius:50%;
+  border:1px solid rgba(255,218,112,.24);box-shadow:0 0 24px rgba(245,185,46,.14),inset 0 0 18px rgba(245,185,46,.08);
+  animation:mwActionEnergy 3.6s ease-in-out infinite;pointer-events:none;
+}
+.mwTrainingYearCard,.smartBtn,.pacer{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.075),inset 0 -6px 12px rgba(0,0,0,.22),0 6px 0 rgba(1,5,8,.70),0 10px 17px rgba(0,0,0,.27)!important;
+}
+.save,.entryAction{
+  border:1px solid rgba(255,217,107,.75)!important;
+  background:linear-gradient(180deg,#ffd967,#d99b20 62%,#a96b0b)!important;
+  color:#111!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.22);
+  box-shadow:inset 0 1px 0 rgba(255,248,213,.60),inset 0 -5px 8px rgba(100,52,0,.20),0 6px 0 #704207,0 10px 17px rgba(0,0,0,.34)!important;
+}
+.entryGhost{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 -5px 10px rgba(0,0,0,.22),0 5px 0 rgba(1,4,7,.72),0 8px 14px rgba(0,0,0,.25)!important;
+}
+@keyframes mwActionEnergy{0%,100%{transform:scale(.92);opacity:.55}50%{transform:scale(1.08);opacity:1}}
+@media(prefers-reduced-motion:reduce){.actionCard,.mwTrainingYearCard,.smartBtn,.save,.entryAction,.entryGhost,.pacer{transition:none!important}.actionCard[data-open="coach"]:after{animation:none!important}}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
