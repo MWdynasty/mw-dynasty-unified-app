@@ -524,6 +524,82 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <style id="mw-v311-athlete-communication-search">
 #messages,#messages *{color:#f6f9fb}.mwAthleteSearchTools{display:grid;grid-template-columns:1fr 48px;gap:9px;margin:12px 0}.mwAthleteSearchWrap{position:relative;display:flex;align-items:center;gap:8px;border:1px solid #34424f;border-radius:14px;background:#07131d;padding:0 12px;min-height:48px}.mwAthleteSearchWrap input,.mwAthleteMessageSearch input{width:100%;border:0;outline:0;background:transparent;color:#fff;font-size:14px}.mwAthleteSearchResults{position:absolute;z-index:40;left:0;right:0;top:54px;border:1px solid #34424f;border-radius:13px;background:#061019;box-shadow:0 16px 45px rgba(0,0,0,.45);overflow:hidden}.mwAthleteSearchResults button{width:100%;display:block;border:0;border-bottom:1px solid #22303a;background:transparent;color:#fff;text-align:left;padding:11px 13px}.mwAthleteSearchResults button:last-child{border-bottom:0}.mwAthleteSearchResults button small{display:block;color:#9fadb8;margin-top:2px}.mwAthleteMessageShortcut{position:relative;border:1px solid var(--gold);border-radius:14px;background:#10130f;color:#fff;font-size:19px}.mwAthleteMessageShortcut .mwMessageBadge{position:absolute;right:-6px;top:-6px}.mwAthleteMessageSearch{display:flex;align-items:center;gap:8px;border:1px solid #34424f;border-radius:12px;background:#02070c;padding:10px 11px;margin:10px 0 12px}.mwConversationList{display:grid}.mwAthleteConversationRow{width:100%;display:grid;grid-template-columns:44px 1fr 10px;gap:11px;align-items:center;border:0;border-bottom:1px solid #22303a;background:transparent;padding:12px 5px;color:#fff;text-align:left}.mwAthleteConversationRow:last-child{border-bottom:0}.mwAthleteConversationAvatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#0a1b29;border:1px solid rgba(245,185,46,.5);color:var(--gold);font-weight:900}.mwAthleteConversationCopy{min-width:0}.mwAthleteConversationTop{display:flex;align-items:center;justify-content:space-between;gap:8px}.mwAthleteConversationTop small{color:#9fadb7!important}.mwAthleteConversationPreview{display:block;margin-top:4px;color:#b7c4cd!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mwAthleteUnreadDot{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px rgba(21,156,255,.12)}.mwAthleteThreadHead{display:flex;align-items:center;gap:12px;border-bottom:1px solid #26343e;padding-bottom:11px;margin-bottom:10px}.mwAthleteThreadHead .entryGhost{width:auto;margin:0;padding:8px 10px}.mwAthleteThreadHead small{display:block;color:#9facb7!important;margin-top:2px}.mwAthleteThreadList{height:min(52vh,480px);overflow:auto;display:flex;flex-direction:column;gap:9px;padding:6px 2px 13px}.mwAthleteThreadBubble{max-width:82%;padding:10px 12px;border-radius:16px;line-height:1.45}.mwAthleteThreadBubble.coach{align-self:flex-start;background:#0b1720;border:1px solid rgba(245,185,46,.33);border-bottom-left-radius:5px}.mwAthleteThreadBubble.me{align-self:flex-end;background:#13314a;border-bottom-right-radius:5px}.mwAthleteThreadBubble small{display:block;margin-top:5px;color:#a8b7c2!important;font-size:10px}.app,.card,.actionCard,.settingGroup,.lockNote,.mwAthleteConversationRow,.mwAthleteThreadBubble{color:#f6f9fb}.muted,.lockNote,.settingRow small,.mwAthleteConversationPreview{color:#aebcc6!important}.send,.entryAction,.tourNext,.paceYes,.strengthDone,.mwAuthBtn{color:#10202b!important}
 </style>
+
+<style id="mw-3d-4d-bottom-nav">
+/* MW 3D/4D athlete navigation: dimensional surfaces + motion without sacrificing tap clarity */
+.mwDepthNav{
+  z-index:950!important;
+  overflow:visible!important;
+  gap:5px!important;
+  padding:9px 7px calc(9px + env(safe-area-inset-bottom))!important;
+  background:linear-gradient(180deg,rgba(8,18,27,.94),rgba(1,5,9,.985))!important;
+  border-top:1px solid rgba(245,185,46,.28)!important;
+  box-shadow:0 -16px 40px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.045)!important;
+  perspective:700px;
+}
+.mwDepthNav button{
+  position:relative!important;
+  min-width:0!important;
+  min-height:58px!important;
+  padding:7px 3px 6px!important;
+  border:1px solid rgba(93,121,142,.28)!important;
+  border-radius:15px!important;
+  background:linear-gradient(155deg,rgba(16,32,45,.96),rgba(4,10,16,.98))!important;
+  color:#9eabb5!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -5px 10px rgba(0,0,0,.25),0 6px 11px rgba(0,0,0,.30)!important;
+  transform:translateZ(0) translateY(0)!important;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,color .16s ease,filter .16s ease!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.mwDepthNav button:before{
+  content:"";position:absolute;inset:1px 5px auto;height:35%;border-radius:12px 12px 50% 50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.075),transparent);pointer-events:none;
+}
+.mwDepthNav button b{
+  position:relative;z-index:2;display:grid!important;place-items:center;
+  width:32px;height:32px;margin:0 auto 3px!important;border-radius:11px;
+  font-size:18px!important;line-height:1!important;color:#b7c8d5;
+  background:linear-gradient(145deg,#132a3c,#07121c);
+  border:1px solid rgba(85,201,255,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 8px rgba(0,0,0,.32);
+}
+.mwDepthNav button span{position:relative;z-index:2;display:block;font-size:8px;font-weight:900;letter-spacing:.045em;white-space:nowrap}
+.mwDepthNav button.active:not(.mwCoachOrb){
+  color:#f4c75b!important;border-color:rgba(245,185,46,.55)!important;
+  background:linear-gradient(155deg,#261d0c,#090b0d)!important;
+  box-shadow:inset 0 1px 0 rgba(255,231,157,.16),inset 0 -5px 10px rgba(0,0,0,.28),0 0 18px rgba(245,185,46,.11),0 7px 12px rgba(0,0,0,.34)!important;
+  transform:translateY(-2px)!important;
+}
+.mwDepthNav button.active:not(.mwCoachOrb) b{color:#ffd968;border-color:rgba(245,185,46,.52);background:linear-gradient(145deg,#2c210d,#100d08)}
+.mwDepthNav button:active{transform:translateY(2px) scale(.96)!important;box-shadow:inset 0 2px 7px rgba(0,0,0,.42),0 2px 5px rgba(0,0,0,.25)!important}
+
+/* Coach MW is the signature 4D control: raised orb, light ring, breathing energy */
+.mwDepthNav .mwCoachOrb{
+  min-height:64px!important;
+  margin-top:-15px!important;
+  color:#f7d46f!important;
+  border-color:rgba(245,185,46,.64)!important;
+  background:radial-gradient(circle at 50% 5%,rgba(255,219,113,.19),transparent 35%),linear-gradient(155deg,#171a1c,#05090d 72%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,238,181,.16),inset 0 -8px 14px rgba(0,0,0,.35),0 9px 20px rgba(0,0,0,.48),0 0 18px rgba(245,185,46,.14)!important;
+}
+.mwDepthNav .mwCoachOrb b{
+  width:42px;height:42px;margin-top:-10px!important;margin-bottom:3px!important;border-radius:50%;
+  color:#071018!important;font-size:20px!important;
+  border:1px solid #ffe18a!important;
+  background:radial-gradient(circle at 34% 25%,#fff2b4 0,#f4c44f 25%,#bd7913 67%,#4b2c05 100%)!important;
+  box-shadow:inset -5px -7px 10px rgba(74,38,0,.36),inset 4px 4px 7px rgba(255,255,255,.35),0 5px 0 #704207,0 9px 15px rgba(0,0,0,.50),0 0 19px rgba(245,185,46,.32)!important;
+  animation:mwCoachEnergy 3.2s ease-in-out infinite;
+}
+.mwDepthNav .mwCoachOrb.active{
+  filter:brightness(1.08);
+  box-shadow:inset 0 1px 0 rgba(255,238,181,.20),inset 0 -8px 14px rgba(0,0,0,.35),0 10px 22px rgba(0,0,0,.5),0 0 28px rgba(245,185,46,.28)!important;
+  transform:translateY(-3px)!important;
+}
+.mwDepthNav .mwCoachOrb.active b{box-shadow:inset -5px -7px 10px rgba(74,38,0,.32),inset 4px 4px 7px rgba(255,255,255,.38),0 5px 0 #704207,0 10px 18px rgba(0,0,0,.52),0 0 27px rgba(245,185,46,.55)!important}
+@keyframes mwCoachEnergy{0%,100%{transform:translateY(0) scale(1);filter:brightness(1)}50%{transform:translateY(-2px) scale(1.035);filter:brightness(1.08)}}
+@media(max-width:370px){.mwDepthNav{gap:3px!important}.mwDepthNav button span{font-size:7px}.mwDepthNav button b{width:29px;height:29px}.mwDepthNav .mwCoachOrb b{width:39px;height:39px}}
+@media(prefers-reduced-motion:reduce){.mwDepthNav button,.mwDepthNav .mwCoachOrb b{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -822,7 +898,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
     </div>
   </div>
 </div>
-<nav class="nav"><button class="active" data-v="home"><b>⌂</b>HOME</button><button data-v="coach"><b>◉</b>COACH</button><button data-v="workouts"><b>🏃</b>TRAIN</button><button data-v="progress"><b>◫</b>PROGRESS</button><button data-v="athlete"><b>♙</b>ME</button></nav>
+<nav class="nav mwDepthNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b>⌂</b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b>◉</b><span>COACH MW</span></button><button data-v="workouts"><b>⚡</b><span>TRAIN</span></button><button data-v="progress"><b>◫</b><span>PROGRESS</span></button><button data-v="athlete"><b>♙</b><span>ME</span></button></nav>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const MW_SB_URL='https://keqgunlfwhjgcsurynef.supabase.co';
