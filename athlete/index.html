@@ -709,6 +709,8 @@ body.mw-auth-ready #mwAuth{display:none!important}
 .mwAthleteNotificationRow.unread{border-color:rgba(245,185,46,.55);background:linear-gradient(145deg,#151207,#06101a);box-shadow:inset 3px 0 0 var(--gold)}
 .mwAthleteNotificationRow b{display:block;font-size:12px;margin-bottom:4px}.mwAthleteNotificationRow span{display:block;color:#c5d0d9;font-size:11px;line-height:1.4}.mwAthleteNotificationRow small{white-space:nowrap;color:#7f909e;font-size:8px}
 </style>
+<style id="mw-role-switch">.mwLoginRoleSwitch{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:100%!important;margin-top:10px!important;border:1px solid rgba(85,201,255,.42)!important;border-radius:12px!important;background:linear-gradient(145deg,#102333,#050b11)!important;color:#dff4ff!important;padding:13px 14px!important;font-size:11px!important;font-weight:950!important;letter-spacing:.07em!important;text-decoration:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 0 rgba(1,5,8,.78),0 9px 15px rgba(0,0,0,.26)!important}.mwLoginRoleSwitch:active{transform:translateY(3px)!important;box-shadow:inset 0 3px 8px rgba(0,0,0,.38),0 2px 4px rgba(0,0,0,.24)!important}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -759,6 +761,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
         </div>
 
         <button id="mwAuthLogin" class="mwLoginButton" type="button">Sign In <span>→</span></button>
+        <a class="mwLoginRoleSwitch" href="/coach/">COACH SIGN IN <span>→</span></a>
 
         <div id="mwAuthReset" class="mwAuthReset mwLoginReset">
           <div class="mwLoginField"><span aria-hidden="true">◆</span><input id="mwNewPassword" type="password" autocomplete="new-password" placeholder="Create a new password"></div>
