@@ -35,10 +35,25 @@ where not exists (
 )
 on conflict (athlete_id) do nothing;
 
--- Guarantee new Auth users run through MW athlete provisioning.
+-- Remove the Build 10 temporary trigger name if it was ever created.
 drop trigger if exists mw_build10_provision_new_athlete on auth.users;
 
-create trigger mw_build10_provision_new_athlete
-after insert on auth.users
-for each row
-execute function public.mw_provision_new_athlete();
+-- Ensure provisioning exists without creating a second trigger that calls
+-- public.mw_provision_new_athlete(). Production already uses
+-- mw_on_auth_user_created, so this block leaves that trigger untouched.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_trigger t
+    where t.tgrelid = 'auth.users'::regclass
+      and not t.tgisinternal
+      and t.tgfoid = 'public.mw_provision_new_athlete()'::regprocedure
+  ) then
+    create trigger mw_on_auth_user_created
+    after insert on auth.users
+    for each row
+    execute function public.mw_provision_new_athlete();
+  end if;
+end
+$$;
