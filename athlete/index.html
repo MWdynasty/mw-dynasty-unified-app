@@ -895,7 +895,7 @@ async function mwRenderCoachAssignedTraining(){
 async function mwRenderSponsoredProgress(){
   const view=document.querySelector('#progress');if(!view)return;view.innerHTML=`<div class="top"><div><div class="logo"><b>MW</b> ACTIVITY</div><div class="sub">COACH-CONNECTED CHECK-INS</div></div><button class="gearBtn" data-open-settings>⚙</button></div><div id="mwActivityState" class="card"><h2>Loading your activity…</h2></div>`;
   const state=document.querySelector('#mwActivityState');try{const r=await fetch('/api/assigned-program',{headers:{Authorization:`Bearer ${window.mwGetSessionToken?.()||''}`},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Activity could not be loaded.');const c=Array.isArray(d.checkins)?d.checkins:[];state.innerHTML=`<div class="cardHead"><span>TRAINING CHECK-INS</span><span class="smalllink">${c.length} RECORDED</span></div>${c.length?`<div class="checkList">${c.slice(0,30).map(x=>`<div class="checkItem"><b>${mwEsc(String(x.status||'completed').replaceAll('_',' ').toUpperCase())}</b><span class="muted">${mwEsc(new Date(x.completed_at).toLocaleDateString())}${x.session_rpe?` · RPE ${x.session_rpe}/10`:''}${x.pace_check_status?` · ${mwEsc(String(x.pace_check_status).replaceAll('_',' '))}`:''}${x.pace_reps_total!=null?` · ${Number(x.pace_reps_hit||0)}/${Number(x.pace_reps_total)} reps`:''}</span>${x.athlete_note?`<small>${mwEsc(x.athlete_note)}</small>`:''}</div>`).join('')}</div>`:'<p class="muted">No check-ins yet. Open Training after your coach assigns a program.</p>'}`;}catch(e){state.innerHTML=`<h2>Activity unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p>`}}
-function openView(id){
+function openView(id,pushHistory=false){
   const access=window.mwFeatureAccess||{};
   if(window.mwDobRequired){mwPromptDobVerification();return}
   if(id==='entry'&&access.smart_entry!==true){mwFeatureLock('MW Smart Entry','Smart Entry is part of the complete MW Sprint Performance athlete experience. Your current sponsored access follows your coach’s assigned program.');return}
@@ -909,8 +909,11 @@ function openView(id){
   else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
   if(id==='progress'&&access.mw_training_system!==true&&access.coach_assigned_training===true)mwRenderSponsoredProgress();else if(id==='home'||id==='progress')renderProgressUI();
   if(id==='messages')window.mwLoadCoachMessages?.(true);
+  if(pushHistory&&history.state?.mwView!==id)history.pushState({...history.state,mwView:id},'',location.href);
 }
-$$('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v));
+if(!history.state?.mwView)history.replaceState({...history.state,mwView:'home'},'',location.href);
+window.addEventListener('popstate',e=>openView(e.state?.mwView||'home',false));
+$('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v,true));
 
 
 let mwOnboardingUserKey='local';
@@ -1182,7 +1185,7 @@ function renderCompletion(){
   if($('#unlockNote'))$('#unlockNote').textContent=isWeekDone?(u>w?`Week ${Math.min(41,w+1)} is unlocked.`:'Nice work. Your next week follows the official MW schedule.'):`Finish your sessions and tap DONE. MW handles the rest.`;
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='checkRow'+(wc['s'+i]?' done':'');r.innerHTML=`<span>Workout ${i}</span><b>${wc['s'+i]?'✓ Complete':'Not completed'}</b>`;pb.appendChild(r)}}}
-$$('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open));$$('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings'));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry');
+$('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open,true));$('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings',true));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry',true);
 const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);localStorage.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
 
 
