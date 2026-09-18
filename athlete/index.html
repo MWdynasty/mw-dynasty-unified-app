@@ -1830,9 +1830,51 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     return false;
   }
   async function resume(){
-    const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;
-    try{mwSession=JSON.parse(raw);await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready')}catch{clearSession()}
+  const raw=localStorage.getItem(SESSION_KEY);
+  if(!raw)return;
+
+  try{
+    mwSession=JSON.parse(raw);
+
+    if(!mwSession?.refresh_token){
+      throw new Error('No refresh token');
+    }
+
+    const r=await fetch(
+      SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',
+      {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'apikey':SUPABASE_KEY
+        },
+        body:JSON.stringify({
+          refresh_token:mwSession.refresh_token
+        })
+      }
+    );
+
+    const refreshed=await r.json().catch(()=>({}));
+
+    if(!r.ok || !refreshed.access_token){
+      throw new Error(
+        refreshed.error_description ||
+        refreshed.msg ||
+        refreshed.error ||
+        'Session refresh failed'
+      );
+    }
+
+    saveSession(refreshed);
+    await loadMe();
+
+    document.body.classList.remove('mw-auth-pending');
+    document.body.classList.add('mw-auth-ready');
+  }catch(e){
+    console.warn('MW session restore failed:',e);
+    clearSession();
   }
+}
 
   // Replace Coach MW network calls so browser-supplied profile/week can never be authoritative.
   try{
