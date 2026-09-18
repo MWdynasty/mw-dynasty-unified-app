@@ -23,7 +23,7 @@ module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='POST') return res.status(405).json({error:'POST only'});
   try{
-    const {token}=await authenticate(req);
+    const {token,user}=await authenticate(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const firstName=String(body.first_name||'').trim().slice(0,80);
     const trainingGoal=String(body.training_goal||'').trim().slice(0,500);
@@ -38,7 +38,7 @@ module.exports=async function handler(req,res){
       prs[event]=String(time);
     }
 
-    const goalResponse=await fetch(`${SUPABASE_URL}/rest/v1/athletes?user_id=eq.${encodeURIComponent((await authenticate(req)).user.id)}`,{
+    const goalResponse=await fetch(`${SUPABASE_URL}/rest/v1/athletes?user_id=eq.${encodeURIComponent(user.id)}`,{
       method:'PATCH',
       headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=minimal'},
       body:JSON.stringify({training_goal:trainingGoal||null,updated_at:new Date().toISOString()})
