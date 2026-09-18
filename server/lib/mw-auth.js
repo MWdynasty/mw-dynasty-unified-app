@@ -43,7 +43,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
 
   const role=String(profile.role||'athlete');
   const privileged=['founder_owner','admin','coach'].includes(role);
-  const athlete=await one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
+  const athlete=await one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
 
   if(!athlete){
     if(requireAthlete || !privileged){
