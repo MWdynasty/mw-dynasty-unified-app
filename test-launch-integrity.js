@@ -11,9 +11,9 @@ const pkg=JSON.parse(read('package.json'));
 ok(pkg.version==='3.0.16','package.json version must be 3.0.16');
 includes('manifest.webmanifest','App 3.0.16','manifest description must match 3.0.16');
 includes('assets/mw-native.js',"MW_APP_VERSION='3.0.16'",'web native bridge version mismatch');
-includes('athlete/index.html','MW Dynasty 3.0.16 · iOS Build 10','athlete visible app version mismatch');
+includes('athlete/index.html','MW Dynasty 3.0.16 · iOS Build 11','athlete visible app version mismatch');
 includes('ios_v3_0_16_patch/Config/Release.xcconfig','MARKETING_VERSION = 3.0.16','iOS marketing version mismatch');
-includes('ios_v3_0_16_patch/Config/Release.xcconfig','CURRENT_PROJECT_VERSION = 10','iOS build number mismatch');
+includes('ios_v3_0_16_patch/Config/Release.xcconfig','CURRENT_PROJECT_VERSION = 11','iOS build number mismatch');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','MWDynasty-iOS/3.0.16','iOS user agent version mismatch');
 
 const signup=read('athlete/signup.html');
