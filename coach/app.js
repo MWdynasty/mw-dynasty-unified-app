@@ -96,6 +96,7 @@ function coreDashboard(){simpleCoachHome('programs','TRAINING',false)}
 function intelligenceDashboard(){simpleCoachHome('programs','TRAINING',true)}
 function performanceDashboard(){simpleCoachHome('mwtrack','MW TRAINING',true)}
 function dashboard(){
+  if(!history.state?.mwCoachPage||history.state.mwCoachPage!=='dashboard')history.replaceState({...history.state,mwCoachPage:'dashboard'},'',location.href);
   if(experience==='core')coreDashboard();
   else if(experience==='intelligence'){intelligenceDashboard();hydrateAthleteStatusBoard();hydrateLivePerformanceSummary();hydratePerformanceInsightPreview();}
   else {performanceDashboard();hydrateAthleteStatusBoard();hydrateLivePerformanceSummary();hydratePerformanceInsightPreview();}
@@ -235,7 +236,8 @@ async function requestCoachAccountDeletion(){
     window.setTimeout(signOut,900);
   }catch(e){if(state)state.textContent=e.message||'Account deletion request failed.';if(btn){btn.disabled=false;btn.textContent='Delete Account'}}
 }
-function openPage(id){if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}const routes={dashboard,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,coachapps:coachApplicationsPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,school:schoolPage,race:racePage,pacing:pacingPage,more:morePage};(routes[id]||supportPage)()}
+function openPage(id,pushHistory=true){if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}const routes={dashboard,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,coachapps:coachApplicationsPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,school:schoolPage,race:racePage,pacing:pacingPage,more:morePage};const page=routes[id]?id:'support';if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
+if(!window.__mwCoachHistoryBound){window.__mwCoachHistoryBound=true;window.addEventListener('popstate',e=>{if(mwSessionToken())openPage(e.state?.mwCoachPage||'dashboard',false)})}
 function bindPageNavigation(root=document){
   root.querySelectorAll('[data-page]').forEach(b=>{if(b.dataset.mwBound==='1')return;b.dataset.mwBound='1';b.addEventListener('click',()=>openPage(b.dataset.page))});
   root.querySelectorAll('[data-stat]').forEach(b=>{if(b.dataset.mwStatBound==='1')return;b.dataset.mwStatBound='1';b.addEventListener('click',()=>{const m={'Athletes':'athletes','Teams':'teams','Upcoming Meets':'meets','Attendance':'attendance','Active Workouts':'programs','Week Program':'mwtrack','Pace Execution':'insights'};openPage(m[b.dataset.stat]||'dashboard')})});
