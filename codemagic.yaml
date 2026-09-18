@@ -23,7 +23,7 @@ workflows:
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj" "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/WebViewController.swift" "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
           grep -q 'MARKETING_VERSION = 3.0.16' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          grep -q 'CURRENT_PROJECT_VERSION = 11' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 12' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
 
       - name: Show Xcode version
         script: xcodebuild -version
@@ -75,15 +75,15 @@ workflows:
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/WebViewController.swift" "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
 
           if /usr/libexec/PlistBuddy -c "Print :MWProductionURL" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist" >/dev/null 2>&1; then
-            /usr/libexec/PlistBuddy -c "Set :MWProductionURL https://mwdynasty.com/" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
+            /usr/libexec/PlistBuddy -c "Set :MWProductionURL https://app.mwdynasty.com/" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
           else
-            /usr/libexec/PlistBuddy -c "Add :MWProductionURL string https://mwdynasty.com/" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
+            /usr/libexec/PlistBuddy -c "Add :MWProductionURL string https://app.mwdynasty.com/" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
           fi
 
           /usr/libexec/PlistBuddy -c "Print :MWProductionURL" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
 
           grep -q 'MARKETING_VERSION = 3.0.16' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          grep -q 'CURRENT_PROJECT_VERSION = 11' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 12' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
 
       - name: Apply Apple signing profile
         script: |
