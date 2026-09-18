@@ -62,7 +62,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET") {
       const r = await fetch(
-        `${url}/rest/v1/coach_access_applications?select=id,first_name,last_name,email,organization,city,state,coaching_level,years_coaching,website_or_social,reason,status,created_at,reviewed_at,review_notes,rejection_reason,access_tier,invited_at,activated_at,coach_user_id&order=created_at.desc`,
+        `${url}/rest/v1/coach_access_applications?select=id,first_name,last_name,email,organization,coach_title,city,state,coaching_level,years_coaching,website_or_social,reason,status,created_at,reviewed_at,review_notes,rejection_reason,access_tier,invited_at,activated_at,coach_user_id&order=created_at.desc`,
         { headers: baseHeaders },
       );
       if (!r.ok) return J({ ok: false, error: "Applications could not be loaded." }, 500);
@@ -142,6 +142,7 @@ Deno.serve(async (req: Request) => {
             first_name: app.first_name,
             last_name: app.last_name,
             coach_organization: app.organization || null,
+            coach_title: app.coach_title || null,
             mw_access_tier: tier,
             mw_application_id: id,
           },
@@ -183,7 +184,7 @@ Deno.serve(async (req: Request) => {
     const activateProfile = await fetch(`${url}/rest/v1/profiles?user_id=eq.${encodeURIComponent(coachId)}`, {
       method: "PATCH",
       headers: elevatedHeaders(secret, { "content-type": "application/json", prefer: "return=minimal" }),
-      body: JSON.stringify({ role: "coach", account_status: "active", coach_organization: clean(app.organization, 160) || null, updated_at: new Date().toISOString() }),
+      body: JSON.stringify({ role: "coach", account_status: "active", coach_organization: clean(app.organization, 160) || null, coach_title: clean(app.coach_title, 120) || null, updated_at: new Date().toISOString() }),
     });
     if (!activateProfile.ok) {
       return J({ ok: false, status: "approved", retryable: true, error: "Coach entitlement exists, but profile activation needs to be retried." }, 502);
