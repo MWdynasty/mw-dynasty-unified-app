@@ -18,7 +18,7 @@ async function authenticate(req){
 async function one(path,token){const rows=await sj(`${SUPABASE_URL}/rest/v1/${path}`,token);return Array.isArray(rows)?(rows[0]||null):rows}
 async function getAccountContext(req,{requireAthlete=false}={}){
   const {token,user}=await authenticate(req);
-  const profile=await one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
+  const profile=await one(`profiles?select=user_id,first_name,last_name,coach_organization,coach_title,role,account_status&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
   if(!profile) throw Object.assign(new Error('MW profile not found for this login.'),{status:403});
   if(profile.account_status!=='active') throw Object.assign(new Error('This MW account is not active.'),{status:403});
 
