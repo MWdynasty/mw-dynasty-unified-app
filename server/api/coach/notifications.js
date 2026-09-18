@@ -9,7 +9,7 @@ module.exports=async(req,res)=>{
     const c=await getAccountContext(req);const role=String(c.profile.role||'');
     if(!['coach','admin','founder_owner'].includes(role))return res.status(403).json({error:'Coach access required'});
     if(req.method==='GET'){
-      const rows=await rest('coach_notifications?select=id,notification_type,title,body,action_page,entity_type,entity_id,read_at,created_at&order=created_at.desc&limit=50',c.token);
+      const rows=await rest(`coach_notifications?select=id,notification_type,title,body,action_page,entity_type,entity_id,read_at,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=50`,c.token);
       const items=Array.isArray(rows)?rows:[];return res.status(200).json({ok:true,unread:items.filter(x=>!x.read_at).length,items});
     }
     if(req.method==='POST'){
