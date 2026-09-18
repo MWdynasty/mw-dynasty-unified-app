@@ -1082,7 +1082,7 @@ let mwCompletionLoaded=false;
 let mwPendingCompletion=null;
 function getCompletion(){return mwCompletionCache}
 function completionHeaders(extra={}){
-  const raw=localStorage.getItem('mwSupabaseSession');
+  const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
   let sess=null;try{sess=JSON.parse(raw||'null')}catch{}
   const access=sess?.access_token||'';
   return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,...extra};
@@ -1496,8 +1496,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   let mwRemoteProfile={userId:'',name:'Athlete',coachType:'male',p60:'',p100:'',p200:'',p300:'',p400:'',week:'1',currentDay:'1',currentPhase:'1',programStatus:'not_started',startDate:'',startWeek:'1'};window.mwAssessmentComplete=false;window.mwAssessmentRequired=false;window.mwDobRequired=false;window.mwFeatureAccess={};
 
   function authStatus(msg,bad=false){const el=document.querySelector('#mwAuthStatus');if(el){el.textContent=msg||'';el.style.color=bad?'#ff9caa':'#55c9ff'}}
-  function saveSession(s){mwSession=s;localStorage.setItem(SESSION_KEY,JSON.stringify(s))}
-  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY)}
+  function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
+  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW connection failed');return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
@@ -1779,7 +1779,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{
       const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-in failed');
-      saveSession(d);await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('');
+      saveSession(d,document.querySelector('#mwRememberMe')?.checked===true);await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('');
     }catch(e){
       clearSession();
       const msg=String(e?.message||'');
@@ -1832,7 +1832,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     return false;
   }
   async function resume(){
-  const raw=localStorage.getItem(SESSION_KEY);
+  const raw=localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY);
   if(!raw)return;
 
   try{
@@ -1911,7 +1911,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
   const $=s=>document.querySelector(s);
   let currentInvite=null;
-  function session(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+  function session(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
   function authHeaders(extra={}){const ss=session();return {apikey:SUPABASE_KEY,Authorization:`Bearer ${ss?.access_token||''}`,'Content-Type':'application/json',...extra}}
   async function sb(path,opts={}){const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:authHeaders(opts.headers||{})});const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok)throw new Error(data?.message||data?.hint||data?.details||String(data||`Supabase ${r.status}`));return data}
   function status(msg,kind=''){const el=$('#coachInvitePreview');if(!el)return;el.textContent=msg;el.className='coachConnectStatus show'+(kind?' '+kind:'')}
@@ -1967,7 +1967,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 <script>(function(){
 const m=document.getElementById('mwUtilityModal'),t=document.getElementById('mwUtilityTitle'),b=document.getElementById('mwUtilityBody');
 function o(x,h){t.textContent=x;b.innerHTML=h;m.classList.add('open')}function c(){m.classList.remove('open')}document.getElementById('mwUtilityClose')?.addEventListener('click',c);m?.addEventListener('click',e=>{if(e.target===m)c()});
-function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
 const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
 async function mwLoadPublicPricing(){try{const r=await fetch('/api/pricing',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.plans))throw new Error(d.error||'Pricing unavailable');const p=d.plans.find(x=>x.plan_code==='mw_athlete');if(!p)return;const monthly=Number(p.monthly_price_cents),annual=Number(p.annual_price_cents);window.__mwAthletePricing={monthly,annual,annualEnabled:!!p.annual_enabled};if(Number.isFinite(monthly)){const el=document.getElementById('mwAthleteMembershipPrice');if(el)el.textContent=`MW Athlete · $${(monthly/100).toFixed(monthly%100===0?0:2)}/month${Number.isFinite(annual)&&p.annual_enabled?` · $${(annual/100).toFixed(annual%100===0?0:2)}/year`:''}`;}}catch(e){console.warn('MW public pricing sync unavailable; using locked fallback price.',e)}}
 async function mwBillingRequest(method='GET',body=null){const s=sess();if(!s?.access_token)throw new Error('Sign in again to manage your membership.');const r=await fetch('/api/billing',{method,headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Membership request failed');return d}
@@ -2011,7 +2011,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   async function autoCoachInvite(){
     const q=new URLSearchParams(location.search), token=q.get('invite')||q.get('invite_token');
     if(!token)return;
-    let ss=null;try{ss=JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{}
+    let ss=null;try{ss=JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{}
     if(!ss?.access_token)return;
     try{
       const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
@@ -2030,7 +2030,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 (()=>{
   const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
   let coachRows=[],replyRows=[],selectedCoachId=null;
-  function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+  function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
   function headers(){const s=sess();return {apikey:PK,Authorization:'Bearer '+(s?.access_token||''),'Content-Type':'application/json'}}
   async function rpc(name,body={}){const r=await fetch(`${SB}/rest/v1/rpc/${name}`,{method:'POST',headers:headers(),body:JSON.stringify(body)}),text=await r.text();let d=null;try{d=text?JSON.parse(text):null}catch{d=text}if(!r.ok)throw new Error(d?.message||d?.details||d?.hint||`MW message request failed (${r.status})`);return d}
   async function rest(path){const r=await fetch(`${SB}/rest/v1/${path}`,{headers:headers()}),text=await r.text();let d=null;try{d=text?JSON.parse(text):null}catch{d=text}if(!r.ok)throw new Error(d?.message||d?.details||`MW message request failed (${r.status})`);return d}
