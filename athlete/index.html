@@ -1087,7 +1087,7 @@ function completionHeaders(extra={}){
   const access=sess?.access_token||'';
   return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,...extra};
 }
-function completionAthleteId(){return (typeof mwRemoteProfile!=='undefined'&&mwRemoteProfile?.athleteId)?mwRemoteProfile.athleteId:null}
+function completionAthleteId(){const remote=window.mwGetRemoteProfile?.();return remote?.athleteId||null}
 function workoutKey(w,i){return `mw-track-w${Number(w)}-d${Number(i)}`}
 function rowsToCompletion(rows){
   const out={};mwPaceCheckCache={};
