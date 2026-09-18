@@ -711,6 +711,9 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <section class="view" id="athlete"><div class="top"><div class="logo"><b>MW</b> ATHLETE</div></div>
 <div class="card"><div class="profilegrid">
 <div class="field"><label>FIRST NAME</label><input id="name" placeholder="Athlete"></div>
+<div class="field"><label>LAST NAME</label><input id="profileLastName" readonly title="Synced from your MW Athlete Assessment"></div>
+<div class="field"><label>EVENTS</label><input id="profileEvents" readonly title="Synced from your MW Athlete Assessment"></div>
+<div class="field"><label>DATE OF BIRTH</label><input id="profileDob" type="date" readonly title="Synced from your MW Athlete Assessment"></div>
 <div class="field"><label>CHOOSE YOUR COACH MW</label><select id="coachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div>
 <div class="field"><label>60M PR</label><input id="p60" inputmode="decimal" type="number" min="0" step="0.01" placeholder="6.85"></div>
 <div class="field"><label>100M PR</label><input id="p100" inputmode="decimal" type="number" min="0" step="0.01" placeholder="10.85"></div>
@@ -1587,7 +1590,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{advanceCurrentWeek=()=>Number(mwRemoteProfile.week||1)}catch{}
     try{unlockedThrough=()=>Number(mwRemoteProfile.week||1)}catch{}
 
-    const map={name:mwRemoteProfile.name,entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,entryPr100:mwRemoteProfile.p100,entryPr200:mwRemoteProfile.p200,entryPr400:mwRemoteProfile.p400,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
+    const map={name:mwRemoteProfile.name,profileLastName:profile.last_name||'',profileEvents:(Array.isArray(d.athlete?.selected_events)?d.athlete.selected_events:[d.athlete?.primary_event,d.athlete?.secondary_event].filter(Boolean)).join(', '),profileDob:d.athlete?.date_of_birth||'',entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,entryPr100:mwRemoteProfile.p100,entryPr200:mwRemoteProfile.p200,entryPr400:mwRemoteProfile.p400,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
     for(const [id,val] of Object.entries(map)){const el=document.querySelector('#'+id);if(el)el.value=val||''}
 
     ['week','startDate','startWeek'].forEach(id=>{
@@ -2059,7 +2062,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 <script id="mw-athlete-search-v311">
 (()=>{
  const items=[
-  ['workouts','Training','Today’s MW track + strength program'],['coach','Coach MW','Ask your MW AI coach'],['messages','Messages','Coach conversations'],['progress','Progress','Program completion and progress'],['athlete','Athlete Profile','PRs, maxes and goals'],['settings','Settings','Voice, notifications and membership'],['pacer','Training Tools','Pace AI and Distance Pacer'],['entry','Training Year','Smart Entry and official week']
+  ['workouts','Training','Today’s MW track + strength program'],['coach','Coach MW','Ask your MW AI coach'],['messages','Messages','Coach conversations'],['progress','Progress','Program completion and progress'],['athlete','Athlete Profile','PRs, events and maxes'],['settings','Settings','Voice, notifications and membership'],['pacer','Training Tools','Pace AI and Distance Pacer'],['entry','Training Year','Smart Entry and official week']
  ];
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
  function bind(){const input=document.getElementById('mwAthleteSearch'),box=document.getElementById('mwAthleteSearchResults');if(!input||!box)return;const render=()=>{const q=input.value.trim().toLowerCase();if(!q){box.hidden=true;box.innerHTML='';return}const r=items.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q));box.innerHTML=r.length?r.map(x=>`<button type="button" data-athlete-search-open="${x[0]}"><b>${esc(x[1])}</b><small>${esc(x[2])}</small></button>`).join(''):'<button type="button"><b>No results</b><small>Try training, messages, Coach MW, progress, or settings.</small></button>';box.hidden=false;box.querySelectorAll('[data-athlete-search-open]').forEach(b=>b.onclick=()=>{box.hidden=true;input.value='';openView(b.dataset.athleteSearchOpen)})};input.addEventListener('input',render);input.addEventListener('focus',render);document.addEventListener('click',e=>{if(!e.target.closest('.mwAthleteSearchWrap'))box.hidden=true})}
