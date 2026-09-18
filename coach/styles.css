@@ -387,3 +387,5 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 @media(prefers-reduced-motion:reduce){
   .app .nav-btn,.page .nav-btn,.action,.back,.switch,.signout,.bell,.coach-training-year-card,.coach-login-submit{transition:none!important}
 }
+
+.mw-profile-nudge{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))!important}.mw-profile-nudge p{margin:6px 0 0;color:#adbdc8;max-width:760px}.mw-profile-nudge .action{flex:0 0 auto}@media(max-width:640px){.mw-profile-nudge{align-items:stretch;flex-direction:column}.mw-profile-nudge .action{width:100%}}
