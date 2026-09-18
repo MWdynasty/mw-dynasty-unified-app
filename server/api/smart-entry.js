@@ -34,7 +34,7 @@ module.exports=async function handler(req,res){
     const weightUnit=['lb','kg'].includes(b.weightUnit)?b.weightUnit:'lb';
     const maxRow={power_clean_max:cleanNumber(maxes.powerClean,'Power Clean maximum'),front_squat_max:cleanNumber(maxes.frontSquat,'Front Squat maximum'),back_squat_max:cleanNumber(maxes.backSquat,'Back Squat maximum'),deadlift_max:cleanNumber(maxes.deadlift,'Deadlift maximum'),deadlift_type:maxes.deadliftType==='trap_bar'?'trap_bar':'conventional',weight_unit:weightUnit};
     await Promise.all([
-      sj(`profiles?user_id=eq.${encodeURIComponent(c.user.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({first_name:firstName,last_name:lastName})}),
+      sj('rpc/mw_update_athlete_identity',token,{method:'POST',body:JSON.stringify({p_first_name:firstName,p_last_name:lastName})}),
       sj(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({date_of_birth:b.dateOfBirth,primary_event:events[0],secondary_event:events[1]||null,selected_events:events,track_training_years:Number(b.trainingAge)||0,experience_level:Number(b.trainingAge)>=5?'professional':Number(b.trainingAge)>=2?'intermediate':'beginner',training_goal:trainingGoal||null})}),
       sj('athlete_strength_maxes?on_conflict=athlete_id',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...maxRow,updated_at:new Date().toISOString()})})
     ]);
