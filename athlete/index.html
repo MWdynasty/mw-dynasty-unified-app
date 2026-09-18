@@ -2241,7 +2241,9 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   function initials(v){return String(v||'MW Coach').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]?.toUpperCase()).join('')||'MW'}
   function allForCoach(cid){return [...coachRows.filter(x=>x.coach_user_id===cid).map(x=>({...x,kind:'coach'})),...replyRows.filter(x=>x.coach_user_id===cid).map(x=>({...x,kind:'me'}))].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))}
   function coachIds(){return [...new Set(coachRows.map(x=>x.coach_user_id).concat(replyRows.map(x=>x.coach_user_id)).filter(Boolean))]}
-  function identityFor(cid){return coachIdentityRows.find(x=>x.coach_user_id===cid)||null}\n  function nameFor(cid){return identityFor(cid)?.coach_name||coachRows.find(x=>x.coach_user_id===cid)?.coach_name||'MW Coach'}\n  function metaFor(cid){const x=identityFor(cid);return [x?.coach_title,x?.coach_organization].filter(Boolean).join(' · ')}
+  function identityFor(cid){return coachIdentityRows.find(x=>x.coach_user_id===cid)||null}
+  function nameFor(cid){return identityFor(cid)?.coach_name||coachRows.find(x=>x.coach_user_id===cid)?.coach_name||'MW Coach'}
+  function metaFor(cid){const x=identityFor(cid);return [x?.coach_title,x?.coach_organization].filter(Boolean).join(' · ')}
   function unreadFor(cid){return coachRows.filter(x=>x.coach_user_id===cid&&!x.read_at).length}
   function totalUnread(){return coachRows.filter(x=>!x.read_at).length}
   function updateBadges(){const n=totalUnread();['mwMessageHomeBadge','mwSearchMessageBadge'].forEach(id=>{const b=document.getElementById(id);if(b){b.hidden=n<1;b.textContent=n>99?'99+':String(n)}});const l=document.getElementById('mwMessageUnreadLabel');if(l)l.textContent=`${n} UNREAD`}
