@@ -913,7 +913,7 @@ function openView(id,pushHistory=false){
 }
 if(!history.state?.mwView)history.replaceState({...history.state,mwView:'home'},'',location.href);
 window.addEventListener('popstate',e=>openView(e.state?.mwView||'home',false));
-$('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v,true));
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v,true));
 
 
 let mwOnboardingUserKey='local';
@@ -1185,7 +1185,7 @@ function renderCompletion(){
   if($('#unlockNote'))$('#unlockNote').textContent=isWeekDone?(u>w?`Week ${Math.min(41,w+1)} is unlocked.`:'Nice work. Your next week follows the official MW schedule.'):`Finish your sessions and tap DONE. MW handles the rest.`;
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='checkRow'+(wc['s'+i]?' done':'');r.innerHTML=`<span>Workout ${i}</span><b>${wc['s'+i]?'✓ Complete':'Not completed'}</b>`;pb.appendChild(r)}}}
-$('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open,true));$('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings',true));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry',true);
+document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open,true));document.querySelectorAll('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings',true));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry',true);
 const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);localStorage.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
 
 
