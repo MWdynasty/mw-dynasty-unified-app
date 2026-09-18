@@ -141,6 +141,7 @@ Deno.serve(async (req: Request) => {
           data: {
             first_name: app.first_name,
             last_name: app.last_name,
+            coach_organization: app.organization || null,
             mw_access_tier: tier,
             mw_application_id: id,
           },
@@ -182,7 +183,7 @@ Deno.serve(async (req: Request) => {
     const activateProfile = await fetch(`${url}/rest/v1/profiles?user_id=eq.${encodeURIComponent(coachId)}`, {
       method: "PATCH",
       headers: elevatedHeaders(secret, { "content-type": "application/json", prefer: "return=minimal" }),
-      body: JSON.stringify({ role: "coach", account_status: "active", updated_at: new Date().toISOString() }),
+      body: JSON.stringify({ role: "coach", account_status: "active", coach_organization: clean(app.organization, 160) || null, updated_at: new Date().toISOString() }),
     });
     if (!activateProfile.ok) {
       return J({ ok: false, status: "approved", retryable: true, error: "Coach entitlement exists, but profile activation needs to be retried." }, 502);
