@@ -3,7 +3,7 @@ const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
 const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
 const SESSION_KEY='mwCoachSupabaseSession';
 const MW_APP_VERSION='3.0.16';
-const MW_IOS_BUILD='10';
+const MW_IOS_BUILD='11';
 let authSession=null;
 let accountAccess={role:null,tier:null,isFounder:false,firstName:'',lastName:'',organization:'',coachTitle:'',email:''};
 
