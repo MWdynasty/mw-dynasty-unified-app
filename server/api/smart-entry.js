@@ -28,13 +28,14 @@ module.exports=async function handler(req,res){
     const events=[...new Set((Array.isArray(b.events)?b.events:[]).map(String))].filter(x=>['100m','200m','400m'].includes(x));
     if(!firstName||!lastName||!dob||!events.length)return res.status(400).json({error:'First name, last name, date of birth, and at least one event are required.'});
     const age=ageOn(b.dateOfBirth);if(age==null||age<13)return res.status(400).json({error:'MW Dynasty athlete accounts require age 13 or older.'});
+    const trainingGoal=String(b.trainingGoal||'').trim().slice(0,500);
     const timing=b.prTiming||{},prs=b.prs||{},maxes=b.maxes||{};
     const prRows=events.map(event=>({event,time_seconds:cleanNumber(prs[event],`${event} PR`),timing_method:['fat','hand','unknown'].includes(timing[event])?timing[event]:'unknown'})).filter(x=>x.time_seconds!=null);
     const weightUnit=['lb','kg'].includes(b.weightUnit)?b.weightUnit:'lb';
     const maxRow={power_clean_max:cleanNumber(maxes.powerClean,'Power Clean maximum'),front_squat_max:cleanNumber(maxes.frontSquat,'Front Squat maximum'),back_squat_max:cleanNumber(maxes.backSquat,'Back Squat maximum'),deadlift_max:cleanNumber(maxes.deadlift,'Deadlift maximum'),deadlift_type:maxes.deadliftType==='trap_bar'?'trap_bar':'conventional',weight_unit:weightUnit};
     await Promise.all([
       sj(`profiles?user_id=eq.${encodeURIComponent(c.user.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({first_name:firstName,last_name:lastName})}),
-      sj(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({date_of_birth:b.dateOfBirth,primary_event:events[0],secondary_event:events[1]||null,selected_events:events,track_training_years:Number(b.trainingAge)||0,experience_level:Number(b.trainingAge)>=5?'professional':Number(b.trainingAge)>=2?'intermediate':'beginner'})}),
+      sj(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({date_of_birth:b.dateOfBirth,primary_event:events[0],secondary_event:events[1]||null,selected_events:events,track_training_years:Number(b.trainingAge)||0,experience_level:Number(b.trainingAge)>=5?'professional':Number(b.trainingAge)>=2?'intermediate':'beginner',training_goal:trainingGoal||null})}),
       sj('athlete_strength_maxes?on_conflict=athlete_id',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...maxRow,updated_at:new Date().toISOString()})})
     ]);
     for(const pr of prRows)await sj('athlete_prs?on_conflict=athlete_id,event',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...pr,verified:false})});
