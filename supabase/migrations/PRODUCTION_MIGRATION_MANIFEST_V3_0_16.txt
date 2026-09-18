@@ -11,3 +11,7 @@ These are already applied in project keqgunlfwhjgcsurynef; this file is a handof
 20260915190804 secure_coach_invite_provisioning
 
 When repository access is restored, use the Supabase-supported schema/migration pull workflow to capture the authoritative SQL into source control before applying further production DDL.
+
+20260919_build10_practice_timing
+- Adds secure coach_practice_timing_results for Practice Mode group timing.
+- Applied to production and source-controlled in supabase/migrations/20260919_build10_practice_timing.sql.
