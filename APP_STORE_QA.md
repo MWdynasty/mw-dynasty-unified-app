@@ -42,7 +42,7 @@
 - Confirm the final bundle identifier before creating the App Store Connect record.
 
 ## V3.0.6 Pricing Sync Cleanup
-- App display version synchronized to 3.0.6 / iOS Build 3.
+- App display version synchronized to 3.0.6 / iOS Build 10.
 - Athlete membership display reads `/api/pricing` with $19 locked fallback.
 - Coach membership displays read `/api/pricing` and map by plan code with locked fallbacks.
 - `membership_plans` is read-only to anon/authenticated and RLS exposes active plans only.
