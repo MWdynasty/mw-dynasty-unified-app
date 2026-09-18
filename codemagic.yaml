@@ -18,10 +18,10 @@ workflows:
       - name: Apply MW Dynasty V3.0.16 native patches
         script: |
           set -e
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Debug.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Debug.xcconfig"
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Release.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj" "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/WebViewController.swift" "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Debug.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Debug.xcconfig"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Release.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj" "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/WebViewController.swift" "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
           grep -q 'MARKETING_VERSION = 3.0.16' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
           grep -q 'CURRENT_PROJECT_VERSION = 10' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
 
@@ -69,10 +69,10 @@ workflows:
       - name: Apply MW Dynasty V3.0.16 native patches
         script: |
           set -e
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Debug.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Debug.xcconfig"
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Release.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj" "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
-          cp "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/WebViewController.swift" "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Debug.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Debug.xcconfig"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Release.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj" "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
+          install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/WebViewController.swift" "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
 
           if /usr/libexec/PlistBuddy -c "Print :MWProductionURL" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist" >/dev/null 2>&1; then
             /usr/libexec/PlistBuddy -c "Set :MWProductionURL https://mwdynasty.com/" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
