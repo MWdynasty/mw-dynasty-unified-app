@@ -698,6 +698,17 @@ body.mw-auth-ready #mwAuth{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){#coach .round,#coach .attach,#coach .send,#coach .quick button,#coach .faithActions button{transition:none!important}}
 </style>
+
+<style id="mw-athlete-notification-ui">
+.mwAthleteNotificationBtn{position:relative;width:40px;height:40px;border:1px solid rgba(245,185,46,.48);border-radius:12px;background:linear-gradient(145deg,#172331,#070d13);color:#fff;font-size:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -5px 9px rgba(0,0,0,.24),0 5px 0 #020508,0 8px 14px rgba(0,0,0,.28)}
+.mwAthleteNotificationBtn:active{transform:translateY(3px);box-shadow:inset 0 3px 8px rgba(0,0,0,.38),0 2px 4px rgba(0,0,0,.24)}
+#mwAthleteNotificationBadge{position:absolute;right:-6px;top:-7px;min-width:20px;height:20px;padding:0 5px;display:grid;place-items:center;border-radius:999px;background:#ffd45c;color:#111;border:2px solid #050a0f;font-size:9px;font-style:normal;font-weight:950;box-sizing:border-box}
+#mwAthleteNotificationBadge[hidden]{display:none}
+.mwNotificationTextBtn{border:0;background:transparent;color:var(--gold);font-weight:900;padding:4px}
+.mwAthleteNotificationRow{width:100%;display:flex;justify-content:space-between;gap:12px;text-align:left;border:1px solid #2d3a46;border-radius:13px;background:#06101a;color:#fff;padding:13px;margin-top:9px}
+.mwAthleteNotificationRow.unread{border-color:rgba(245,185,46,.55);background:linear-gradient(145deg,#151207,#06101a);box-shadow:inset 3px 0 0 var(--gold)}
+.mwAthleteNotificationRow b{display:block;font-size:12px;margin-bottom:4px}.mwAthleteNotificationRow span{display:block;color:#c5d0d9;font-size:11px;line-height:1.4}.mwAthleteNotificationRow small{white-space:nowrap;color:#7f909e;font-size:8px}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -775,7 +786,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
 </div>
 <main class="app">
 <section class="view active" id="home">
-<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE HUB</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
+<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE HUB</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
 <div class="mwAthleteSearchTools"><div class="mwAthleteSearchWrap"><span>⌕</span><input id="mwAthleteSearch" autocomplete="off" placeholder="Search training, messages, Coach MW, tools…"><div id="mwAthleteSearchResults" class="mwAthleteSearchResults" hidden></div></div><button class="mwAthleteMessageShortcut" type="button" data-open="messages" aria-label="Messages">💬<em id="mwSearchMessageBadge" class="mwMessageBadge" hidden>0</em></button></div>
 <div class="homeBrand"><img src="/assets/mw-athlete-dashboard-v23.jpg" alt="MW Dynasty Athlete Performance Hub" onerror="this.onerror=null;this.src='/athlete/mw-athlete-crouch-clean.jpg'"></div>
 <div class="homeGrid">
@@ -787,6 +798,11 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <div class="top"><div><div class="logo"><b>MW</b> MESSAGES</div><div class="sub">COACH COMMUNICATION</div></div><div class="topActions"><div class="online"><span class="dot">●</span> CONNECTED</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
 <div id="mwAthleteInboxCard" class="card mwMessageCard"><div class="cardHead"><span>MESSAGES</span><span id="mwMessageUnreadLabel" class="smalllink">0 UNREAD</span></div><div class="mwAthleteMessageSearch"><span>⌕</span><input id="mwAthleteMessageSearch" autocomplete="off" placeholder="Search coach conversations"></div><div id="mwAthleteInbox" class="mwConversationList"><div class="lockNote">Loading conversations…</div></div></div>
 <div id="mwAthleteThreadCard" class="card mwAthleteThreadCard" style="display:none"><div class="mwAthleteThreadHead"><button id="mwAthleteThreadBack" class="entryGhost" type="button">← MESSAGES</button><div><b id="mwAthleteThreadCoach">MW Coach</b><small>Coach conversation</small></div></div><div id="mwAthleteThreadList" class="mwAthleteThreadList"></div><textarea id="mwReplyText" rows="3" placeholder="Message your coach…"></textarea><button id="mwSendReply" class="save" style="margin-top:10px">SEND</button><div id="mwReplyStatus" class="lockNote" style="display:none;margin-top:10px"></div></div>
+</section>
+
+<section class="view" id="notifications">
+<div class="top"><div><div class="logo"><b>MW</b> NOTIFICATIONS</div><div class="sub">ATHLETE ALERT CENTER</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
+<div class="card"><div class="cardHead"><span>NOTIFICATIONS</span><button type="button" id="mwAthleteMarkNotificationsRead" class="smalllink mwNotificationTextBtn">MARK ALL READ</button></div><div id="mwAthleteNotificationList"><div class="lockNote">Loading notifications…</div></div></div>
 </section>
 
 <section class="view" id="coach">
@@ -2240,11 +2256,38 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 <script id="mw-athlete-search-v311">
 (()=>{
  const items=[
-  ['workouts','Training','Today’s MW track + strength program'],['coach','Coach MW','Ask your MW AI coach'],['messages','Messages','Coach conversations'],['progress','Progress','Program completion and progress'],['athlete','Athlete Profile','PRs, events and maxes'],['settings','Settings','Voice, notifications and membership'],['pacer','Training Tools','Pace AI and Distance Pacer'],['entry','Training Year','Smart Entry and official week']
+  ['workouts','Training','Today’s MW track + strength program'],['coach','Coach MW','Ask your MW AI coach'],['messages','Messages','Coach conversations'],['progress','Progress','Program completion and progress'],['athlete','Athlete Profile','PRs, events and maxes'],['settings','Settings','Voice, notifications and membership'],['notifications','Notifications','Coach messages and athlete alerts'],['pacer','Training Tools','Pace AI and Distance Pacer'],['entry','Training Year','Smart Entry and official week']
  ];
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
  function bind(){const input=document.getElementById('mwAthleteSearch'),box=document.getElementById('mwAthleteSearchResults');if(!input||!box)return;const render=()=>{const q=input.value.trim().toLowerCase();if(!q){box.hidden=true;box.innerHTML='';return}const r=items.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q));box.innerHTML=r.length?r.map(x=>`<button type="button" data-athlete-search-open="${x[0]}"><b>${esc(x[1])}</b><small>${esc(x[2])}</small></button>`).join(''):'<button type="button"><b>No results</b><small>Try training, messages, Coach MW, progress, or settings.</small></button>';box.hidden=false;box.querySelectorAll('[data-athlete-search-open]').forEach(b=>b.onclick=()=>{box.hidden=true;input.value='';openView(b.dataset.athleteSearchOpen)})};input.addEventListener('input',render);input.addEventListener('focus',render);document.addEventListener('click',e=>{if(!e.target.closest('.mwAthleteSearchWrap'))box.hidden=true})}
  document.addEventListener('DOMContentLoaded',bind);
+})();
+</script>
+
+<script id="mw-athlete-notifications">
+(()=>{
+  const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  let items=[];
+  function authToken(){try{const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');return JSON.parse(raw||'null')?.access_token||''}catch{return ''}}
+  async function request(method='GET',body=null){
+    const token=authToken();if(!token)return null;
+    const r=await fetch('/api/athlete/notifications',{method,headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Notifications unavailable.');return d;
+  }
+  function updateBadge(){
+    const n=items.filter(x=>!x.read_at).length,b=document.getElementById('mwAthleteNotificationBadge');
+    if(!b)return;const alerts=(window.getPrefs?.().messageAlerts||'on')!=='off';b.hidden=!alerts||n<1;b.textContent=n>99?'99+':String(n);
+  }
+  function render(){
+    const wrap=document.getElementById('mwAthleteNotificationList');if(!wrap)return;
+    wrap.innerHTML=items.length?items.map(n=>`<button type="button" class="mwAthleteNotificationRow ${n.read_at?'':'unread'}" data-mw-notification="${esc(n.id)}" data-mw-action="${esc(n.action_view||'home')}"><div><b>${esc(n.title)}</b><span>${esc(n.body)}</span></div><small>${new Date(n.created_at).toLocaleDateString([], {month:'short',day:'numeric'})}</small></button>`).join(''):'<div class="lockNote">You’re all caught up. New MW alerts will appear here.</div>';
+    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});const n=items.find(x=>x.id===btn.dataset.mwNotification);if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true)});
+  }
+  async function load(){try{const d=await request();if(!d)return;items=Array.isArray(d.items)?d.items:[];updateBadge();render()}catch(e){const wrap=document.getElementById('mwAthleteNotificationList');if(wrap)wrap.innerHTML='<div class="lockNote">'+esc(e.message)+'</div>'}}
+  document.getElementById('mwAthleteNotificationBell')?.addEventListener('click',()=>{window.openView?.('notifications',true);load()});
+  document.getElementById('mwAthleteMarkNotificationsRead')?.addEventListener('click',async()=>{try{await request('POST',{action:'mark_all_read'});items.forEach(x=>x.read_at=x.read_at||new Date().toISOString());updateBadge();render()}catch{}});
+  window.mwReloadAthleteNotifications=load;
+  setTimeout(load,1200);setInterval(load,30000);
 })();
 </script>
 </body></html>
