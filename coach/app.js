@@ -192,6 +192,7 @@ function coachMWPage(){
 }
 function membershipPage(){
   if(!accountAccess.isFounder)return coachAccountPage();
+  return coachAccountPage();
   const p=PLANS[experience];
   app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">← Dashboard</button><div style="flex:1"><div class="eyebrow">Founder Preview</div><h1>Preview Coach Tier</h1><div style="color:#adbdc8">Founder-only preview. Coach accounts cannot change their own access tier.</div></div></div><div class="plans">${Object.entries(PLANS).map(([k,v])=>`<div class="plan ${k===experience?'current':''}"><h2>${v.name}</h2><p>${v.sub}</p><p><b>$${v.monthly}/month</b><br><small>Sponsored athletes +$${v.sponsor}/athlete/month</small></p><button class="action" data-plan="${k}">${k===experience?'Current Preview':'Preview Tier'}</button></div>`).join('')}</div>${seasonCalendarSettingsHTML()}<section class="section coach-tour-account-card"><div><div class="eyebrow">GUIDED TOUR</div><h2>Learn ${escapeHtml(p.name)}</h2><p>Replay the full walkthrough for this coach platform anytime.</p></div><button class="action" id="replayCoachTour">Replay Tutorial</button></section></div></div>`;
   document.getElementById('back').onclick=dashboard;
