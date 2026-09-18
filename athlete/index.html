@@ -1904,7 +1904,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   document.querySelector('#mwAuthPassword').onkeydown=e=>{if(e.key==='Enter')login()};
   document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='block';authStatus('');
   document.querySelector('#mwSavePassword').onclick=saveRecoveredPassword;
-  const out=document.querySelector('#mwSignOut');if(out)out.onclick=()=>{clearSession();location.reload()};
+  const out=document.querySelector('#mwSignOut');if(out)out.onclick=async()=>{out.disabled=true;out.textContent='SIGNING OUT…';try{const t=token();if(t)await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+t}})}catch(e){console.warn('MW remote sign-out unavailable',e)}finally{clearSession();location.replace('/athlete/')}};
   if(!initRecoveryMode()) resume();
 })();
 </script>
