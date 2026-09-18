@@ -485,6 +485,7 @@ function renderLogin(message=''){
               </div>
               <div id="loginMessage" class="login-message ${message?'show':''}" role="status" aria-live="polite">${escapeHtml(message)}</div>
               <button id="loginSubmit" class="coach-login-submit" type="submit"><span>Sign In</span><span aria-hidden="true">→</span></button>
+              <a class="coach-login-athlete-switch" href="/athlete/">ATHLETE SIGN IN <span aria-hidden="true">→</span></a>
             </form>
             <div class="coach-login-divider"><span></span><b>NEW COACH?</b><span></span></div>
             <div class="coach-login-contact">Don’t have a coach account yet? <button type="button" id="contactAdmin">Create an Account</button></div>
