@@ -83,6 +83,7 @@ Deno.serve(async (req: Request) => {
       first_name: first,
       last_name: last,
       organization: clean(payload.organization, 160) || null,
+      coach_title: clean(payload.coach_title, 120) || null,
       city: clean(payload.city, 100) || null,
       state: clean(payload.state, 80) || null,
       coaching_level: clean(payload.coaching_level, 100) || null,
