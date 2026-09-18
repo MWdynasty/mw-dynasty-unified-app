@@ -562,9 +562,16 @@ async function validateSession(session){
   const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`}});
   return r.ok;
 }
+function storedSessionIsPersistent(){return !!localStorage.getItem(SESSION_KEY)}
+async function refreshCoachSession(session){
+  if(!session?.refresh_token)return null;
+  const r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});
+  const d=await r.json().catch(()=>null);if(!r.ok||!d?.access_token)return null;
+  persistSession(d,storedSessionIsPersistent());return d;
+}
 function persistSession(session,remember=true){
   authSession=session;
-  if(remember)localStorage.setItem(SESSION_KEY,JSON.stringify(session));else sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));
+  if(remember){localStorage.setItem(SESSION_KEY,JSON.stringify(session));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));localStorage.removeItem(SESSION_KEY)}
 }
 function clearSession(){authSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
 function readStoredSession(){
@@ -583,7 +590,7 @@ function bindLogin(){
     const email=document.getElementById('loginEmail').value.trim();
     if(!email)return setLoginMessage('Enter your email address first, then tap Forgot password.');
     forgot.disabled=true;forgot.textContent='Sending…';
-    try{const r=await fetch(`${SUPABASE_URL}/auth/v1/recover`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.msg||d.message||'Unable to send reset email.')}setLoginMessage('Password reset email sent. Check your inbox.','success')}catch(e){setLoginMessage(e.message)}finally{forgot.disabled=false;forgot.textContent='Forgot password?'}
+    try{const redirectTo=location.origin+'/coach/';const r=await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.msg||d.message||'Unable to send reset email.')}setLoginMessage('Password reset email sent. Check your inbox.','success')}catch(e){setLoginMessage(e.message)}finally{forgot.disabled=false;forgot.textContent='Forgot password?'}
   });
   form.addEventListener('submit',async e=>{
     e.preventDefault();
@@ -593,12 +600,33 @@ function bindLogin(){
     try{const session=await supabasePasswordLogin(email,password);await verifyCoachAccess(session);persistSession(session,remember);dashboard()}catch(err){clearSession();setLoginMessage(err.message)}finally{setLoginBusy(false)}
   });
 }
+function recoverySessionFromUrl(){
+  const h=new URLSearchParams(location.hash.replace(/^#/,''));
+  if(h.get('type')!=='recovery'||!h.get('access_token'))return null;
+  return {access_token:h.get('access_token'),refresh_token:h.get('refresh_token')||'',token_type:h.get('token_type')||'bearer',expires_in:Number(h.get('expires_in')||3600),expires_at:Math.floor(Date.now()/1000)+Number(h.get('expires_in')||3600)};
+}
+function renderCoachPasswordReset(session){
+  authSession=session;
+  app.innerHTML=`<div class="coach-login-screen"><section class="coach-login-stage"><div class="coach-login-bg" aria-hidden="true"></div><div class="coach-login-content"><div class="coach-login-card-wrap"><div class="coach-login-card"><div class="coach-login-mobile-brand"><span>MW</span> DYNASTY · COACH</div><h2>Create New Password</h2><p>Choose a new password for your MW Dynasty Coach account.</p><form id="coachResetForm" class="coach-login-form"><label class="coach-field"><span>▣</span><input id="coachResetPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" required></label><label class="coach-field"><span>▣</span><input id="coachResetConfirm" type="password" autocomplete="new-password" placeholder="Confirm new password" required></label><div id="coachResetMessage" class="login-message" role="status"></div><button id="coachResetSubmit" class="coach-login-submit" type="submit"><span>Save New Password</span><span>→</span></button></form></div></div></div></section></div>`;
+  document.getElementById('coachResetForm').onsubmit=async e=>{
+    e.preventDefault();const p=document.getElementById('coachResetPassword').value,q=document.getElementById('coachResetConfirm').value,m=document.getElementById('coachResetMessage'),b=document.getElementById('coachResetSubmit');
+    const say=(t,bad=true)=>{m.textContent=t;m.className='login-message show '+(bad?'error':'success')};
+    if(p.length<8)return say('Use at least 8 characters.');if(p!==q)return say('The passwords do not match.');
+    b.disabled=true;b.textContent='Saving…';
+    try{const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{method:'PUT',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({password:p})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.message||'Password could not be updated.');clearSession();history.replaceState({},document.title,location.pathname);renderLogin('Password updated. Sign in with your new password.')}catch(err){say(err.message||'Password could not be updated.');b.disabled=false;b.innerHTML='<span>Save New Password</span><span>→</span>'}
+  };
+}
 async function initAuth(){
   await loadPricingCatalog();
+  const recovery=recoverySessionFromUrl();if(recovery){renderCoachPasswordReset(recovery);return}
   const stored=readStoredSession();
   if(stored){
     authSession=stored;
-    try{if(await validateSession(stored)){await verifyCoachAccess(stored);dashboard();return}}catch{}
+    try{
+      let active=stored;
+      if(!(await validateSession(active)))active=await refreshCoachSession(active);
+      if(active&&await validateSession(active)){await verifyCoachAccess(active);dashboard();return}
+    }catch{}
     clearSession();
   }
   renderLogin();
