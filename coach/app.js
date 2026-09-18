@@ -465,6 +465,7 @@ function renderLogin(message=''){
 
         <div class="coach-login-card-wrap">
           <div class="coach-login-card">
+            <a class="coach-login-role-back" href="/" aria-label="Back to Athlete or Coach selection">← ATHLETE / COACH</a>
             <div class="coach-login-mobile-brand" aria-hidden="true"><span>MW</span> DYNASTY · COACH</div>
             <h2>Welcome Back</h2>
             <p>Sign in to your MW Dynasty Coach experience.</p>
