@@ -751,9 +751,9 @@ async function athletesPage(){
   document.getElementById('inviteAthlete').onclick=inviteAthleteModal;
   const list=document.getElementById('athleteList');
   try{
-    const d=await fetchCoachRoster(),athletes=Array.isArray(d.athletes)?d.athletes:[],pending=Array.isArray(d.pendingInvitations)?d.pendingInvitations:[];
+    const [d,billing]=await Promise.all([fetchCoachRoster(),coachBillingRequest().catch(()=>({status:{}}))]),athletes=Array.isArray(d.athletes)?d.athletes:[],pending=Array.isArray(d.pendingInvitations)?d.pendingInvitations:[],sponsoredBillingActive=!!billing?.status?.sponsored_billing_active;
     const pendingWrap=document.getElementById('pendingInviteWrap');
-    if(pendingWrap&&pending.length)pendingWrap.innerHTML=`<div class="tile"><h3>Pending Athlete Invitations</h3><div class="list">${pending.map(i=>`<div class="row"><span><b>${escapeHtml(i.athlete_email)}</b><br><small>${escapeHtml(i.billing_type==='coach_sponsored'?'Coach Sponsored':'Athlete Self-Pay')} · Pending · expires ${escapeHtml(fmtDate(i.expires_at))}</small></span></div>`).join('')}</div></div>`;
+    if(pendingWrap&&pending.length)pendingWrap.innerHTML=`<div class="tile"><h3>Pending Athlete Invitations</h3><div class="list">${pending.map(i=>`<div class="row"><span><b>${escapeHtml(i.athlete_email)}</b><br><small>${escapeHtml(i.billing_type==='coach_sponsored'?'Coach Sponsored':'Athlete Self-Pay')} · Pending${i.billing_type==='coach_sponsored'&&!sponsoredBillingActive?' · Billing setup required':''} · expires ${escapeHtml(fmtDate(i.expires_at))}</small></span></div>`).join('')}</div></div>`;
     if(!athletes.length){list.innerHTML=`<div class="tile"><h3>No assigned athletes yet</h3><p>${d.scope==='assigned'?'This coach account currently has no active athlete assignments. Invite an athlete, and they will appear here once the connection is accepted.':'No athlete accounts are available yet.'}</p></div>`;return}
     list.innerHTML=athletes.map(a=>`<div class="row"><span><b>${escapeHtml(a.name)}</b><br><small>${escapeHtml(a.event||'Events not set')} · Week ${Number(a.current_week||1)} · ${escapeHtml(String(a.status||'On Track'))}</small></span><button class="action athlete-open" data-athlete-id="${escapeHtml(a.id)}">Open</button></div>`).join('');
     list.querySelectorAll('.athlete-open').forEach(b=>b.onclick=()=>athleteDetail(b.dataset.athleteId));
