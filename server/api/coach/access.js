@@ -1,3 +1,21 @@
 const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../../lib/mw-coach-auth');
-async function get(path,token){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d.message||'Access query failed');return d}
-module.exports=async(req,res)=>{res.setHeader('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).json({error:'GET only'});try{const c=await getAccountContext(req);const role=String(c.profile.role||'');if(role==='founder_owner'||role==='admin')return res.status(200).json({ok:true,role,tier:'mw_sprint_performance',isFounder:role==='founder_owner',firstName:c.profile.first_name||'',lastName:c.profile.last_name||''});if(role!=='coach')return res.status(403).json({error:'Coach access required'});const rows=await get(`coach_access_entitlements?select=access_tier,status&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.active&limit=1`,c.token);const e=Array.isArray(rows)?rows[0]:null;if(!e)return res.status(403).json({error:'This coach account does not have an active MW Coach entitlement.'});return res.status(200).json({ok:true,role,tier:e.access_tier,isFounder:false,firstName:c.profile.first_name||'',lastName:c.profile.last_name||''})}catch(e){return res.status(e.status||500).json({error:e.message})}};
+async function request(path,token,{method='GET',body=null}={}){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method,headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,...(body?{'Content-Type':'application/json',Prefer:'return=representation'}:{})},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>method==='PATCH'?[]:[]);if(!r.ok)throw new Error(d.message||'Access query failed');return d}
+function clean(value,max){return String(value??'').trim().slice(0,max)}
+module.exports=async(req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(!['GET','PATCH'].includes(req.method))return res.status(405).json({error:'GET or PATCH only'});
+  try{
+    const c=await getAccountContext(req),role=String(c.profile.role||'');
+    if(!['coach','founder_owner','admin'].includes(role))return res.status(403).json({error:'Coach access required'});
+    if(req.method==='PATCH'){
+      const b=req.body||{},firstName=clean(b.firstName,80),lastName=clean(b.lastName,80),organization=clean(b.organization,160),coachTitle=clean(b.coachTitle,120);
+      if(!firstName||!lastName)return res.status(400).json({error:'First and last name are required.'});
+      const rows=await request(`profiles?user_id=eq.${encodeURIComponent(c.user.id)}&select=user_id,first_name,last_name,coach_organization,coach_title`,c.token,{method:'PATCH',body:{first_name:firstName,last_name:lastName,coach_organization:organization||null,coach_title:coachTitle||null,updated_at:new Date().toISOString()}});
+      const p=Array.isArray(rows)?rows[0]:null;if(!p)return res.status(500).json({error:'Coach profile could not be updated.'});
+      return res.status(200).json({ok:true,firstName:p.first_name||'',lastName:p.last_name||'',organization:p.coach_organization||'',coachTitle:p.coach_title||'',email:c.user.email||''});
+    }
+    let tier='mw_sprint_performance',isFounder=role==='founder_owner';
+    if(role==='coach'){const rows=await request(`coach_access_entitlements?select=access_tier,status&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.active&limit=1`,c.token);const e=Array.isArray(rows)?rows[0]:null;if(!e)return res.status(403).json({error:'This coach account does not have an active MW Coach entitlement.'});tier=e.access_tier}
+    return res.status(200).json({ok:true,role,tier,isFounder,firstName:c.profile.first_name||'',lastName:c.profile.last_name||'',organization:c.profile.coach_organization||'',coachTitle:c.profile.coach_title||'',email:c.user.email||''});
+  }catch(e){return res.status(e.status||500).json({error:e.message})}
+};
