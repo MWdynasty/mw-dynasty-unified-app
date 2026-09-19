@@ -877,6 +877,19 @@ body.mw-auth-ready #mwAuth{display:none!important}
 #progress .mwPrGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}#progress .mwPrGrid>div{padding:11px 3px;border:1px solid #263743;border-radius:12px;background:#050c12;text-align:center}#progress .mwPrGrid small{display:block;font-size:7px;color:#718390}#progress .mwPrGrid strong{display:block;margin-top:5px;font-size:14px;color:#fff}
 #progress .mwWeekDots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}#progress .mwWeekDot{display:grid;place-items:center;gap:6px;padding:12px 4px;border:1px solid #263743;border-radius:13px;background:#050c12}#progress .mwWeekDot i{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;border:1px solid #3b4b57;color:#8c9aa5;font-style:normal;font-weight:900}#progress .mwWeekDot span{font-size:7px;color:#748592}#progress .mwWeekDot.done{border-color:rgba(53,232,120,.38)}#progress .mwWeekDot.done i{background:rgba(53,232,120,.12);border-color:#35e878;color:#35e878}
 @media(max-width:380px){#progress .mwProgressHero{grid-template-columns:96px 1fr;padding:14px;gap:12px}#progress .mwProgressRing{width:92px;height:92px}#progress .mwPrGrid{gap:4px}#progress .mwPrGrid strong{font-size:12px}}
+</style>
+<style id="mw-profile-clean-v1">
+#athlete .mwProfileIdentity{margin:14px 0 12px;display:flex;align-items:center;gap:13px;padding:16px;border:1px solid rgba(245,185,46,.28);border-radius:18px;background:linear-gradient(145deg,#08131c,#04080c)}
+#athlete .mwProfileMonogram{width:58px;height:58px;display:grid;place-items:center;border-radius:17px;background:#071018;border:1px solid rgba(245,185,46,.55);color:#f5c95e;font-weight:1000;font-size:17px;box-shadow:0 0 20px rgba(245,185,46,.12)}
+#athlete .mwProfileIdentity small{font-size:7px;color:#f5c95e;letter-spacing:.14em}#athlete .mwProfileIdentity h2{margin:3px 0;font-size:20px}#athlete .mwProfileIdentity span{font-size:8px;color:#8495a2;letter-spacing:.08em}
+#athlete .mwProfileSection{margin-top:9px;border:1px solid #263743;border-radius:15px;background:#050c12;overflow:hidden}
+#athlete .mwProfileSection summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:14px}
+#athlete .mwProfileSection summary::-webkit-details-marker{display:none}#athlete .mwProfileSection summary span{font-size:10px;font-weight:900;color:#fff;letter-spacing:.08em}#athlete .mwProfileSection summary small{font-size:7px;color:#f5c95e;letter-spacing:.08em}
+#athlete .mwProfileSection[open] summary{border-bottom:1px solid #1b2b36}
+#athlete .mwProfileSection .profilegrid,#athlete .mwProfileSection>p,#athlete .mwProfileSection>.coachConnectCard{margin:12px}
+#athlete .mwProfileSection>.save{margin:0 12px 12px;width:calc(100% - 24px)}
+#athlete .mwProfileSection .coachConnectCard{border:0!important;padding:0!important;background:transparent!important}
+#athlete #profileEntry{margin-top:12px}
 </style></head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -1077,41 +1090,69 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <div class="card" id="mwTodayToolsCard"><div class="cardHead"><span>PERFORMANCE TOOLS</span><span class="smalllink">READY WHEN YOU NEED THEM</span></div><h2>Tools for today’s work.</h2><p class="muted">Your training comes first. Open a tool here when today’s session calls for it.</p><div class="actionGrid" style="margin-top:12px"><button class="actionCard" type="button" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span class="muted">Get your individualized target times for today’s reps.</span></button><button class="actionCard" type="button" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span class="muted">Track, football field, or open field — know exactly where the rep ends.</span></button></div></div>
 </section>
 <section class="view" id="pacer"><div class="top"><div><div class="logo"><b>MW</b> PERFORMANCE TOOLS</div><div class="sub">ONE ACCOUNT · ONE TRAINING SYSTEM</div></div></div><div class="card"><h2>Performance Lab</h2><p class="muted">Choose the tool you need. Your MW session stays connected while you train.</p><div class="actionGrid" style="margin-top:14px"><button class="actionCard" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span>Turn your PRs into individualized target times.</span></button><button class="actionCard" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span>Know exactly where your rep finishes.</span></button></div></div></section>
-<section class="view" id="athlete"><div class="top"><div class="logo"><b>MW</b> ATHLETE</div></div>
-<div class="card"><div class="profilegrid">
+<section class="view" id="athlete">
+<div class="top"><div><div class="logo"><b>MW</b> PROFILE</div><div class="sub">YOUR ATHLETE INFORMATION</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
+
+<div class="mwProfileIdentity">
+  <div class="mwProfileMonogram" id="mwProfileMonogram">MW</div>
+  <div><small>MW ATHLETE</small><h2 id="mwProfileDisplayName">Athlete</h2><span id="mwProfileEventLine">SPRINT PERFORMANCE</span></div>
+</div>
+
+<details class="mwProfileSection" open>
+<summary><span>ATHLETE DETAILS</span><small>EDIT</small></summary>
+<div class="profilegrid">
 <div class="field"><label>FIRST NAME</label><input id="name" placeholder="Athlete"></div>
 <div class="field"><label>LAST NAME</label><input id="profileLastName" readonly title="Synced from your MW Athlete Assessment"></div>
 <div class="field"><label>EVENTS</label><input id="profileEvents" readonly title="Synced from your MW Athlete Assessment"></div>
-<div class="field"><label>DATE OF BIRTH</label><input id="profileDob" type="date" readonly title="Synced from your MW Athlete Assessment"></div><div class="field profileGoalField"><label>ATHLETE GOAL</label><textarea id="trainingGoal" maxlength="500" placeholder="What are you working toward? Example: Break 11.00 in the 100m, improve my start, and qualify for state."></textarea></div>
-<div class="field"><label>CHOOSE YOUR COACH MW</label><select id="coachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div>
+<div class="field"><label>DATE OF BIRTH</label><input id="profileDob" type="date" readonly title="Synced from your MW Athlete Assessment"></div>
+<div class="field profileGoalField"><label>ATHLETE GOAL</label><textarea id="trainingGoal" maxlength="500" placeholder="What are you working toward?"></textarea></div>
+<div class="field"><label>COACH MW PREFERENCE</label><select id="coachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div>
+</div>
+<button id="save" class="save">SAVE PROFILE</button><div id="profileSaveStatus" class="lockNote" style="display:none"></div>
+</details>
+
+<details class="mwProfileSection">
+<summary><span>PERSONAL BESTS</span><small>60M–400M</small></summary>
+<div class="profilegrid">
 <div class="field"><label>60M PR</label><input id="p60" inputmode="decimal" type="number" min="0" step="0.01" placeholder="6.85"></div>
 <div class="field"><label>100M PR</label><input id="p100" inputmode="decimal" type="number" min="0" step="0.01" placeholder="10.85"></div>
 <div class="field"><label>200M PR</label><input id="p200" inputmode="decimal" type="number" min="0" step="0.01" placeholder="21.72"></div>
 <div class="field"><label>300M PR</label><input id="p300" inputmode="decimal" type="number" min="0" step="0.01" placeholder="34.50"></div>
 <div class="field"><label>400M PR</label><input id="p400" inputmode="decimal" type="number" min="0" step="0.01" placeholder="48.90"></div>
-<input id="week" value="1" type="hidden"><input id="startDate" type="hidden"><input id="startWeek" type="hidden" min="1" max="41" value="1">
 </div>
-<button id="save" class="save">SAVE ATHLETE PROFILE</button><div id="profileSaveStatus" class="lockNote" style="display:none"></div>
+<button type="button" class="save mwProfileSaveAlias">SAVE PERSONAL BESTS</button>
+</details>
+<input id="week" value="1" type="hidden"><input id="startDate" type="hidden"><input id="startWeek" type="hidden" min="1" max="41" value="1">
+
+<details class="mwProfileSection">
+<summary><span>COACH CONNECTION</span><small id="mwProfileCoachStatus">MANAGE</small></summary>
 <div class="coachConnectCard" id="coachConnectionCard">
-  <div class="eyebrow">COACH CONNECTION</div>
-  <h3>Connect to your coach</h3>
-  <p>Paste the secure invite code your coach sent you. Your athlete account stays the same; accepting only connects this profile to that coach.</p>
   <div id="coachConnectedBadge" class="coachConnectionBadge"><b>✓ CONNECTED TO COACH</b><span id="coachConnectedText">Your MW coach connection is active.</span></div>
   <div id="coachInviteControls">
+    <p>Paste the secure invite code your coach sent you.</p>
     <div class="coachConnectRow"><input id="coachInviteCode" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Paste invite code"><button type="button" id="coachInviteReview">Review Invite</button></div>
     <div id="coachInvitePreview" class="coachConnectStatus"></div>
     <button type="button" id="coachInviteAccept" class="coachConnectAction" style="display:none">Accept Coach Invitation</button>
   </div>
 </div>
-<button class="smartBtn" id="profileEntry">⚡ MW SMART ENTRY — REVIEW MY ENTRY POINT</button></div>
-<div class="card"><div class="cardHead"><span>WEIGHT ROOM MAXES</span><span class="smalllink">LOAD CALCULATOR</span></div><p class="muted">Enter only established maximums. New and youth athletes may leave a lift blank; MW will assign technique-based loading without requiring a 1RM test.</p><div class="profilegrid" style="margin-top:10px">
-<div class="field"><label>POWER CLEAN MAX</label><input id="maxPowerClean" type="number" min="0" step="0.5" placeholder="Not established"></div>
-<div class="field"><label>FRONT SQUAT MAX</label><input id="maxFrontSquat" type="number" min="0" step="0.5" placeholder="Not established"></div>
-<div class="field"><label>BACK SQUAT MAX</label><input id="maxBackSquat" type="number" min="0" step="0.5" placeholder="Not established"></div>
-<div class="field"><label>DEADLIFT MAX</label><input id="maxDeadlift" type="number" min="0" step="0.5" placeholder="Not established"></div>
+</details>
+
+<details class="mwProfileSection">
+<summary><span>WEIGHT ROOM MAXES</span><small>OPTIONAL</small></summary>
+<p class="muted">Only enter established maximums. Leave a lift blank if it has not been tested safely.</p>
+<div class="profilegrid">
+<div class="field"><label>POWER CLEAN</label><input id="maxPowerClean" type="number" min="0" step="0.5" placeholder="Not established"></div>
+<div class="field"><label>FRONT SQUAT</label><input id="maxFrontSquat" type="number" min="0" step="0.5" placeholder="Not established"></div>
+<div class="field"><label>BACK SQUAT</label><input id="maxBackSquat" type="number" min="0" step="0.5" placeholder="Not established"></div>
+<div class="field"><label>DEADLIFT</label><input id="maxDeadlift" type="number" min="0" step="0.5" placeholder="Not established"></div>
 <div class="field"><label>DEADLIFT TYPE</label><select id="profileDeadliftType"><option value="conventional">Conventional</option><option value="trap_bar">Trap bar</option></select></div>
-<div class="field"><label>WEIGHT UNIT</label><select id="profileWeightUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select></div>
-</div><div class="lockNote" style="margin-top:10px">MW calculates working loads from these four established maximums. Technique, age, and readiness still control the prescription.</div><button id="saveLiftMaxes" class="save">SAVE WEIGHT ROOM MAXES</button><div id="liftMaxStatus" class="lockNote">These maxes stay synchronized with the coaching dashboard and Coach MW.</div></div></section>
+<div class="field"><label>UNIT</label><select id="profileWeightUnit"><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></select></div>
+</div>
+<button id="saveLiftMaxes" class="save">SAVE WEIGHT ROOM MAXES</button><div id="liftMaxStatus" class="lockNote">Synced with your MW training system.</div>
+</details>
+
+<button class="smartBtn" id="profileEntry">⚡ MW SMART ENTRY — REVIEW MY ENTRY POINT</button>
+</section>
 
 <section class="view" id="progress">
 <div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">SEE THE WORK. SEE THE GROWTH.</div></div><button class="gearBtn" data-open-settings>⚙</button></div>
@@ -1590,6 +1631,10 @@ async function renderCompletion(){
   if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':'Finish today’s track session, then tap DONE.';
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}}
+function renderProfileIdentity(){const p=getProfile(),first=(document.getElementById('name')?.value||p.name||'Athlete').trim(),last=(document.getElementById('profileLastName')?.value||'').trim(),events=(document.getElementById('profileEvents')?.value||'SPRINT PERFORMANCE').trim();const nm=document.getElementById('mwProfileDisplayName'),ev=document.getElementById('mwProfileEventLine'),mo=document.getElementById('mwProfileMonogram');if(nm)nm.textContent=(first+' '+last).trim();if(ev)ev.textContent=events||'SPRINT PERFORMANCE';if(mo)mo.textContent=((first[0]||'M')+(last[0]||'W')).toUpperCase()}
+document.querySelectorAll('.mwProfileSaveAlias').forEach(b=>b.onclick=()=>document.getElementById('save')?.click());
+['name','profileLastName','profileEvents'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProfileIdentity));
+setTimeout(renderProfileIdentity,0);
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open,true));document.querySelectorAll('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings',true));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry',true);
 const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=async()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);localStorage.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;if(x.workoutReminders==='on'||x.meetReminders==='on'||x.messageAlerts==='on'){try{await window.mwNativePermission?.('notifications')}catch{}}$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
 
