@@ -68,7 +68,16 @@ label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900
         <div class="row"><span>Billing Type</span><span id="billingType">—</span></div>
         <div class="row"><span>Billing Cycle</span><span id="billingCycle">—</span></div>
         <div class="row"><span>Renews / Ends</span><span id="periodEnd">—</span></div>
+        <div class="row"><span>Payment Provider</span><span id="providerValue">—</span></div>
         <p class="muted" style="margin-top:14px">Membership access shown here comes from the same Stripe + Supabase system used by the MW Dynasty platform.</p>
+        <div class="actions">
+          <button id="billingBtn" class="btn" style="display:none">Manage Billing</button>
+        </div>
+        <div id="activationWrap" style="display:none;margin-top:14px">
+          <div class="eyebrow">Membership Options</div>
+          <div id="planActions" class="actions"></div>
+        </div>
+        <div id="billingStatus" class="status"></div>
       </section>
 
       <section class="card full">
@@ -98,6 +107,7 @@ function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||
 function saveSession(value){if(!value?.access_token)return;const store=localStorage.getItem(SESSION_KEY)?localStorage:sessionStorage;store.setItem(SESSION_KEY,JSON.stringify(value))}
 function clearSession(){localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
 function message(text,error=false){el('saveStatus').textContent=text||'';el('saveStatus').className='status'+(error?' err':'')}
+function billingMessage(text,error=false){el('billingStatus').textContent=text||'';el('billingStatus').className='status'+(error?' err':'')}
 async function refreshSession(current){
   if(!current?.refresh_token)return null;
   const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:current.refresh_token})});
@@ -117,7 +127,52 @@ function render(data){
   el('welcome').textContent='Welcome, '+(u.first_name||'MW Member');el('displayName').textContent=name;el('emailValue').textContent=u.email||'—';el('accountStatus').textContent=nice(u.account_status);el('roleBadge').textContent=nice(u.role);
   el('firstName').value=u.first_name||'';el('lastName').value=u.last_name||'';
   const isCoach=coachRole(u.role);el('coachFields').style.display=isCoach?'grid':'none';el('orgRow').style.display=isCoach?'flex':'none';el('titleRow').style.display=isCoach?'flex':'none';el('organization').value=u.coach_organization||'';el('coachTitle').value=u.coach_title||'';el('orgValue').textContent=u.coach_organization||'—';el('titleValue').textContent=u.coach_title||'—';
-  el('planName').textContent=plan(b.current_plan_code);el('subscriptionStatus').textContent=nice(b.subscription_status);el('billingType').textContent=nice(b.billing_type);el('billingCycle').textContent=nice(b.billing_cycle);el('periodEnd').textContent=dateText(b.current_period_end);
+  el('planName').textContent=plan(b.current_plan_code);el('subscriptionStatus').textContent=nice(b.subscription_status);el('billingType').textContent=nice(b.billing_type);el('billingCycle').textContent=nice(b.billing_cycle);el('periodEnd').textContent=dateText(b.current_period_end);el('providerValue').textContent=nice(b.provider);
+  const stripe=String(b.provider||'')==='stripe';
+  el('billingBtn').style.display=stripe?'inline-block':'none';
+  el('activationWrap').style.display=stripe?'none':'block';
+  renderPlanActions(u.role);
+}
+function renderPlanActions(role){
+  const box=el('planActions');box.innerHTML='';
+  const plans=coachRole(role)
+    ? [['coach_core','Coach Core — $49/mo'],['coach_intelligence','Coach Intelligence — $79/mo'],['mw_sprint_performance','Sprint Performance — $109/mo']]
+    : [['mw_athlete','Athlete Membership — $19/mo']];
+  plans.forEach(([code,label])=>{
+    const button=document.createElement('button');
+    button.type='button';button.className='btn';button.textContent=label;
+    button.onclick=()=>checkout(code);
+    box.appendChild(button);
+  });
+}
+async function checkout(planCode){
+  billingMessage('Opening secure Stripe checkout…');
+  try{
+    const response=await fetch('/api/stripe/checkout',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+      body:JSON.stringify({planCode,sponsorQuantity:0,returnPath:'/account/'})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.url)throw new Error(data.error||'Checkout is unavailable.');
+    location.assign(data.url);
+  }catch(e){billingMessage(e.message||'Checkout is unavailable.',true)}
+}
+async function openBillingPortal(){
+  const button=el('billingBtn');button.disabled=true;billingMessage('Opening secure billing…');
+  try{
+    const response=await fetch('/api/stripe/portal',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+      body:'{}'
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.url)throw new Error(data.error||'Billing portal is unavailable.');
+    location.assign(data.url);
+  }catch(e){
+    billingMessage(e.message||'Billing portal is unavailable.',true);
+    button.disabled=false;
+  }
 }
 async function load(){
   session=readSession();
@@ -127,7 +182,11 @@ async function load(){
 }
 el('saveBtn').onclick=async()=>{const btn=el('saveBtn');btn.disabled=true;btn.textContent='Saving…';message('');try{const data=await rpc('mw_update_account_profile',{p_first_name:el('firstName').value.trim(),p_last_name:el('lastName').value.trim()||null,p_organization:el('organization').value.trim()||null,p_coach_title:el('coachTitle').value.trim()||null});render(data);message('Profile saved.')}catch(e){message(e.message||'Could not save profile.',true)}finally{btn.disabled=false;btn.textContent='Save Profile'}};
 el('openPlatformBtn').onclick=()=>{location.href=coachRole(account?.user?.role)?'/coach':'/athlete/'};
+el('billingBtn').onclick=openBillingPortal;
 el('signOutBtn').onclick=()=>{clearSession();location.reload()};
+const checkoutState=new URLSearchParams(location.search).get('checkout');
+if(checkoutState==='success') billingMessage('Payment completed. MW Dynasty is syncing your membership now.');
+if(checkoutState==='cancelled') billingMessage('Checkout cancelled. No membership change was made.');
 load();
 </script>
 </body>
