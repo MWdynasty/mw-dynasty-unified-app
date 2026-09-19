@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050403">
+<title>MW Dynasty · Account</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="stylesheet" href="/assets/mw-unified-theme.css">
+<link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
+<link rel="stylesheet" href="/assets/mw-responsive-v25.css">
+<style>
+:root{--gold:#efbd43;--gold2:#f7d87e;--bg:#050403;--panel:#0b0a08;--line:#34302a;--muted:#aaa49a;--text:#f7f3ea}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#1d1609 0,transparent 34%),linear-gradient(#060504,#020201);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:max(18px,env(safe-area-inset-top)) 16px max(30px,env(safe-area-inset-bottom))}
+.shell{width:min(980px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}.brand{font-weight:950;letter-spacing:.18em;color:var(--gold);font-size:14px}.link{color:#ddd3c2;text-decoration:none;border:1px solid var(--line);padding:10px 14px;border-radius:999px;font-weight:800;font-size:12px}
+.hero{padding:22px 0 12px}.hero h1{font-size:clamp(30px,6vw,54px);margin:0 0 8px}.hero p{margin:0;color:var(--muted);line-height:1.5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:linear-gradient(155deg,rgba(19,17,13,.98),rgba(7,7,6,.99));border:1px solid rgba(239,189,67,.28);border-radius:22px;padding:20px;box-shadow:0 24px 70px rgba(0,0,0,.34)}.full{grid-column:1/-1}
+.eyebrow{font-size:11px;letter-spacing:.12em;color:var(--gold);font-weight:950;text-transform:uppercase}.title{font-size:24px;font-weight:950;margin:7px 0 4px}.muted{color:var(--muted);font-size:13px;line-height:1.5}.row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid rgba(255,255,255,.07);padding:12px 0}.row:first-of-type{margin-top:14px}.row span:first-child{color:#a9a39b}.row span:last-child{text-align:right;font-weight:850}
+.badge{display:inline-flex;align-items:center;border:1px solid #4e4535;background:#171209;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900;color:var(--gold2);text-transform:uppercase;letter-spacing:.06em}
+label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900;letter-spacing:.06em}input{margin-top:7px;width:100%;height:50px;border:1px solid #403a31;border-radius:12px;background:#090806;color:#fff;padding:0 13px;font-size:15px;outline:none}input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(239,189,67,.09)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.btn{display:inline-block;border:1px solid #4a4235;background:#11100d;color:#fff;border-radius:12px;padding:13px 16px;font-weight:950;cursor:pointer;text-decoration:none}.btn.primary{background:linear-gradient(100deg,#bb7f15,#f2cb63,#ce9224);color:#090806;border-color:#f5d37a}.btn.ghost{background:transparent}.btn:disabled{opacity:.5}.status{min-height:22px;margin-top:12px;color:#73cfff;font-size:12px}.status.err{color:#ff9cab}
+#accountView,#signedOutView{display:none}.center{width:min(600px,100%);margin:10vh auto 0}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero h1{font-size:36px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top"><div class="brand">MW DYNASTY</div><a class="link" href="https://mwdynasty.com">Public Website</a></div>
+
+  <section id="signedOutView" class="center">
+    <div class="card">
+      <div class="eyebrow">Member Account</div>
+      <div class="title">Sign in to continue</div>
+      <p class="muted">Use your existing MW Dynasty Athlete or Coach sign-in. Your account, membership, and profile all use the same MW Dynasty system.</p>
+      <div class="actions">
+        <a class="btn primary" href="/athlete/">Athlete Sign In</a>
+        <a class="btn" href="/coach">Coach Sign In</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="accountView">
+    <div class="hero">
+      <div class="eyebrow">One MW Dynasty Account</div>
+      <h1 id="welcome">Your Profile</h1>
+      <p>Your website profile, membership, billing status, and Athlete/Coach platform access are connected to this account.</p>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <div class="eyebrow">Profile</div>
+        <div class="title" id="displayName">MW Member</div>
+        <span id="roleBadge" class="badge">Member</span>
+        <div class="row"><span>Email</span><span id="emailValue">—</span></div>
+        <div class="row"><span>Account</span><span id="accountStatus">—</span></div>
+        <div id="orgRow" class="row" style="display:none"><span>Organization</span><span id="orgValue">—</span></div>
+        <div id="titleRow" class="row" style="display:none"><span>Coach Title</span><span id="titleValue">—</span></div>
+        <div class="actions">
+          <button id="openPlatformBtn" class="btn primary">Open MW Dynasty Platform →</button>
+          <button id="signOutBtn" class="btn ghost">Sign Out</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="eyebrow">Membership & Billing</div>
+        <div class="title" id="planName">Membership</div>
+        <div class="row"><span>Status</span><span id="subscriptionStatus">—</span></div>
+        <div class="row"><span>Billing Type</span><span id="billingType">—</span></div>
+        <div class="row"><span>Billing Cycle</span><span id="billingCycle">—</span></div>
+        <div class="row"><span>Renews / Ends</span><span id="periodEnd">—</span></div>
+        <p class="muted" style="margin-top:14px">Membership access shown here comes from the same Stripe + Supabase system used by the MW Dynasty platform.</p>
+      </section>
+
+      <section class="card full">
+        <div class="eyebrow">Edit Profile</div>
+        <div class="title">Account Information</div>
+        <div class="grid" style="margin-top:8px">
+          <label>FIRST NAME<input id="firstName" maxlength="80"></label>
+          <label>LAST NAME<input id="lastName" maxlength="80"></label>
+        </div>
+        <div id="coachFields" class="grid" style="display:none">
+          <label>ORGANIZATION / SCHOOL<input id="organization" maxlength="160"></label>
+          <label>COACH TITLE<input id="coachTitle" maxlength="120" placeholder="Head Coach, Sprint Coach, etc."></label>
+        </div>
+        <div class="actions"><button id="saveBtn" class="btn primary">Save Profile</button></div>
+        <div id="saveStatus" class="status"></div>
+      </section>
+    </div>
+  </section>
+</div>
+<script>
+const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
+const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const SESSION_KEY='mwSupabaseSession';
+let session=null,account=null;
+const el=id=>document.getElementById(id);
+function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY)||'null')}catch{return null}}
+function saveSession(value){if(!value?.access_token)return;const store=localStorage.getItem(SESSION_KEY)?localStorage:sessionStorage;store.setItem(SESSION_KEY,JSON.stringify(value))}
+function clearSession(){localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
+function message(text,error=false){el('saveStatus').textContent=text||'';el('saveStatus').className='status'+(error?' err':'')}
+async function refreshSession(current){
+  if(!current?.refresh_token)return null;
+  const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:current.refresh_token})});
+  if(!r.ok)return null;const fresh=await r.json().catch(()=>null);if(!fresh?.access_token)return null;const merged={...current,...fresh};saveSession(merged);return merged;
+}
+async function rpc(name,args={}){
+  let r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(args)});
+  if(r.status===401){const fresh=await refreshSession(session);if(fresh){session=fresh;r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify(args)})}}
+  const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||d?.hint||d?.details||'MW account request failed.');return d;
+}
+function nice(v){return String(v||'—').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}
+function plan(v){return ({mw_athlete:'Athlete Membership',coach_core:'Coach Core',coach_intelligence:'Coach Intelligence',mw_sprint_performance:'MW Sprint Performance'})[v]||v||'Membership'}
+function dateText(v){if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}
+function coachRole(v){return ['coach','admin','founder_owner'].includes(String(v||''))}
+function render(data){
+  account=data;const u=data.user||{},b=data.billing||{},name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'MW Member';
+  el('welcome').textContent='Welcome, '+(u.first_name||'MW Member');el('displayName').textContent=name;el('emailValue').textContent=u.email||'—';el('accountStatus').textContent=nice(u.account_status);el('roleBadge').textContent=nice(u.role);
+  el('firstName').value=u.first_name||'';el('lastName').value=u.last_name||'';
+  const isCoach=coachRole(u.role);el('coachFields').style.display=isCoach?'grid':'none';el('orgRow').style.display=isCoach?'flex':'none';el('titleRow').style.display=isCoach?'flex':'none';el('organization').value=u.coach_organization||'';el('coachTitle').value=u.coach_title||'';el('orgValue').textContent=u.coach_organization||'—';el('titleValue').textContent=u.coach_title||'—';
+  el('planName').textContent=plan(b.current_plan_code);el('subscriptionStatus').textContent=nice(b.subscription_status);el('billingType').textContent=nice(b.billing_type);el('billingCycle').textContent=nice(b.billing_cycle);el('periodEnd').textContent=dateText(b.current_period_end);
+}
+async function load(){
+  session=readSession();
+  if(!session){el('signedOutView').style.display='block';return}
+  try{const data=await rpc('mw_account_profile',{});el('signedOutView').style.display='none';el('accountView').style.display='block';render(data)}
+  catch(e){clearSession();el('signedOutView').style.display='block';el('accountView').style.display='none'}
+}
+el('saveBtn').onclick=async()=>{const btn=el('saveBtn');btn.disabled=true;btn.textContent='Saving…';message('');try{const data=await rpc('mw_update_account_profile',{p_first_name:el('firstName').value.trim(),p_last_name:el('lastName').value.trim()||null,p_organization:el('organization').value.trim()||null,p_coach_title:el('coachTitle').value.trim()||null});render(data);message('Profile saved.')}catch(e){message(e.message||'Could not save profile.',true)}finally{btn.disabled=false;btn.textContent='Save Profile'}};
+el('openPlatformBtn').onclick=()=>{location.href=coachRole(account?.user?.role)?'/coach':'/athlete/'};
+el('signOutBtn').onclick=()=>{clearSession();location.reload()};
+load();
+</script>
+</body>
+</html>
