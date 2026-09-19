@@ -652,6 +652,14 @@ body.mw-auth-ready #mwAuth{display:none!important}
 @media(prefers-reduced-motion:reduce){.actionCard,.mwTrainingYearCard,.smartBtn,.save,.entryAction,.entryGhost,.pacer{transition:none!important}.actionCard[data-open="coach"]:after{animation:none!important}}
 </style>
 
+<style id="mw-athlete-coach-mw-crest">
+/* Build 12 web hotfix — MW crest identity for Athlete Coach MW entry points */
+.mwCoachCrestMark{display:inline-grid!important;place-items:center;width:34px;height:34px;border-radius:11px;border:1px solid rgba(245,190,56,.88);background:radial-gradient(circle at 32% 20%,rgba(62,126,194,.45),transparent 35%),linear-gradient(145deg,#102436,#03080d 72%);color:#f5c24d!important;font-size:11px!important;font-weight:1000!important;letter-spacing:-.08em!important;line-height:1!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -5px 9px rgba(0,0,0,.46),0 4px 0 #080b0d,0 8px 15px rgba(0,0,0,.35),0 0 15px rgba(53,132,210,.20);text-shadow:0 1px 0 #fff0a4,0 0 8px rgba(245,190,56,.32);vertical-align:middle}
+.actionCard[data-open="coach"]>b{display:flex!important;align-items:center;gap:10px}
+.nav.mwDepthNav .mwCoachOrb .mwCoachCrestNav{width:48px!important;height:48px!important;border-radius:15px!important;font-size:14px!important;margin:0 auto!important}
+.nav.mwDepthNav .mwCoachOrb:active .mwCoachCrestNav{transform:translateY(3px) scale(.97)}
+</style>
+
 <style id="mw-3d-4d-coach-controls">
 /* Coach MW interaction controls — tactile 3D surfaces with restrained motion */
 #coach .ask{
@@ -794,7 +802,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <div class="homeBrand"><img src="/assets/mw-athlete-dashboard-v23.jpg" alt="MW Dynasty Athlete Performance Hub" onerror="this.onerror=null;this.src='/athlete/mw-athlete-crouch-clean.jpg'"></div>
 <div class="homeGrid">
   <div class="heroCard"><div class="sub">YOUR MW JOURNEY</div><h2>Welcome back, <span id="homeName">Athlete</span>.</h2><p class="muted">One clear place for your current week, completed work, and what unlocks next.</p><div class="metricGrid"><div class="metric"><strong id="homeWeek">1</strong><small>CURRENT WEEK</small></div><div class="metric"><strong id="homeDone">0/4</strong><small>WORKOUTS DONE</small></div><div class="metric"><strong id="homePct">0%</strong><small>PROGRAM PROGRESS</small></div></div><div class="progressBar"><i id="homeProgressBar"></i></div><button type="button" class="mwTrainingYearCard" id="homeTrainingYear" data-open="entry"><span class="mwTyKicker">MW TRAINING YEAR</span><strong>Loading your training position…</strong><small>Standard calendar + Smart Entry protection</small><em>WHY AM I ON THIS WEEK? →</em></button></div>
-  <div class="actionGrid"><button class="actionCard" data-open="workouts"><b>🏃 START TRAINING</b><span class="muted">See today’s program and check in when you finish.</span></button><button class="actionCard" data-open="coach"><b>🧠 ASK COACH MW</b><span class="muted">Need help? Just ask your coach.</span></button><button class="actionCard" data-open="pacer"><b>⚡ TRAINING TOOLS</b><span class="muted">Pace and distance tools in one place.</span></button><button class="actionCard mwMessageHomeCard" data-open="messages"><b>💬 MESSAGES <em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></b><span class="muted">Read messages from your coach and reply in one place.</span></button></div>
+  <div class="actionGrid"><button class="actionCard" data-open="workouts"><b>🏃 START TRAINING</b><span class="muted">See today’s program and check in when you finish.</span></button><button class="actionCard" data-open="coach"><b><span class="mwCoachCrestMark" aria-hidden="true">MW</span> ASK COACH MW</b><span class="muted">Need help? Just ask your coach.</span></button><button class="actionCard" data-open="pacer"><b>⚡ TRAINING TOOLS</b><span class="muted">Pace and distance tools in one place.</span></button><button class="actionCard mwMessageHomeCard" data-open="messages"><b>💬 MESSAGES <em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></b><span class="muted">Read messages from your coach and reply in one place.</span></button></div>
 </div>
 </section>
 <section class="view" id="messages">
@@ -1015,7 +1023,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
     </div>
   </div>
 </div>
-<nav class="nav mwDepthNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b>⌂</b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b>◉</b><span>COACH MW</span></button><button data-v="workouts"><b>⚡</b><span>TRAIN</span></button><button data-v="progress"><b>◫</b><span>PROGRESS</span></button><button data-v="athlete"><b>♙</b><span>ME</span></button></nav>
+<nav class="nav mwDepthNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b>⌂</b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b class="mwCoachCrestMark mwCoachCrestNav" aria-hidden="true">MW</b><span>COACH MW</span></button><button data-v="workouts"><b>⚡</b><span>TRAIN</span></button><button data-v="progress"><b>◫</b><span>PROGRESS</span></button><button data-v="athlete"><b>♙</b><span>ME</span></button></nav>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const MW_SB_URL='https://keqgunlfwhjgcsurynef.supabase.co';
