@@ -900,21 +900,26 @@ body.mw-auth-ready #mwAuth{display:none!important}
 
 <section class="view" id="workouts">
 <div class="top"><div><div class="logo"><b>MW</b> WORKOUTS</div><div class="sub">MW PERFORMANCE SYSTEM</div></div><div class="online"><span class="dot">●</span> MW DATA</div></div>
-<div class="card" id="mwTodayToolsCard"><div class="cardHead"><span>TODAY'S PERFORMANCE TOOLS</span><span class="smalllink">READY WHEN YOU NEED THEM</span></div><h2>Tools for today’s work.</h2><p class="muted">No searching. Open the tool you need directly from today’s training screen.</p><div class="actionGrid" style="margin-top:12px"><button class="actionCard" type="button" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span class="muted">Get your individualized target times for today’s reps.</span></button><button class="actionCard" type="button" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span class="muted">Track, football field, or open field — know exactly where the rep ends.</span></button></div></div>
-<div class="card"><div class="cardHead"><span>WEEK <span id="completionWeek">1</span></span><span id="unlockBadge" class="smalllink">IN PROGRESS</span></div><h2>Finish training. Tap DONE. That’s it. 🔥</h2><p class="muted" id="completionRepHint">If today has a target pace, MW will ask one quick question. No typing. No homework.</p><div class="performanceHint" id="performanceHint"><b>QUICK CHECK-IN:</b> “Did you hit your target pace?” → Yes, or tap how many reps you hit.</div><div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div></div>
-<div class="card">
-<div class="cardHead">TODAY'S LIFT <span id="strengthPhaseLabel" class="smalllink"></span></div>
+<div class="card" id="todayTrackCard">
+<div class="cardHead"><span>TODAY'S TRACK WORKOUT</span><span id="unlockBadge" class="smalllink">TODAY</span></div>
+<div id="todayTrackDetails"><div class="muted">Loading today’s track workout…</div></div>
+<p class="muted" id="completionRepHint">If today has a target pace, MW will ask one quick question. No typing. No homework.</p>
+<div class="performanceHint" id="performanceHint"><b>QUICK CHECK-IN:</b> “Did you hit your target pace?” → Yes, or tap how many reps you hit.</div>
+<div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div>
+<span id="completionWeek" style="display:none">1</span>
+</div>
+<div class="card" id="todayStrengthCard">
+<div class="cardHead">TODAY'S STRENGTH &amp; POWER <span id="strengthPhaseLabel" class="smalllink"></span></div>
 <div class="weekChooser" style="display:none"><label>MW WEEK</label><select id="strengthWeek"></select></div>
 <div id="strengthTodayLabel" class="lockNote" style="margin-top:10px"></div>
 <div id="strengthPlan" class="strengthPlan"></div>
-<button id="askStrength" class="smartBtn">ASK COACH MW ABOUT TODAY'S LIFT</button>
-</div>
-<div class="card" id="strengthPerformanceCard">
-<div class="cardHead"><span>QUICK STRENGTH CHECK-IN</span><span class="smalllink">2 TAPS</span></div>
-<h2>Did you do the strength workout?</h2>
-<p class="muted">Tap what happened. Detailed set logging is optional.</p>
-<div id="strengthQuickCheckins" class="quickStrength"><div class="muted">Loading this week’s strength days…</div></div>
+<div id="strengthPerformanceCard" style="margin-top:14px">
+<div class="cardHead"><span>STRENGTH CHECK-IN</span><span class="smalllink">RIGHT HERE</span></div>
+<p class="muted">When you finish, tap what happened. Your coach sees the check-in automatically.</p>
+<div id="strengthQuickCheckins" class="quickStrength"><div class="muted">Loading today’s strength check-in…</div></div>
 <div id="strengthPerformanceStatus" class="lockNote">Your coach sees these check-ins automatically.</div>
+</div>
+<button id="askStrength" class="smartBtn">ASK COACH MW ABOUT TODAY'S LIFT</button>
 <details class="advancedLog"><summary>OPTIONAL: LOG A SPECIFIC SET</summary>
 <div class="strengthLogGrid">
 <label>TRAINING DAY<select id="strengthLogDay"><option value="1">Day 1</option><option value="2">Day 2</option><option value="3">Day 3</option><option value="4">Day 4</option></select></label>
@@ -930,6 +935,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <div id="strengthLogRecent" class="strengthLogRecent"></div>
 </details>
 </div>
+<div class="card" id="mwTodayToolsCard"><div class="cardHead"><span>PERFORMANCE TOOLS</span><span class="smalllink">READY WHEN YOU NEED THEM</span></div><h2>Tools for today’s work.</h2><p class="muted">Your training comes first. Open a tool here when today’s session calls for it.</p><div class="actionGrid" style="margin-top:12px"><button class="actionCard" type="button" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span class="muted">Get your individualized target times for today’s reps.</span></button><button class="actionCard" type="button" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span class="muted">Track, football field, or open field — know exactly where the rep ends.</span></button></div></div>
 </section>
 <section class="view" id="pacer"><div class="top"><div><div class="logo"><b>MW</b> PERFORMANCE TOOLS</div><div class="sub">ONE ACCOUNT · ONE TRAINING SYSTEM</div></div></div><div class="card"><h2>Performance Lab</h2><p class="muted">Choose the tool you need. Your MW session stays connected while you train.</p><div class="actionGrid" style="margin-top:14px"><button class="actionCard" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span>Turn your PRs into individualized target times.</span></button><button class="actionCard" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span>Know exactly where your rep finishes.</span></button></div></div></section>
 <section class="view" id="athlete"><div class="top"><div class="logo"><b>MW</b> ATHLETE</div></div>
@@ -1391,25 +1397,41 @@ function weeksComplete(){let n=0;for(let w=1;w<=41;w++)if(weekDone(w))n++;return
 function scheduledWeek(){const p=getProfile();const start=Number(p.startWeek||p.entryAssessment?.assignedWeek||1);const d=p.startDate?new Date(p.startDate+'T00:00:00'):new Date();const days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));return Math.min(41,start+Math.floor(days/7))}
 function unlockedThrough(){const p=getProfile();return Math.max(1,Math.min(41,Number(p.week||p.startWeek||1)))}
 function advanceCurrentWeek(){const p=getProfile();const u=unlockedThrough();let current=Math.max(1,Number(p.week||p.startWeek||1));if(current<u && weekDone(current))current=Math.min(u,current+1);p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
-function renderCompletion(){
+function mwTodayTrackSessionNumber(){
+  const n=new Date().getDay();
+  return (n>=1&&n<=4)?n:null;
+}
+async function renderCompletion(){
   const w=advanceCurrentWeek(),repEnabled=!!getProfile().repTracking;
-  const hint=$('#completionRepHint'),perfHint=$('#performanceHint');
+  const hint=$('#completionRepHint'),perfHint=$('#performanceHint'),details=$('#todayTrackDetails');
   if(hint)hint.textContent=repEnabled?'If today has a target pace, MW will ask one quick question. No typing. No homework.':'Rep-by-rep pace tracking is exclusive to athletes training inside the MW Sprint Performance System.';
   if(perfHint)perfHint.style.display=repEnabled?'block':'none';
   if($('#completionWeek'))$('#completionWeek').textContent=w;
   const c=getCompletion(),wc=c[String(w)]||{},pace=mwPaceCheckCache[String(w)]||{},box=$('#weekChecklist');
   if(!box)return;
   box.innerHTML='';
-  for(let i=1;i<=4;i++){
-    const isDone=!!wc['s'+i],pc=pace['s'+i],row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
-    const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
-    row.innerHTML=`<span><b>Workout ${i}</b><br><small class="muted">Week ${w}${paceNote}</small></span><span class="completionActions"><button data-session="${i}">${isDone?'✓ DONE':'DONE'}</button></span>`;
-    box.appendChild(row);
+  const sessionNumber=mwTodayTrackSessionNumber();
+  let session=null;
+  try{const data=await loadMWProgramWeek(w);session=sessionNumber?data?.track?.sessions?.find(x=>Number(x.day)===Number(sessionNumber)):null}catch{}
+  if(!sessionNumber||!session){
+    if(details)details.innerHTML='<h2 style="margin-bottom:6px">No track workout scheduled today.</h2><p class="muted">Recovery day. Your next scheduled track session will appear here automatically.</p>';
+    if(hint)hint.style.display='none';if(perfHint)perfHint.style.display='none';
+    if($('#unlockNote'))$('#unlockNote').textContent='Nothing to check off today. Recover and be ready for the next session.';
+    if($('#unlockBadge'))$('#unlockBadge').textContent='RECOVERY DAY';return;
   }
-  box.querySelectorAll('button[data-session]').forEach(b=>b.onclick=()=>beginWorkoutCheckin(w,Number(b.dataset.session),b));
-  const isWeekDone=weekDone(w),u=unlockedThrough();
-  if($('#unlockBadge'))$('#unlockBadge').textContent=isWeekDone?'WEEK COMPLETE':'IN PROGRESS';
-  if($('#unlockNote'))$('#unlockNote').textContent=isWeekDone?(u>w?`Week ${Math.min(41,w+1)} is unlocked.`:'Nice work. Your next week follows the official MW schedule.'):`Finish your sessions and tap DONE. MW handles the rest.`;
+  if(hint)hint.style.display='block';
+  if(details){
+    const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
+    const prescribed=session?.tierWork?.[tier]||session?.work||'Follow the MW prescription for today.';
+    details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WORK:</b> ${prescribed}<br><b>RECOVERY:</b> ${session.recovery||'Full quality recovery'}</div>`;
+  }
+  const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
+  const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
+  row.innerHTML=`<span><b>Today’s Track Workout</b><br><small class="muted">${session.title||('Session '+sessionNumber)}${paceNote}</small></span><span class="completionActions"><button data-session="${sessionNumber}">${isDone?'✓ DONE':'DONE'}</button></span>`;
+  box.appendChild(row);
+  const btn=box.querySelector('button[data-session]');if(btn)btn.onclick=()=>beginWorkoutCheckin(w,sessionNumber,btn);
+  if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':'IN PROGRESS';
+  if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':'Finish today’s track session, then tap DONE.';
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='checkRow'+(wc['s'+i]?' done':'');r.innerHTML=`<span>Workout ${i}</span><b>${wc['s'+i]?'✓ Complete':'Not completed'}</b>`;pb.appendChild(r)}}}
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open,true));document.querySelectorAll('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings',true));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry',true);
