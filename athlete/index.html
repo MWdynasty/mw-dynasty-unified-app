@@ -725,6 +725,20 @@ body.mw-auth-ready #mwAuth{display:none!important}
 </style>
 <style id="mw-role-switch">.mwLoginRoleSwitch{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;width:100%!important;margin-top:10px!important;border:1px solid rgba(85,201,255,.42)!important;border-radius:12px!important;background:linear-gradient(145deg,#102333,#050b11)!important;color:#dff4ff!important;padding:13px 14px!important;font-size:11px!important;font-weight:950!important;letter-spacing:.07em!important;text-decoration:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 0 rgba(1,5,8,.78),0 9px 15px rgba(0,0,0,.26)!important}.mwLoginRoleSwitch:active{transform:translateY(3px)!important;box-shadow:inset 0 3px 8px rgba(0,0,0,.38),0 2px 4px rgba(0,0,0,.24)!important}
 </style>
+<style id="mw-nav-final-override">
+/* Final image-nav authority: keep every uploaded 3D face visible in normal, active and pressed states. */
+.nav.mwDepthNav.mwImageNav button b.mwNavArt{display:block!important;width:46px!important;height:46px!important;margin:0 auto 2px!important;border-radius:14px!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;background-color:#071018!important;color:transparent!important;font-size:0!important;opacity:1!important;visibility:visible!important;border:1px solid rgba(255,215,105,.58)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -5px 9px rgba(0,0,0,.38),0 5px 0 #071018,0 9px 16px rgba(0,0,0,.58)!important}
+.nav.mwDepthNav.mwImageNav button b.mwNavHome{background-image:url('../assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG')!important}
+.nav.mwDepthNav.mwImageNav button b.mwNavCoach{background-image:url('../assets/555BEB0B-845D-4222-8352-57671082E78B.PNG')!important;animation:mwFinalCoachPulse 1.45s ease-in-out infinite!important}
+.nav.mwDepthNav.mwImageNav button b.mwNavTrain{background-image:url('../assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG')!important}
+.nav.mwDepthNav.mwImageNav button b.mwNavProgram{background-image:url('../assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG')!important}
+.nav.mwDepthNav.mwImageNav button b.mwNavProfile{background-image:url('../assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG')!important}
+.nav.mwDepthNav.mwImageNav button.active b.mwNavArt,.nav.mwDepthNav.mwImageNav button:active b.mwNavArt{opacity:1!important;visibility:visible!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+.nav.mwDepthNav.mwImageNav .mwCoachOrb,.nav.mwDepthNav.mwImageNav .mwCoachOrb.active{min-height:64px!important;margin-top:-15px!important}
+.nav.mwDepthNav.mwImageNav .mwCoachOrb b.mwNavCoach,.nav.mwDepthNav.mwImageNav .mwCoachOrb.active b.mwNavCoach,.nav.mwDepthNav.mwImageNav .mwCoachOrb:active b.mwNavCoach{width:50px!important;height:50px!important;margin:-9px auto 2px!important;border-radius:15px!important;background-image:url('../assets/555BEB0B-845D-4222-8352-57671082E78B.PNG')!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;background-color:#071018!important;animation:mwFinalCoachPulse 1.45s ease-in-out infinite!important;opacity:1!important;visibility:visible!important}
+@keyframes mwFinalCoachPulse{0%,100%{transform:translateY(-2px) scale(1);filter:brightness(1);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -5px 9px rgba(0,0,0,.4),0 5px 0 #51340a,0 10px 17px rgba(0,0,0,.58),0 0 12px rgba(255,197,54,.5)!important}50%{transform:translateY(-6px) scale(1.1);filter:brightness(1.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.32),inset 0 -5px 9px rgba(0,0,0,.36),0 6px 0 #70490c,0 13px 21px rgba(0,0,0,.62),0 0 24px rgba(255,215,83,.98),0 0 38px rgba(37,145,255,.58)!important}}
+@media(max-width:380px){.nav.mwDepthNav.mwImageNav button b.mwNavArt{width:42px!important;height:42px!important}.nav.mwDepthNav.mwImageNav .mwCoachOrb b.mwNavCoach{width:47px!important;height:47px!important}}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
