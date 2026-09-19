@@ -92,6 +92,8 @@ module.exports = async function stripeCheckout(req, res) {
     if (!plan) return res.status(400).json({ error: 'Choose a valid MW membership.' });
 
     const sponsorQuantity = Number.isInteger(Number(body.sponsorQuantity)) ? Number(body.sponsorQuantity) : 0;
+    const requestedReturnPath = String(body.returnPath || '').trim();
+    const returnPath = requestedReturnPath.startsWith('/account') ? '/account/' : '';
     if (sponsorQuantity < 0 || sponsorQuantity > 250) return res.status(400).json({ error: 'Sponsor quantity must be between 0 and 250.' });
     if (plan.audience === 'athlete' && sponsorQuantity !== 0) return res.status(400).json({ error: 'Athlete memberships cannot include sponsored-athlete seats.' });
 
@@ -109,8 +111,12 @@ module.exports = async function stripeCheckout(req, res) {
       mode: 'subscription',
       customer_email: account.user.email || '',
       client_reference_id: account.user.id,
-      success_url: `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=cancelled`,
+      success_url: returnPath
+        ? `${base}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`
+        : `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: returnPath
+        ? `${base}${returnPath}?checkout=cancelled`
+        : `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=cancelled`,
       'line_items[0][price]': basePrice,
       'line_items[0][quantity]': '1',
       'metadata[mw_user_id]': account.user.id,
