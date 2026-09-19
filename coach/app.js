@@ -193,10 +193,10 @@ function bindSeasonCalendarSettings(){
   if(save)save.onclick=async()=>{const selected=mode?.value==='custom'?'custom':'standard',startDate=start?.value||'';if(selected==='custom'&&!startDate)return toast('Choose the custom Week 1 start date.');const old=save.textContent;save.disabled=true;save.textContent='Saving…';try{const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({mode:selected,startDate:selected==='custom'?startDate:null})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year could not be saved');if(summary)summary.innerHTML=seasonCalendarSummaryHTML(d.calendar||{});toast('Training year saved')}catch(e){if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'Training year could not be saved')}</small>`}finally{save.disabled=false;save.textContent=old}};
 }
 function coachMWPage(){
-  pageBase('Coach MW AI','MW intelligence in the same Dynasty experience.',`
-  <div class="form">
-    <div class="tile mw-coach-identity"><span class="mw-coach-crest mw-coach-crest-large" aria-hidden="true">MW</span><div><b>Coach MW</b><p>Ask about athletes, teams, attendance, progression, pace check-ins, race strategy, your program, or the MW system. Your Coach MW voice preference is managed in Account Settings.</p></div></div>
-    <div id="mwchat" style="display:grid;gap:10px;max-height:460px;overflow:auto"></div>
+  pageBase('Coach MW','Your coaching assistant. Ask, review, decide.',`
+  <div class="mw-coach-thread-shell">
+    <div class="mw-coach-presence"><span class="mw-coach-crest mw-coach-crest-large" aria-hidden="true">MW</span><div><b>COACH MW</b><small>READY • COACHING INTELLIGENCE</small></div></div>
+    <div id="mwchat" class="mw-coach-thread"></div>
     <div class="mw-coach-input-row">
       <button class="back" id="mwmic" title="Speak to Coach MW" aria-label="Speak to Coach MW">🎙</button>
       <button class="back" id="mwattach" title="Add photo" aria-label="Add photo">＋</button>
@@ -205,6 +205,7 @@ function coachMWPage(){
       <button class="action" id="askmw">Ask</button>
     </div>
     <div id="mwattachstate" class="mw-coach-state"></div>
+    <div class="mw-coach-suggestions"><button class="back" data-mw-prompt="Who on my team needs attention today?">Team attention</button><button class="back" data-mw-prompt="Review my athletes' latest training and performance signals.">Review performance</button><button class="back" data-mw-prompt="Help me plan today's practice using my current MW context.">Plan practice</button></div>
   </div>`);
   let pendingImage='',activeAudio=null;
   const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate');
@@ -218,6 +219,7 @@ function coachMWPage(){
   };
   const render=()=>{chat.innerHTML=history.map((m,i)=>`<div class="tile mw-coach-message ${m.role==='user'?'mw-coach-user':'mw-coach-assistant'}"><b>${m.role==='user'?'Coach':'Coach MW'}</b><p style="white-space:pre-wrap">${escapeHtml(m.content)}</p>${m.role==='assistant'?`<button class="back mw-read-aloud" data-i="${i}" type="button">🔊 Read Aloud</button>`:''}</div>`).join('');chat.querySelectorAll('.mw-read-aloud').forEach(b=>{const item=history[Number(b.dataset.i)];b.onclick=()=>readAloud(item?.content||'',b)});chat.scrollTop=chat.scrollHeight};
   render();
+  document.querySelectorAll('[data-mw-prompt]').forEach(b=>b.onclick=()=>{q.value=b.dataset.mwPrompt||'';q.focus()});
   attach.onclick=()=>pick.click();
   pick.onchange=()=>{const f=pick.files?.[0];if(!f)return;if(f.size>3*1024*1024){state.textContent='Photo too large. Use 3 MB or less.';pick.value='';return}const r=new FileReader();r.onload=()=>{pendingImage=String(r.result||'');state.textContent='Photo attached.'};r.readAsDataURL(f)};
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
