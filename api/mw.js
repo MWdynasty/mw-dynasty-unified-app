@@ -7,6 +7,7 @@ const handlers = {
   'pricing': require('../server/api/pricing'),
   'billing': require('../server/api/billing'),
   'stripe/checkout': require('../server/api/stripe-checkout'),
+  'stripe/portal': require('../server/api/stripe-portal'),
   'profile': require('../server/api/profile'),
   'program': require('../server/api/program'),
   'assigned-program': require('../server/api/assigned-program'),
