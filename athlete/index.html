@@ -815,7 +815,38 @@ body.mw-auth-ready #mwAuth{display:none!important}
 @media(max-width:390px){#coach .aiHead{width:166px!important;height:166px!important;min-height:166px!important}#coach .hero{min-height:275px!important}}
 @media(prefers-reduced-motion:reduce){#coach .aiHead,#coach .aiHead:before,#coach .aiHead:after{animation:none!important}}
 </style>
-</head>
+
+<style id="mw-coach-clean-thread-v2">
+#coach{padding-bottom:125px}
+#coach .mwCoachThreadShell{margin-top:12px;border:1px solid rgba(245,185,46,.3);border-radius:24px;background:linear-gradient(180deg,#050a0e,#020507);overflow:hidden;box-shadow:0 18px 45px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.04)}
+#coach .mwCoachPresence{text-align:center;padding:27px 15px 13px;background:radial-gradient(circle at 50% 37%,rgba(245,185,46,.12),transparent 42%)}
+#coach .mwCoachPresence .aiHead{position:relative!important;inset:auto!important;margin:0 auto 17px!important;width:128px!important;height:128px!important;min-height:128px!important;border-radius:28px!important;background-image:url('../assets/555BEB0B-845D-4222-8352-57671082E78B.PNG')!important;background-size:cover!important;background-position:center!important;border:1px solid rgba(255,222,128,.78)!important;box-shadow:0 0 22px rgba(245,185,46,.48),0 0 48px rgba(38,143,255,.2)!important;animation:mwCrestBreathe 2.7s ease-in-out infinite!important}
+#coach .mwCoachPresence .aiHead img{display:none!important}
+#coach .mwCoachPresence .aiHead:before{content:"";position:absolute;inset:-11px;border:1px solid rgba(245,185,46,.38);border-radius:35px;animation:mwCrestRing 2.7s ease-in-out infinite}
+#coach .mwCoachPresence>b{display:block;color:#f5c95e;font-size:15px;letter-spacing:.15em}
+#coach .mwCoachPresence>span{display:block;margin-top:5px;color:#94a5b2;font-size:8px;letter-spacing:.09em}
+#coach .mwCoachPresence .mwPlacementLine{color:#d8c183;font-size:8px}
+#coach .connectionNotice{margin:0 13px}
+#coach .chat{display:flex!important;flex-direction:column!important;gap:11px!important;max-height:440px!important;min-height:170px;padding:14px 17px 8px!important;border:0!important;background:transparent!important}
+#coach .msg{max-width:82%!important;width:fit-content!important;border-radius:18px!important;padding:11px 13px!important;line-height:1.45!important}
+#coach .msg.coach{align-self:flex-start!important;border-bottom-left-radius:5px!important;padding-bottom:34px!important}
+#coach .msg.me{align-self:flex-end!important;border-bottom-right-radius:5px!important}
+#coach .chatControls{margin:2px 15px 5px!important}
+#coach .ask{position:relative!important;bottom:auto!important;margin:8px 12px 13px!important;border:1px solid rgba(245,185,46,.36)!important;border-radius:18px!important;background:#071018!important;box-shadow:none!important}
+#coach .smartBtn{margin-top:10px}
+#coach .entryStatus{margin-top:8px}
+#coach .mwWordToday{padding:0!important;overflow:hidden;margin-top:12px!important;border-color:rgba(245,185,46,.28)!important}
+#coach .mwWordToday summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px}
+#coach .mwWordToday summary::-webkit-details-marker{display:none}
+#coach .mwWordToday summary div{display:flex;align-items:center;gap:10px;min-width:0}
+#coach .mwWordToday summary b{font-size:10px;color:#f5c95e;white-space:nowrap}
+#coach .mwWordToday summary span{font-size:11px;font-weight:900;color:#fff;white-space:nowrap}
+#coach .mwWordToday summary strong{font-size:8px;color:#9aaab6;text-align:right}
+#coach .mwWordToday .verseTheme{padding:0 14px 5px;margin:0}
+#coach .mwWordToday .faithActions{display:block;padding:0 14px 13px;margin-top:8px}
+#coach .mwWordToday .faithActions button{width:100%;border-color:rgba(245,185,46,.35);color:#f5c95e}
+@media(max-width:380px){#coach .mwCoachPresence .aiHead{width:112px!important;height:112px!important;min-height:112px!important}#coach .mwWordToday summary{padding:12px 11px}#coach .mwWordToday summary strong{font-size:7px}}
+</style></head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
   <div class="mwLoginStage">
@@ -913,29 +944,31 @@ body.mw-auth-ready #mwAuth{display:none!important}
 </section>
 
 <section class="view" id="coach">
-<div class="top"><div><div class="logo"><b>MW</b> COACH AI</div><div class="sub">POWERED BY MW SPRINT PERFORMANCE</div></div><div class="topActions"><div class="online"><span class="dot">●</span> ONLINE</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
-<div class="premiumRail">
-  <div class="premiumChip live" id="aiChip">● CHECKING AI</div>
-  <div class="premiumChip gold">MW METHODOLOGY LOCKED</div>
-  <div class="premiumChip gold">41-WEEK STRENGTH LINKED</div>
-  <div class="premiumChip">NATURAL VOICE</div>
-</div>
-<div class="coachContext">
-  <div class="contextTop"><b>COACH CONTEXT</b><span>ONE BRAIN • ONE ATHLETE • ONE MW SYSTEM</span></div>
-  <div class="contextGrid">
-    <div class="ctx"><small>ATHLETE</small><strong id="ctxAthlete">Not set</strong></div>
-    <div class="ctx"><small>MW WEEK</small><strong id="ctxWeek">Week 1</strong></div>
-    <div class="ctx"><small>WEIGHT ROOM</small><strong id="ctxStrength">Linked</strong></div>
+<div class="top"><div><div class="logo"><b>MW</b> COACH AI</div><div class="sub">YOUR PERSONAL MW PERFORMANCE COACH</div></div><div class="topActions"><div class="online"><span class="dot">●</span> READY</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+
+<div class="mwCoachThreadShell">
+  <div class="mwCoachPresence">
+    <div class="aiHead" id="coachAvatar" aria-label="Coach MW"><img id="coachAvatarImg" src="/athlete/coach-mw-male.jpg" alt="" aria-hidden="true"></div>
+    <b>COACH MW</b>
+    <span id="premiumVoiceState">READY • ASK. LEARN. IMPROVE.</span>
+    <span class="mwPlacementLine">MW SYSTEM • <span id="ctxWeek">WEEK 1</span> • <span id="ctxStrength">TRACK + STRENGTH LINKED</span></span>
+    <span id="ctxAthlete" style="display:none">Athlete</span><span id="weekBadge" style="display:none">1</span><span id="helloName" style="display:none">Athlete.</span><span id="aiChip" style="display:none">● CHECKING AI</span>
   </div>
-  <div class="liveVoiceBar"><i class="voiceOrb"></i><b id="premiumVoiceState">41-WEEK PROGRAM · TRACK + WEIGHT ROOM SYNCED</b><span>GPT-5.6 intelligence • web when needed • vision • natural voice</span></div>
+  <div class="connectionNotice" id="connectionNotice"></div>
+  <div class="chat" id="chat"><div class="msg coach">I’m Coach MW. What can I help you with today?</div></div>
+  <div class="chatControls"><button id="clearChat">CLEAR CONVERSATION</button></div>
+  <div class="ask"><div class="askrow"><button id="mic" class="round" title="Speak">🎙</button><button id="attachImage" class="attach" title="Add a photo">＋</button><input id="imagePick" type="file" accept="image/png,image/jpeg,image/webp"><input id="q" placeholder="Message Coach MW…"><button id="go" class="send">↑</button></div><div id="attachStatus" class="attachStatus"></div><div class="voice"><span id="voiceState">TAP MIC TO SPEAK • + TO ADD PHOTO</span><span>READ ALOUD AVAILABLE 🔊</span></div></div>
 </div>
 
-<div class="hero"><div class="aiHead" id="coachAvatar" aria-label="Coach MW visual"><img id="coachAvatarImg" src="/athlete/coach-mw-male.jpg" alt="Coach MW" loading="eager" decoding="async" onerror="this.onerror=null;this.src='/athlete/coach-mw-male.jpg'"></div><div class="heroText"><h1>Hello,<br><span id="helloName">Athlete.</span><br><em>I’m Coach MW AI.</em></h1><p>Your personal AI coach built on the MW System—performance, character, and faith. Ask me anything.</p><div class="system"><b>⚡ MW COACHING BRAIN ACTIVE</b><span>WEEK <span id="weekBadge">1</span> • TRAINING</span></div></div></div>
-<div class="ask"><div class="askrow"><button id="mic" class="round" title="Speak">🎙</button><button id="attachImage" class="attach" title="Add a photo">＋</button><input id="imagePick" type="file" accept="image/png,image/jpeg,image/webp"><input id="q" placeholder="Ask Coach MW anything..."><button id="go" class="send">↑</button></div><div id="attachStatus" class="attachStatus"></div><div class="voice"><span id="voiceState">TAP MIC TO SPEAK • + TO ADD PHOTO</span><span>COACH WILL SPEAK BACK 🔊</span></div></div>
-<div class="connectionNotice" id="connectionNotice"></div><div class="chatControls"><button id="clearChat">CLEAR CONVERSATION</button></div><div class="chat" id="chat"><div class="msg coach">I’m Coach MW. Talk to me like you would talk to your coach. I’m built around MW methodology, your training context, the 41-week strength system, Smart Entry, pacing, mechanics, recovery, faith, and the principle that quality comes first. You don’t need to know the names of MW drills or circuits—just tell me what’s going on. ✝️⚡️</div></div><button class="smartBtn" id="openEntry">⚡ <span>MW SMART ENTRY</span> — I just joined. Where do I start?</button><div class="entryStatus" id="entryStatus"></div>
-<div class="faithCard"><div class="faithTop"><b>✝️ MW WORD FOR TODAY</b><span>FAITH • CHARACTER • PURPOSE</span></div><div class="verseRef" id="verseRef">Galatians 6:9</div><div class="verseTheme" id="verseTheme">Stay faithful in the work. Growth can be happening before you can see it.</div><div class="faithActions"><button id="encourageMe">ENCOURAGE ME</button><button id="faithTalk">ASK A FAITH QUESTION</button></div></div>
-<div class="title">QUICK ASK</div>
-<div class="quick">
+<button class="smartBtn" id="openEntry">⚡ <span>MW SMART ENTRY</span> — I just joined. Where do I start?</button><div class="entryStatus" id="entryStatus"></div>
+
+<details class="faithCard mwWordToday">
+  <summary><div><b>✝️ WORD FOR TODAY</b><span id="verseRef">Galatians 6:9</span></div><strong>REFLECT WITH COACH MW →</strong></summary>
+  <div class="verseTheme" id="verseTheme">Stay faithful in the work. Growth can be happening before you can see it.</div>
+  <div class="faithActions"><button id="encourageMe">REFLECT WITH COACH MW</button><button id="faithTalk" style="display:none">ASK A FAITH QUESTION</button></div>
+</details>
+
+<div class="quick" style="display:none">
 <button data-q="Explain what I should focus on in today's workout."><i>▤</i>Explain Today’s Workout</button>
 <button data-q="What pace should I hit?"><i>◷</i>What Pace Should I Hit?</button>
 <button data-q="What should I focus on technically today?"><i>◎</i>What Should I Focus On?</button>
@@ -943,7 +976,6 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <button data-q="Help me with race strategy."><i>⚑</i>Race Strategy</button>
 <button data-q="How much rest should I take?"><i>◴</i>How Much Rest?</button>
 </div>
-
 </section>
 
 <section class="view" id="entry">
