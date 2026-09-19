@@ -33,6 +33,10 @@
       "destination": "/api/mw?route=stripe/checkout"
     },
     {
+      "source": "/api/stripe/portal",
+      "destination": "/api/mw?route=stripe/portal"
+    },
+    {
       "source": "/api/profile",
       "destination": "/api/mw?route=profile"
     },
