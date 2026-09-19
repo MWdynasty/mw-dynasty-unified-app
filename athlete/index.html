@@ -167,6 +167,9 @@ body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
 .mwTrainingYearCard em{font-style:normal;font-size:10px;font-weight:900;letter-spacing:.07em;color:#e7c25f;margin-top:3px}
 @media(max-width:520px){.mwTrainingYearCard{padding:12px 13px}.mwTrainingYearCard strong{font-size:13px}}
 
+
+/* MW Dynasty premium 3D navigation artwork */
+.mwImageNav{align-items:end;padding-top:6px}.mwImageNav button{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;min-width:0}.mwImageNav .mwNavArt{display:block;width:46px;height:46px;margin:0 auto 1px;border-radius:14px;background-size:cover;background-position:center;background-repeat:no-repeat;box-shadow:0 5px 14px rgba(0,0,0,.48);transition:transform .18s ease,filter .18s ease}.mwImageNav button.active .mwNavArt{transform:translateY(-3px) scale(1.06);filter:brightness(1.12);box-shadow:0 0 18px rgba(44,166,255,.34),0 6px 16px rgba(0,0,0,.55)}.mwImageNav .mwNavHome{background-image:url('../assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG')}.mwImageNav .mwNavCoach{background-image:url('../assets/555BEB0B-845D-4222-8352-57671082E78B.PNG')}.mwImageNav .mwNavTrain{background-image:url('../assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG')}.mwImageNav .mwNavProgram{background-image:url('../assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG')}.mwImageNav .mwNavProfile{background-image:url('../assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG')}@media(max-width:380px){.mwImageNav .mwNavArt{width:41px;height:41px;border-radius:12px}.mwImageNav span{font-size:8px}}
 </style>
 
 <style>
@@ -1023,7 +1026,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
     </div>
   </div>
 </div>
-<nav class="nav mwDepthNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b>⌂</b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b class="mwCoachCrestMark mwCoachCrestNav" aria-hidden="true">MW</b><span>COACH MW</span></button><button data-v="workouts"><b>⚡</b><span>TRAIN</span></button><button data-v="progress"><b>◫</b><span>PROGRESS</span></button><button data-v="athlete"><b>♙</b><span>ME</span></button></nav>
+<nav class="nav mwDepthNav mwImageNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b class="mwNavArt mwNavHome" aria-hidden="true"></b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b class="mwNavArt mwNavCoach" aria-hidden="true"></b><span>COACH MW</span></button><button data-v="workouts"><b class="mwNavArt mwNavTrain" aria-hidden="true"></b><span>TRAIN</span></button><button data-v="progress"><b class="mwNavArt mwNavProgram" aria-hidden="true"></b><span>PROGRESS</span></button><button data-v="athlete"><b class="mwNavArt mwNavProfile" aria-hidden="true"></b><span>PROFILE</span></button></nav>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const MW_SB_URL='https://keqgunlfwhjgcsurynef.supabase.co';
