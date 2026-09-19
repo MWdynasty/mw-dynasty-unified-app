@@ -890,6 +890,22 @@ body.mw-auth-ready #mwAuth{display:none!important}
 #athlete .mwProfileSection>.save{margin:0 12px 12px;width:calc(100% - 24px)}
 #athlete .mwProfileSection .coachConnectCard{border:0!important;padding:0!important;background:transparent!important}
 #athlete #profileEntry{margin-top:12px}
+</style>
+<style id="mw-home-clean-v1">
+#home .mwHomeBrand{height:104px;display:flex;justify-content:center;align-items:center;margin:5px 0 2px;overflow:hidden}
+#home .mwHomeBrand img{width:98px;height:98px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(245,185,46,.18))}
+#home .mwTodayCard{margin-top:4px;padding:18px;border:1px solid rgba(245,185,46,.38);border-radius:20px;background:linear-gradient(145deg,#09141e,#04080c);box-shadow:0 16px 35px rgba(0,0,0,.22)}
+#home .mwTodayTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}#home .mwTodayTop small{font-size:8px;font-weight:900;color:#f5c95e;letter-spacing:.14em}#home .mwTodayTop h2{margin:4px 0 0;font-size:20px;line-height:1.15}
+#home .mwTodayWeek{flex:none;padding:7px 9px;border:1px solid #334653;border-radius:9px;font-size:8px;color:#8ea0ad;letter-spacing:.08em}#home .mwTodayWeek b{color:#fff}
+#home .mwTodayStatus{margin:16px 0 13px;padding-top:13px;border-top:1px solid #1d2c36}#home .mwTodayStatus strong{display:block;font-size:11px;color:#fff;letter-spacing:.04em}#home .mwTodayStatus span{display:block;margin-top:4px;font-size:9px;color:#8395a2}
+#home .mwTodayStart{width:100%;min-height:48px;border:0;border-radius:13px;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;font-size:10px;font-weight:1000;letter-spacing:.07em;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+#home .mwTodayStart span{font-size:18px}
+#home .mwHomeProgress{position:relative;margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:7px;padding:12px 12px 17px;border:1px solid #263743;border-radius:15px;background:#050c12}
+#home .mwHomeProgress>div,#home .mwHomeProgress>button{min-width:0;text-align:center;background:transparent;border:0;color:#fff;padding:3px}#home .mwHomeProgress strong{display:block;font-size:15px}#home .mwHomeProgress span{display:block;margin-top:3px;font-size:6.5px;color:#7e909d;letter-spacing:.07em}#home .mwHomeProgress button strong{color:#f5c95e}
+#home .mwHomeProgress .progressBar{position:absolute;left:12px;right:12px;bottom:7px;height:3px;padding:0}
+#home .mwHomeShortcuts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}#home .mwHomeShortcuts button{position:relative;min-height:74px;padding:10px 5px;border:1px solid #263743;border-radius:15px;background:#050c12;color:#fff;display:grid;place-items:center;align-content:center;gap:6px}#home .mwHomeShortcuts button>span{font-size:19px}#home .mwHomeShortcuts button b{font-size:8px;letter-spacing:.06em}#home .mwHomeShortcuts .mwCoachCrestMark{font-size:10px}
+#home .mwHomeShortcuts .mwMessageBadge{position:absolute;top:7px;right:7px}
+@media(max-width:380px){#home .mwHomeBrand{height:88px}#home .mwHomeBrand img{width:82px;height:82px}#home .mwTodayCard{padding:15px}#home .mwTodayTop h2{font-size:18px}}
 </style></head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -968,12 +984,27 @@ body.mw-auth-ready #mwAuth{display:none!important}
 </div>
 <main class="app">
 <section class="view active" id="home">
-<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE HUB</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
-<div class="mwAthleteSearchTools"><div class="mwAthleteSearchWrap"><span>⌕</span><input id="mwAthleteSearch" autocomplete="off" placeholder="Search training, messages, Coach MW, tools…"><div id="mwAthleteSearchResults" class="mwAthleteSearchResults" hidden></div></div><button class="mwAthleteMessageShortcut" type="button" data-open="messages" aria-label="Messages">💬<em id="mwSearchMessageBadge" class="mwMessageBadge" hidden>0</em></button></div>
-<div class="homeBrand"><img src="/assets/mw-athlete-dashboard-v23.jpg" alt="MW Dynasty Athlete Performance Hub" onerror="this.onerror=null;this.src='/athlete/mw-athlete-crouch-clean.jpg'"></div>
-<div class="homeGrid">
-  <div class="heroCard"><div class="sub">YOUR MW JOURNEY</div><h2>Welcome back, <span id="homeName">Athlete</span>.</h2><p class="muted">One clear place for your current week, completed work, and what unlocks next.</p><div class="metricGrid"><div class="metric"><strong id="homeWeek">1</strong><small>CURRENT WEEK</small></div><div class="metric"><strong id="homeDone">0/4</strong><small>WORKOUTS DONE</small></div><div class="metric"><strong id="homePct">0%</strong><small>PROGRAM PROGRESS</small></div></div><div class="progressBar"><i id="homeProgressBar"></i></div><button type="button" class="mwTrainingYearCard" id="homeTrainingYear" data-open="entry"><span class="mwTyKicker">MW TRAINING YEAR</span><strong>Loading your training position…</strong><small>Standard calendar + Smart Entry protection</small><em>WHY AM I ON THIS WEEK? →</em></button></div>
-  <div class="actionGrid"><button class="actionCard" data-open="workouts"><b>🏃 START TRAINING</b><span class="muted">See today’s program and check in when you finish.</span></button><button class="actionCard" data-open="coach"><b><span class="mwCoachCrestMark" aria-hidden="true">MW</span> ASK COACH MW</b><span class="muted">Need help? Just ask your coach.</span></button><button class="actionCard" data-open="pacer"><b>⚡ TRAINING TOOLS</b><span class="muted">Pace and distance tools in one place.</span></button><button class="actionCard mwMessageHomeCard" data-open="messages"><b>💬 MESSAGES <em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></b><span class="muted">Read messages from your coach and reply in one place.</span></button></div>
+<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+
+<div class="mwHomeBrand"><img src="/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG" alt="MW Dynasty" onerror="this.style.display='none'"></div>
+
+<div class="mwTodayCard">
+  <div class="mwTodayTop"><div><small>TODAY</small><h2>Welcome back, <span id="homeName">Athlete</span>.</h2></div><span class="mwTodayWeek">WEEK <b id="homeWeek">1</b></span></div>
+  <div class="mwTodayStatus"><strong>YOUR TRAINING IS READY</strong><span>Track + Strength • Follow today’s MW session.</span></div>
+  <button class="mwTodayStart" data-open="workouts">START TODAY’S TRAINING <span>→</span></button>
+</div>
+
+<div class="mwHomeProgress">
+  <div><strong id="homeDone">0/4</strong><span>THIS WEEK</span></div>
+  <div><strong id="homePct">0%</strong><span>PROGRAM</span></div>
+  <button type="button" id="homeTrainingYear" data-open="entry"><strong>ⓘ</strong><span>WHY THIS WEEK?</span></button>
+  <div class="progressBar"><i id="homeProgressBar"></i></div>
+</div>
+
+<div class="mwHomeShortcuts">
+  <button data-open="coach"><span class="mwCoachCrestMark" aria-hidden="true">MW</span><b>COACH MW</b></button>
+  <button data-open="messages"><span>💬</span><b>MESSAGES</b><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button>
+  <button data-open="pacer"><span>⚡</span><b>TOOLS</b></button>
 </div>
 </section>
 <section class="view" id="messages">
