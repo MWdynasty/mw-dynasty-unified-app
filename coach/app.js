@@ -30,9 +30,9 @@ async function loadPricingCatalog(){
 }
 let experience='core';
 const nav={
- core:[['dashboard','⌂','Home'],['athletes','♟','Athletes'],['programs','🏃','Training'],['messages','✉','Messages'],['more','•••','More']],
- intelligence:[['dashboard','⌂','Home'],['athletes','♟','Athletes'],['programs','🏃','Training'],['insights','▱','Intelligence'],['more','•••','More']],
- performance:[['dashboard','⌂','Home'],['athletes','♟','Athletes'],['mwtrack','🏃','Training'],['insights','▱','Intelligence'],['more','•••','More']]
+ core:[['dashboard','⌂','Home'],['athletes','♟','Team'],['programs','🏃','Training'],['messages','✉','Messages'],['account','⚙','Profile']],
+ intelligence:[['dashboard','⌂','Home'],['athletes','♟','Team'],['coachmw','MW','Coach MW'],['messages','✉','Messages'],['account','⚙','Profile']],
+ performance:[['dashboard','⌂','Home'],['athletes','♟','Team'],['coachmw','MW','Coach MW'],['messages','✉','Messages'],['account','⚙','Profile']]
 };
 function sideNav(){const items=[...nav[experience]];const art=['mwNavHome','mwNavProfile','mwNavTrain','mwNavProgram','mwNavCoach'];return items.map(([id,ic,label],i)=>`<button class="nav-btn ${id==='dashboard'?'active':''}" data-page="${id}"><span class="nav-icon mwNavArt ${art[i]||''}" aria-hidden="true"></span><span>${label}</span></button>`).join('')}
 function shell(content){const p=PLANS[experience],coachName=[accountAccess.firstName,accountAccess.lastName].filter(Boolean).join(' ')||'MW Coach',defaultRole=accountAccess.isFounder?'Founder / Coach':accountAccess.role==='admin'?'MW Administrator':'Coach',coachRole=accountAccess.coachTitle||defaultRole,coachMeta=[coachRole,accountAccess.organization].filter(Boolean).join(' · '),profileNudge=accountAccess.role==='coach'&&(!accountAccess.organization||!accountAccess.coachTitle)?`<div class="tile mw-profile-nudge"><div><div class="eyebrow">COACH PROFILE</div><b>Complete your coaching identity</b><p>Add your school / organization and coaching title so athletes know exactly who is coaching them.</p></div><button class="action" data-page="account">Complete Profile</button></div>`:'';app.innerHTML=`<div class="app ${p.theme}"><div class="top-ribbon"><span>THREE PLATFORMS. ONE ECOSYSTEM.</span><span>${experience==='performance'?'SAME FOUNDATION. DIFFERENT POWER.':'GREATER ATHLETES. BETTER COACHES. A STRONGER FUTURE.'}</span></div><div class="frame"><header class="brand-head"><div class="brand-title">${p.title}</div><div class="brand-tag">${p.tag}</div><div class="brand-sub">${p.sub}</div></header><div class="workspace"><aside class="sidebar"><div class="side-brand-row"><div class="side-logo"><span class="mw-mark">MW</span><span>${p.side.replace('\n','<br>')}</span></div><button class="mobile-menu" id="mobileMenu" type="button" aria-expanded="false" aria-controls="sideNav">Menu</button></div><nav class="side-nav" id="sideNav">${sideNav()}</nav><div class="side-account"><button class="coach-row coach-profile-entry" data-page="account" type="button" aria-label="Open Coach profile"><span class="avatar coach-initials" aria-hidden="true">${escapeHtml(((accountAccess.firstName?.[0]||'M')+(accountAccess.lastName?.[0]||'W')).toUpperCase())}</span><span class="coach-profile-copy"><span class="coach-name">${escapeHtml(coachName)}</span><span class="coach-role">${escapeHtml(coachMeta)}</span></span></button><button class="signout" id="signout">Sign Out</button></div></aside><main class="main">${profileNudge}${content}</main></div><footer class="footer"><div class="footer-brand">MW DYNASTY</div><div class="footer-mid">GREATER ATHLETES. BETTER COACHES. A STRONGER FUTURE.</div><div class="footer-right">${p.footer}</div></footer></div></div>`; bindGlobal();hydrateLiveAthleteCount();}
@@ -88,9 +88,22 @@ async function hydrateCoachTrainingYearCard(){
   }catch(e){main.textContent='Training calendar unavailable';if(sub)sub.textContent='Open Account to review the MW training-year setting.'}
 }
 function simpleCoachHome(primaryPage,primaryLabel,showIntel=false){
-  const intel=showIntel?`<section class="section simple-section"><div class="section-head"><div><div class="status-kicker">PERFORMANCE</div><h2>What Needs My Attention?</h2><p class="status-subcopy">MW turns athlete check-ins into simple coach signals.</p></div><button class="link-btn" data-page="insights">OPEN →</button></div><div id="performanceInsightPreview" class="insight-list"><div class="tile">Checking athlete performance…</div></div></section>`:'';
-  const statCards=showIntel?stats([['—','Athletes'],['—','Pace Execution']]):stats([['—','Athletes']]);
-  shell(`${topbar('Search athletes...')}<section class="mw-coach-dashboard-visual simple-hero"><img src="/assets/mw-coach-dashboard-v23.jpg" alt="MW Dynasty Coach Dashboard"></section>${statCards}${coachTrainingYearShell()}<section class="simple-start"><div><span class="status-kicker">START HERE</span><h2>What do you want to do?</h2><p>Big buttons. Simple choices. The deeper tools are under More.</p></div><div class="simple-actions"><button data-page="practice"><b>▶</b><span>PRACTICE MODE<small>Run today’s practice</small></span></button><button data-page="athletes"><b>👥</b><span>MY ATHLETES<small>See the people I coach</small></span></button><button data-page="${primaryPage}"><b>🏃</b><span>${primaryLabel}<small>Open the training plan</small></span></button>${showIntel?'<button data-page="insights"><b>🧠</b><span>INTELLIGENCE<small>See who needs attention</small></span></button>':''}</div></section>${showIntel?athleteStatusBoardShell():''}${intel}`)
+  const coachMW=experience==='core'?'':`<button data-page="coachmw"><b>MW</b><span>COACH MW<small>Ask your coaching assistant</small></span></button>`;
+  const attention=showIntel?athleteStatusBoardShell():'';
+  shell(`${topbar('Search your team...')}
+  <section class="coach-command-head">
+    <div><span class="status-kicker">COACH HOME</span><h1>What needs your attention?</h1><p>Your team, today’s work, messages, and coaching tools in one place.</p></div>
+    <button class="action" data-page="practice">START PRACTICE</button>
+  </section>
+  ${stats([['—','Athletes']])}
+  ${attention}
+  <section class="simple-start coach-home-actions"><div><span class="status-kicker">QUICK ACTIONS</span><h2>Coach your team</h2></div><div class="simple-actions">
+    <button data-page="athletes"><b>👥</b><span>TEAM<small>Roster, progress, attendance & notes</small></span></button>
+    <button data-page="${primaryPage}"><b>🏃</b><span>${primaryLabel}<small>Open today’s training</small></span></button>
+    <button data-page="messages"><b>✉</b><span>MESSAGES<small>Talk with your athletes</small></span></button>
+    ${coachMW}
+  </div></section>
+  ${coachTrainingYearShell()}`);
 }
 async function practiceModePage(){
   pageBase('Practice Mode','Run groups, capture finish times, and save the session without leaving the track.',`
@@ -137,7 +150,7 @@ function morePage(){
   const mw=experience==='performance'?[['strength','🏋️','Strength & Power'],['school','🎓','Sprint School'],['race','🏁','Race Strategy'],['pacing','⏱️','Pacing Tools']]:[];
   const founder=accountAccess.isFounder?[['founderpreview','◈','Founder Preview'],['coachapps','✓','Coach Applications']]:[];
   const items=[...mw,...smart,...common,...founder];
-  pageBase('More','Everything else is here when you need it.',`<div class="simple-more-grid">${items.map(([id,ic,label])=>`<button data-page="${id}"><b>${ic}</b><span>${label}</span><em>→</em></button>`).join('')}</div><div class="tile" style="margin-top:14px"><h3>Coach Session</h3><p>Securely sign out of this Coach account on this device.</p><button class="back" id="coachMoreSignout" style="margin-top:10px">Sign Out</button></div>`)
+  pageBase('Coach Tools','Advanced tools and administration stay here when you need them.',`<div class="simple-more-grid">${items.map(([id,ic,label])=>`<button data-page="${id}"><b>${ic}</b><span>${label}</span><em>→</em></button>`).join('')}</div><div class="tile" style="margin-top:14px"><h3>Coach Session</h3><p>Securely sign out of this Coach account on this device.</p><button class="back" id="coachMoreSignout" style="margin-top:10px">Sign Out</button></div>`)
   const moreSignout=document.getElementById('coachMoreSignout');if(moreSignout)moreSignout.onclick=signOut;
 }
 function teamsPage(){pageBase('Teams','Manage squads, groups and coach assignments.',`<div class="panel-grid">${['Varsity Sprint Group','Development Group','400m Group','Relays'].map(n=>`<div class="tile"><h3>${n}</h3><p>Roster, attendance, messages and assignments.</p><button class="action" data-toast="Opened ${n}" style="margin-top:12px">Open Team</button></div>`).join('')}</div>`)}
