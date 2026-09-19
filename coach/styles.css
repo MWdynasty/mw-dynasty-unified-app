@@ -455,3 +455,11 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 .mw-coach-thread .tile{max-width:86%;margin:0}.mw-coach-thread .mw-coach-user{margin-left:auto}.mw-coach-thread .mw-coach-assistant{margin-right:auto}
 .mw-coach-suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.mw-coach-suggestions button{font-size:11px}
 @media(max-width:620px){.mw-coach-thread-shell{padding:14px;border-radius:15px}.mw-coach-thread{max-height:48vh}.mw-coach-thread .tile{max-width:94%}.mw-coach-suggestions{display:grid;grid-template-columns:1fr}.mw-coach-suggestions button{width:100%;text-align:left}}
+
+/* ===== COACH MESSAGES + PROFILE CLEANUP ===== */
+.mw-message-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.mw-message-head h2{margin:3px 0 0}
+.coach-profile-hero{display:flex;align-items:center;gap:15px;padding:18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#08151e,#050b10);margin-bottom:14px}
+.coach-profile-monogram{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;border:1px solid #c8a447;color:#edcb6c;font-weight:900;font-size:20px;background:#071018}
+.coach-profile-hero h2{margin:4px 0}.coach-profile-hero p{margin:0;color:var(--muted)}
+.coach-profile-section{margin-bottom:10px}.coach-profile-section>summary{cursor:pointer;padding:4px 0;letter-spacing:.07em}.coach-profile-inner{padding-top:12px}
+@media(max-width:620px){.mw-message-head{align-items:stretch;flex-direction:column}.mw-message-head button{width:100%}.coach-profile-hero{padding:14px}.coach-profile-monogram{width:54px;height:54px}}
