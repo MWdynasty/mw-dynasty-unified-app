@@ -945,8 +945,9 @@ async function calendarEventModal(id=null){let row=null;if(id)row=(await sbRest(
 async function meetsPage(){pageBase('Meets','Meet schedule pulled from your live MW calendar.',`<div id="meetLive" class="list"><div class="tile">Loading meets…</div></div><button class="action" id="newMeet" style="margin-top:14px">+ Add Meet</button>`);newMeet.onclick=()=>calendarEventModal();try{const rows=await sbRest('coach_calendar_events?select=id,title,starts_at,location,registration_status,notes&event_type=eq.meet&order=starts_at.asc')||[];meetLive.innerHTML=rows.map(e=>`<div class="row"><span><b>${escapeHtml(e.title)}</b><br><small>${new Date(e.starts_at).toLocaleDateString()} · ${escapeHtml(e.location||'Location TBD')}</small></span><span class="status">${escapeHtml(e.registration_status||'Planned')}</span></div>`).join('')||'<div class="tile">No meets scheduled yet.</div>'}catch(e){meetLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}}
 async function messagesPage(preselectGroup=null){
   if(window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}
-  pageBase('Messages','One inbox. One conversation thread per athlete. Team announcements stay separate.',`
-    <div class="mw-msg-tabs"><button class="back active" id="mwDirectTab" type="button">1:1 ATHLETE MESSAGES</button><button class="back" id="mwAnnouncementTab" type="button">TEAM / GROUP ANNOUNCEMENTS</button></div>
+  pageBase('Messages','Talk to athletes without digging through separate communication tools.',`
+    <div class="mw-message-head"><div><span class="status-kicker">COACH COMMUNICATION</span><h2>Conversations</h2></div><button class="back" id="mwAnnouncementShortcut" type="button">+ Announcement</button></div>
+    <div class="mw-msg-tabs"><button class="back active" id="mwDirectTab" type="button">ATHLETES</button><button class="back" id="mwAnnouncementTab" type="button">ANNOUNCEMENTS</button></div>
     <div id="mwDirectMessages" class="mw-message-layout">
       <section class="mw-conversation-pane">
         <div class="mw-message-search"><span>⌕</span><input id="mwMessageSearch" autocomplete="off" placeholder="Search athlete conversations"></div>
@@ -973,7 +974,7 @@ async function messagesPage(preselectGroup=null){
   const initials=name=>String(name||'A').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]?.toUpperCase()).join('')||'A';
   const fmtTime=v=>{if(!v)return '';const d=new Date(v),today=new Date();return d.toDateString()===today.toDateString()?d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):d.toLocaleDateString([],{month:'short',day:'numeric'})};
   const setMode=mode=>{activeMode=mode;const direct=mode==='direct';directWrap.hidden=!direct;announceWrap.hidden=direct;directTab.classList.toggle('active',direct);announceTab.classList.toggle('active',!direct)};
-  directTab.onclick=()=>setMode('direct');announceTab.onclick=()=>setMode('announcements');setMode(activeMode);
+  directTab.onclick=()=>setMode('direct');announceTab.onclick=()=>setMode('announcements');const announcementShortcut=document.getElementById('mwAnnouncementShortcut');if(announcementShortcut)announcementShortcut.onclick=()=>setMode('announcements');setMode(activeMode);
 
   try{[groups,roster]=await Promise.all([liveGroups(),fetchCoachRoster().then(d=>d.athletes||[])]);}catch(e){toast(e.message)}
 
