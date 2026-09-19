@@ -1,60 +1,22 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050505">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050505">
 <title>MW Distance Pacer</title>
-<style id="mw-tool-auth-guard">html.mw-tool-pending body{visibility:hidden}</style>
-<script>document.documentElement.classList.add('mw-tool-pending');</script>
-<link rel="stylesheet" href="/assets/mw-unified-theme.css">
-<link rel="stylesheet" href="/assets/mw-premium-v2.css">
-<link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
-<link rel="stylesheet" href="/assets/mw-responsive-v25.css">
-<link rel="stylesheet" href="styles.css">
-<link rel="icon" href="/favicon.png" type="image/png">
-<script src="/assets/mw-native.js"></script>
-</head>
-<body>
-<div class="shell">
-<header class="brand">
-  <div class="brandCopy"><span>MW PERFORMANCE LAB™</span><h1>MW DISTANCE PACER™</h1><p>KNOW EXACTLY WHERE THE REP ENDS.</p></div>
-  <button type="button" class="backToApp" onclick="location.href='/athlete/#workouts'">← PERFORMANCE TOOLS</button>
-</header>
+<style id="mw-tool-auth-guard">html.mw-tool-pending body{visibility:hidden}</style><script>document.documentElement.classList.add('mw-tool-pending');</script>
+<link rel="stylesheet" href="/assets/mw-unified-theme.css"><link rel="stylesheet" href="/assets/mw-premium-v2.css"><link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css"><link rel="stylesheet" href="/assets/mw-responsive-v25.css"><link rel="stylesheet" href="styles.css"><link rel="icon" href="/favicon.png" type="image/png"><script src="/assets/mw-native.js"></script>
+</head><body><div class="shell">
+<header class="brand"><div class="brandCopy"><span>MW PERFORMANCE LAB™</span><h1>MW DISTANCE PACER™</h1><p>ONE METER TRACKER. ANY SURFACE.</p></div><button type="button" class="backToApp" onclick="location.href='/athlete/#workouts'">← PERFORMANCE TOOLS</button></header>
 <section id="handoff" class="handoff hidden"><div><strong id="handoffTitle">Workout connected</strong><small id="handoffText"></small></div><b>READY</b></section>
-<main>
-<section class="panel intro"><div class="modes" role="tablist" aria-label="Distance Pacer surface">
-<button class="mode active" data-mode="track"><span class="modeIcon">🏃</span><b>TRACK</b></button>
-<button class="mode" data-mode="football"><span class="modeIcon">🏈</span><b>FOOTBALL</b></button>
-<button class="mode" data-mode="open"><span class="modeIcon">⌖</span><b>OPEN FIELD</b></button>
-</div></section>
-<section id="trackPanel" class="panel modePanel">
-<div class="sectionHead"><div><span class="eyebrow">TRACK MODE</span><h2>Where does the rep finish?</h2><p>Enter your distance and lane to see exactly where you’ll finish on the track.</p></div><span class="accuracy high">◎ HIGH ACCURACY</span></div>
-<div class="grid2"><label>Distance (meters)<input id="trackDistance" type="number" min="10" max="800" value="150"></label><label>Lane<select id="lane"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label></div>
-<button id="showTrack" class="primary">SHOW MY MARK <span>→</span></button>
-<div class="visual trackVisual"><div class="trackLines"></div><div class="markPin">⌖<b>YOUR MARK</b></div></div>
-<div class="resultLabel">YOUR RESULT</div><div id="trackResult" class="result">Your mark will appear here.</div>
-<div class="quickTip"><b>💡 QUICK TIP</b><span>Use this during practice to set cones and know exactly where to finish.</span></div>
-</section>
-<section id="footballPanel" class="panel modePanel hidden">
-<div class="sectionHead"><div><span class="eyebrow">FOOTBALL FIELD MODE</span><h2>Use the field as your ruler.</h2><p>Enter your distance and starting yard line to see exactly where the rep ends.</p></div><span class="accuracy high">◎ HIGH ACCURACY</span></div>
-<div class="grid2"><label>Distance (meters)<select id="fbDistance"><option value="10">10m</option><option value="20">20m</option><option value="30">30m</option><option value="40">40m</option><option value="50">50m</option><option value="60">60m</option><option value="100">100m</option><option value="150" selected>150m</option></select></label><label>Start yard line<input id="startYard" type="number" min="0" max="100" value="0"></label></div>
-<button id="showFootball" class="primary">SHOW MY MARK <span>→</span></button>
-<div class="visual fieldVisual"><div class="yardNums">0　10　20　30　40　50　40　30　20　10　0</div><div class="fieldRoute"><i></i><b>START</b><strong>FINISH</strong></div></div>
-<div class="resultLabel">YOUR RESULT</div><div id="footballResult" class="result">Your finish yard line will appear here.</div>
-<div class="quickTip"><b>💡 QUICK TIP</b><span>Use the yard lines to set your rep with no measuring wheel needed.</span></div>
-</section>
-<section id="openPanel" class="panel modePanel hidden">
-<div class="sectionHead"><div><span class="eyebrow">OPEN FIELD MODE</span><h2>Measure any distance.</h2><p>Use your current location to measure your distance in real time. Perfect for grass fields, parks, or any open space.</p></div><span id="gpsBadge" class="accuracy">◎ STABILIZED GPS</span></div>
-<label>Target distance (meters)<input id="gpsDistance" type="number" min="10" max="1000" value="100"></label>
-<div class="presets"><button type="button" data-distance="50">50m</button><button type="button" class="active" data-distance="100">100m</button><button type="button" data-distance="200">200m</button><button type="button" data-distance="400">400m</button></div>
+<main><section class="panel universal">
+<div class="sectionHead"><div><span class="eyebrow">UNIVERSAL DISTANCE METER</span><h2>How far do you need to measure?</h2><p>Set your target, lock your starting point, then walk the exact path you plan to run.</p></div><span id="gpsBadge" class="accuracy">◎ GPS CHECK</span></div>
+<label>Target distance (meters)<input id="gpsDistance" type="number" inputmode="decimal" min="5" max="5000" value="100"></label>
+<div class="presets"><button type="button" data-distance="30">30m</button><button type="button" data-distance="50">50m</button><button type="button" class="active" data-distance="100">100m</button><button type="button" data-distance="150">150m</button><button type="button" data-distance="200">200m</button><button type="button" data-distance="300">300m</button><button type="button" data-distance="400">400m</button></div>
+<div class="steps"><div><b>1</b><span>Stand at your start</span></div><div><b>2</b><span>Lock start</span></div><div><b>3</b><span>Walk your route</span></div></div>
 <button id="lockStart" class="primary">LOCK START POINT</button><button id="startWalk" class="secondary" disabled>START MEASURING ▶</button>
-<div class="resultLabel">YOUR LIVE DATA</div><div class="gpsCard"><div><small>GPS ACCURACY</small><strong id="gpsAccuracy">—</strong></div><div><small>DISTANCE</small><strong id="gpsMeasured">0.0 m</strong></div><div><small>STATUS</small><strong id="gpsLiveStatus">READY</strong></div></div>
-<button id="resetGps" class="ghost">↻ RESET</button><div id="gpsStatus" class="result hidden"></div>
-<div class="quickTip"><b>💡 QUICK TIP</b><span>Stand still in an open area with a clear view of the sky for the most accurate GPS measurement.</span></div>
-</section>
-</main><footer>MW SPRINT PERFORMANCE SYSTEM™ · PERFORMANCE LAB</footer></div>
-<script src="app.js"></script>
-<script src="/lib/mw-tool-auth.js"></script>
-</body>
-</html>
+<div class="meter"><div class="meterTop"><small>DISTANCE TRAVELED</small><span id="gpsLiveStatus">READY</span></div><strong id="gpsMeasured">0.0 m</strong><div class="bar"><i id="distanceBar"></i></div><div class="meterBottom"><span>GPS ACCURACY <b id="gpsAccuracy">—</b></span><span>TARGET <b id="targetReadout">100m</b></span></div></div>
+<div id="gpsStatus" class="result">Stand still at your starting point and lock it when GPS is ready.</div>
+<div class="actions"><button id="saveMark" class="primary" disabled>✓ SAVE MARK</button><button id="resetGps" class="ghost">↻ MEASURE ANOTHER</button></div>
+<div class="quickTip"><b>HOW IT WORKS</b><span>The pacer adds the path you actually travel, so curves and turns count. GPS accuracy varies by phone, sky visibility, buildings, and indoor use.</span></div>
+</section></main><footer>MW SPRINT PERFORMANCE SYSTEM™ · PERFORMANCE LAB</footer></div>
+<script src="app.js"></script><script src="/lib/mw-tool-auth.js"></script></body></html>
