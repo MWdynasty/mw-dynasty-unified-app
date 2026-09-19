@@ -19,7 +19,7 @@ button{border:0;border-radius:13px;background:linear-gradient(135deg,var(--gold)
 .ask{display:grid;grid-template-columns:auto 1fr auto;gap:8px;margin-top:10px}.ask input{margin:0}.mic{width:48px;padding:0;font-size:1.15rem}.send{min-width:68px}.voicebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}.voicebar select{margin:0;width:auto;min-height:40px}.status{color:var(--ok);font-size:.72rem;font-weight:900}.quick{display:flex;gap:7px;overflow:auto;padding-bottom:4px;margin-top:10px}.quick button{white-space:nowrap;background:#17181b;color:var(--gold2);border:1px solid var(--line);min-height:36px;font-size:.75rem}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:12px;border:1px solid #343434;border-radius:14px;background:#121316}.stat strong{display:block;color:var(--gold2);font-size:1.2rem;margin-top:3px}
 .notice{padding:11px 12px;border:1px solid var(--line);border-radius:13px;color:#d6d0c1;background:#15140f;font-size:.82rem;line-height:1.45}
-.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(10,10,11,.96);backdrop-filter:blur(16px);border-top:1px solid #2b2b2b;display:grid;grid-template-columns:repeat(5,1fr);padding:7px max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));z-index:20}.nav button{background:transparent;color:#89898d;border:0;min-height:56px;padding:3px;font-size:.66rem}.nav button b{display:block;font-size:1.25rem;margin-bottom:2px}.nav button.active{color:var(--gold2)}
+.mwReturn{background:transparent;color:var(--gold2);border:0;min-height:34px;padding:0;margin:0 0 10px;font-size:.72rem;font-weight:950;letter-spacing:.05em}.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(10,10,11,.96);backdrop-filter:blur(16px);border-top:1px solid #2b2b2b;display:grid;grid-template-columns:repeat(5,1fr);padding:7px max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));z-index:20}.nav button{background:transparent;color:#89898d;border:0;min-height:56px;padding:3px;font-size:.66rem}.nav button b{display:block;font-size:1.25rem;margin-bottom:2px}.nav button.active{color:var(--gold2)}
 @media(max-width:620px){.row,.row3,.row4{grid-template-columns:1fr}.repRow{grid-template-columns:42px 1fr 88px}.repStatus{grid-column:2/4;text-align:left}.stats{grid-template-columns:1fr 1fr}.title{font-size:2.55rem}}
 .mwHubBack{position:sticky;top:8px;z-index:60;display:inline-flex;align-items:center;gap:7px;margin:0 0 12px;padding:10px 13px;border:1px solid rgba(240,210,125,.55);border-radius:999px;background:rgba(10,10,11,.92);backdrop-filter:blur(14px);color:var(--gold2);font-size:.76rem;font-weight:950;text-decoration:none;box-shadow:0 8px 26px rgba(0,0,0,.32)}.mwHubBack:active{transform:translateY(1px)}
 </style>
@@ -49,7 +49,7 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
 <link rel="icon" href="/favicon.png" type="image/png">
 <script src="/assets/mw-native.js"></script></head>
 <body>
-<main>
+<main><button type="button" class="mwReturn" onclick="location.href='/athlete/#pacer'">← BACK TO PERFORMANCE TOOLS</button>
 <a class="mwHubBack" href="/athlete/" aria-label="Back to MW Dynasty athlete app">← BACK TO MW DYNASTY</a>
 
 <div class="brand-stage" aria-label="MW Sprint Performance System">
