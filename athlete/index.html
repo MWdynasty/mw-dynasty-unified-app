@@ -846,6 +846,12 @@ body.mw-auth-ready #mwAuth{display:none!important}
 #coach .mwWordToday .faithActions{display:block;padding:0 14px 13px;margin-top:8px}
 #coach .mwWordToday .faithActions button{width:100%;border-color:rgba(245,185,46,.35);color:#f5c95e}
 @media(max-width:380px){#coach .mwCoachPresence .aiHead{width:112px!important;height:112px!important;min-height:112px!important}#coach .mwWordToday summary{padding:12px 11px}#coach .mwWordToday summary strong{font-size:7px}}
+</style>
+<style id="mw-voice-smartentry-clean-v1">
+#coach .mwSmartEntryOneBox{margin-top:10px;border:1px solid rgba(21,156,255,.34);border-radius:14px;background:linear-gradient(135deg,#061522,#07111a);overflow:hidden}
+#coach .mwSmartEntryOneBox .smartBtn{margin:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+#coach .mwSmartEntryOneBox .entryStatus{margin:0!important;border:0!important;border-top:1px solid rgba(21,156,255,.2)!important;border-radius:0!important;background:transparent!important}
+#coach .speak.playing{border-color:#f5b92e!important;color:#f5b92e!important;box-shadow:0 0 14px rgba(245,185,46,.14)}
 </style></head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -960,7 +966,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
   <div class="ask"><div class="askrow"><button id="mic" class="round" title="Speak">🎙</button><button id="attachImage" class="attach" title="Add a photo">＋</button><input id="imagePick" type="file" accept="image/png,image/jpeg,image/webp"><input id="q" placeholder="Message Coach MW…"><button id="go" class="send">↑</button></div><div id="attachStatus" class="attachStatus"></div><div class="voice"><span id="voiceState">TAP MIC TO SPEAK • + TO ADD PHOTO</span><span>READ ALOUD AVAILABLE 🔊</span></div></div>
 </div>
 
-<button class="smartBtn" id="openEntry">⚡ <span>MW SMART ENTRY</span> — I just joined. Where do I start?</button><div class="entryStatus" id="entryStatus"></div>
+<div class="mwSmartEntryOneBox"><button class="smartBtn" id="openEntry">⚡ <span>MW SMART ENTRY</span> — I just joined. Where do I start?</button><div class="entryStatus" id="entryStatus"></div></div>
 
 <details class="faithCard mwWordToday">
   <summary><div><b>✝️ WORD FOR TODAY</b><span id="verseRef">Galatians 6:9</span></div><strong>REFLECT WITH COACH MW →</strong></summary>
@@ -1714,8 +1720,10 @@ let mwAudio=null;
 function voiceChunks(text,mode){if(mode==='standard')return [text];const parts=String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text];const out=[];let cur='';for(const x of parts){if((cur+x).length>360&&cur){out.push(cur.trim());cur=''}cur+=x}if(cur.trim())out.push(cur.trim());return out.slice(0,8)}
 async function voiceBlob(text,coachType){const r=await fetch('/api/speak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Natural voice unavailable')}return r.blob()}
 async function playBlob(blob,rate){return new Promise(async(resolve,reject)=>{const url=URL.createObjectURL(blob);mwAudio=new Audio(url);mwAudio.playbackRate=rate;mwAudio.onended=()=>{URL.revokeObjectURL(url);mwAudio=null;resolve()};mwAudio.onerror=()=>{URL.revokeObjectURL(url);mwAudio=null;reject(new Error('Voice playback error'))};try{await mwAudio.play()}catch(e){reject(e)}})}
-async function speak(t){if(!t)return;try{$('#coachAvatar')?.classList.add('speaking');if(mwAudio){mwAudio.pause();mwAudio=null}const p=getProfile(),prefs=getPrefs(),chunks=voiceChunks(t,prefs.voiceMode);$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='COACH MW IS RESPONDING…');const requests=chunks.map(x=>voiceBlob(x,p.coachType||p.coach||'neutral'));for(const req of requests){const blob=await req;await playBlob(blob,Number(prefs.voiceSpeed||1))}$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='41-WEEK PROGRAM · TRACK + WEIGHT ROOM SYNCED');$('#coachAvatar')?.classList.remove('speaking')}catch(err){$('#coachAvatar')?.classList.remove('speaking');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='NATURAL VOICE NEEDS CONNECTION');console.warn('Coach MW natural voice:',err)}}
-function add(t,c){let d=document.createElement('div');d.className='msg '+c;d.textContent=t;if(c==='coach'){let b=document.createElement('button');b.className='speak';b.textContent='🔊 HEAR COACH';b.onclick=()=>speak(t);d.appendChild(b);let v=document.createElement('span');v.className='voiceLabel';v.textContent='MW NATURAL VOICE';d.appendChild(v)}$('#chat').appendChild(d);$('#chat').scrollTop=$('#chat').scrollHeight}
+let mwVoiceRun=0,mwVoiceButton=null;
+function stopCoachVoice(){mwVoiceRun++;if(mwAudio){try{mwAudio.pause();mwAudio.currentTime=0}catch{}mwAudio=null}$('#coachAvatar')?.classList.remove('speaking');if(mwVoiceButton){mwVoiceButton.textContent='🔊 READ ALOUD';mwVoiceButton.classList.remove('playing');mwVoiceButton=null}$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='READY • ASK. LEARN. IMPROVE.')}
+async function speak(t,btn){if(!t)return;if(mwVoiceButton===btn&&btn?.classList.contains('playing')){stopCoachVoice();return}stopCoachVoice();const run=++mwVoiceRun;mwVoiceButton=btn||null;if(btn){btn.textContent='■ STOP';btn.classList.add('playing')}try{$('#coachAvatar')?.classList.add('speaking');const p=getProfile(),prefs=getPrefs(),chunks=voiceChunks(t,prefs.voiceMode);$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='COACH MW IS SPEAKING…');for(const chunk of chunks){if(run!==mwVoiceRun)return;const blob=await voiceBlob(chunk,p.coachType||p.coach||'neutral');if(run!==mwVoiceRun)return;await playBlob(blob,Number(prefs.voiceSpeed||1));if(run!==mwVoiceRun)return}if(run===mwVoiceRun)stopCoachVoice()}catch(err){if(run===mwVoiceRun){stopCoachVoice();$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='NATURAL VOICE NEEDS CONNECTION')}console.warn('Coach MW natural voice:',err)}}
+function add(t,c){let d=document.createElement('div');d.className='msg '+c;d.textContent=t;if(c==='coach'){let b=document.createElement('button');b.className='speak';b.textContent='🔊 READ ALOUD';b.onclick=()=>speak(t,b);d.appendChild(b);let v=document.createElement('span');v.className='voiceLabel';v.textContent='MW NATURAL VOICE';d.appendChild(v)}$('#chat').appendChild(d);$('#chat').scrollTop=$('#chat').scrollHeight}
 const conversation=JSON.parse(localStorage.getItem('mwConversation')||'[]');
 function saveConversation(){localStorage.setItem('mwConversation',JSON.stringify(conversation.slice(-30)))}
 function renderSavedConversation(){
@@ -1737,7 +1745,7 @@ async function refreshPremiumStatus(){
 }
 
 async function send(t){
-  t=(t||$('#q').value).trim();if(!t)return;
+  t=(t||$('#q').value).trim();if(!t)return;stopCoachVoice();
   add(t,'me'); $('#q').value='';
   conversation.push({role:'user',content:t}); saveConversation();
   const thinking='Coach MW is thinking…'; add(thinking,'coach');
@@ -1749,7 +1757,7 @@ async function send(t){
     if(!r.ok) throw new Error(data.error||'AI connection failed');
     const a=(data.text||'').trim(); if(!a) throw new Error('Empty AI response');
     conversation.push({role:'assistant',content:a}); saveConversation();
-    bubble.remove(); add(a,'coach'); if(getPrefs().autoVoice==='on')speak(a);
+    bubble.remove(); add(a,'coach'); if(getPrefs().autoVoice==='on'){stopCoachVoice();speak(a,null)};
   }catch(err){
     bubble.remove();
     const msg=`I can't give you a fake canned answer and call it AI. The live Coach MW connection is unavailable right now. ${err.message}`;
@@ -2254,7 +2262,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     voiceBlob=async function(text,coachType){const r=await fetch('/api/speak',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify({text,coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Natural voice unavailable')}return r.blob()};
     send=async function(t){
       t=(t||document.querySelector('#q').value).trim();if(!t)return;add(t,'me');document.querySelector('#q').value='';conversation.push({role:'user',content:t});saveConversation();add('Coach MW is thinking…','coach');const bubble=document.querySelector('#chat').lastElementChild;
-      try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify({messages:conversation})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'AI connection failed');const a=(data.text||'').trim();if(!a)throw new Error('Empty AI response');conversation.push({role:'assistant',content:a});saveConversation();bubble.remove();add(a,'coach');if(getPrefs().autoVoice==='on')speak(a)}catch(err){bubble.remove();const msg='Coach MW connection unavailable right now. '+err.message;add(msg,'coach');const n=document.querySelector('#connectionNotice');if(n){n.textContent='LIVE COACH MW CONNECTION REQUIRED • '+err.message;n.classList.add('show')}}
+      try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify({messages:conversation})});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'AI connection failed');const a=(data.text||'').trim();if(!a)throw new Error('Empty AI response');conversation.push({role:'assistant',content:a});saveConversation();bubble.remove();add(a,'coach');if(getPrefs().autoVoice==='on'){stopCoachVoice();speak(a,null)}}catch(err){bubble.remove();const msg='Coach MW connection unavailable right now. '+err.message;add(msg,'coach');const n=document.querySelector('#connectionNotice');if(n){n.textContent='LIVE COACH MW CONNECTION REQUIRED • '+err.message;n.classList.add('show')}}
     };
     const go=document.querySelector('#go');if(go)go.onclick=()=>send();const q=document.querySelector('#q');if(q)q.onkeydown=e=>{if(e.key==='Enter')send()};document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>send(b.dataset.q));
   }catch(e){console.warn('MW auth network override',e)}
