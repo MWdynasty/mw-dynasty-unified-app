@@ -10,3 +10,5 @@ button.primary,button.secondary,button.ghost{width:100%;min-height:48px;padding:
 .result{margin-top:12px;border:1px solid #3b4b58;background:#061019;border-radius:13px;padding:14px;line-height:1.55;font-size:13px}.gpsCard{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.gpsCard>div{border:1px solid var(--line);border-radius:12px;padding:12px;background:#050c12}.gpsCard small{display:block;color:var(--muted);font-size:9px}.gpsCard strong{display:block;font-size:20px;margin-top:4px}
 footer{text-align:center;color:#68727b;font-size:9px;margin-top:22px;letter-spacing:.05em}
 @media(max-width:390px){.shell{padding-left:12px;padding-right:12px}.brand h1{font-size:27px}.modes{gap:6px}.mode{font-size:10px}.grid2{grid-template-columns:1fr}.modePanel{padding:15px}}
+
+.backToApp{margin-top:12px;border:0;background:transparent;color:var(--blue);padding:0;font-size:10px;font-weight:900;letter-spacing:.04em;text-align:left}
