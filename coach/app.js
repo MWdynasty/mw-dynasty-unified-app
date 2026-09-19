@@ -801,18 +801,36 @@ async function exportCoachRoster(athletes){
   const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);toast('Roster export prepared');
 }
 async function athletesPage(){
-  pageBase('Athletes',accountAccess.role==='coach'?'Only athletes actively assigned to your coach account appear here.':'Founder/Admin athlete roster.',`<div id="athleteList" class="list"><div class="tile">Loading live MW roster…</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="action" id="inviteAthlete">+ Invite Athlete</button><button class="back" id="exportAthletes" disabled>Export Roster</button></div><div id="pendingInviteWrap" style="margin-top:18px"></div>`);
-  document.getElementById('inviteAthlete').onclick=inviteAthleteModal;const exportBtn=document.getElementById('exportAthletes');
-  const list=document.getElementById('athleteList');
+  pageBase('Team','Your athletes, coaching status, and team actions in one place.',`
+    <div class="team-command-actions">
+      <button class="action" id="inviteAthlete">+ Invite Athlete</button>
+      <button class="back" data-page="attendance">Take Attendance</button>
+      <button class="back" data-page="teams">Groups</button>
+      <button class="back" id="exportAthletes" disabled>Export</button>
+    </div>
+    <div class="team-filter-row">
+      <label class="search">⌕<input id="teamSearch" autocomplete="off" placeholder="Search athletes"></label>
+      <div class="team-filter-buttons"><button class="back active" data-team-filter="all">ALL</button><button class="back" data-team-filter="attention">NEEDS ATTENTION</button><button class="back" data-team-filter="sponsored">SPONSORED</button></div>
+    </div>
+    <div id="teamSummary" class="team-summary-strip"><div><b>—</b><span>Athletes</span></div><div><b>—</b><span>Need Attention</span></div><div><b>—</b><span>Sponsored</span></div></div>
+    <div id="athleteList" class="team-athlete-grid"><div class="tile">Loading your team…</div></div>
+    <div id="pendingInviteWrap" style="margin-top:18px"></div>`);
+  bindPageNavigation(document);
+  document.getElementById('inviteAthlete').onclick=inviteAthleteModal;
+  const exportBtn=document.getElementById('exportAthletes'),list=document.getElementById('athleteList'),summary=document.getElementById('teamSummary'),search=document.getElementById('teamSearch');
+  let athletes=[],performanceMap=new Map(),filter='all';
   try{
-    const [d,billing]=await Promise.all([fetchCoachRoster(),coachBillingRequest().catch(()=>({status:{}}))]),athletes=Array.isArray(d.athletes)?d.athletes:[],pending=Array.isArray(d.pendingInvitations)?d.pendingInvitations:[],sponsoredBillingActive=!!billing?.status?.sponsored_billing_active;
-    const pendingWrap=document.getElementById('pendingInviteWrap');
+    const [d,billing,perf]=await Promise.all([fetchCoachRoster(),coachBillingRequest().catch(()=>({status:{}})),fetchCoachPerformance().catch(()=>({athletes:[]}))]);
+    athletes=Array.isArray(d.athletes)?d.athletes:[];performanceMap=new Map((perf.athletes||[]).map(x=>[x.athlete_id,x]));
+    const pending=Array.isArray(d.pendingInvitations)?d.pendingInvitations:[],sponsoredBillingActive=!!billing?.status?.sponsored_billing_active,pendingWrap=document.getElementById('pendingInviteWrap');
+    const enriched=()=>athletes.map(a=>{const status=athleteStatusClassify({...a,performance:performanceMap.get(a.id)||null}),sponsored=a.sponsorship?.billing_type==='coach_sponsored'||a.billing_type==='coach_sponsored';return {...a,_coachStatus:status,_sponsored:sponsored}});
+    const paintSummary=()=>{const rows=enriched(),attention=rows.filter(a=>a._coachStatus.level==='attention').length,sponsored=rows.filter(a=>a._sponsored).length;summary.innerHTML=`<div><b>${rows.length}</b><span>Athletes</span></div><div><b>${attention}</b><span>Need Attention</span></div><div><b>${sponsored}</b><span>Sponsored</span></div>`};
+    const paint=()=>{const q=String(search.value||'').trim().toLowerCase();let rows=enriched().filter(a=>!q||(`${a.name||''} ${a.event||''}`).toLowerCase().includes(q));if(filter==='attention')rows=rows.filter(a=>a._coachStatus.level==='attention');if(filter==='sponsored')rows=rows.filter(a=>a._sponsored);list.innerHTML=rows.length?rows.map(a=>`<button class="team-athlete-card" data-athlete-id="${escapeHtml(a.id)}"><div class="team-athlete-card-top"><span class="status-pill ${a._coachStatus.level}"><span class="status-dot"></span>${athleteStatusLabel(a._coachStatus.level)}</span><span class="team-athlete-week">WEEK ${Number(a.current_week||1)}</span></div><h3>${escapeHtml(a.name)}</h3><p>${escapeHtml(a.event||'Events not set')}</p><small>${escapeHtml(a._coachStatus.reasons[0]||'Open athlete profile')}</small><div class="team-athlete-card-foot"><span>${a._sponsored?'COACH SPONSORED':'ATHLETE MEMBERSHIP'}</span><b>OPEN →</b></div></button>`).join(''):'<div class="tile"><h3>No athletes match this view</h3><p>Try another filter or invite an athlete.</p></div>';list.querySelectorAll('[data-athlete-id]').forEach(b=>b.onclick=()=>athleteDetail(b.dataset.athleteId))};
+    search.oninput=paint;document.querySelectorAll('[data-team-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.teamFilter;document.querySelectorAll('[data-team-filter]').forEach(x=>x.classList.toggle('active',x===b));paint()});
     if(exportBtn){exportBtn.disabled=!athletes.length;exportBtn.onclick=()=>exportCoachRoster(athletes)}
-    if(pendingWrap&&pending.length)pendingWrap.innerHTML=`<div class="tile"><h3>Pending Athlete Invitations</h3><div class="list">${pending.map(i=>`<div class="row"><span><b>${escapeHtml(i.athlete_email)}</b><br><small>${escapeHtml(i.billing_type==='coach_sponsored'?'Coach Sponsored':'Athlete Self-Pay')} · Pending${i.billing_type==='coach_sponsored'&&!sponsoredBillingActive?' · Billing setup required':''} · expires ${escapeHtml(fmtDate(i.expires_at))}</small></span></div>`).join('')}</div></div>`;
-    if(!athletes.length){list.innerHTML=`<div class="tile"><h3>No assigned athletes yet</h3><p>${d.scope==='assigned'?'This coach account currently has no active athlete assignments. Invite an athlete, and they will appear here once the connection is accepted.':'No athlete accounts are available yet.'}</p></div>`;return}
-    list.innerHTML=athletes.map(a=>`<div class="row"><span><b>${escapeHtml(a.name)}</b><br><small>${escapeHtml(a.event||'Events not set')} · Week ${Number(a.current_week||1)} · ${escapeHtml(String(a.status||'On Track'))}</small></span><button class="action athlete-open" data-athlete-id="${escapeHtml(a.id)}">Open</button></div>`).join('');
-    list.querySelectorAll('.athlete-open').forEach(b=>b.onclick=()=>athleteDetail(b.dataset.athleteId));
-  }catch(e){list.innerHTML=`<div class="tile"><h3>Roster unavailable</h3><p>${escapeHtml(e.message)}</p><button class="back" id="retryRoster">Try Again</button></div>`;document.getElementById('retryRoster').onclick=athletesPage}
+    if(pendingWrap&&pending.length)pendingWrap.innerHTML=`<details class="tile"><summary><b>Pending Invitations (${pending.length})</b></summary><div class="list" style="margin-top:12px">${pending.map(i=>`<div class="row"><span><b>${escapeHtml(i.athlete_email)}</b><br><small>${escapeHtml(i.billing_type==='coach_sponsored'?'Coach Sponsored':'Athlete Self-Pay')} · Pending${i.billing_type==='coach_sponsored'&&!sponsoredBillingActive?' · Billing setup required':''} · expires ${escapeHtml(fmtDate(i.expires_at))}</small></span></div>`).join('')}</div></details>`;
+    paintSummary();paint();
+  }catch(e){list.innerHTML=`<div class="tile"><h3>Team unavailable</h3><p>${escapeHtml(e.message)}</p><button class="back" id="retryRoster">Try Again</button></div>`;document.getElementById('retryRoster').onclick=athletesPage}
 }
 function teamWorkspace(name){mwModal(name,`<div class="panel-grid"><div class="tile"><h3>Roster</h3><p>Manage assigned athletes and pending invitations.</p><button class="action" id="teamRoster">View Athletes</button></div><div class="tile"><h3>Team Communication</h3><p>Open the team message composer.</p><button class="action" id="teamMessage">Message Team</button></div><div class="tile"><h3>Attendance</h3><p>Record attendance for this group.</p><button class="action" id="teamAttendance">Take Attendance</button></div></div>`);document.getElementById('teamRoster').onclick=()=>{document.getElementById('mwModal')?.remove();athletesPage()};document.getElementById('teamMessage').onclick=()=>{document.getElementById('mwModal')?.remove();messagesPage()};document.getElementById('teamAttendance').onclick=()=>{document.getElementById('mwModal')?.remove();attendancePage()}}
 function teamsPage(){const teams=['Varsity Sprint Group','Development Group','400m Group','Relays'];pageBase('Teams','Manage squads, groups and coach assignments.',`<div class="panel-grid">${teams.map(n=>`<div class="tile"><h3>${n}</h3><p>Roster, attendance, messages and assignments.</p><button class="action team-open" data-team="${n}" style="margin-top:12px">Open Team</button></div>`).join('')}</div>`);document.querySelectorAll('.team-open').forEach(b=>b.onclick=()=>teamWorkspace(b.dataset.team))}
