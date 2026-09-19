@@ -446,3 +446,12 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 .team-athlete-card-foot{border-top:1px solid var(--line);margin-top:14px;padding-top:12px;font-size:10px;letter-spacing:.08em;color:var(--muted)}
 .team-athlete-card-foot b{color:#e6c35c}
 @media(max-width:720px){.team-filter-row{align-items:stretch;flex-direction:column}.team-filter-row .search{max-width:none;width:100%}.team-filter-buttons{display:grid;grid-template-columns:1fr 1fr 1fr}.team-filter-buttons button{padding-left:8px;padding-right:8px;font-size:10px}.team-athlete-grid{grid-template-columns:1fr}.team-command-actions{display:grid;grid-template-columns:1fr 1fr}.team-command-actions button{width:100%}.team-summary-strip>div{padding:12px 9px}.team-summary-strip b{font-size:21px}.team-summary-strip span{font-size:9px}}
+
+/* ===== COACH MW FOCUSED THREAD ===== */
+.mw-coach-thread-shell{max-width:820px;margin:0 auto;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#07131c,#04090e);padding:18px}
+.mw-coach-presence{display:flex;align-items:center;gap:14px;padding-bottom:15px;border-bottom:1px solid var(--line)}
+.mw-coach-presence>div{display:flex;flex-direction:column;gap:3px}.mw-coach-presence b{letter-spacing:.1em}.mw-coach-presence small{color:var(--muted);font-size:10px;letter-spacing:.08em}
+.mw-coach-thread{display:grid;gap:10px;max-height:52vh;min-height:260px;overflow:auto;padding:16px 2px}
+.mw-coach-thread .tile{max-width:86%;margin:0}.mw-coach-thread .mw-coach-user{margin-left:auto}.mw-coach-thread .mw-coach-assistant{margin-right:auto}
+.mw-coach-suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.mw-coach-suggestions button{font-size:11px}
+@media(max-width:620px){.mw-coach-thread-shell{padding:14px;border-radius:15px}.mw-coach-thread{max-height:48vh}.mw-coach-thread .tile{max-width:94%}.mw-coach-suggestions{display:grid;grid-template-columns:1fr}.mw-coach-suggestions button{width:100%;text-align:left}}
