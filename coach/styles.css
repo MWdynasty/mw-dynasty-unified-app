@@ -427,3 +427,22 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 @media(max-width:520px){
  .coach-home-actions .simple-actions{grid-template-columns:1fr}
 }
+
+/* ===== COACH TEAM HUB ===== */
+.team-command-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.team-filter-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.team-filter-row .search{max-width:360px;flex:1}
+.team-filter-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.team-filter-buttons .active{border-color:#d6ad43;color:#f0cc6a}
+.team-summary-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.team-summary-strip>div{padding:15px;border:1px solid var(--line);border-radius:14px;background:#071018;display:flex;flex-direction:column;gap:3px}
+.team-summary-strip b{font-size:25px}.team-summary-strip span{font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.team-athlete-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.team-athlete-card{appearance:none;text-align:left;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#08141d,#050b10);color:inherit;padding:16px;cursor:pointer}
+.team-athlete-card:hover{border-color:#b99438;transform:translateY(-1px)}
+.team-athlete-card-top,.team-athlete-card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.team-athlete-card h3{font-size:20px;margin:15px 0 4px}.team-athlete-card p{margin:0 0 9px;color:#d9e2e8}.team-athlete-card small{color:var(--muted);line-height:1.4}
+.team-athlete-week{font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.team-athlete-card-foot{border-top:1px solid var(--line);margin-top:14px;padding-top:12px;font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.team-athlete-card-foot b{color:#e6c35c}
+@media(max-width:720px){.team-filter-row{align-items:stretch;flex-direction:column}.team-filter-row .search{max-width:none;width:100%}.team-filter-buttons{display:grid;grid-template-columns:1fr 1fr 1fr}.team-filter-buttons button{padding-left:8px;padding-right:8px;font-size:10px}.team-athlete-grid{grid-template-columns:1fr}.team-command-actions{display:grid;grid-template-columns:1fr 1fr}.team-command-actions button{width:100%}.team-summary-strip>div{padding:12px 9px}.team-summary-strip b{font-size:21px}.team-summary-strip span{font-size:9px}}
