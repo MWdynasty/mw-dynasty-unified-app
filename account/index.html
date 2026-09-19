@@ -19,6 +19,7 @@
 .badge{display:inline-flex;align-items:center;border:1px solid #4e4535;background:#171209;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900;color:var(--gold2);text-transform:uppercase;letter-spacing:.06em}
 label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900;letter-spacing:.06em}input{margin-top:7px;width:100%;height:50px;border:1px solid #403a31;border-radius:12px;background:#090806;color:#fff;padding:0 13px;font-size:15px;outline:none}input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(239,189,67,.09)}
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.btn{display:inline-block;border:1px solid #4a4235;background:#11100d;color:#fff;border-radius:12px;padding:13px 16px;font-weight:950;cursor:pointer;text-decoration:none}.btn.primary{background:linear-gradient(100deg,#bb7f15,#f2cb63,#ce9224);color:#090806;border-color:#f5d37a}.btn.ghost{background:transparent}.btn:disabled{opacity:.5}.status{min-height:22px;margin-top:12px;color:#73cfff;font-size:12px}.status.err{color:#ff9cab}
+.membershipTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.membershipTab{border:1px solid #403a31;background:#0a0907;color:#bbb3a7;border-radius:11px;padding:11px 10px;font-weight:900;cursor:pointer}.membershipTab.active{border-color:var(--gold);color:#090806;background:linear-gradient(100deg,#bb7f15,#f2cb63,#ce9224)}.sponsorBox{margin-top:12px;padding:14px;border:1px solid rgba(239,189,67,.22);border-radius:14px;background:#090806}.sponsorRates{display:grid;gap:7px;margin:12px 0;font-size:12px;color:#c9c1b4}.sponsorRates div{display:flex;justify-content:space-between;gap:12px}.sponsorRates b{color:var(--gold2)}.sponsorTotal{margin-top:8px;color:#fff;font-size:12px;font-weight:850}
 #accountView,#signedOutView{display:none}.center{width:min(600px,100%);margin:10vh auto 0}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero h1{font-size:36px}}
 </style>
@@ -75,7 +76,27 @@ label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900
         </div>
         <div id="activationWrap" style="display:none;margin-top:14px">
           <div class="eyebrow">Membership Options</div>
-          <div id="planActions" class="actions"></div>
+          <div id="coachChooser" style="display:none">
+            <div class="membershipTabs">
+              <button id="membershipOnlyTab" class="membershipTab active" type="button">Membership</button>
+              <button id="sponsorshipTab" class="membershipTab" type="button">Sponsor Athletes</button>
+            </div>
+            <div id="coachMembershipPanel">
+              <div id="planActions" class="actions"></div>
+            </div>
+            <div id="sponsorshipPanel" class="sponsorBox" style="display:none">
+              <div class="eyebrow">Coach Sponsorship</div>
+              <p class="muted">Choose how many athletes you want to sponsor. Their seats are billed monthly with your coach membership.</p>
+              <label>NUMBER OF SPONSORED ATHLETES<input id="sponsorQuantity" type="number" inputmode="numeric" min="1" max="250" step="1" value="1"></label>
+              <div class="sponsorRates">
+                <div><span>Coach Core</span><b>+$5 / athlete / month</b></div>
+                <div><span>Coach Intelligence</span><b>+$6 / athlete / month</b></div>
+                <div><span>Sprint Performance</span><b>+$7 / athlete / month</b></div>
+              </div>
+              <div id="sponsorPlanActions" class="actions"></div>
+            </div>
+          </div>
+          <div id="athletePlanActions" class="actions"></div>
         </div>
         <div id="billingStatus" class="status"></div>
       </section>
@@ -134,24 +155,65 @@ function render(data){
   renderPlanActions(u.role);
 }
 function renderPlanActions(role){
-  const box=el('planActions');box.innerHTML='';
-  const plans=coachRole(role)
-    ? [['coach_core','Coach Core — $49/mo'],['coach_intelligence','Coach Intelligence — $79/mo'],['mw_sprint_performance','Sprint Performance — $109/mo']]
-    : [['mw_athlete','Athlete Membership — $19/mo']];
-  plans.forEach(([code,label])=>{
+  const coach=coachRole(role);
+  el('coachChooser').style.display=coach?'block':'none';
+  el('athletePlanActions').style.display=coach?'none':'flex';
+  const membershipBox=el('planActions'),athleteBox=el('athletePlanActions');
+  membershipBox.innerHTML='';athleteBox.innerHTML='';
+
+  if(!coach){
     const button=document.createElement('button');
-    button.type='button';button.className='btn';button.textContent=label;
-    button.onclick=()=>checkout(code);
+    button.type='button';button.className='btn';button.textContent='Athlete Membership — $19/mo';
+    button.onclick=()=>checkout('mw_athlete',0);
+    athleteBox.appendChild(button);
+    return;
+  }
+
+  const plans=[
+    ['coach_core','Coach Core',49,5],
+    ['coach_intelligence','Coach Intelligence',79,6],
+    ['mw_sprint_performance','Sprint Performance',109,7]
+  ];
+  plans.forEach(([code,name,base])=>{
+    const button=document.createElement('button');
+    button.type='button';button.className='btn';button.textContent=`${name} — ${base}/mo`;
+    button.onclick=()=>checkout(code,0);
+    membershipBox.appendChild(button);
+  });
+  renderSponsorPlans(plans);
+}
+function renderSponsorPlans(plans){
+  if(!Array.isArray(plans))plans=[
+    ['coach_core','Coach Core',49,5],
+    ['coach_intelligence','Coach Intelligence',79,6],
+    ['mw_sprint_performance','Sprint Performance',109,7]
+  ];
+  const qty=Math.max(1,Math.min(250,Number(el('sponsorQuantity').value)||1));
+  el('sponsorQuantity').value=qty;
+  const box=el('sponsorPlanActions');box.innerHTML='';
+  plans.forEach(([code,name,base,seat])=>{
+    const total=base+(qty*seat);
+    const button=document.createElement('button');
+    button.type='button';button.className='btn';
+    button.textContent=`${name} + ${qty} athlete${qty===1?'':'s'} — ${total}/mo`;
+    button.onclick=()=>checkout(code,qty);
     box.appendChild(button);
   });
 }
-async function checkout(planCode){
+function setCoachMembershipTab(tab){
+  const sponsorship=tab==='sponsorship';
+  el('membershipOnlyTab').classList.toggle('active',!sponsorship);
+  el('sponsorshipTab').classList.toggle('active',sponsorship);
+  el('coachMembershipPanel').style.display=sponsorship?'none':'block';
+  el('sponsorshipPanel').style.display=sponsorship?'block':'none';
+}
+async function checkout(planCode,sponsorQuantity=0){
   billingMessage('Opening secure Stripe checkout…');
   try{
     const response=await fetch('/api/stripe/checkout',{
       method:'POST',
       headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
-      body:JSON.stringify({planCode,sponsorQuantity:0,returnPath:'/account/'})
+      body:JSON.stringify({planCode,sponsorQuantity,returnPath:'/account/'})
     });
     const data=await response.json().catch(()=>({}));
     if(!response.ok||!data.url)throw new Error(data.error||'Checkout is unavailable.');
@@ -183,6 +245,9 @@ async function load(){
 el('saveBtn').onclick=async()=>{const btn=el('saveBtn');btn.disabled=true;btn.textContent='Saving…';message('');try{const data=await rpc('mw_update_account_profile',{p_first_name:el('firstName').value.trim(),p_last_name:el('lastName').value.trim()||null,p_organization:el('organization').value.trim()||null,p_coach_title:el('coachTitle').value.trim()||null});render(data);message('Profile saved.')}catch(e){message(e.message||'Could not save profile.',true)}finally{btn.disabled=false;btn.textContent='Save Profile'}};
 el('openPlatformBtn').onclick=()=>{location.href=coachRole(account?.user?.role)?'/coach':'/athlete/'};
 el('billingBtn').onclick=openBillingPortal;
+el('membershipOnlyTab').onclick=()=>setCoachMembershipTab('membership');
+el('sponsorshipTab').onclick=()=>setCoachMembershipTab('sponsorship');
+el('sponsorQuantity').addEventListener('input',()=>renderSponsorPlans());
 el('signOutBtn').onclick=()=>{clearSession();location.reload()};
 const checkoutState=new URLSearchParams(location.search).get('checkout');
 if(checkoutState==='success') billingMessage('Payment completed. MW Dynasty is syncing your membership now.');
