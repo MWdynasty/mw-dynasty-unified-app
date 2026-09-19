@@ -739,6 +739,52 @@ body.mw-auth-ready #mwAuth{display:none!important}
 @keyframes mwFinalCoachPulse{0%,100%{transform:translateY(-2px) scale(1);filter:brightness(1);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -5px 9px rgba(0,0,0,.4),0 5px 0 #51340a,0 10px 17px rgba(0,0,0,.58),0 0 12px rgba(255,197,54,.5)!important}50%{transform:translateY(-6px) scale(1.1);filter:brightness(1.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.32),inset 0 -5px 9px rgba(0,0,0,.36),0 6px 0 #70490c,0 13px 21px rgba(0,0,0,.62),0 0 24px rgba(255,215,83,.98),0 0 38px rgba(37,145,255,.58)!important}}
 @media(max-width:380px){.nav.mwDepthNav.mwImageNav button b.mwNavArt{width:42px!important;height:42px!important}.nav.mwDepthNav.mwImageNav .mwCoachOrb b.mwNavCoach{width:47px!important;height:47px!important}}
 </style>
+
+<style id="mw-coach-cinematic-v1">
+/* Coach MW cinematic concept — preserves existing AI/chat/voice behavior */
+#coach .premiumRail{display:none!important}
+#coach .coachContext{margin:10px 0 12px!important;padding:0!important;border:0!important;background:transparent!important}
+#coach .liveVoiceBar{min-height:44px!important;border:1px solid rgba(245,185,46,.38)!important;background:linear-gradient(90deg,#071018,#0b1115)!important;box-shadow:0 0 22px rgba(245,185,46,.08)!important}
+#coach .liveVoiceBar:before{content:""!important}
+#coach .hero{min-height:430px!important;margin-top:8px!important;border:1px solid rgba(245,185,46,.28)!important;border-radius:24px!important;background:radial-gradient(circle at 72% 34%,rgba(245,185,46,.18),transparent 30%),linear-gradient(160deg,#05080c,#07111a 58%,#020508)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 45px rgba(0,0,0,.35)!important}
+#coach .hero:before{content:"";position:absolute;z-index:1;width:250px;height:250px;border:2px solid rgba(245,185,46,.72);border-radius:50%;right:-28px;top:58px;box-shadow:0 0 22px rgba(245,185,46,.3),inset 0 0 22px rgba(245,185,46,.08)}
+#coach .aiHead{right:-4px!important;top:20px!important;width:72%!important;height:410px!important;min-height:410px!important;z-index:2!important;transform-origin:70% 58%;animation:mwCoachIdle 5.2s ease-in-out infinite}
+#coach .aiHead img{display:block;width:100%;height:100%;object-fit:contain;object-position:right bottom;filter:drop-shadow(0 16px 22px rgba(0,0,0,.5));transition:filter .25s ease,transform .25s ease}
+#coach .aiHead:after{background:linear-gradient(180deg,transparent 62%,#03070b 100%)!important}
+#coach .heroText{width:45%!important;max-width:205px!important;padding:28px 0 20px 16px!important;z-index:4!important}
+#coach .heroText h1{font-size:25px!important;line-height:1.05!important;text-shadow:0 2px 14px #000}
+#coach .heroText p{font-size:12px!important;line-height:1.5!important}
+#coach .system{border-color:rgba(245,185,46,.45)!important;background:rgba(3,8,12,.82)!important;box-shadow:0 0 18px rgba(245,185,46,.08)}
+#coach .ask{border-color:rgba(245,185,46,.62)!important;background:linear-gradient(180deg,#09131b,#050a0e)!important;box-shadow:0 0 28px rgba(245,185,46,.12)!important}
+#coach .chat{max-height:390px!important}
+#coach .msg{border-radius:17px!important;padding:12px 13px!important}
+#coach .msg.me{background:linear-gradient(135deg,#12273c,#0c1b2b)!important;border:1px solid rgba(74,164,255,.22)}
+#coach .msg.coach{background:linear-gradient(135deg,#08131c,#050b10)!important;border-color:rgba(245,185,46,.3)!important}
+#coach .title{margin-top:20px!important}
+#coach .quick{grid-template-columns:repeat(3,1fr)!important}
+#coach .quick button{min-height:92px!important;border-color:rgba(245,185,46,.25)!important;background:linear-gradient(180deg,#0a141c,#05090d)!important}
+#coach .quick button:nth-child(n+4){display:none}
+#coach .quick button i{color:#e8b73e!important}
+#coach .faithCard{margin-top:18px}
+#coach .aiHead.listening{animation:mwCoachListen 1.15s ease-in-out infinite!important}
+#coach .aiHead.listening img{filter:drop-shadow(0 0 20px rgba(56,221,159,.42)) brightness(1.05)!important}
+#coach .aiHead.speaking{animation:mwCoachSpeak .78s ease-in-out infinite alternate!important}
+#coach .aiHead.speaking img{filter:drop-shadow(0 0 24px rgba(245,185,46,.5)) brightness(1.08)!important}
+#coach.mwListening .liveVoiceBar{border-color:rgba(56,221,159,.7)!important;box-shadow:0 0 24px rgba(56,221,159,.16)!important}
+@keyframes mwCoachIdle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.012)}}
+@keyframes mwCoachListen{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.025);filter:brightness(1.08)}}
+@keyframes mwCoachSpeak{from{transform:translateY(0) scale(1.01)}to{transform:translateY(-4px) scale(1.025)}}
+@media(max-width:430px){
+ #coach .hero{min-height:400px!important}
+ #coach .aiHead{width:72%!important;height:390px!important;min-height:390px!important;right:-16px!important}
+ #coach .heroText{width:44%!important;padding-left:13px!important}
+ #coach .heroText h1{font-size:22px!important}
+ #coach .heroText p{font-size:11px!important}
+ #coach .quick{gap:7px!important}
+ #coach .quick button{font-size:9px!important;padding:8px 4px!important}
+}
+@media(prefers-reduced-motion:reduce){#coach .aiHead,#coach .aiHead.listening,#coach .aiHead.speaking{animation:none!important}}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -1741,7 +1787,7 @@ async function assessEntry(){
   }catch(e){out.innerHTML='<div class="warning">'+(e.message||'Smart Entry save failed. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & ASSIGN MY PROGRAM'}
 }
 $('#assess').onclick=assessEntry; syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>$('#voiceState').textContent='LISTENING…';r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>$('#voiceState').textContent='TAP MIC TO SPEAK';$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='41-WEEK PROGRAM · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
 
 setTimeout(()=>{renderSavedConversation();refreshPremiumStatus()},50);
 const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.splice(0);saveConversation();$('#chat').innerHTML='<div class="msg coach">Fresh conversation. I still have your athlete profile and MW context. What are we working on?</div>'};
