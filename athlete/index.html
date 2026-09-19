@@ -903,8 +903,8 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <div class="card" id="todayTrackCard">
 <div class="cardHead"><span>TODAY'S TRACK WORKOUT</span><span id="unlockBadge" class="smalllink">TODAY</span></div>
 <div id="todayTrackDetails"><div class="muted">Loading today’s track workout…</div></div>
-<p class="muted" id="completionRepHint">If today has a target pace, MW will ask one quick question. No typing. No homework.</p>
-<div class="performanceHint" id="performanceHint"><b>QUICK CHECK-IN:</b> “Did you hit your target pace?” → Yes, or tap how many reps you hit.</div>
+<div class="performanceHint" id="performanceHint"><b>AFTER TRAINING:</b> Tap DONE. If today has a target pace, MW will ask how many reps you hit.</div>
+<p class="muted" id="completionRepHint" style="display:none"></p>
 <div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div>
 <span id="completionWeek" style="display:none">1</span>
 </div>
@@ -950,9 +950,7 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <div class="field"><label>200M PR</label><input id="p200" inputmode="decimal" type="number" min="0" step="0.01" placeholder="21.72"></div>
 <div class="field"><label>300M PR</label><input id="p300" inputmode="decimal" type="number" min="0" step="0.01" placeholder="34.50"></div>
 <div class="field"><label>400M PR</label><input id="p400" inputmode="decimal" type="number" min="0" step="0.01" placeholder="48.90"></div>
-<div class="field"><label>CURRENT WEEK</label><input id="week" value="1" readonly></div>
-<div class="field"><label>PROGRAM START DATE</label><input id="startDate" type="date"></div>
-<div class="field"><label>STARTING WEEK</label><input id="startWeek" type="number" min="1" max="41" value="1"></div>
+<input id="week" value="1" type="hidden"><input id="startDate" type="hidden"><input id="startWeek" type="hidden" min="1" max="41" value="1">
 </div>
 <button id="save" class="save">SAVE ATHLETE PROFILE</button><div id="profileSaveStatus" class="lockNote" style="display:none"></div>
 <div class="coachConnectCard" id="coachConnectionCard">
