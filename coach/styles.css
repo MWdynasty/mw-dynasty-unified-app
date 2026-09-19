@@ -412,3 +412,18 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 
 /* MW Dynasty premium 3D navigation artwork */
 .side-nav .mwNavArt{display:block;width:44px;height:44px;flex:0 0 44px;border-radius:13px;background-size:cover;background-position:center;background-repeat:no-repeat;box-shadow:0 5px 14px rgba(0,0,0,.42);transition:transform .18s ease,filter .18s ease}.side-nav .nav-btn.active .mwNavArt{transform:scale(1.06);filter:brightness(1.12);box-shadow:0 0 18px rgba(44,166,255,.30),0 6px 16px rgba(0,0,0,.5)}.side-nav .mwNavHome{background-image:url('../assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG')}.side-nav .mwNavCoach{background-image:url('../assets/555BEB0B-845D-4222-8352-57671082E78B.PNG')}.side-nav .mwNavTrain{background-image:url('../assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG')}.side-nav .mwNavProgram{background-image:url('../assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG')}.side-nav .mwNavProfile{background-image:url('../assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG')}@media(max-width:760px){.side-nav .mwNavArt{width:45px;height:45px;flex-basis:45px;border-radius:13px}}
+
+/* ===== COACH SIMPLIFIED COMMAND CENTER ===== */
+.coach-command-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;padding:22px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#07131c,#04090d);margin-bottom:14px}
+.coach-command-head h1{margin:6px 0 6px;font-size:clamp(28px,5vw,44px);line-height:1}
+.coach-command-head p{margin:0;color:var(--muted);max-width:560px;line-height:1.45}
+.coach-home-actions{margin-top:16px}
+.coach-home-actions .simple-actions button{min-height:112px}
+@media(max-width:820px){
+ .coach-command-head{align-items:stretch;flex-direction:column;padding:18px 15px}
+ .coach-command-head .action{width:100%;min-height:48px}
+ .coach-home-actions .simple-actions{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+ .coach-home-actions .simple-actions{grid-template-columns:1fr}
+}
