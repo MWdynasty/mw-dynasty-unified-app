@@ -902,10 +902,11 @@ body.mw-auth-ready #mwAuth{display:none!important}
 <div class="top"><div><div class="logo"><b>MW</b> WORKOUTS</div><div class="sub">MW PERFORMANCE SYSTEM</div></div><div class="online"><span class="dot">●</span> MW DATA</div></div>
 <div class="card"><div class="cardHead"><span>WEEK <span id="completionWeek">1</span></span><span id="unlockBadge" class="smalllink">IN PROGRESS</span></div><h2>Finish training. Tap DONE. That’s it. 🔥</h2><p class="muted" id="completionRepHint">If today has a target pace, MW will ask one quick question. No typing. No homework.</p><div class="performanceHint" id="performanceHint"><b>QUICK CHECK-IN:</b> “Did you hit your target pace?” → Yes, or tap how many reps you hit.</div><div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div></div>
 <div class="card">
-<div class="cardHead">WEEKLY WEIGHT ROOM <span id="strengthPhaseLabel" class="smalllink"></span></div>
-<div class="weekChooser"><label>MW WEEK</label><select id="strengthWeek"></select></div>
+<div class="cardHead">TODAY'S LIFT <span id="strengthPhaseLabel" class="smalllink"></span></div>
+<div class="weekChooser" style="display:none"><label>MW WEEK</label><select id="strengthWeek"></select></div>
+<div id="strengthTodayLabel" class="lockNote" style="margin-top:10px"></div>
 <div id="strengthPlan" class="strengthPlan"></div>
-<button id="askStrength" class="smartBtn">ASK COACH MW ABOUT THIS WEEK</button>
+<button id="askStrength" class="smartBtn">ASK COACH MW ABOUT TODAY'S LIFT</button>
 </div>
 <div class="card" id="strengthPerformanceCard">
 <div class="cardHead"><span>QUICK STRENGTH CHECK-IN</span><span class="smalllink">2 TAPS</span></div>
@@ -1487,18 +1488,28 @@ function strengthAnswer(q){
   if(d.coachNote) out+=` Coach MW note: ${d.coachNote}`;
   return out;
 }
+function mwTodayStrengthInfo(){
+  const names=['SUN','MON','TUE','WED','THU','FRI','SAT'], full=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const n=new Date().getDay(); return {key:names[n],label:full[n],day:n===0?7:n};
+}
 async function renderStrengthWeek(w){
   w=Math.max(1,Math.min(41,Number(w)||1));
-  const box=$('#strengthPlan');if(box)box.innerHTML='<div class="muted">Loading protected MW program…</div>';
+  const box=$('#strengthPlan');if(box)box.innerHTML='<div class="muted">Loading today’s MW lift…</div>';
   try{if(!MW_STRENGTH[w])await loadMWProgramWeek(w)}catch(e){if(box)box.innerHTML='<div class="lockNote">'+(e.message||'This MW week is locked.')+'</div>';return}
   const d=MW_STRENGTH[w]; if(!d)return;
-  $('#strengthPhaseLabel').textContent=`${(d.tierLabel||'Foundation').toUpperCase()} • PHASE ${d.phase} • ${d.phaseName.toUpperCase()}`;
+  const today=mwTodayStrengthInfo(), sections=(d.sections||[]).filter(s=>String(s.title||'').trim().toUpperCase().startsWith(today.key));
+  $('#strengthPhaseLabel').textContent=`WEEK ${w} • PHASE ${d.phase}`;
+  const todayLabel=$('#strengthTodayLabel');if(todayLabel)todayLabel.innerHTML=`<b>${today.label.toUpperCase()}</b> · MW Week ${w} · ${d.phaseName}`;
   const tg=d.tierGuidance||{};
-  $('#strengthPlan').innerHTML=`<div class="strengthPhase">${d.title}</div>`+
-    (d.tierLabel?`<div class="coachNoteBox"><b>${d.tierLabel.toUpperCase()} TIER:</b> ${[tg.volume,tg.effort,tg.loading,tg.priority].filter(Boolean).join(' ')}</div>`:'')+
-    d.sections.map(s=>`<div class="strengthSection"><h4>${s.title}</h4>${s.entries.map(e=>`<div class="strengthRow"><span>${e[0]}</span><span>${e[1]}${workingLoadHTML(e[0],e[1])}</span></div>`).join('')}</div>`).join('')+
-    (d.coachNote?`<div class="coachNoteBox"><b>COACH MW:</b> ${d.coachNote}</div>`:'');
-  const list=$('#strengthExerciseList');if(list){const names=[...new Set((d.sections||[]).flatMap(sec=>(sec.entries||[]).map(e=>String(e[0]||'').trim())).filter(Boolean))];list.innerHTML=names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('')}
+  if(!sections.length){
+    box.innerHTML=`<div class="strengthPhase">NO LIFT SCHEDULED TODAY</div><div class="coachNoteBox">Recover, follow today’s track prescription, and come back here on your next scheduled lifting day. MW will automatically show that day’s lift.</div>`;
+  }else{
+    box.innerHTML=`<div class="strengthPhase">${today.label.toUpperCase()} · TODAY'S LIFT</div>`+
+      (d.tierLabel?`<details class="advancedLog"><summary>TODAY'S TRAINING GUIDANCE</summary><div class="coachNoteBox"><b>${d.tierLabel.toUpperCase()} TIER:</b> ${[tg.volume,tg.effort,tg.loading,tg.priority].filter(Boolean).join(' ')}</div></details>`:'')+
+      sections.map(s=>`<div class="strengthSection"><h4>${s.title}</h4>${s.entries.map(e=>`<div class="strengthRow"><span>${e[0]}</span><span>${e[1]}${workingLoadHTML(e[0],e[1])}</span></div>`).join('')}</div>`).join('')+
+      (d.coachNote?`<details class="advancedLog"><summary>COACH MW NOTE</summary><div class="coachNoteBox">${d.coachNote}</div></details>`:'');
+  }
+  const list=$('#strengthExerciseList');if(list){const names=[...new Set(sections.flatMap(sec=>(sec.entries||[]).map(e=>String(e[0]||'').trim())).filter(Boolean))];list.innerHTML=names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('')}
   try{await renderStrengthQuickCheckins(w)}catch{}
 }
 
@@ -1517,7 +1528,7 @@ async function saveStrengthQuickCheckin(w,day,label,status,button){
 async function renderStrengthQuickCheckins(w){
   const box=document.getElementById('strengthQuickCheckins');if(!box)return;const d=MW_STRENGTH[Number(w)];if(!d){box.innerHTML='<div class="muted">Strength plan not available yet.</div>';return}
   if(!Object.keys(mwStrengthQuickCache).length){try{await loadStrengthQuickCheckins()}catch{}}
-  const sections=(d.sections||[]).filter(s=>Array.isArray(s.entries)&&s.entries.length);const seen=new Set(),days=[];sections.forEach((sec,idx)=>{const day=strengthDayNumber(sec.title,idx);if(seen.has(day))return;seen.add(day);days.push({day,label:String(sec.title||`Day ${day}`).replace(/[:–-].*$/,'').trim()||`Day ${day}`})});if(!days.length)days.push({day:1,label:'Strength Day'});
+  const today=mwTodayStrengthInfo();const sections=(d.sections||[]).filter(s=>Array.isArray(s.entries)&&s.entries.length&&String(s.title||'').trim().toUpperCase().startsWith(today.key));const seen=new Set(),days=[];sections.forEach((sec,idx)=>{const day=strengthDayNumber(sec.title,idx);if(seen.has(day))return;seen.add(day);days.push({day,label:'Today · '+today.label})});if(!days.length){box.innerHTML='<div class="muted">No strength check-in needed today.</div>';return}
   box.innerHTML=days.map(x=>{const saved=mwStrengthQuickCache[`${Number(w)}-${x.day}`],txt=saved?.status==='as_prescribed'?'✓ Done as written':saved?.status==='modified'?'↔ Modified':'Not checked in yet';return `<div class="strengthCheckRow ${saved?'saved':''}"><div class="rowTop"><span><b>${x.label}</b><br><small>${txt}</small></span><small>Week ${w}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${x.day}" data-label="${String(x.label).replace(/"/g,'&quot;')}" data-status="as_prescribed">✅ DID IT</button><button class="strengthChanged" data-sday="${x.day}" data-label="${String(x.label).replace(/"/g,'&quot;')}" data-status="modified">↔ CHANGED IT</button></div></div>`}).join('');
   box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b)}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
 }
@@ -1527,7 +1538,7 @@ function initStrength(){
   sel.innerHTML=Array.from({length:41},(_,i)=>`<option value="${i+1}" ${i+1>max?'disabled':''}>Week ${i+1}${i+1>max?' • Locked':''}</option>`).join('');
   sel.value=max; renderStrengthWeek(max);
   sel.onchange=()=>renderStrengthWeek(sel.value);
-  $('#askStrength').onclick=()=>{openView('coach');send(`Coach, what is my weight-room plan for Week ${sel.value}?`)};
+  $('#askStrength').onclick=()=>{openView('coach');send(`Coach, walk me through today’s weight-room lift for MW Week ${sel.value}.`)};
 }
 
 function response(q){
