@@ -785,6 +785,36 @@ body.mw-auth-ready #mwAuth{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){#coach .aiHead,#coach .aiHead.listening,#coach .aiHead.speaking{animation:none!important}}
 </style>
+
+<style id="mw-coach-crest-thread-v1">
+/* Coach MW = MW intelligence presence, not a fake human avatar */
+#coach .hero{min-height:300px!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:visible!important;background:radial-gradient(circle at 50% 45%,rgba(245,185,46,.12),transparent 36%),linear-gradient(180deg,#05090d,#020507)!important}
+#coach .hero:before{display:none!important}
+#coach .heroText{position:absolute!important;inset:auto 14px 18px!important;width:auto!important;max-width:none!important;padding:0!important;text-align:center!important;z-index:5!important}
+#coach .heroText h1{font-size:18px!important;margin:0 0 4px!important}
+#coach .heroText h1 br{display:none!important}
+#coach .heroText h1 em{display:block!important;font-size:11px!important;letter-spacing:.13em!important;color:#f4c75b!important;margin-top:4px}
+#coach .heroText p,#coach .heroText .system{display:none!important}
+#coach .aiHead{position:relative!important;inset:auto!important;width:190px!important;height:190px!important;min-height:190px!important;display:block!important;z-index:3!important;border-radius:34px!important;background-image:url('../assets/555BEB0B-845D-4222-8352-57671082E78B.PNG')!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;border:1px solid rgba(255,221,126,.82)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -10px 18px rgba(0,0,0,.4),0 10px 25px rgba(0,0,0,.6),0 0 22px rgba(245,185,46,.48),0 0 54px rgba(41,143,255,.22)!important;animation:mwCrestBreathe 2.7s ease-in-out infinite!important}
+#coach .aiHead:before,#coach .aiHead:after{content:"";position:absolute;pointer-events:none;border-radius:42px}
+#coach .aiHead:before{inset:-13px;border:2px solid rgba(245,185,46,.42);box-shadow:0 0 22px rgba(245,185,46,.22);animation:mwCrestRing 2.7s ease-in-out infinite}
+#coach .aiHead:after{inset:-25px;border:1px solid rgba(66,159,255,.2);background:none!important;animation:mwCrestRing 2.7s ease-in-out infinite .18s}
+#coach .aiHead img{display:none!important}
+#coach .aiHead.listening{animation:mwCrestListen .9s ease-in-out infinite!important;box-shadow:0 0 32px rgba(53,225,158,.58),0 0 70px rgba(41,143,255,.28)!important}
+#coach .aiHead.speaking{animation:mwCrestSpeak .62s ease-in-out infinite alternate!important}
+#coach .chat{display:flex!important;flex-direction:column!important;gap:10px!important;max-height:430px!important;padding:12px 2px!important;background:transparent!important}
+#coach .msg{max-width:82%!important;width:fit-content!important;padding:11px 13px 34px!important;border-radius:19px!important;line-height:1.45!important}
+#coach .msg.coach{align-self:flex-start!important;border-bottom-left-radius:6px!important}
+#coach .msg.me{align-self:flex-end!important;border-bottom-right-radius:6px!important;padding-bottom:11px!important}
+#coach .msg.coach:before{content:"MW";display:grid;place-items:center;position:absolute;left:-4px;top:-8px;transform:translate(-55%,-15%);width:25px;height:25px;border-radius:8px;background-image:url('../assets/555BEB0B-845D-4222-8352-57671082E78B.PNG');background-size:cover;color:transparent;font-size:0;box-shadow:0 0 10px rgba(245,185,46,.4)}
+#coach .ask{position:sticky!important;bottom:88px!important;z-index:15!important}
+@keyframes mwCrestBreathe{0%,100%{transform:scale(.97);filter:brightness(.98)}50%{transform:scale(1.045);filter:brightness(1.18)}}
+@keyframes mwCrestRing{0%,100%{transform:scale(.96);opacity:.38}50%{transform:scale(1.06);opacity:.9}}
+@keyframes mwCrestListen{0%,100%{transform:scale(.99)}50%{transform:scale(1.07)}}
+@keyframes mwCrestSpeak{from{transform:scale(1);filter:brightness(1.04)}to{transform:scale(1.06);filter:brightness(1.24)}}
+@media(max-width:390px){#coach .aiHead{width:166px!important;height:166px!important;min-height:166px!important}#coach .hero{min-height:275px!important}}
+@media(prefers-reduced-motion:reduce){#coach .aiHead,#coach .aiHead:before,#coach .aiHead:after{animation:none!important}}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
