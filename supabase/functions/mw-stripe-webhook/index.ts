@@ -64,7 +64,8 @@ Deno.serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  const hostedSecretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || hostedSecretKeys.default || "";
   if (!supabaseUrl || !serviceRoleKey) return new Response("Supabase service configuration missing", { status: 500 });
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
   const item = subscription?.items?.data?.[0] || {};
