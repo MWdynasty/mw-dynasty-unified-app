@@ -29,6 +29,10 @@
       "destination": "/api/mw?route=billing"
     },
     {
+      "source": "/api/stripe/checkout",
+      "destination": "/api/mw?route=stripe/checkout"
+    },
+    {
       "source": "/api/profile",
       "destination": "/api/mw?route=profile"
     },
