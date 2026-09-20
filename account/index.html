@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="/assets/mw-unified-theme.css">
 <link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
 <link rel="stylesheet" href="/assets/mw-responsive-v25.css">
-<script src="/assets/mw-diagnostics.js"></script>
+<script src="/assets/mw-diagnostics.js"></script>\n<script src="/assets/mw-web-analytics.js"></script>
 <style>
 :root{--gold:#efbd43;--gold2:#f7d87e;--bg:#050403;--panel:#0b0a08;--line:#34302a;--muted:#aaa49a;--text:#f7f3ea}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#1d1609 0,transparent 34%),linear-gradient(#060504,#020201);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:max(18px,env(safe-area-inset-top)) 16px max(30px,env(safe-area-inset-bottom))}
@@ -423,6 +423,7 @@ async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false,transit
     native.postMessage({planCode,sponsorQuantity:0,accessToken:session.access_token});
     return;
   }
+  try{window.MWWebAnalytics?.track('checkout_start',{audience:coachRole(account?.user?.role)?'coach':'athlete',metadata:{plan_code:String(planCode||''),sponsorship_only:!!sponsorshipOnly,sponsor_quantity:Number(sponsorQuantity||0)}})}catch{}
   billingMessage('Opening secure Stripe checkout…');
   try{
     const response=await fetch('/api/stripe/checkout',{
