@@ -67,10 +67,6 @@ async function applyStripeCoachPlanChange(token,userId,result){
       'items[0][quantity]':'1',
       proration_behavior:'always_invoice',
       payment_behavior:'pending_if_incomplete',
-      'metadata[mw_plan_code]':target,
-      'metadata[mw_checkout_kind]':'membership',
-      'metadata[mw_user_id]':userId,
-      'metadata[mw_sponsor_quantity]':String(sponsorQty),
     };
     if(sponsorItem&&targetSponsor){
       form['items[1][id]']=String(sponsorItem.id);
