@@ -71,6 +71,7 @@
       <button class="navBtn" data-view="risk"><span>△</span>Legal & Risk <i class="navCount" data-count="risk"></i></button>
     </div>
     <div class="navGroup"><div class="navLabel">PLATFORM</div>
+      <button class="navBtn" data-view="launch"><span>✓</span>Launch Readiness</button>
       <button class="navBtn" data-view="product"><span>⚙</span>Product & Technology</button>
       <button class="navBtn" data-view="system"><span>◉</span>System Health</button>
       <button class="navBtn" data-view="security"><span>◇</span>Security & Audit</button>
@@ -93,7 +94,7 @@ const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[];
-const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -461,6 +462,58 @@ function openRiskModal(){
   $("saveRisk").onclick=async()=>{try{await action("create_risk",{category:$("riskCategory").value,title:$("riskTitle").value,description:$("riskDescription").value,severity:$("riskSeverity").value,likelihood:$("riskLikelihood").value,ownerAgentCode:$("riskOwner").value,mitigation:$("riskMitigation").value});closeModal();renderRisk()}catch(e){alert(e.message)}};
 }
 
+async function renderLaunch(){
+  const d=await api("launch",true),gates=d.gates||[],health=d.health||{},website=health.website||{},app=health.app||{};
+  const required=gates.filter(x=>x.required),blocked=required.filter(x=>x.status==="blocked"),pending=required.filter(x=>x.status==="pending");
+  const pct=d.required_total?Math.round((Number(d.required_verified||0)/Number(d.required_total))*100):0;
+  const byCategory={};gates.forEach(g=>(byCategory[g.category]||(byCategory[g.category]=[])).push(g));
+  $("content").innerHTML='<section class="hero"><div class="brand">FULL LAUNCH READINESS</div><h2>Nothing gets called “ready” until every required gate is verified.</h2><p>This center combines code, billing, website, security, App Store, TestFlight, real-device testing, and final Founder approval into one release decision.</p></section>'+
+    '<div class="stats">'+
+      stat("Required Verified",(d.required_verified||0)+" / "+(d.required_total||0))+
+      stat("Launch Progress",pct+"%")+
+      stat("Blocked Required",blocked.length)+
+      stat("Pending Required",pending.length)+
+      stat("Website",website.ok?"ONLINE":"ATTENTION")+
+      stat("App",app.ok?"ONLINE":"ATTENTION")+
+      stat("Founder Gate",d.ready_for_founder_go_live?"READY FOR FINAL APPROVAL":"NOT YET")+
+      stat("Full Launch",d.fully_launch_ready?"READY":"NOT READY")+
+    '</div>'+
+    '<div class="card" style="margin-top:14px;border-color:'+(d.fully_launch_ready?'#315f42':'#73572a')+'"><div class="brand">'+(d.fully_launch_ready?'GO-LIVE STATUS':'CURRENT RELEASE STATUS')+'</div><h3>'+(d.fully_launch_ready?'MW Dynasty is fully launch-ready.':'MW Dynasty still has required launch gates open.')+'</h3><p class="muted">'+(d.ready_for_founder_go_live?'Every required gate except final Founder approval is verified. The last action is your explicit go-live approval.':'Blocked or pending gates below must be verified with evidence. Automated gates recalculate from live MW data and cannot be manually overridden.')+'</p></div>'+
+    Object.keys(byCategory).map(cat=>sectionHead(cat,"Launch gates for "+cat+".")+
+      '<div class="list">'+byCategory[cat].map(g=>{
+        const type=g.status==="verified"?"good":g.status==="blocked"?"bad":g.status==="pending"?"warn":"blue";
+        const canEdit=g.verification_source!=="automated";
+        const isFinal=g.gate_code==="founder_go_live";
+        const verifyDisabled=isFinal&&!d.ready_for_founder_go_live;
+        return '<div class="card '+(g.required&&g.status!=="verified"?"approval":"")+'"><div class="row" style="padding:0;border:0;background:transparent"><div>'+
+          badge(g.status,type)+' '+(g.required?badge("required","purple"):badge("optional","blue"))+
+          '<h3 style="margin:8px 0">'+esc(g.title)+'</h3><p class="muted">'+esc(g.description||"")+'</p>'+
+          '<small>Owner: '+esc(g.owner_agent_code||"Founder")+' · Verification: '+esc(g.verification_source)+'</small>'+
+          (g.evidence?'<p class="muted"><b>Evidence:</b> '+esc(g.evidence)+'</p>':"")+
+          (g.verified_at?'<small>Verified '+date(g.verified_at)+'</small>':"")+
+          '</div><div class="heroActions">'+
+          (canEdit&&g.status!=="verified"?'<button class="btn small '+(isFinal?'primary':'good')+'" data-launch-verify="'+esc(g.gate_code)+'" '+(verifyDisabled?'disabled':'')+'>'+(isFinal?'Approve Go-Live':'Record Verification')+'</button>':"")+
+          (canEdit&&g.status==="verified"&&g.gate_code!=="founder_go_live"?'<button class="btn small" data-launch-reopen="'+esc(g.gate_code)+'">Reopen</button>':"")+
+          '</div></div></div>';
+      }).join("")+'</div>').join("");
+  document.querySelectorAll("[data-launch-verify]").forEach(b=>b.onclick=()=>openLaunchVerification(b.dataset.launchVerify,gates.find(x=>x.gate_code===b.dataset.launchVerify)));
+  document.querySelectorAll("[data-launch-reopen]").forEach(b=>b.onclick=async()=>{try{await action("update_launch_gate",{gateCode:b.dataset.launchReopen,status:"pending",evidence:"Reopened by Founder for re-verification."});cache={};renderLaunch()}catch(e){alert(e.message)}});
+}
+function openLaunchVerification(code,gate){
+  const final=code==="founder_go_live";
+  modal(final?"Final Founder Go-Live Approval":"Record Launch Verification",
+    '<p class="muted">'+esc(gate?.title||code)+'</p>'+
+    '<label class="field">VERIFICATION EVIDENCE<textarea id="launchEvidence" rows="6" placeholder="'+(final?'State that you reviewed the completed launch gates and approve MW Dynasty for public launch.':'Describe exactly what you verified and where. Do not paste passwords, private keys, or secret credentials.')+'"></textarea></label>'+
+    '<button class="btn primary" id="saveLaunchVerification">'+(final?'APPROVE MW DYNASTY GO-LIVE':'Mark Verified')+'</button>');
+  $("saveLaunchVerification").onclick=async()=>{
+    const evidence=$("launchEvidence").value.trim();
+    if(!evidence){alert("Verification evidence is required.");return}
+    $("saveLaunchVerification").disabled=true;
+    try{await action("update_launch_gate",{gateCode:code,status:"verified",evidence});closeModal();cache={};renderLaunch()}
+    catch(e){alert(e.message);$("saveLaunchVerification").disabled=false}
+  };
+}
+
 async function renderProduct(){
   const d=await api("system"),diag=d.diagnostics||{};
   $("content").innerHTML='<section class="hero"><div class="brand">PRODUCT & TECHNOLOGY</div><h2>Release health, product reliability, and technical operations.</h2><p>Founder visibility into the live product without mixing this with the Athlete or Coach experience.</p></section>'+
@@ -528,6 +581,7 @@ async function renderView(v){
     if(v==="operations")return await renderOperations();
     if(v==="people")return await renderPeople();
     if(v==="risk")return await renderRisk();
+    if(v==="launch")return await renderLaunch();
     if(v==="product")return await renderProduct();
     if(v==="system")return await renderSystem();
     if(v==="security")return await renderSecurity();
