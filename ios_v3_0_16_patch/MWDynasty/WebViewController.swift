@@ -60,7 +60,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     private func showConfigurationMessage() {
         let html = """
-        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.16 · Build 9</p></body></html>
+        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.16 · Build 13</p></body></html>
         """
         webView.loadHTMLString(html, baseURL: nil)
     }
