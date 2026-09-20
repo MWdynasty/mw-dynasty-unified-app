@@ -21,6 +21,16 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "founder.mwdynasty.com"
+        }
+      ],
+      "destination": "/founder/"
+    },
+    {
       "source": "/api/chat",
       "destination": "/api/mw?route=chat"
     },
