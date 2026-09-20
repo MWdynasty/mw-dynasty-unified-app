@@ -2300,6 +2300,15 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   }
   async function loadMe(){const d=await api('/api/me',{cache:'no-store'});hydrate(d);try{await loadSeasonCalendar()}catch(e){console.warn('MW training-year calendar unavailable',e)}try{await loadSmartEntry()}catch(e){console.warn('MW Smart Entry sync unavailable',e)}try{await loadAthleteSettings()}catch(e){console.warn('MW settings sync unavailable',e)}try{await loadStrengthMaxes()}catch(e){const st=document.getElementById('liftMaxStatus');if(st)st.textContent='MW strength sync unavailable: '+e.message}try{await loadStrengthQuickCheckins();bindStrengthPerformanceLogger();await loadStrengthPerformanceLogs()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Strength performance sync unavailable: '+e.message}try{await loadWorkoutCompletions();renderCompletion();renderProgressUI()}catch(e){console.warn('MW completion sync unavailable',e);if($('#unlockNote'))$('#unlockNote').textContent='Workout history could not sync from MW Dynasty. Please refresh.'}const sb=document.getElementById('saveSettings');if(sb)sb.onclick=async()=>{sb.disabled=true;sb.textContent='SAVING…';try{await saveAthleteSettings();const wantsNotifications=['workoutReminders','meetReminders','messageAlerts'].some(id=>document.getElementById(id)?.value==='on');if(wantsNotifications){try{await window.mwNativePermission?.('notifications')}catch{}}sb.textContent='✓ SETTINGS SAVED'}catch(e){sb.textContent='SAVE FAILED — TAP TO RETRY';authStatus(e.message,true)}finally{sb.disabled=false;setTimeout(()=>{if(sb.textContent.startsWith('✓'))sb.textContent='SAVE SETTINGS'},1300)}};return d}
   window.mwReloadAccount=loadMe;
+  const websiteCheckoutPlan=new URLSearchParams(location.search).get('plan')==='mw_athlete'?'mw_athlete':'';
+  async function beginWebsiteCheckout(accessToken){
+    authStatus('Taking you to secure Stripe checkout…');
+    const r=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify({planCode:websiteCheckoutPlan,sponsorQuantity:0})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'Checkout could not start.');
+    if(!d.url)throw new Error('Stripe did not return a checkout link.');
+    location.assign(d.url);
+  }
   async function login(){
     const email=document.querySelector('#mwAuthEmail').value.trim(),password=document.querySelector('#mwAuthPassword').value;
     if(!email||!password){authStatus('Enter your email and password.',true);return}
@@ -2307,7 +2316,9 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{
       const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-in failed');
-      saveSession(d,document.querySelector('#mwRememberMe')?.checked===true);await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('');
+      saveSession(d,document.querySelector('#mwRememberMe')?.checked===true);
+      if(websiteCheckoutPlan){await beginWebsiteCheckout(d.access_token);return}
+      await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('');
     }catch(e){
       clearSession();
       const msg=String(e?.message||'');
