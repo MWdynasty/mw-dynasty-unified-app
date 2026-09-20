@@ -75,12 +75,12 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         }
 
         if message.name == "mwRestorePurchase" {
-            guard let planCode = body["planCode"] as? String,
-                  let accessToken = body["accessToken"] as? String,
-                  !planCode.isEmpty, !accessToken.isEmpty else {
+            guard let accessToken = body["accessToken"] as? String,
+                  !accessToken.isEmpty else {
                 sendPurchaseResult(["ok": false, "error": "Your MW session expired. Sign in again."])
                 return
             }
+            let planCode = (body["planCode"] as? String) ?? "auto"
             Task { @MainActor [weak self] in
                 await self?.restoreMWPurchase(planCode: planCode, accessToken: accessToken)
             }
@@ -229,24 +229,39 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             "coach_intelligence": "com.mwdynasty.app.coach.intelligence.monthly",
             "mw_sprint_performance": "com.mwdynasty.app.coach.sprintperformance.monthly"
         ]
-        guard let productID = products[planCode], let accountToken = userIDFromJWT(accessToken) else {
+        guard let accountToken = userIDFromJWT(accessToken) else {
             sendPurchaseResult(["ok": false, "error": "Your MW account could not be matched to an App Store membership."])
+            return
+        }
+        let requestedProductID = planCode == "auto" ? nil : products[planCode]
+        if planCode != "auto" && requestedProductID == nil {
+            sendPurchaseResult(["ok": false, "error": "This MW membership is not available for App Store restore."])
             return
         }
         do {
             try await AppStore.sync()
             for await entitlement in Transaction.currentEntitlements {
                 guard case .verified(let transaction) = entitlement,
-                      transaction.productID == productID,
                       transaction.appAccountToken == accountToken else { continue }
-                let verified = await verifyPurchaseWithMWServer(transactionID: String(transaction.id), planCode: planCode, accessToken: accessToken)
+                if let requestedProductID, transaction.productID != requestedProductID { continue }
+                guard let restoredPlan = products.first(where: { $0.value == transaction.productID })?.key else { continue }
+                let verified = await verifyPurchaseWithMWServer(
+                    transactionID: String(transaction.id),
+                    planCode: restoredPlan,
+                    accessToken: accessToken
+                )
                 if verified {
                     await transaction.finish()
-                    sendPurchaseResult(["ok": true, "restored": true, "planCode": planCode, "transactionId": String(transaction.id)])
+                    sendPurchaseResult([
+                        "ok": true,
+                        "restored": true,
+                        "planCode": restoredPlan,
+                        "transactionId": String(transaction.id)
+                    ])
                     return
                 }
             }
-            sendPurchaseResult(["ok": false, "error": "No active App Store membership for this MW account was found."])
+            sendPurchaseResult(["ok": false, "error": "No active MW Dynasty App Store membership for this account was found."])
         } catch {
             sendPurchaseResult(["ok": false, "error": "App Store restore could not finish: \(error.localizedDescription)"])
         }
