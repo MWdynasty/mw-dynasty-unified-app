@@ -124,18 +124,22 @@ module.exports = async function stripeCheckout(req, res) {
     if (product.audience === 'athlete' && role !== 'athlete') return res.status(403).json({ error: 'Choose a coach membership for this account.' });
     if (product.audience === 'coach' && !['coach', 'admin', 'founder_owner'].includes(role)) return res.status(403).json({ error: 'Choose an athlete membership for this account.' });
 
+    const billingResp = await fetch(
+      `${SUPABASE_URL}/rest/v1/billing_subscriptions?beneficiary_user_id=eq.${encodeURIComponent(user.id)}&audience=eq.${encodeURIComponent(product.audience)}&select=plan_code,status,current_period_end,provider,billing_type&limit=1`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
+    );
+    const billingRows = await billingResp.json().catch(() => []);
+    const billing = Array.isArray(billingRows) ? billingRows[0] : null;
+    const stillPaid = billing && ['active','trialing','cancel_at_period_end'].includes(String(billing.status || ''))
+      && (!billing.current_period_end || new Date(billing.current_period_end).getTime() > Date.now());
+
     if (sponsorshipOnly) {
-      const billingResp = await fetch(
-        `${SUPABASE_URL}/rest/v1/billing_subscriptions?beneficiary_user_id=eq.${encodeURIComponent(user.id)}&audience=eq.coach&select=plan_code,status,current_period_end&limit=1`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
-      );
-      const billingRows = await billingResp.json().catch(() => []);
-      const billing = Array.isArray(billingRows) ? billingRows[0] : null;
-      const stillPaid = billing && ['active','trialing','cancel_at_period_end'].includes(String(billing.status || ''))
-        && (!billing.current_period_end || new Date(billing.current_period_end).getTime() > Date.now());
       if (!billingResp.ok || !stillPaid) return res.status(403).json({ error: 'Activate your Coach membership before adding sponsored-athlete seats.' });
       if (String(billing.plan_code || '') !== planCode) return res.status(409).json({ error: 'Sponsored seats must use your current Coach membership tier.' });
     } else {
+      if (billingResp.ok && stillPaid && String(billing.billing_type || '') === 'individual' && String(billing.provider || '') !== 'stripe') {
+        return res.status(409).json({ error: 'Your active membership is managed by the App Store. Manage that membership with Apple; MW will not replace it with a second web subscription.' });
+      }
       // Preserve the selected membership before leaving MW Dynasty. If checkout is abandoned,
       // the same account can resume without losing its verification or onboarding progress.
       await markCheckoutStarted(token, planCode, sponsorQuantity);
