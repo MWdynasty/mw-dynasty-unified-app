@@ -115,13 +115,32 @@ function attentionRow(x){const sev=x.severity==="high"?"high":x.severity==="low"
 function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
 
 async function renderHome(){
-  const d=await api("overview"),m=d.metrics||{},a=d.needs_attention||[];
-  $("content").innerHTML='<section class="hero"><div class="brand">EXECUTIVE COMMAND CENTER</div><h2>See the whole company. Act on what matters.</h2><p>MW Dynasty business, customers, website, billing, AI workforce, product health, and Founder decisions in one place.</p><div class="heroActions"><button class="btn primary" id="briefBtn">Generate Executive AI Brief</button><button class="btn blue" data-go="attention">Open Needs Attention</button></div></section>'+
-    '<div class="stats">'+stat("Estimated MRR",money(m.estimated_mrr_cents),"Current recurring run-rate")+stat("Active Athletes",m.athletes_active||0,(m.athletes_total||0)+" total")+stat("Active Coaches",m.coaches_active||0,(m.coaches_total||0)+" total")+stat("Needs Review",m.applications_need_review||0,"Coach applications")+stat("Sponsored Seats",m.sponsored_seats_active||0,"Allocated / active")+stat("Open Support",m.open_support||0,"Member + public")+stat("Website Sessions",m.web_sessions_30d||0,"Last 30 days")+stat("Diagnostic Errors",m.diagnostic_errors_24h||0,"Last 24 hours")+'</div>'+
+  const [d,f,h,r]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk")]);
+  const m=d.metrics||{},a=d.needs_attention||[],ath=h.athletes||[],co=h.coaches||[],risks=r.items||[];
+  const customerAttention=ath.filter(x=>x.health!=="healthy").length+co.filter(x=>x.health!=="healthy").length;
+  const highRisks=risks.filter(x=>["high","critical"].includes(x.severity)&&!["resolved","closed"].includes(x.status));
+  $("content").innerHTML='<section class="hero"><div class="brand">EXECUTIVE COMMAND CENTER</div><h2>See the whole company. Act on what matters.</h2><p>MW Dynasty business, customers, website, finance, billing, AI workforce, product health, risk, and Founder decisions in one operating view.</p><div class="heroActions"><button class="btn primary" id="briefBtn">Generate Executive AI Brief</button><button class="btn blue" data-go="attention">Open Needs Attention</button></div></section>'+
+    '<div class="stats">'+
+      stat("Estimated MRR",money(f.estimated_mrr_cents),"Current recurring run-rate")+
+      stat("Operating Contribution",money(f.tracked_operating_contribution_cents),"Tracked revenue minus tracked monthly costs")+
+      stat("Active Athletes",m.athletes_active||0,(m.athletes_total||0)+" total")+
+      stat("Active Coaches",m.coaches_active||0,(m.coaches_total||0)+" total")+
+      stat("Customer Attention",customerAttention,"Retention / access signals")+
+      stat("High Risks",highRisks.length,"Open high / critical")+
+      stat("Coach Reviews",m.applications_need_review||0,"Applications")+
+      stat("Open Support",m.open_support||0,"Member + public")+
+      stat("Website Sessions",m.web_sessions_30d||0,"Last 30 days")+
+      stat("Diagnostic Errors",m.diagnostic_errors_24h||0,"Last 24 hours")+
+    '</div>'+
     sectionHead("Needs Your Attention","Highest-priority Founder decisions and operating exceptions.")+
-    '<div class="grid2"><div class="list">'+(a.length?a.slice(0,8).map(attentionRow).join(""):'<div class="card empty">No urgent Founder items detected.</div>')+'</div><div class="card aiHero"><div class="brand">FOUNDER AI · CHIEF OF STAFF</div><h2 style="margin:8px 0">Your executive intelligence layer</h2><p class="muted">Ask about revenue, growth, product health, website conversion, support, Coach applications, or give MW a company objective.</p><div class="heroActions"><button class="btn blue" id="askAIHome">Ask Founder AI</button><button class="btn" data-go="ai">Open AI Company</button></div><div id="briefOut" class="bubble ai hidden" style="margin-top:12px"></div></div></div>';
+    '<div class="grid2"><div class="list">'+(a.length?a.slice(0,8).map(attentionRow).join(""):'<div class="card empty">No urgent Founder items detected.</div>')+'</div><div class="card aiHero"><div class="brand">FOUNDER AI · CHIEF OF STAFF</div><h2 style="margin:8px 0">Your executive intelligence layer</h2><p class="muted">Ask about revenue, costs, growth, customer health, product health, website conversion, support, Coach applications, risk, or give MW a company objective.</p><div class="heroActions"><button class="btn blue" id="askAIHome">Ask Founder AI</button><button class="btn" data-go="ai">Open AI Company</button></div><div id="briefOut" class="bubble ai hidden" style="margin-top:12px"></div></div></div>'+
+    '<div class="grid2">'+
+      '<div>'+sectionHead("Customer Success Watch","Lowest customer-health scores that deserve follow-up.")+'<div class="list">'+ath.concat(co).filter(x=>x.health!=="healthy").sort((a,b)=>Number(a.score)-Number(b.score)).slice(0,8).map(x=>'<div class="row"><div><b>'+esc(x.name||"Member")+'</b><small>'+esc((x.signals||[]).join(" · ")||"Attention signal")+'</small></div><div class="right">'+badge((x.score||0)+" / 100",x.health==="high_risk"?"bad":"warn")+'</div></div>').join("")+'</div></div>'+
+      '<div>'+sectionHead("Open High Risks","Launch, security, legal, deployment, and operating exposure.")+'<div class="list">'+(highRisks.length?highRisks.slice(0,8).map(x=>'<div class="row"><div><b>'+esc(x.title)+'</b><small>'+esc((x.category||"Risk")+(x.mitigation?" · "+x.mitigation:""))+'</small></div><div class="right">'+badge(x.severity,x.severity==="critical"?"bad":"warn")+'</div></div>').join(""):'<div class="card empty">No open high or critical risks.</div>')+'</div></div>'+
+    '</div>';
   bindGo();$("briefBtn").onclick=generateBrief;$("askAIHome").onclick=openAIModal;
 }
+
 async function generateBrief(){
   const b=$("briefBtn"),out=$("briefOut");b.disabled=true;b.textContent="Building executive brief…";out.classList.remove("hidden");out.textContent="Founder AI is reviewing live MW data…";
   try{const d=await ai("brief");out.textContent=d.answer||"No briefing returned."}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
