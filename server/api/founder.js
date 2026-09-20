@@ -55,6 +55,7 @@ module.exports=async function handler(req,res){
       else if(section==='customer_health') data=await rpc(token,'mw_founder_customer_health',{});
       else if(section==='support_triage') data=await rpc(token,'mw_founder_support_triage_snapshot',{});
       else if(section==='notifications') data=await rpc(token,'mw_founder_notifications_snapshot',{});
+      else if(section==='security_review') data=await rpc(token,'mw_founder_security_snapshot',{});
       else if(section==='launch'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
         const ok=!!site.ok&&!!app.ok;
