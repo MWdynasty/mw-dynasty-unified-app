@@ -55,6 +55,7 @@ module.exports=async function handler(req,res){
       else if(section==='customer_health') data=await rpc(token,'mw_founder_customer_health',{});
       else if(section==='support_triage') data=await rpc(token,'mw_founder_support_triage_snapshot',{});
       else if(section==='notifications') data=await rpc(token,'mw_founder_notifications_snapshot',{});
+      else if(section==='objectives') data=await rpc(token,'mw_founder_ai_objectives_snapshot',{});
       else if(section==='security_review') data=await rpc(token,'mw_founder_security_snapshot',{});
       else if(section==='launch'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
@@ -85,6 +86,21 @@ module.exports=async function handler(req,res){
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
     const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const action=clean(b.action,60);
+    if(action==='update_objective'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Objective id required.'});
+      const patch={updated_at:new Date().toISOString()};
+      if(['draft','active','paused','completed','cancelled'].includes(b.status))patch.status=b.status;
+      if(['low','normal','high','urgent'].includes(b.priority))patch.priority=b.priority;
+      if(typeof b.title==='string')patch.title=clean(b.title,180)||'MW Dynasty objective';
+      if(typeof b.description==='string')patch.description=clean(b.description,4000)||null;
+      if(typeof b.successDefinition==='string')patch.success_definition=clean(b.successDefinition,3000)||null;
+      if(typeof b.ownerAgentCode==='string')patch.owner_agent_code=clean(b.ownerAgentCode,80)||null;
+      if(typeof b.targetDate==='string')patch.target_date=clean(b.targetDate,20)||null;
+      if(patch.status==='completed')patch.completed_at=new Date().toISOString();
+      if(['active','draft','paused'].includes(patch.status||''))patch.completed_at=null;
+      const row=one(await rest(token,`founder_ai_objectives?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
     if(action==='create_ai_task'){
       const agent=clean(b.agentCode,80),title=clean(b.title,160),description=clean(b.description,2000);
       if(!agent||!title)return res.status(400).json({error:'AI agent and task title are required.'});
@@ -94,7 +110,9 @@ module.exports=async function handler(req,res){
         agent_code:agent,title,description:description||null,department:valid.department,
         priority:['low','normal','high','urgent'].includes(b.priority)?b.priority:'normal',
         source:'founder',requires_approval:!!b.requiresApproval,
-        approval_status:b.requiresApproval?'pending':null,status:b.requiresApproval?'waiting_approval':'queued'
+        approval_status:b.requiresApproval?'pending':null,status:b.requiresApproval?'waiting_approval':'queued',
+        objective_id:clean(b.objectiveId,80)||null,
+        sequence_no:Number.isFinite(Number(b.sequenceNo))?Math.max(1,Math.round(Number(b.sequenceNo))):null
       }}));
       return res.status(200).json({ok:true,item:row});
     }
