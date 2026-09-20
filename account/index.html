@@ -163,8 +163,8 @@ function render(data){
   el('sponsorBillingBtn').style.display=isCoach&&sponsorTotal>0?'inline-block':'none';
   // Unpaid members see normal activation. Apple-paid Coaches can create their first
   // sponsored-seat package here; an existing package is managed instead of duplicated.
-  el('activationWrap').style.display=(!stripe&&!apple)||(apple&&isCoach&&sponsorTotal===0)?'block':'none';
-  renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:apple&&isCoach,sponsorTotal});
+  el('activationWrap').style.display=(!stripe&&!apple)||((apple||stripe)&&isCoach&&sponsorTotal===0)?'block':'none';
+  renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:(apple||stripe)&&isCoach,sponsorTotal});
 }
 function renderPlanActions(role,options={}){
   const coach=coachRole(role),appleCoach=!!options.appleCoach;
@@ -215,9 +215,10 @@ function renderSponsorPlans(plans){
     ['coach_intelligence','Coach Intelligence',79,6],
     ['mw_sprint_performance','Sprint Performance',109,7]
   ];
-  const appleCoach=String(account?.billing?.provider||'').toLowerCase()==='apple';
+  const provider=String(account?.billing?.provider||'').toLowerCase();
+  const addOnCoach=['apple','stripe'].includes(provider)&&coachRole(account?.user?.role);
   if(!Array.isArray(plans)){
-    plans=appleCoach
+    plans=addOnCoach
       ? allPlans.filter(p=>p[0]===String(account?.billing?.current_plan_code||''))
       : allPlans;
   }
@@ -225,13 +226,13 @@ function renderSponsorPlans(plans){
   el('sponsorQuantity').value=qty;
   const box=el('sponsorPlanActions');box.innerHTML='';
   plans.forEach(([code,name,base,seat])=>{
-    const total=appleCoach?(qty*seat):(base+(qty*seat));
+    const total=addOnCoach?(qty*seat):(base+(qty*seat));
     const button=document.createElement('button');
     button.type='button';button.className='btn';
-    button.textContent=appleCoach
-      ? `Add ${qty} sponsored athlete${qty===1?'':'s'} — $${total}/mo`
-      : `${name} + ${qty} athlete${qty===1?'':'s'} — $${total}/mo`;
-    button.onclick=()=>checkout(code,qty,appleCoach);
+    button.textContent=addOnCoach
+      ? `Add ${qty} sponsored athlete${qty===1?'':'s'} — ${total}/mo`
+      : `${name} + ${qty} athlete${qty===1?'':'s'} — ${total}/mo`;
+    button.onclick=()=>checkout(code,qty,addOnCoach);
     box.appendChild(button);
   });
 }
