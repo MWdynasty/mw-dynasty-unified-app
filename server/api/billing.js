@@ -78,7 +78,7 @@ async function applyStripeCoachPlanChange(token,userId,result){
       form['items[1][quantity]']=String(sponsorQty);
     }
     const updated=await stripe(`/subscriptions/${encodeURIComponent(billing.provider_subscription_id)}`,{method:'POST',form});
-    return {provider:'stripe',providerAction:'upgrade_requested',subscriptionStatus:updated.status||null,pendingUpdate:!!updated.pending_update};
+    return {provider:'stripe',providerAction:'upgrade_requested',providerReference:String(billing.provider_subscription_id),subscriptionStatus:updated.status||null,pendingUpdate:!!updated.pending_update};
   }
 
   let schedule;
@@ -115,7 +115,7 @@ async function applyStripeCoachPlanChange(token,userId,result){
     }
   }
   const scheduled=await stripe(`/subscription_schedules/${encodeURIComponent(schedule.id)}`,{method:'POST',form});
-  return {provider:'stripe',providerAction:'downgrade_scheduled',effectiveAt:new Date(currentEnd*1000).toISOString(),scheduleId:scheduled.id};
+  return {provider:'stripe',providerAction:'downgrade_scheduled',providerReference:String(scheduled.id),effectiveAt:new Date(currentEnd*1000).toISOString(),scheduleId:scheduled.id};
 }
 
 async function rpc(name,token,args={}){
@@ -151,6 +151,9 @@ module.exports=async(req,res)=>{
       if(String(billing?.provider||'')==='stripe'){
         try{
           const providerResult=await applyStripeCoachPlanChange(token,user.id,result);
+          if(providerResult?.providerReference){
+            await rpc('mw_register_own_billing_transition_provider',token,{p_transition_id:result.transition_id,p_provider:'stripe',p_provider_reference:providerResult.providerReference});
+          }
           return res.status(200).json({ok:true,result,providerResult,checkoutRequired:false,checkoutAudience:'coach'});
         }catch(e){
           await rpc('mw_cancel_own_billing_transition',token,{p_transition_id:result.transition_id,p_reason:'stripe_provider_update_failed'}).catch(()=>null);
@@ -164,7 +167,19 @@ module.exports=async(req,res)=>{
       return res.status(409).json({error:'Your Coach membership provider is not ready for a plan change yet.'});
     }
     if(action==='cancel_billing_transition'){
-      const result=await rpc('mw_cancel_own_billing_transition',token,{p_transition_id:body.transitionId,p_reason:String(body.reason||'user_cancelled')});
+      const transitionId=String(body.transitionId||'');
+      const trResp=await fetch(`${SUPABASE_URL}/rest/v1/billing_transitions?id=eq.${encodeURIComponent(transitionId)}&beneficiary_user_id=eq.${encodeURIComponent(user.id)}&select=id,direction,status,provider,provider_reference&limit=1`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}
+      });
+      const trRows=await trResp.json().catch(()=>[]),tr=Array.isArray(trRows)?trRows[0]:null;
+      if(tr?.provider==='stripe'&&tr?.direction==='downgrade'&&String(tr.provider_reference||'').startsWith('sub_sched_')){
+        try{
+          await stripe(`/subscription_schedules/${encodeURIComponent(tr.provider_reference)}/release`,{method:'POST',form:{preserve_cancel_date:'false'}});
+        }catch(e){
+          if(e.status!==400)throw e;
+        }
+      }
+      const result=await rpc('mw_cancel_own_billing_transition',token,{p_transition_id:transitionId,p_reason:String(body.reason||'user_cancelled')});
       return res.status(200).json({ok:true,result});
     }
     if(action==='coach_end_sponsorship'){
