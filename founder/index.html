@@ -54,6 +54,7 @@
     </div>
     <div class="navGroup"><div class="navLabel">MONEY & GROWTH</div>
       <button class="navBtn" data-view="revenue"><span>$</span>Revenue & Billing</button>
+      <button class="navBtn" data-view="costs"><span>−</span>Costs & Finance</button>
       <button class="navBtn" data-view="sponsorships"><span>◎</span>Sponsorships</button>
       <button class="navBtn" data-view="website"><span>⌘</span>Website & Growth</button>
       <button class="navBtn" data-view="marketing"><span>↗</span>Marketing & Sales</button>
@@ -63,6 +64,11 @@
       <button class="navBtn" data-view="programs"><span>41</span>Program Control</button>
       <button class="navBtn" data-view="knowledge"><span>MW</span>MW Knowledge</button>
       <button class="navBtn" data-view="support"><span>?</span>Customer Support</button>
+    </div>
+    <div class="navGroup"><div class="navLabel">COMPANY OPERATIONS</div>
+      <button class="navBtn" data-view="operations"><span>↻</span>Operations & SOPs</button>
+      <button class="navBtn" data-view="people"><span>♙</span>People & HR</button>
+      <button class="navBtn" data-view="risk"><span>△</span>Legal & Risk</button>
     </div>
     <div class="navGroup"><div class="navLabel">PLATFORM</div>
       <button class="navBtn" data-view="product"><span>⚙</span>Product & Technology</button>
@@ -87,7 +93,7 @@ const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[];
-const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -274,6 +280,54 @@ async function renderSupport(){
     sectionHead("Account Deletion","High-trust account cleanup workflow.")+
     '<div class="list">'+(del.length?del.map(x=>'<div class="row"><div><b>Deletion Request</b><small>'+esc(x.status||"pending")+'</small></div><div class="right"><small>'+date(x.requested_at)+'</small></div></div>').join(""):'<div class="card empty">No account deletion requests.</div>')+'</div>';
 }
+async function renderCosts(){
+  const d=await api("finance_costs"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">CFO OFFICE</div><h2>Revenue is only half the picture.</h2><p>Track recurring tools, infrastructure, AI, Apple/Stripe-related operating costs, contractors, and one-time expenses so MW can see an operating run-rate instead of gross revenue alone.</p><div class="heroActions"><button class="btn primary" id="addCost">Add Cost</button></div></section>'+
+    '<div class="stats">'+stat("Monthly Cost Estimate",money(d.monthly_cost_estimate_cents))+stat("One-Time Costs",money(d.one_time_costs_30d_cents),"Last 30 days")+stat("Active Cost Items",items.filter(x=>x.status==="active").length)+stat("Cost Categories",new Set(items.map(x=>x.category)).size)+'</div>'+
+    sectionHead("Operating Cost Register","Manual cost register now; provider-direct cost feeds can connect later without changing the Founder architecture.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Vendor</th><th>Category</th><th>Description</th><th>Amount</th><th>Cadence</th><th>Status</th></tr></thead><tbody>'+items.map(x=>'<tr><td>'+esc(x.vendor||"—")+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.description||"—")+'</td><td>'+money(x.amount_cents)+'</td><td>'+esc(x.cadence)+'</td><td>'+esc(x.status)+'</td></tr>').join("")+'</tbody></table></div>';
+  $("addCost").onclick=openCostModal;
+}
+function openCostModal(){
+  modal("Add MW Operating Cost",'<div class="formGrid"><label class="field">VENDOR<input id="costVendor"></label><label class="field">CATEGORY<input id="costCategory" placeholder="AI, Hosting, Apple, Email…"></label><label class="field">AMOUNT ($)<input id="costAmount" type="number" min="0" step=".01"></label><label class="field">CADENCE<select id="costCadence"><option value="monthly">Monthly</option><option value="annual">Annual</option><option value="one_time">One-time</option><option value="usage">Usage / variable</option></select></label></div><label class="field">DESCRIPTION<input id="costDescription"></label><button class="btn primary" id="saveCost">Save Cost</button>');
+  $("saveCost").onclick=async()=>{try{await action("create_cost",{vendor:$("costVendor").value,category:$("costCategory").value,amountCents:Math.round(Number($("costAmount").value||0)*100),cadence:$("costCadence").value,description:$("costDescription").value});closeModal();renderCosts()}catch(e){alert(e.message)}};
+}
+async function renderOperations(){
+  const d=await api("operations"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">OPERATIONS</div><h2>Turn MW into a repeatable company.</h2><p>Standard operating procedures create consistency across support, sales, finance, releases, Coach onboarding, and future human teams.</p><div class="heroActions"><button class="btn primary" id="addSop">Create SOP</button></div></section>'+
+    '<div class="stats">'+stat("Active SOPs",d.active_sops||0)+stat("In Review",d.review_sops||0)+stat("SOP Records",items.length)+stat("Owner","COO AI")+'</div>'+
+    '<div class="list">'+(items.length?items.map(x=>'<div class="card"><div class="row" style="border:0;background:transparent;padding:0"><div>'+badge(x.status,x.status==="active"?"good":x.status==="review"?"warn":"")+'<h3 style="margin:8px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.purpose||"")+'</p><small>'+esc(x.department)+' · v'+esc(x.version)+' · '+esc(x.owner_agent_code||"Unassigned")+'</small></div><div class="heroActions">'+(x.status==="review"?'<button class="btn small good" data-sop-active="'+esc(x.id)+'">Approve & Activate</button>':"")+'</div></div></div>').join(""):'<div class="card empty">No SOPs yet.</div>')+'</div>';
+  $("addSop").onclick=openSopModal;
+  document.querySelectorAll("[data-sop-active]").forEach(b=>b.onclick=async()=>{try{await action("review_sop",{id:b.dataset.sopActive,decision:"active"});renderOperations()}catch(e){alert(e.message)}});
+}
+function openSopModal(){
+  modal("Create MW SOP",'<div class="formGrid"><label class="field">TITLE<input id="sopTitle"></label><label class="field">DEPARTMENT<input id="sopDepartment"></label></div><label class="field">PURPOSE<textarea id="sopPurpose" rows="3"></textarea></label><label class="field">PROCEDURE<textarea id="sopProcedure" rows="8" placeholder="Step-by-step operating procedure…"></textarea></label><label class="field">AI OWNER<input id="sopOwner" placeholder="operations_director"></label><button class="btn primary" id="saveSop">Create for Review</button>');
+  $("saveSop").onclick=async()=>{try{await action("create_sop",{title:$("sopTitle").value,department:$("sopDepartment").value,purpose:$("sopPurpose").value,procedure:$("sopProcedure").value,ownerAgentCode:$("sopOwner").value});closeModal();renderOperations()}catch(e){alert(e.message)}};
+}
+async function renderPeople(){
+  const d=await api("people"),roles=d.roles||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">PEOPLE & HR</div><h2>Build the organization before it becomes chaotic.</h2><p>AI workforce today, planned human roles tomorrow. Every role should have a mission, reporting line, responsibilities, and measurable scorecard.</p><div class="heroActions"><button class="btn primary" id="addPeopleRole">Plan Human Role</button><button class="btn" data-go="ai">View AI Workforce</button></div></section>'+
+    '<div class="stats">'+stat("AI Workforce",d.ai_headcount||0)+stat("Planned Human Roles",d.planned_human_roles||0)+stat("Role Plans",roles.length)+stat("People Lead","Chief People Officer AI")+'</div>'+
+    '<div class="grid2">'+(roles.length?roles.map(x=>'<div class="card"><div class="brand">'+esc(x.department)+'</div><h3>'+esc(x.title)+'</h3><p class="muted">'+esc(x.mission||"")+'</p><div>'+badge(x.role_type,"purple")+' '+badge(x.status,x.status==="active"||x.status==="filled"?"good":"warn")+'</div><small>Reports to: '+esc(x.reports_to||"Founder")+' · Priority: '+esc(x.priority)+'</small></div>').join(""):'<div class="card empty">No future human roles planned yet.</div>')+'</div>';
+  bindGo();$("addPeopleRole").onclick=openPeopleModal;
+}
+function openPeopleModal(){
+  modal("Plan MW Role",'<div class="formGrid"><label class="field">ROLE TITLE<input id="peopleTitle"></label><label class="field">DEPARTMENT<input id="peopleDept"></label><label class="field">REPORTS TO<input id="peopleReports"></label><label class="field">PRIORITY<select id="peoplePriority"><option>normal</option><option>high</option><option>urgent</option><option>low</option></select></label></div><label class="field">MISSION<textarea id="peopleMission" rows="4"></textarea></label><label class="field">RESPONSIBILITIES <input id="peopleResp" placeholder="Comma-separated"></label><label class="field">SCORECARD / KPIs <input id="peopleKpi" placeholder="Comma-separated"></label><button class="btn primary" id="savePeopleRole">Save Role Plan</button>');
+  $("savePeopleRole").onclick=async()=>{try{await action("create_people_role",{title:$("peopleTitle").value,department:$("peopleDept").value,reportsTo:$("peopleReports").value,priority:$("peoplePriority").value,mission:$("peopleMission").value,responsibilities:$("peopleResp").value.split(",").map(x=>x.trim()).filter(Boolean),scorecard:$("peopleKpi").value.split(",").map(x=>x.trim()).filter(Boolean),roleType:"future_hire",status:"planned"});closeModal();renderPeople()}catch(e){alert(e.message)}};
+}
+async function renderRisk(){
+  const d=await api("risk"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">LEGAL · COMPLIANCE · RISK</div><h2>Know the risks before they become incidents.</h2><p>App Store, privacy, security, contracts, operational exposure, and launch risks stay visible with ownership and mitigation.</p><div class="heroActions"><button class="btn primary" id="addRisk">Add Risk</button></div></section>'+
+    '<div class="stats">'+stat("Open High Risk",d.open_high_risk||0)+stat("Open Risks",items.filter(x=>["open","mitigating","accepted"].includes(x.status)).length)+stat("Resolved",items.filter(x=>x.status==="resolved").length)+stat("Risk Lead","Legal & Risk AI")+'</div>'+
+    '<div class="list">'+(items.length?items.map(x=>'<div class="card '+(x.severity==="critical"||x.severity==="high"?"approval":"")+'"><div class="row" style="padding:0;border:0;background:transparent"><div>'+badge(x.severity,x.severity==="critical"||x.severity==="high"?"bad":x.severity==="medium"?"warn":"blue")+'<h3 style="margin:8px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.description||"")+'</p><small>'+esc(x.category)+' · Owner '+esc(x.owner_agent_code||"Unassigned")+'</small>'+(x.mitigation?'<p class="muted"><b>Mitigation:</b> '+esc(x.mitigation)+'</p>':"")+'</div><div class="heroActions">'+(!["resolved","closed"].includes(x.status)?'<button class="btn small good" data-risk-resolve="'+esc(x.id)+'">Resolve</button>':"")+'</div></div></div>').join(""):'<div class="card empty">No open risks.</div>')+'</div>';
+  $("addRisk").onclick=openRiskModal;
+  document.querySelectorAll("[data-risk-resolve]").forEach(b=>b.onclick=async()=>{try{await action("update_risk",{id:b.dataset.riskResolve,status:"resolved"});renderRisk()}catch(e){alert(e.message)}});
+}
+function openRiskModal(){
+  modal("Add Risk",'<div class="formGrid"><label class="field">CATEGORY<input id="riskCategory"></label><label class="field">SEVERITY<select id="riskSeverity"><option>medium</option><option>high</option><option>critical</option><option>low</option></select></label><label class="field">LIKELIHOOD<select id="riskLikelihood"><option>possible</option><option>likely</option><option>unlikely</option></select></label><label class="field">AI OWNER<input id="riskOwner" placeholder="legal_risk"></label></div><label class="field">TITLE<input id="riskTitle"></label><label class="field">DESCRIPTION<textarea id="riskDescription" rows="4"></textarea></label><label class="field">MITIGATION<textarea id="riskMitigation" rows="4"></textarea></label><button class="btn primary" id="saveRisk">Save Risk</button>');
+  $("saveRisk").onclick=async()=>{try{await action("create_risk",{category:$("riskCategory").value,title:$("riskTitle").value,description:$("riskDescription").value,severity:$("riskSeverity").value,likelihood:$("riskLikelihood").value,ownerAgentCode:$("riskOwner").value,mitigation:$("riskMitigation").value});closeModal();renderRisk()}catch(e){alert(e.message)}};
+}
+
 async function renderProduct(){
   const d=await api("system"),diag=d.diagnostics||{};
   $("content").innerHTML='<section class="hero"><div class="brand">PRODUCT & TECHNOLOGY</div><h2>Release health, product reliability, and technical operations.</h2><p>Founder visibility into the live product without mixing this with the Athlete or Coach experience.</p></section>'+
@@ -312,6 +366,7 @@ async function renderView(v){
     if(v==="athletes")return await renderAthletes();
     if(v==="applications")return await renderApplications();
     if(v==="revenue")return await renderRevenue();
+    if(v==="costs")return await renderCosts();
     if(v==="sponsorships")return await renderSponsorships();
     if(v==="organizations")return await renderOrganizations();
     if(v==="website")return await renderWebsite();
@@ -320,6 +375,9 @@ async function renderView(v){
     if(v==="programs")return await renderPrograms();
     if(v==="knowledge")return await renderKnowledge();
     if(v==="support")return await renderSupport();
+    if(v==="operations")return await renderOperations();
+    if(v==="people")return await renderPeople();
+    if(v==="risk")return await renderRisk();
     if(v==="product")return await renderProduct();
     if(v==="system")return await renderSystem();
     if(v==="security")return await renderSecurity();
