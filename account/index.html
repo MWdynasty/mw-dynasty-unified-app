@@ -75,6 +75,7 @@ label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900
         <p class="muted" style="margin-top:14px">MW Dynasty verifies billing with the payment provider before membership or sponsored-athlete access changes.</p>
         <div class="actions">
           <button id="billingBtn" class="btn" style="display:none">Manage Billing</button>
+          <button id="sponsorBillingBtn" class="btn ghost" style="display:none">Manage Sponsored Seats</button>
         </div>
         <div id="activationWrap" style="display:none;margin-top:14px">
           <div class="eyebrow">Membership Options</div>
@@ -159,9 +160,11 @@ function render(data){
   const sponsorTotal=Number(b.sponsored_seats_total||0),sponsorUsed=Number(b.sponsored_seats_used||0),sponsorAvailable=Number(b.sponsored_seats_available||0);
   el('sponsorSeatsRow').style.display=isCoach?'flex':'none';
   el('sponsorSeatsValue').textContent=isCoach?`${sponsorUsed} used · ${sponsorAvailable} available · ${sponsorTotal} total`:'—';
-  // Unpaid members see normal activation. Apple-paid Coaches see only the sponsored-seat add-on.
-  el('activationWrap').style.display=(!stripe&&!apple)||(apple&&isCoach)?'block':'none';
-  renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:apple&&isCoach});
+  el('sponsorBillingBtn').style.display=isCoach&&sponsorTotal>0?'inline-block':'none';
+  // Unpaid members see normal activation. Apple-paid Coaches can create their first
+  // sponsored-seat package here; an existing package is managed instead of duplicated.
+  el('activationWrap').style.display=(!stripe&&!apple)||(apple&&isCoach&&sponsorTotal===0)?'block':'none';
+  renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:apple&&isCoach,sponsorTotal});
 }
 function renderPlanActions(role,options={}){
   const coach=coachRole(role),appleCoach=!!options.appleCoach;
@@ -252,6 +255,22 @@ async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false){
     location.assign(data.url);
   }catch(e){billingMessage(e.message||'Checkout is unavailable.',true)}
 }
+async function openSponsorBillingPortal(){
+  const button=el('sponsorBillingBtn');button.disabled=true;billingMessage('Opening sponsored-seat billing…');
+  try{
+    const response=await fetch('/api/stripe/portal',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+      body:JSON.stringify({sponsorshipOnly:true})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.url)throw new Error(data.error||'Sponsored-seat billing is unavailable.');
+    location.assign(data.url);
+  }catch(e){
+    billingMessage(e.message||'Sponsored-seat billing is unavailable.',true);
+    button.disabled=false;
+  }
+}
 async function openBillingPortal(){
   const button=el('billingBtn'),provider=String(button.dataset.provider||'');
   button.disabled=true;
@@ -288,6 +307,7 @@ async function load(){
 el('saveBtn').onclick=async()=>{const btn=el('saveBtn');btn.disabled=true;btn.textContent='Saving…';message('');try{const data=await rpc('mw_update_account_profile',{p_first_name:el('firstName').value.trim(),p_last_name:el('lastName').value.trim()||null,p_organization:el('organization').value.trim()||null,p_coach_title:el('coachTitle').value.trim()||null});render(data);message('Profile saved.')}catch(e){message(e.message||'Could not save profile.',true)}finally{btn.disabled=false;btn.textContent='Save Profile'}};
 el('openPlatformBtn').onclick=()=>{location.href=coachRole(account?.user?.role)?'/coach':'/athlete/'};
 el('billingBtn').onclick=openBillingPortal;
+el('sponsorBillingBtn').onclick=openSponsorBillingPortal;
 el('membershipOnlyTab').onclick=()=>setCoachMembershipTab('membership');
 el('sponsorshipTab').onclick=()=>setCoachMembershipTab('sponsorship');
 el('sponsorQuantity').addEventListener('input',()=>renderSponsorPlans());
