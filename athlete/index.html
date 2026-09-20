@@ -425,6 +425,15 @@ body.mw-auth-ready #mwAuth{display:none}
   flex:0 0 auto;width:45px;height:45px;border-radius:14px;
   display:grid;place-items:center;background:#071621;border:1px solid #294050;font-size:21px
 }
+.qsIcon.qsNavArt,.qsPreviewCard .miniIcon.qsNavArt{
+  background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
+  border-color:rgba(255,211,96,.62)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -5px 10px rgba(0,0,0,.42),0 6px 0 rgba(5,9,13,.92),0 10px 22px rgba(0,0,0,.48),0 0 22px rgba(238,188,57,.14)!important;
+  color:transparent!important;font-size:0!important;
+}
+.qsIcon.qsNavArt{width:76px;height:76px;border-radius:22px}
+.qsPreviewCard .miniIcon.qsNavArt{width:52px;height:52px;border-radius:15px}
+
 .qsPreviewCard b{display:block;color:#f5b92e;font-size:14px;margin-bottom:4px}
 .qsPreviewCard span{display:block;color:#b8c3cb;font-size:11px;line-height:1.4}
 .qsReady{
@@ -1604,24 +1613,31 @@ if($('#replayTour'))$('#replayTour').onclick=()=>startTour(true);
 
 
 const QS_STEPS=[
-  {icon:'🏃',eyebrow:'1. TRAIN',title:'Your Training',body:'Open TRAIN. Do the workout. Tap DONE when you finish.',mini:'🏃',previewTitle:'TRAIN',previewBody:'Your current MW week and strength plan.'},
-  {icon:'🧠',eyebrow:'2. ASK',title:'Coach MW',body:'If you need help, ask Coach MW like you would ask a coach at practice.',mini:'🧠',previewTitle:'COACH MW',previewBody:'Ask a question. Get help.'},
-  {icon:'⚡',eyebrow:'3. USE',title:'Training Tools',body:'Use Pace AI when you need a target and Distance Pacer when you need a mark.',mini:'⚡',previewTitle:'TOOLS',previewBody:'Pace + distance. Simple.'},
-  {icon:'✦',eyebrow:'YOU’RE READY',title:'That’s It',body:'Train. Check in. Keep getting better.',mini:'MW',previewTitle:'MW DYNASTY',previewBody:'TRAIN • UNDERSTAND • EXECUTE',ready:true,tagline:'LET’S WORK. 🔥'}
+  {art:'/assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG',eyebrow:'1. HOME',title:'Your Home Button',body:'HOME brings you back to today’s MW command center — your current week, today’s training status, progress and quick actions.',previewTitle:'HOME',previewBody:'Start here whenever you want to see what matters today.'},
+  {art:'/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG',eyebrow:'2. COACH MW',title:'Your Coach MW Button',body:'Tap the pulsing MW crest whenever you need help with training, technique, recovery, race strategy, strength or pacing.',previewTitle:'COACH MW',previewBody:'Ask a coaching question without leaving your MW experience.'},
+  {art:'/assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG',eyebrow:'3. TRAIN',title:'Your Training Button',body:'TRAIN opens the work you need to execute. Follow the session, complete the workout and use the connected pace and distance tools when needed.',previewTitle:'TRAIN',previewBody:'Your current MW week, track work and synchronized strength plan.'},
+  {art:'/assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG',eyebrow:'4. PROGRESS',title:'Your Progress Button',body:'PROGRESS shows what you have completed and where you are in the 41-week MW journey without changing your protected training week.',previewTitle:'PROGRESS',previewBody:'See completed work, weekly progress and your MW journey.'},
+  {art:'/assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG',eyebrow:'5. PROFILE',title:'Your Profile Button',body:'PROFILE is where your athlete information, PRs, weight-room maxes, Coach MW preference and account settings stay current.',previewTitle:'PROFILE',previewBody:'Keep your athlete data accurate so MW can coach you correctly.'},
+  {art:'/mw-dynasty-app-icon-512.png',eyebrow:'6. READY',title:'You Know the New Buttons',body:'HOME. COACH MW. TRAIN. PROGRESS. PROFILE. Those five buttons are your fastest way around MW Dynasty.',previewTitle:'MW DYNASTY',previewBody:'TRAIN • UNDERSTAND • EXECUTE',ready:true,tagline:'LET’S WORK. 🔥'}
 ];
 let qsIndex=0;
-function qsStorageKey(){return 'mwOnboardingComplete:'+String(mwOnboardingUserKey||'local')}
+function qsStorageKey(){return 'mwOnboardingCompleteV27:'+String(mwOnboardingUserKey||'local')}
 function renderQuickStart(){
   const s=QS_STEPS[qsIndex];
   const main=$('#qsMain');
   if(main){main.classList.remove('qsFade');void main.offsetWidth;main.classList.add('qsFade')}
   $('#qsCount').textContent=`${qsIndex+1} OF ${QS_STEPS.length}`;
   $('#qsProgressFill').style.width=`${((qsIndex+1)/QS_STEPS.length)*100}%`;
-  $('#qsIcon').textContent=s.icon;
+  const big=$('#qsIcon'),mini=$('#qsMiniIcon');
+  [big,mini].forEach(el=>{
+    if(!el)return;
+    el.classList.toggle('qsNavArt',!!s.art);
+    el.style.backgroundImage=s.art?`url("${s.art}")`:'';
+    el.textContent=s.art?'':(s.icon||'MW');
+  });
   $('#qsEyebrow').textContent=s.eyebrow;
   $('#qsTitle').textContent=s.title;
   $('#qsBody').textContent=s.body;
-  $('#qsMiniIcon').textContent=s.mini;
   $('#qsPreviewTitle').textContent=s.previewTitle;
   $('#qsPreviewBody').textContent=s.previewBody;
   $('#qsTagline').textContent=s.tagline||'';
