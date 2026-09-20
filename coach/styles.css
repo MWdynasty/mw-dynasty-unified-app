@@ -558,3 +558,52 @@ html.mw-native-app .coach-login-role-back{display:none!important}
   }
   html.mw-native-app .coach-login-stage{min-height:100svh!important}
 }
+
+
+/* MW APP-ONLY PREMIUM LOGIN BACKGROUND v1 */
+html.mw-native-app .coach-login-screen,
+html.mw-native-app .coach-login-stage{
+  background:
+    radial-gradient(ellipse at 50% -8%,rgba(232,187,72,.22) 0%,rgba(232,187,72,.07) 24%,transparent 48%),
+    radial-gradient(circle at 84% 16%,rgba(50,127,184,.16),transparent 30%),
+    linear-gradient(180deg,#0a1822 0%,#061019 42%,#02070b 100%)!important;
+}
+html.mw-native-app .coach-login-bg{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.025),transparent 24%,rgba(0,0,0,.36) 72%,rgba(0,0,0,.72)),
+    repeating-linear-gradient(104deg,transparent 0 15%,rgba(226,182,67,.075) 15.15% 15.45%,transparent 15.6% 30%),
+    radial-gradient(ellipse at 50% 110%,rgba(226,182,67,.13),transparent 48%)!important;
+}
+html.mw-native-app .coach-login-bg:after{
+  content:""!important;
+  position:absolute!important;
+  inset:58% -18% -14%!important;
+  opacity:.55!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.025),transparent 15%),
+    repeating-linear-gradient(90deg,transparent 0 16%,rgba(235,195,88,.15) 16.2% 16.55%,transparent 16.8% 33%)!important;
+  transform:perspective(500px) rotateX(58deg)!important;
+  transform-origin:center bottom!important;
+  mask-image:linear-gradient(to bottom,transparent,#000 30%,#000)!important;
+}
+@media(max-width:640px){
+  html.mw-native-app .coach-login-person{display:none!important}
+  html.mw-native-app .coach-login-content{min-height:100svh!important}
+  html.mw-native-app .coach-login-card-wrap{
+    position:absolute!important;
+    inset:0!important;
+    margin:0!important;
+    padding:190px 14px max(18px,calc(env(safe-area-inset-bottom) + 10px))!important;
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+  }
+  html.mw-native-app .coach-login-card{
+    width:100%!important;
+    max-width:430px!important;
+    background:linear-gradient(180deg,rgba(5,18,27,.95),rgba(2,9,14,.985))!important;
+    border-color:rgba(232,187,72,.55)!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.045)!important;
+    backdrop-filter:blur(18px)!important;
+  }
+}
