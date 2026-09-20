@@ -497,7 +497,6 @@ function renderLogin(message=''){
         <div class="coach-login-brand" aria-label="MW Coach">
           <img class="coach-login-crest" src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty crest">
           <div class="coach-login-wordmark">
-            <div class="coach-login-mw">MW</div>
             <div class="coach-login-coach">DYNASTY</div>
             <div class="coach-login-tagline">COACH LOGIN • LEAD • DEVELOP • BUILD</div>
           </div>
@@ -519,9 +518,9 @@ function renderLogin(message=''){
 
         <div class="coach-login-card-wrap">
           <div class="coach-login-card">
-            <a class="coach-login-role-back" href="/" aria-label="Open MW Dynasty website">← MW WEBSITE</a>
-            <div class="coach-login-mobile-brand" aria-hidden="true"><span>MW</span> DYNASTY · COACH</div>
-            <h2>Welcome Back</h2>
+            <a class="coach-login-role-back" href="https://mwdynasty.com/" aria-label="Open MW Dynasty website">← MW WEBSITE</a>
+            <div class="coach-login-mobile-brand" aria-hidden="true">DYNASTY · COACH</div>
+            <h2>Welcome Back Coach</h2>
             <p>Sign in to your MW Dynasty Coach experience.</p>
             <form id="loginForm" class="coach-login-form" novalidate>
               <label class="coach-field">
