@@ -44,6 +44,7 @@
     <div class="navGroup"><div class="navLabel">EXECUTIVE</div>
       <button class="navBtn active" data-view="home"><span>⌂</span>Executive Home</button>
       <button class="navBtn" data-view="attention"><span>!</span>Needs Attention <i class="navCount" data-count="attention"></i></button>
+      <button class="navBtn" data-view="notifications"><span>●</span>Notifications <i class="navCount" data-count="notifications"></i></button>
       <button class="navBtn" data-view="analytics"><span>▥</span>Analytics</button>
     </div>
     <div class="navGroup"><div class="navLabel">PEOPLE & ACCESS</div>
@@ -94,7 +95,7 @@ const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[];
-const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const titles={home:"Executive Home",attention:"Needs Attention",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -173,6 +174,28 @@ async function renderAttention(){
   bindGo();
   document.querySelectorAll("[data-att-approve]").forEach(b=>b.onclick=async()=>{try{await action("review_approval",{id:b.dataset.attApprove,decision:"approved"});cache={};renderAttention()}catch(e){alert(e.message)}});
   document.querySelectorAll("[data-att-reject]").forEach(b=>b.onclick=async()=>{try{await action("review_approval",{id:b.dataset.attReject,decision:"rejected"});cache={};renderAttention()}catch(e){alert(e.message)}});
+}
+
+async function renderNotifications(){
+  const d=await api("notifications",true),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER NOTIFICATIONS</div><h2>Activations, cancellations, reviews, support, and launch errors.</h2><p>Persistent Founder notifications make sure important business events do not disappear just because a dashboard was not open at the moment they happened.</p><div class="heroActions"><button class="btn primary" id="markAllNotifications">Mark All Read</button></div></section>'+
+    '<div class="stats">'+stat("Unread",d.unread_count||0)+stat("Urgent",d.urgent_unread||0)+stat("High Priority",d.high_unread||0)+stat("Recent Notifications",items.length)+'</div>'+
+    '<div class="list" style="margin-top:18px">'+(items.length?items.map(x=>{
+      const sev=x.severity==="urgent"?"bad":x.severity==="high"?"warn":x.severity==="low"?"blue":"";
+      return '<div class="card '+(x.status==="unread"&&["urgent","high"].includes(x.severity)?"approval":"")+'"><div class="row" style="padding:0;border:0;background:transparent"><div>'+
+        badge(x.severity,sev)+' '+badge(x.status,x.status==="unread"?"purple":"")+
+        '<h3 style="margin:8px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.detail||"")+'</p><small>'+date(x.created_at)+' · '+esc(String(x.notification_type||"event").replaceAll("_"," "))+'</small>'+
+        '</div><div class="heroActions">'+
+        (x.action_view?'<button class="btn small blue" data-notification-open="'+esc(x.id)+'" data-view-target="'+esc(x.action_view)+'">Open</button>':"")+
+        (x.status==="unread"?'<button class="btn small good" data-notification-read="'+esc(x.id)+'">Read</button>':"")+
+        '<button class="btn small" data-notification-dismiss="'+esc(x.id)+'">Dismiss</button>'+
+        '</div></div></div>';
+    }).join(""):'<div class="card empty">No Founder notifications yet.</div>')+'</div>';
+
+  $("markAllNotifications").onclick=async()=>{try{await action("mark_all_notifications_read",{});cache={};renderNotifications();refreshFounderNavCounts()}catch(e){alert(e.message)}};
+  document.querySelectorAll("[data-notification-read]").forEach(b=>b.onclick=async()=>{try{await action("update_notification",{id:b.dataset.notificationRead,status:"read"});cache={};renderNotifications();refreshFounderNavCounts()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-notification-dismiss]").forEach(b=>b.onclick=async()=>{try{await action("update_notification",{id:b.dataset.notificationDismiss,status:"dismissed"});cache={};renderNotifications();refreshFounderNavCounts()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-notification-open]").forEach(b=>b.onclick=async()=>{try{await action("update_notification",{id:b.dataset.notificationOpen,status:"read"})}catch{}cache={};setView(b.dataset.viewTarget)});
 }
 
 async function renderCoaches(){
@@ -590,6 +613,7 @@ async function renderView(v){
   try{
     if(v==="home")return await renderHome();
     if(v==="attention")return await renderAttention();
+    if(v==="notifications")return await renderNotifications();
     if(v==="coaches")return await renderCoaches();
     if(v==="athletes")return await renderAthletes();
     if(v==="applications")return await renderApplications();
@@ -623,7 +647,7 @@ function setNavCount(name,value){
 async function refreshFounderNavCounts(){
   if(!session?.access_token)return;
   try{
-    const [o,a,r,t,h]=await Promise.all([api("overview"),api("ai_company"),api("risk"),api("support_triage"),api("customer_health")]);
+    const [o,a,r,t,h,n]=await Promise.all([api("overview"),api("ai_company"),api("risk"),api("support_triage"),api("customer_health"),api("notifications")]);
     const base=(o.needs_attention||[]).length;
     const approvals=(a.approvals||[]).length;
     const highRisk=(r.items||[]).filter(x=>["high","critical"].includes(x.severity)&&!["resolved","closed"].includes(x.status)).length;
@@ -633,6 +657,7 @@ async function refreshFounderNavCounts(){
     setNavCount("ai",approvals);
     setNavCount("risk",highRisk);
     setNavCount("support",support);
+    setNavCount("notifications",Number(n.unread_count||0));
     setNavCount("attention",base+approvals+highRisk+support+customer);
   }catch{}
 }
