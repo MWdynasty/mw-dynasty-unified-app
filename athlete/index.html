@@ -1042,9 +1042,11 @@ html.mw-native-app .mwLoginStory:after{
           <button id="mwForgotPassword" class="mwLoginLink" type="button">Forgot password?</button>
         </div>
 
-        <button id="mwAuthLogin" class="mwLoginButton" type="button">Sign In <span>→</span></button>
-        <a class="mwLoginRoleSwitch" href="/coach/">COACH SIGN IN <span>→</span></a>
-        <button id="mwAthleteSignupOpen" class="mwLoginSignupTab" type="button">SIGN UP <span>→</span></button>
+        <div class="mwLoginActions">
+          <button id="mwAuthLogin" class="mwLoginButton" type="button">Sign In <span>→</span></button>
+          <a class="mwLoginRoleSwitch" href="/coach/">COACH SIGN IN <span>→</span></a>
+          <button id="mwAthleteSignupOpen" class="mwLoginSignupTab" type="button">SIGN UP <span>→</span></button>
+        </div>
 
         <div id="mwAthleteSignup" class="mwAuthReset mwLoginReset">
           <div class="mwLoginCardHead"><h3>Create Athlete Account</h3><p>Sign up inside the MW Dynasty Athlete app.</p></div>
@@ -2853,4 +2855,46 @@ document.addEventListener('click',e=>{
   #mwAuth .mwLoginBrand{gap:8px!important}
   #mwAuth .mwLoginCrest{width:48px!important;height:48px!important;border-radius:13px!important}
 }
-</style></body></html>
+</style><style id="mw-athlete-login-card-actions-bright-v1">
+/* Athlete website only: keep all three primary actions visibly contained by the sign-in card
+   and lift the stadium exposure without changing the approved composition. */
+@media(min-width:821px){
+  html:not(.mw-native-app) #mwAuth .mwLoginCard{
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:visible!important;
+    padding-bottom:22px!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwLoginActions{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    gap:9px!important;
+    margin-top:4px!important;
+    padding:10px!important;
+    border:1px solid rgba(231,184,76,.28)!important;
+    border-radius:14px!important;
+    background:rgba(3,11,16,.72)!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwLoginActions .mwLoginButton,
+  html:not(.mw-native-app) #mwAuth .mwLoginActions .mwLoginRoleSwitch,
+  html:not(.mw-native-app) #mwAuth .mwLoginActions .mwLoginSignupTab{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwLoginRunner{
+    filter:saturate(1.02) contrast(1.01) brightness(1.14)!important;
+    background-image:
+      linear-gradient(90deg,rgba(2,7,10,.38) 0%,rgba(2,7,10,.13) 38%,rgba(2,7,10,.14) 62%,rgba(2,7,10,.44) 100%),
+      linear-gradient(180deg,rgba(2,6,9,.02),rgba(2,6,9,.30) 100%),
+      url('/assets/mw-stadium-athlete-coach-v22.jpg')!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwLoginStory::after{
+    background:radial-gradient(circle at 50% 42%,transparent 0 32%,rgba(0,0,0,.03) 62%,rgba(0,0,0,.14) 100%)!important;
+  }
+}
+</style>
+</body></html>
