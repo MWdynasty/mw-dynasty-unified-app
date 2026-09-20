@@ -1,54 +1,317 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#05070a"><title>MW Dynasty · Founder Office</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070a">
+<title>MW Dynasty · Founder OS</title>
 <link rel="icon" href="/favicon.png" type="image/png">
 <style>
-:root{--gold:#efbd43;--ink:#05070a;--panel:#0b1016;--panel2:#101821;--line:#26313d;--text:#f5f7f8;--muted:#8f9ba7;--good:#66d7a3;--warn:#f1c75b;--bad:#ff8d8d}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 78% -10%,#162a3b 0,transparent 35%),linear-gradient(145deg,#06090d,#020304 72%);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,input,textarea{font:inherit}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;padding:24px}.loginCard{width:min(480px,100%);border:1px solid #38434e;border-radius:24px;padding:30px;background:linear-gradient(160deg,rgba(17,25,34,.98),rgba(5,8,12,.99));box-shadow:0 40px 100px #0009}.brand{font-size:12px;font-weight:950;letter-spacing:.22em;color:var(--gold)}h1{margin:8px 0 6px;font-size:clamp(34px,6vw,58px);letter-spacing:-.04em}.loginCard h1{font-size:38px}.muted{color:var(--muted);line-height:1.5}.field{display:block;margin-top:14px;font-size:11px;font-weight:900;letter-spacing:.08em;color:#c5ced6}.field input,.field textarea{width:100%;margin-top:7px;border:1px solid #35414d;background:#080d12;color:#fff;border-radius:12px;padding:14px;outline:none}.field input:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px #efbd4315}.btn{border:1px solid #3a4652;background:#101720;color:#fff;border-radius:12px;padding:12px 15px;font-weight:900;cursor:pointer}.btn.primary{background:linear-gradient(100deg,#bb7f15,#f1c75b,#ce9224);color:#080a0d;border-color:#f4d47a}.btn.danger{border-color:#6b3434;color:#ffc2c2}.loginCard .btn{width:100%;margin-top:16px}.status{min-height:20px;margin-top:10px;font-size:12px;color:#9fd7ff}.status.error{color:var(--bad)}
-.office{width:min(1500px,100%);margin:auto;padding:24px}.top{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:10px 0 24px;border-bottom:1px solid var(--line)}.topRight{display:flex;gap:10px;align-items:center}.identity{text-align:right}.identity b{display:block}.identity small{color:var(--muted)}.hero{padding:30px 0 18px}.hero p{max-width:780px;margin:0;color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.stat,.card{border:1px solid var(--line);background:linear-gradient(155deg,rgba(15,23,31,.96),rgba(7,10,14,.98));border-radius:18px;padding:18px}.stat small{color:var(--muted);font-weight:850}.stat b{display:block;font-size:30px;margin-top:6px}.sectionHead{display:flex;justify-content:space-between;gap:12px;align-items:end;margin:26px 0 12px}.sectionHead h2{margin:0;font-size:24px}.sectionHead p{margin:4px 0 0;color:var(--muted);font-size:13px}.list{display:grid;gap:14px}.appTop{display:flex;justify-content:space-between;gap:14px}.appTop h3{margin:7px 0 4px;font-size:23px}.appTop p{margin:0;color:#c1c9d0}.badge{display:inline-flex;border:1px solid #46525e;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.badge.good{border-color:#2f7057;color:var(--good)}.badge.warn{border-color:#745f2c;color:var(--warn)}.badge.bad{border-color:#713b3b;color:var(--bad)}.meta{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:14px 0}.meta span{border:1px solid #202a34;border-radius:10px;padding:10px;background:#080d12;font-size:12px;color:#dbe0e4}.meta small{display:block;color:var(--muted);margin-bottom:4px}.evidence{margin-top:12px;border:1px solid #263645;border-radius:14px;padding:14px;background:#071019}.evidence h4{margin:0 0 8px;color:var(--gold);font-size:11px;letter-spacing:.1em}.signals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.signal{padding:9px;border-radius:9px;background:#0b141c;font-size:11px}.signal small{display:block;color:var(--muted);margin-bottom:4px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.review{margin-top:14px;padding-top:14px;border-top:1px solid #202a34}.review textarea{min-height:80px}.empty{text-align:center;padding:35px;color:var(--muted)}
-@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.meta,.signals{grid-template-columns:1fr 1fr}.office{padding:16px}.identity{display:none}}
-@media(max-width:520px){.stats,.meta,.signals{grid-template-columns:1fr}.appTop,.sectionHead{align-items:flex-start;flex-direction:column}.top{align-items:flex-start}}
+:root{--gold:#efbd43;--gold2:#ffd976;--ink:#030609;--panel:#091019;--panel2:#0d1721;--panel3:#111f2b;--line:#24313d;--text:#f5f7f9;--muted:#91a0ac;--blue:#55c9ff;--good:#67d7a3;--warn:#f1c75b;--bad:#ff8d8d;--purple:#bd9cff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#030609;color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,textarea,select{font:inherit}.hidden{display:none!important}button{cursor:pointer}
+.login{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 75% 10%,#173149 0,transparent 34%),linear-gradient(145deg,#070b10,#020304 72%)}
+.loginCard{width:min(500px,100%);border:1px solid #394653;border-radius:28px;padding:31px;background:linear-gradient(160deg,rgba(17,25,34,.98),rgba(5,8,12,.99));box-shadow:0 40px 110px #000a}.brand{font-size:11px;font-weight:950;letter-spacing:.23em;color:var(--gold)}.loginCard h1{font-size:40px;margin:10px 0 6px;letter-spacing:-.045em}.muted{color:var(--muted);line-height:1.5}.field{display:block;margin-top:14px;font-size:10px;font-weight:900;letter-spacing:.08em;color:#c9d0d7}.field input,.field textarea,.field select,.formInput{width:100%;margin-top:7px;border:1px solid #35414d;background:#080d12;color:#fff;border-radius:12px;padding:13px;outline:none}.field input:focus,.field textarea:focus,.field select:focus,.formInput:focus{border-color:var(--gold);box-shadow:0 0 0 3px #efbd4317}.btn{border:1px solid #3a4652;background:#101720;color:#fff;border-radius:11px;padding:11px 14px;font-weight:900}.btn.primary{background:linear-gradient(100deg,#bb7f15,#f2cb63,#ce9224);color:#080a0d;border-color:#f4d47a}.btn.blue{background:#0b2940;border-color:#1d6a9a;color:#bce8ff}.btn.good{border-color:#2e7857;color:#9ff0c9}.btn.danger{border-color:#743c3c;color:#ffc0c0}.btn.small{padding:8px 10px;font-size:11px}.loginCard .btn{width:100%;margin-top:16px}.status{min-height:20px;margin-top:10px;font-size:12px;color:#9fd7ff}.status.error{color:var(--bad)}
+.layout{min-height:100vh;display:grid;grid-template-columns:270px minmax(0,1fr)}.sidebar{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:linear-gradient(180deg,#071019,#03070b);padding:20px 14px 18px}.sideBrand{padding:8px 10px 18px;border-bottom:1px solid var(--line);margin-bottom:10px}.sideBrand strong{display:block;font-size:24px;letter-spacing:-.04em}.sideBrand span{display:block;color:var(--gold);font-size:9px;font-weight:950;letter-spacing:.17em;margin-top:5px}.navGroup{margin:15px 0}.navLabel{color:#687887;font-size:9px;font-weight:950;letter-spacing:.16em;padding:0 10px 7px}.navBtn{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#cbd4dc;text-align:left;padding:10px 11px;border-radius:11px;font-weight:800;font-size:12px}.navBtn span:first-child{width:24px;text-align:center;color:var(--gold)}.navBtn:hover{background:#0c1720}.navBtn.active{background:linear-gradient(90deg,#162b3b,#0a151d);color:#fff;box-shadow:inset 3px 0 0 var(--gold)}.sideFoot{margin-top:22px;border-top:1px solid var(--line);padding:15px 10px 0}.sideFoot b{display:block;font-size:12px}.sideFoot small{color:var(--muted)}
+.main{min-width:0;padding:20px 24px 60px}.topbar{position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 0 17px;background:linear-gradient(180deg,#030609 72%,transparent);backdrop-filter:blur(12px)}.topTitle small{display:block;color:var(--gold);font-weight:950;letter-spacing:.13em;font-size:9px}.topTitle h1{margin:3px 0 0;font-size:26px;letter-spacing:-.035em}.topActions{display:flex;gap:8px;align-items:center}.mobileNav{display:none}
+.hero{border:1px solid #2a3946;border-radius:23px;background:radial-gradient(circle at 90% 10%,rgba(35,111,160,.2),transparent 35%),linear-gradient(145deg,#0a151e,#060b10);padding:24px;margin-bottom:16px}.hero h2{font-size:clamp(29px,5vw,48px);margin:6px 0 8px;letter-spacing:-.045em}.hero p{max-width:800px;margin:0;color:#aeb9c2;line-height:1.5}.heroActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.stat,.card{border:1px solid var(--line);background:linear-gradient(155deg,rgba(14,22,30,.97),rgba(7,10,14,.99));border-radius:17px;padding:16px}.stat small{color:var(--muted);font-weight:850;font-size:10px}.stat b{display:block;font-size:28px;margin-top:5px}.stat em{display:block;font-style:normal;color:#71808d;font-size:9px;margin-top:3px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.sectionHead{display:flex;justify-content:space-between;gap:12px;align-items:end;margin:24px 0 11px}.sectionHead h2{margin:0;font-size:21px}.sectionHead p{margin:4px 0 0;color:var(--muted);font-size:12px}.list{display:grid;gap:10px}.row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;border:1px solid #24313d;background:#081017;border-radius:13px;padding:13px}.row b{font-size:13px}.row small{display:block;color:var(--muted);margin-top:3px;line-height:1.4}.row .right{text-align:right}.badge{display:inline-flex;border:1px solid #46525e;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}.badge.good{border-color:#2f7057;color:var(--good)}.badge.warn{border-color:#745f2c;color:var(--warn)}.badge.bad{border-color:#713b3b;color:var(--bad)}.badge.blue{border-color:#285e80;color:#83d4ff}.badge.purple{border-color:#5a4976;color:#cfb9ff}.money{font-variant-numeric:tabular-nums}.empty{text-align:center;padding:32px;color:var(--muted)}.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:15px}.table{width:100%;border-collapse:collapse;min-width:820px}.table th,.table td{padding:11px 12px;border-bottom:1px solid #1e2a34;text-align:left;font-size:11px}.table th{position:sticky;top:0;background:#0c151e;color:#8695a2;text-transform:uppercase;letter-spacing:.07em}.table td{color:#e2e7eb}.table tr:last-child td{border-bottom:0}.kpiLine{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0}.kpiLine span{color:var(--muted);font-size:11px}.bar{height:7px;background:#111c25;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#d79b25,#f2d274)}
+.attention{border-left:3px solid var(--warn)}.attention.high{border-left-color:var(--bad)}.attention.low{border-left-color:var(--blue)}.attention .icon{font-size:20px}
+.health{display:flex;gap:10px;align-items:center}.healthDot{width:10px;height:10px;border-radius:50%;background:var(--bad);box-shadow:0 0 12px #ff555577}.healthDot.ok{background:var(--good);box-shadow:0 0 12px #4bd49566}.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:#a8c7dc}
+.aiHero{border-color:#493d68;background:radial-gradient(circle at 90% 0,rgba(119,76,195,.22),transparent 36%),linear-gradient(145deg,#111324,#090b14)}.aiChat{min-height:180px;max-height:520px;overflow:auto;display:grid;gap:9px;margin:12px 0}.bubble{border:1px solid #2a3540;border-radius:14px;padding:13px;line-height:1.5;font-size:12px;white-space:pre-wrap}.bubble.user{margin-left:12%;background:#12243a}.bubble.ai{margin-right:5%;background:#10121d;border-color:#433b62}.chatRow{display:grid;grid-template-columns:1fr auto;gap:9px}.chatRow textarea{min-height:72px;resize:vertical;border:1px solid #35414d;background:#071019;color:#fff;border-radius:13px;padding:12px}
+.agentGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.agent{border:1px solid #263541;border-radius:14px;padding:14px;background:#071019}.agent .dept{color:var(--gold);font-size:9px;font-weight:950;letter-spacing:.09em}.agent h3{font-size:15px;margin:6px 0 5px}.agent p{color:#9aa9b5;font-size:11px;line-height:1.4}.agent small{color:#6f8090}.approval{border-color:#6b5328}.knowledgeCard{border-color:#4c4160}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.inlineForm{display:flex;gap:9px;align-items:end;flex-wrap:wrap}.inlineForm .field{flex:1;min-width:170px;margin-top:0}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tab{border:1px solid #2c3945;background:#081019;color:#9facb6;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:900}.tab.active{color:#101214;background:var(--gold);border-color:var(--gold)}
+.modal{position:fixed;inset:0;z-index:90;background:#000b;display:grid;place-items:center;padding:20px}.modalCard{width:min(760px,100%);max-height:90vh;overflow:auto;border:1px solid #3c4853;border-radius:22px;background:#081019;padding:20px;box-shadow:0 30px 100px #000}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:center}.modalTop h2{margin:0}
+@media(max-width:1150px){.stats{grid-template-columns:repeat(2,1fr)}.grid3,.agentGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:860px){.layout{display:block}.sidebar{display:none;position:fixed;z-index:80;left:0;top:0;width:min(300px,88vw);box-shadow:30px 0 80px #000}.sidebar.open{display:block}.main{padding:15px 14px 50px}.mobileNav{display:inline-flex}.grid2,.grid3,.agentGrid,.formGrid{grid-template-columns:1fr}.topTitle h1{font-size:22px}.identityHide{display:none}}
+@media(max-width:520px){.stats{grid-template-columns:1fr 1fr}.stat b{font-size:23px}.hero{padding:18px}.topActions .btn:not(.mobileNav){padding:9px 10px;font-size:10px}.row{display:block}.row .right{text-align:left;margin-top:9px}}
 </style>
 </head>
 <body>
 <section id="login" class="login">
   <form id="loginForm" class="loginCard">
-    <div class="brand">MW DYNASTY · FOUNDER OFFICE</div><h1>Executive Sign In</h1>
-    <p class="muted">Founder administration is separate from the Athlete and Coach platforms.</p>
+    <div class="brand">MW DYNASTY · FOUNDER OS</div>
+    <h1>Founder Command Center</h1>
+    <p class="muted">Private executive access to the company, product, website, revenue, AI workforce, and MW methodology.</p>
     <label class="field">EMAIL<input id="email" type="email" autocomplete="email" required></label>
     <label class="field">PASSWORD<input id="password" type="password" autocomplete="current-password" required></label>
-    <button id="loginBtn" class="btn primary" type="submit">Enter Founder Office →</button>
+    <button id="loginBtn" class="btn primary" type="submit">ENTER FOUNDER OS →</button>
     <div id="loginStatus" class="status"></div>
   </form>
 </section>
-<main id="office" class="office hidden">
-  <header class="top"><div><div class="brand">MW DYNASTY · FOUNDER OFFICE</div></div><div class="topRight"><div class="identity"><b id="founderName">Founder</b><small>Founder / Owner</small></div><button id="signOut" class="btn">Sign Out</button></div></header>
-  <section class="hero"><div class="brand">EXECUTIVE CONTROL</div><h1>Coach Verification</h1><p>Automatic verification handles strong independent matches. Only uncertain applications come to Founder review. Membership and payment stay locked until verification is complete.</p></section>
-  <section class="stats"><div class="stat"><small>Needs Review</small><b id="needsCount">0</b></div><div class="stat"><small>Verified</small><b id="verifiedCount">0</b></div><div class="stat"><small>Activated</small><b id="activeCount">0</b></div><div class="stat"><small>Total Applications</small><b id="totalCount">0</b></div></section>
-  <div class="sectionHead"><div><h2>Coach Applications</h2><p>Evidence, decision trail, payment gate, and secure setup status.</p></div><button id="refresh" class="btn">Refresh</button></div>
-  <div id="state" class="status"></div><section id="list" class="list"></section>
-</main>
+
+<div id="appShell" class="layout hidden">
+  <aside id="sidebar" class="sidebar">
+    <div class="sideBrand"><strong>MW DYNASTY</strong><span>FOUNDER OPERATING SYSTEM</span></div>
+    <div class="navGroup"><div class="navLabel">EXECUTIVE</div>
+      <button class="navBtn active" data-view="home"><span>⌂</span>Executive Home</button>
+      <button class="navBtn" data-view="attention"><span>!</span>Needs Attention</button>
+      <button class="navBtn" data-view="analytics"><span>▥</span>Analytics</button>
+    </div>
+    <div class="navGroup"><div class="navLabel">PEOPLE & ACCESS</div>
+      <button class="navBtn" data-view="coaches"><span>♟</span>Coaches</button>
+      <button class="navBtn" data-view="athletes"><span>🏃</span>Athletes</button>
+      <button class="navBtn" data-view="applications"><span>✓</span>Applications</button>
+      <button class="navBtn" data-view="organizations"><span>▦</span>Organizations</button>
+    </div>
+    <div class="navGroup"><div class="navLabel">MONEY & GROWTH</div>
+      <button class="navBtn" data-view="revenue"><span>$</span>Revenue & Billing</button>
+      <button class="navBtn" data-view="sponsorships"><span>◎</span>Sponsorships</button>
+      <button class="navBtn" data-view="website"><span>⌘</span>Website & Growth</button>
+      <button class="navBtn" data-view="marketing"><span>↗</span>Marketing & Sales</button>
+    </div>
+    <div class="navGroup"><div class="navLabel">INTELLIGENCE</div>
+      <button class="navBtn" data-view="ai"><span>AI</span>AI Company</button>
+      <button class="navBtn" data-view="knowledge"><span>MW</span>MW Knowledge</button>
+      <button class="navBtn" data-view="support"><span>?</span>Customer Support</button>
+    </div>
+    <div class="navGroup"><div class="navLabel">PLATFORM</div>
+      <button class="navBtn" data-view="product"><span>⚙</span>Product & Technology</button>
+      <button class="navBtn" data-view="system"><span>◉</span>System Health</button>
+      <button class="navBtn" data-view="security"><span>◇</span>Security & Audit</button>
+    </div>
+    <div class="sideFoot"><b id="founderName">Founder</b><small>Founder / Owner</small><button id="signOut" class="btn small" style="margin-top:10px;width:100%">Sign Out</button></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topTitle"><small>MW DYNASTY · FOUNDER OS</small><h1 id="pageTitle">Executive Home</h1></div>
+      <div class="topActions"><button id="menuBtn" class="btn small mobileNav">Menu</button><button id="founderAIQuick" class="btn small blue">Founder AI</button><button id="refreshBtn" class="btn small">Refresh</button></div>
+    </header>
+    <section id="content"></section>
+  </main>
+</div>
+<div id="modalRoot"></div>
+
 <script>
-const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
-const KEY='mwFounderSupabaseSession';let session=null;
-const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function save(s){session=s;localStorage.setItem(KEY,JSON.stringify(s))}function clear(){session=null;localStorage.removeItem(KEY)}
-async function authUser(token){const r=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error('Founder session expired.');return d}
-async function founderProfile(user,token){const r=await fetch(SUPABASE_URL+'/rest/v1/profiles?user_id=eq.'+encodeURIComponent(user.id)+'&select=first_name,last_name,role,account_status&limit=1',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token}});const d=await r.json().catch(()=>[]);const p=Array.isArray(d)?d[0]:null;if(!r.ok||!p||p.role!=='founder_owner'||p.account_status!=='active')throw new Error('Founder / Owner access required.');return p}
-async function admin(method='GET',body=null){const r=await fetch(SUPABASE_URL+'/functions/v1/mw-coach-applications-admin',{method,headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+session.access_token,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Founder request failed.');return d}
-function label(a){return a.verification_status==='auto_approved'?'Auto-Verified':a.verification_status==='approved'?'Verified':a.verification_status==='needs_review'?'Needs Review':a.verification_status==='denied'?'Denied':'Pending'}
-function badge(a){return ['auto_approved','approved'].includes(a.verification_status)?'good':a.verification_status==='denied'?'bad':'warn'}
-function signal(name,value){return '<div class="signal"><small>'+esc(name)+'</small><b>'+esc(value)+'</b></div>'}
-function card(a){const e=a.verification_evidence||{},p=e.page_check||{},needs=a.verification_status==='needs_review'&&a.status==='pending',decision=a.decision_mode==='automatic'?'Automatic':a.decision_mode==='manual'?'Manual':'Awaiting review';return `<article class="card"><div class="appTop"><div><span class="badge ${badge(a)}">${esc(label(a))}</span><h3>${esc(a.first_name)} ${esc(a.last_name)}</h3><p>${esc(a.email)}${a.organization?' · '+esc(a.organization):''}</p></div><small>${new Date(a.created_at).toLocaleDateString()}</small></div><div class="meta"><span><small>Role</small>${esc(a.coach_title||a.coaching_level||'—')}</span><span><small>Organization</small>${esc(a.organization||'—')}</span><span><small>Experience</small>${a.years_coaching??'—'} years</span><span><small>Athletes</small>${a.athlete_count??'—'}</span><span><small>Payment</small>${esc(String(a.payment_status||'not ready').replaceAll('_',' '))}</span></div><div class="evidence"><h4>VERIFICATION EVIDENCE</h4><p><b>${esc(a.verification_method||'Verification source')}</b><br><small>${esc(a.verification_detail||'No source provided')}</small></p><div class="signals">${signal('Institutional domain',e.institutional_domain===true?'Matched':e.institutional_domain===false?'Not confirmed':'—')}${signal('Name on source',p.nameMatch===true?'Matched':p.checked?'Not confirmed':'Not checked')}${signal('Coaching role',p.coachMatch===true?'Matched':p.checked?'Not confirmed':'Not checked')}${signal('Organization',p.orgMatch===true?'Matched':p.checked?'Not confirmed':'Not checked')}</div><p><b>MW decision:</b> ${esc(a.decision_reason||a.review_notes||'Verification decision pending.')}</p><small>${esc(decision)}${a.verification_checked_at?' · '+new Date(a.verification_checked_at).toLocaleString():''}</small></div>${a.reason?'<p class="muted">'+esc(a.reason)+'</p>':''}${needs?`<div class="review"><label class="field">INTERNAL FOUNDER NOTES<textarea data-notes="${a.id}" placeholder="Optional"></textarea></label><div class="actions"><button class="btn primary" data-approve="${a.id}">Approve Coach</button><button class="btn danger" data-deny="${a.id}">Deny</button></div><p class="muted">Approval sends secure account setup. The Coach chooses membership and sponsored-athlete seats next. Product access stays locked until payment confirmation.</p></div>`:`<div class="actions"><span class="badge ${badge(a)}">${esc(label(a))} · ${esc(String(a.status||''))}</span></div>`}</article>`}
-async function load(){const state=$('state'),list=$('list');state.textContent='Loading applications…';try{const d=await admin(),apps=d.applications||[],needs=apps.filter(a=>a.verification_status==='needs_review'&&a.status==='pending'),verified=apps.filter(a=>['auto_approved','approved'].includes(a.verification_status)),active=apps.filter(a=>a.status==='activated');$('needsCount').textContent=needs.length;$('verifiedCount').textContent=verified.length;$('activeCount').textContent=active.length;$('totalCount').textContent=apps.length;list.innerHTML=apps.length?apps.map(card).join(''):'<div class="card empty">No Coach applications yet.</div>';state.textContent=needs.length?needs.length+' application'+(needs.length===1?' needs':'s need')+' your decision.':'No Coach applications need manual review.';bind()}catch(e){state.textContent=e.message;state.className='status error'}}
-function bind(){document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=async()=>{const id=b.dataset.approve;b.disabled=true;b.textContent='Approving…';try{await admin('POST',{id,action:'approve',review_notes:document.querySelector('[data-notes="'+id+'"]')?.value||''});await load()}catch(e){alert(e.message);b.disabled=false;b.textContent='Approve Coach'}});document.querySelectorAll('[data-deny]').forEach(b=>b.onclick=async()=>{const id=b.dataset.deny,reason=prompt('Reason for denying this Coach application?')||'';if(!reason.trim())return;b.disabled=true;try{await admin('POST',{id,action:'reject',rejection_reason:reason,review_notes:document.querySelector('[data-notes="'+id+'"]')?.value||''});await load()}catch(e){alert(e.message);b.disabled=false}})}
-async function enter(s){const user=await authUser(s.access_token),profile=await founderProfile(user,s.access_token);save({...s,user});$('founderName').textContent=[profile.first_name,profile.last_name].filter(Boolean).join(' ')||'Founder';$('login').classList.add('hidden');$('office').classList.remove('hidden');await load()}
-$('loginForm').onsubmit=async e=>{e.preventDefault();const b=$('loginBtn'),st=$('loginStatus');b.disabled=true;st.textContent='Verifying Founder access…';try{const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||'Sign in failed.');await enter(d)}catch(err){clear();st.textContent=err.message;st.className='status error'}finally{b.disabled=false}};
-$('refresh').onclick=load;$('signOut').onclick=()=>{clear();location.reload()};
-(async()=>{try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s?.access_token)await enter(s)}catch{clear()}})();
+const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
+const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
+const KEY="mwFounderSupabaseSession";
+let session=null,currentView="home",cache={},aiHistory=[];
+const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",knowledge:"MW Knowledge System",support:"Customer Success & Support",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
+const date=v=>v?new Date(v).toLocaleString():"—";
+const badge=(text,type)=>'<span class="badge '+(type||"")+'">'+esc(text||"—")+'</span>';
+function save(s){session=s;localStorage.setItem(KEY,JSON.stringify(s))}
+function clear(){session=null;localStorage.removeItem(KEY)}
+async function authUser(token){const r=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error("Founder session expired.");return d}
+async function founderProfile(user,token){const r=await fetch(SUPABASE_URL+"/rest/v1/profiles?user_id=eq."+encodeURIComponent(user.id)+"&select=first_name,last_name,role,account_status&limit=1",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token}});const d=await r.json().catch(()=>[]),p=Array.isArray(d)?d[0]:null;if(!r.ok||!p||p.role!=="founder_owner"||p.account_status!=="active")throw new Error("Founder / Owner access required.");return p}
+async function api(section,force){if(!force&&cache[section])return cache[section];const r=await fetch("/api/founder?section="+encodeURIComponent(section),{headers:{Authorization:"Bearer "+session.access_token},cache:"no-store"});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Founder data unavailable.");cache[section]=d.data;return d.data}
+async function action(name,payload){const r=await fetch("/api/founder",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify(Object.assign({action:name},payload||{}))});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Founder action failed.");cache={};return d}
+async function ai(mode,payload){const r=await fetch("/api/founder/ai",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify(Object.assign({mode:mode},payload||{}))});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Founder AI request failed.");cache.ai_company=null;return d}
+async function admin(method,body){const r=await fetch(SUPABASE_URL+"/functions/v1/mw-coach-applications-admin",{method:method||"GET",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Application request failed.");return d}
+function loading(){ $("content").innerHTML='<div class="card empty">Loading Founder OS…</div>'}
+function stat(label,value,note){return '<div class="stat"><small>'+esc(label)+'</small><b>'+esc(value)+'</b>'+(note?'<em>'+esc(note)+'</em>':"")+'</div>'}
+function sectionHead(title,copy,actionHtml){return '<div class="sectionHead"><div><h2>'+esc(title)+'</h2><p>'+esc(copy||"")+'</p></div>'+(actionHtml||"")+'</div>'}
+function setView(v){currentView=v;document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("pageTitle").textContent=titles[v]||"Founder OS";$("sidebar").classList.remove("open");renderView(v)}
+function attentionRow(x){const sev=x.severity==="high"?"high":x.severity==="low"?"low":"";return '<div class="row attention '+sev+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.detail||"")+'</small></div><div class="right">'+badge(x.severity||"review",x.severity==="high"?"bad":x.severity==="low"?"blue":"warn")+'</div></div>'}
+function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
+
+async function renderHome(){
+  const d=await api("overview"),m=d.metrics||{},a=d.needs_attention||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">EXECUTIVE COMMAND CENTER</div><h2>See the whole company. Act on what matters.</h2><p>MW Dynasty business, customers, website, billing, AI workforce, product health, and Founder decisions in one place.</p><div class="heroActions"><button class="btn primary" id="briefBtn">Generate Executive AI Brief</button><button class="btn blue" data-go="attention">Open Needs Attention</button></div></section>'+
+    '<div class="stats">'+stat("Estimated MRR",money(m.estimated_mrr_cents),"Current recurring run-rate")+stat("Active Athletes",m.athletes_active||0,(m.athletes_total||0)+" total")+stat("Active Coaches",m.coaches_active||0,(m.coaches_total||0)+" total")+stat("Needs Review",m.applications_need_review||0,"Coach applications")+stat("Sponsored Seats",m.sponsored_seats_active||0,"Allocated / active")+stat("Open Support",m.open_support||0,"Member + public")+stat("Website Sessions",m.web_sessions_30d||0,"Last 30 days")+stat("Diagnostic Errors",m.diagnostic_errors_24h||0,"Last 24 hours")+'</div>'+
+    sectionHead("Needs Your Attention","Highest-priority Founder decisions and operating exceptions.")+
+    '<div class="grid2"><div class="list">'+(a.length?a.slice(0,8).map(attentionRow).join(""):'<div class="card empty">No urgent Founder items detected.</div>')+'</div><div class="card aiHero"><div class="brand">FOUNDER AI · CHIEF OF STAFF</div><h2 style="margin:8px 0">Your executive intelligence layer</h2><p class="muted">Ask about revenue, growth, product health, website conversion, support, Coach applications, or give MW a company objective.</p><div class="heroActions"><button class="btn blue" id="askAIHome">Ask Founder AI</button><button class="btn" data-go="ai">Open AI Company</button></div><div id="briefOut" class="bubble ai hidden" style="margin-top:12px"></div></div></div>';
+  bindGo();$("briefBtn").onclick=generateBrief;$("askAIHome").onclick=openAIModal;
+}
+async function generateBrief(){
+  const b=$("briefBtn"),out=$("briefOut");b.disabled=true;b.textContent="Building executive brief…";out.classList.remove("hidden");out.textContent="Founder AI is reviewing live MW data…";
+  try{const d=await ai("brief");out.textContent=d.answer||"No briefing returned."}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
+}
+async function renderAttention(){
+  const d=await api("overview"),a=d.needs_attention||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER ACTION CENTER</div><h2>Only what needs you.</h2><p>AI and deterministic system checks surface exceptions; you keep authority over consequential decisions.</p></section>'+
+    sectionHead("Open Founder Attention","Applications, billing, support, diagnostics, account requests, and sponsorship capacity.")+
+    '<div class="list">'+(a.length?a.map(attentionRow).join(""):'<div class="card empty">You are caught up.</div>')+'</div>';
+}
+async function renderCoaches(){
+  const d=await api("coaches"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">COACH OPERATIONS</div><h2>Every Coach. One operating view.</h2><p>Membership tier, billing provider, sponsored seats, Athlete load, organization, and verification state.</p></section>'+
+    '<div class="stats">'+stat("Coach Accounts",items.length)+stat("Paid / Active",items.filter(x=>x.billing_status==="active"||x.billing_status==="trialing"||x.access_source==="internal_test").length)+stat("Sprint Performance",items.filter(x=>x.tier==="mw_sprint_performance").length)+stat("Sponsored Athletes",items.reduce((n,x)=>n+(Number(x.sponsor_used)||0),0))+'</div>'+
+    sectionHead("Coach Directory","Founder visibility across the full Coach network.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Coach</th><th>Organization</th><th>Tier</th><th>Billing</th><th>Athletes</th><th>Sponsor Seats</th><th>Verification</th></tr></thead><tbody>'+items.map(x=>'<tr><td><b>'+esc(x.name||"Coach")+'</b><br><small>'+esc(x.title||"")+'</small></td><td>'+esc(x.organization||"—")+'</td><td>'+esc(x.tier||"—")+'</td><td>'+esc((x.provider||"—")+" · "+(x.billing_status||"—"))+'</td><td>'+esc(x.athletes||0)+'</td><td>'+esc((x.sponsor_used||0)+"/"+(x.sponsor_total||0))+'</td><td>'+esc(x.application_status||"—")+'</td></tr>').join("")+'</tbody></table></div>';
+}
+async function renderAthletes(){
+  const d=await api("athletes"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">ATHLETE OPERATIONS</div><h2>The entire Athlete ecosystem.</h2><p>Membership source, Coach connection, program position, tiers, onboarding status, and recent activity.</p></section>'+
+    '<div class="stats">'+stat("Athletes",items.length)+stat("Active Accounts",items.filter(x=>x.account_status==="active").length)+stat("Sponsored",items.filter(x=>x.membership_source==="coach_sponsored").length)+stat("Assessment Complete",items.filter(x=>x.assessment_complete).length)+'</div>'+
+    sectionHead("Athlete Directory","Founder-wide visibility; Coaches remain limited to assigned Athletes.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Athlete</th><th>Membership</th><th>Coach</th><th>Program</th><th>Tiers</th><th>Last Workout</th></tr></thead><tbody>'+items.map(x=>'<tr><td><b>'+esc(x.name||"Athlete")+'</b><br><small>'+esc((x.events||[]).join(", ")||x.experience_level||"")+'</small></td><td>'+esc((x.membership_source||"—")+" · "+(x.membership_status||"—"))+'</td><td>'+esc(x.coach_name||"—")+'</td><td>Week '+esc(x.current_week||"—")+' · '+esc(x.program_status||"—")+'</td><td>'+esc((x.track_tier||"—")+" / "+(x.strength_tier||"—"))+'</td><td>'+esc(x.last_workout_at?date(x.last_workout_at):"—")+'</td></tr>').join("")+'</tbody></table></div>';
+}
+function appLabel(a){return a.verification_status==="auto_approved"?"Auto-Verified":a.verification_status==="approved"?"Verified":a.verification_status==="needs_review"?"Needs Review":a.verification_status==="denied"?"Denied":"Pending"}
+function appBadge(a){return ["auto_approved","approved"].includes(a.verification_status)?"good":a.verification_status==="denied"?"bad":"warn"}
+async function renderApplications(){
+  const d=await admin("GET"),apps=d.applications||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">COACH VERIFICATION</div><h2>Verify the person. Payment comes after.</h2><p>Strong evidence can auto-verify. Ambiguous applications come here. A Coach cannot buy access before verification.</p></section>'+
+    '<div class="stats">'+stat("Needs Review",apps.filter(a=>a.verification_status==="needs_review"&&a.status==="pending").length)+stat("Verified",apps.filter(a=>["auto_approved","approved"].includes(a.verification_status)).length)+stat("Activated",apps.filter(a=>a.status==="activated").length)+stat("Applications",apps.length)+'</div>'+
+    sectionHead("Coach Applications","Evidence, decision trail, and payment-gate status.")+
+    '<div class="list">'+(apps.length?apps.map(a=>{const e=a.verification_evidence||{},p=e.page_check||{},needs=a.verification_status==="needs_review"&&a.status==="pending";return '<div class="card"><div class="row" style="border:0;padding:0;background:transparent"><div>'+badge(appLabel(a),appBadge(a))+'<h3 style="margin:8px 0 2px">'+esc((a.first_name||"")+" "+(a.last_name||""))+'</h3><small>'+esc((a.email||"")+(a.organization?" · "+a.organization:""))+'</small></div><div class="right"><small>'+date(a.created_at)+'</small></div></div><div class="grid3" style="margin-top:12px">'+stat("Role",a.coach_title||a.coaching_level||"—")+stat("Experience",(a.years_coaching??"—")+" years")+stat("Payment",String(a.payment_status||"not ready").replaceAll("_"," "))+'</div><div class="card" style="margin-top:11px;background:#071019"><b style="color:var(--gold)">Verification Evidence</b><p class="muted">'+esc(a.verification_method||"Verification source")+' · '+esc(a.verification_detail||"No source provided")+'</p><small>Name: '+esc(p.nameMatch===true?"matched":p.checked?"not confirmed":"not checked")+' · Coach role: '+esc(p.coachMatch===true?"matched":p.checked?"not confirmed":"not checked")+' · Organization: '+esc(p.orgMatch===true?"matched":p.checked?"not confirmed":"not checked")+'</small><p><b>MW decision:</b> '+esc(a.decision_reason||a.review_notes||"Pending")+'</p></div>'+(needs?'<label class="field">FOUNDER NOTES<textarea data-app-notes="'+esc(a.id)+'" rows="3"></textarea></label><div class="heroActions"><button class="btn primary" data-approve="'+esc(a.id)+'">Approve Coach</button><button class="btn danger" data-deny="'+esc(a.id)+'">Deny</button></div>':"")+'</div>'}).join(""):'<div class="card empty">No Coach applications.</div>')+'</div>';
+  document.querySelectorAll("[data-approve]").forEach(b=>b.onclick=async()=>{const id=b.dataset.approve;b.disabled=true;try{await admin("POST",{id:id,action:"approve",review_notes:document.querySelector('[data-app-notes="'+id+'"]')?.value||""});cache={};await renderApplications()}catch(e){alert(e.message);b.disabled=false}});
+  document.querySelectorAll("[data-deny]").forEach(b=>b.onclick=async()=>{const id=b.dataset.deny,reason=prompt("Reason for denying this Coach application?")||"";if(!reason.trim())return;b.disabled=true;try{await admin("POST",{id:id,action:"reject",rejection_reason:reason,review_notes:document.querySelector('[data-app-notes="'+id+'"]')?.value||""});cache={};await renderApplications()}catch(e){alert(e.message);b.disabled=false}});
+}
+async function renderRevenue(){
+  const d=await api("revenue"),subs=d.subscriptions||[],tr=d.recent_transitions||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">FINANCE & REVENUE</div><h2>Membership economics in one place.</h2><p>Apple, Stripe, plan mix, sponsorship revenue, transitions, and recurring run-rate without jumping across providers.</p></section>'+
+    '<div class="stats">'+stat("Estimated MRR",money(d.estimated_mrr_cents))+stat("Sponsor MRR",money(d.sponsorship_mrr_cents))+stat("Pending Transitions",d.pending_transitions||0)+stat("Subscription Segments",subs.length)+'</div>'+
+    sectionHead("Subscription Mix","Base memberships grouped by audience, plan, provider, and status.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Audience</th><th>Plan</th><th>Provider</th><th>Status</th><th>Billing Type</th><th>Count</th><th>Base MRR</th></tr></thead><tbody>'+subs.map(x=>'<tr><td>'+esc(x.audience)+'</td><td>'+esc(x.plan_code)+'</td><td>'+esc(x.provider||"—")+'</td><td>'+esc(x.status||"—")+'</td><td>'+esc(x.billing_type||"—")+'</td><td>'+esc(x.count||0)+'</td><td>'+money(x.base_mrr_cents)+'</td></tr>').join("")+'</tbody></table></div>'+
+    sectionHead("Recent Billing Transitions","Upgrades, downgrades, payer changes, and provider handoffs.")+
+    '<div class="list">'+(tr.length?tr.slice(0,30).map(x=>'<div class="row"><div><b>'+esc((x.direction||x.type||"Billing change")+" · "+(x.from_plan||"—")+" → "+(x.to_plan||"—"))+'</b><small>'+esc((x.provider||"provider")+" · "+(x.status||"status"))+'</small></div><div class="right"><small>'+date(x.created_at)+'</small></div></div>').join(""):'<div class="card empty">No billing transitions recorded.</div>')+'</div>';
+}
+async function renderSponsorships(){
+  const d=await api("sponsorships"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">SPONSORSHIP CENTER</div><h2>Coach-paid Athlete access, fully visible.</h2><p>Packages, seat utilization, invitations, active Athletes, scheduled endings, provider and renewal status.</p></section>'+
+    '<div class="stats">'+stat("Packages",items.length)+stat("Purchased Seats",items.reduce((n,x)=>n+(Number(x.requested_seats)||0),0))+stat("Used Seats",items.reduce((n,x)=>n+(Number(x.active)||0)+(Number(x.invited)||0)+(Number(x.scheduled_to_end)||0),0))+stat("Available",items.reduce((n,x)=>n+(Number(x.available)||0),0))+'</div>'+
+    '<div class="list" style="margin-top:14px">'+(items.length?items.map(x=>'<div class="card"><div class="row" style="padding:0;border:0;background:transparent"><div><b>'+esc(x.coach_name||"Coach")+'</b><small>'+esc(x.plan_code||"—")+' · '+esc(x.provider||"—")+'</small></div><div>'+badge(x.status,x.status==="active"?"good":"warn")+'</div></div><div class="grid3" style="margin-top:12px">'+stat("Purchased",x.requested_seats||0)+stat("Active / Claimed",x.active||0)+stat("Available",x.available||0)+'</div><div class="kpiLine"><span>Seat utilization</span><b>'+metricPercent((Number(x.active)||0)+(Number(x.invited)||0),(Number(x.requested_seats)||0))+'%</b></div><div class="bar"><i style="width:'+Math.min(100,metricPercent((Number(x.active)||0)+(Number(x.invited)||0),(Number(x.requested_seats)||0)))+'%"></i></div></div>').join(""):'<div class="card empty">No sponsorship packages yet.</div>')+'</div>';
+}
+async function renderOrganizations(){
+  const d=await api("organizations"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">ORGANIZATIONS & TEAMS</div><h2>Schools, clubs, teams, and memberships.</h2><p>The organization layer gives MW room to grow beyond individual Coach accounts without giving away Founder authority.</p></section>'+
+    '<div class="grid3">'+(items.length?items.map(x=>'<div class="card"><div class="brand">ORGANIZATION</div><h3>'+esc(x.name)+'</h3><div class="grid2">'+stat("Members",x.members||0)+stat("Teams",x.teams||0)+stat("Coaches",x.coaches||0)+stat("Athletes",x.athletes||0)+'</div></div>').join(""):'<div class="card empty">No organizations created yet.</div>')+'</div>';
+}
+async function renderWebsite(){
+  const d=await api("website"),h=d.health||{},pages=d.top_pages||[],events=d.events||[];
+  const web=h.website||{},app=h.app||{};
+  $("content").innerHTML='<section class="hero"><div class="brand">WEBSITE & GROWTH CENTER</div><h2>The website is part of the company OS.</h2><p>Public website health, app entry health, acquisition funnel, signup starts, checkout starts, and page-level conversion signals.</p></section>'+
+    '<div class="grid2"><div class="card"><div class="health"><i class="healthDot '+(web.ok?"ok":"")+'"></i><div><b>mwdynasty.com</b><small>'+esc(web.ok?"Online · "+web.latency_ms+" ms":"Needs attention · "+(web.error||web.status||"unknown"))+'</small></div></div></div><div class="card"><div class="health"><i class="healthDot '+(app.ok?"ok":"")+'"></i><div><b>app.mwdynasty.com</b><small>'+esc(app.ok?"Online · "+app.latency_ms+" ms":"Needs attention · "+(app.error||app.status||"unknown"))+'</small></div></div></div></div>'+
+    '<div class="stats" style="margin-top:12px">'+stat("Website Sessions",d.sessions_30d||0,"30 days")+stat("Page Views",d.page_views_30d||0,"30 days")+stat("Signup Starts",d.signup_starts_30d||0,"30 days")+stat("Checkout Starts",d.checkout_starts_30d||0,"30 days")+stat("Website Accounts",d.website_accounts_30d||0,"30 days")+stat("Paid Journeys",d.website_paid_30d||0,"30 days")+'</div>'+
+    '<div class="grid2">'+
+      '<div>'+sectionHead("Top Pages","Page traffic collected by MW Growth analytics.")+'<div class="list">'+(pages.length?pages.map(x=>'<div class="row"><div><b>'+esc(x.page)+'</b><small>'+esc(x.sessions)+" unique sessions"+'</small></div><div class="right"><b>'+esc(x.views)+'</b><small>views</small></div></div>').join(""):'<div class="card empty">Website analytics will populate as traffic arrives.</div>')+'</div></div>'+
+      '<div>'+sectionHead("Funnel Events","Tracked actions across the website/app entry flow.")+'<div class="list">'+(events.length?events.map(x=>'<div class="row"><div><b>'+esc(String(x.event).replaceAll("_"," "))+'</b></div><div class="right"><b>'+esc(x.count)+'</b></div></div>').join(""):'<div class="card empty">No tracked events yet.</div>')+'</div></div></div>'+
+    '<div class="card" style="margin-top:14px"><b>Public-site integration status</b><p class="muted">MW Growth analytics is now available as a shared tracker. The Founder Center can already monitor live uptime for both domains and website-channel onboarding. Page-level public-site traffic appears once the tracker is included on the public marketing deployment.</p></div>';
+}
+async function renderMarketing(){
+  const d=await api("marketing_sales"),leads=d.leads||[],campaigns=d.campaigns||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">MARKETING & SALES</div><h2>Build demand, manage pipeline, close partnerships.</h2><p>Marketing campaigns and a Founder-owned CRM for Coaches, schools, clubs, and strategic partners.</p></section>'+
+    '<div class="stats">'+stat("Open Pipeline",money(d.pipeline_value_cents))+stat("Won MRR",money(d.won_value_cents))+stat("Leads",leads.length)+stat("Campaigns",campaigns.length)+'</div>'+
+    '<div class="grid2">'+
+      '<div>'+sectionHead("Sales Pipeline","Virtual sales team uses the same Founder-owned CRM.",'<button class="btn small primary" id="addLead">Add Lead</button>')+'<div class="list">'+(leads.length?leads.map(x=>'<div class="row"><div><b>'+esc(x.organization||x.name||"Lead")+'</b><small>'+esc((x.lead_type||"lead")+" · "+(x.source||"direct"))+'</small></div><div class="right">'+badge(x.stage,x.stage==="won"?"good":x.stage==="lost"?"bad":"blue")+'<small>'+money(x.estimated_monthly_value_cents)+'/mo</small></div></div>').join(""):'<div class="card empty">No sales leads yet.</div>')+'</div></div>'+
+      '<div>'+sectionHead("Marketing Campaigns","Track campaigns, audience, budget, leads, and conversions.",'<button class="btn small primary" id="addCampaign">Add Campaign</button>')+'<div class="list">'+(campaigns.length?campaigns.map(x=>'<div class="row"><div><b>'+esc(x.name)+'</b><small>'+esc((x.channel||"channel")+" · "+(x.audience||"audience"))+'</small></div><div class="right">'+badge(x.status,x.status==="active"?"good":"")+'<small>'+esc((x.leads||0)+" leads · "+(x.conversions||0)+" conversions")+'</small></div></div>').join(""):'<div class="card empty">No campaigns yet.</div>')+'</div></div></div>';
+  $("addLead").onclick=openLeadModal;$("addCampaign").onclick=openCampaignModal;
+}
+function openLeadModal(){
+  modal("Add Sales Lead",'<div class="formGrid"><label class="field">NAME<input id="leadName"></label><label class="field">ORGANIZATION<input id="leadOrg"></label><label class="field">TYPE<select id="leadType"><option>coach</option><option>school</option><option>club</option><option>partner</option><option>other</option></select></label><label class="field">EST. MONTHLY VALUE ($)<input id="leadValue" type="number" min="0"></label></div><label class="field">NEXT ACTION<input id="leadNext"></label><button class="btn primary" id="saveLead">Save Lead</button>');
+  $("saveLead").onclick=async()=>{try{await action("create_lead",{name:$("leadName").value,organization:$("leadOrg").value,leadType:$("leadType").value,estimatedMonthlyValueCents:Number($("leadValue").value||0)*100,nextAction:$("leadNext").value,assignedAgentCode:"sales_rep"});closeModal();renderMarketing()}catch(e){alert(e.message)}};
+}
+function openCampaignModal(){
+  modal("Add Marketing Campaign",'<div class="formGrid"><label class="field">CAMPAIGN NAME<input id="campName"></label><label class="field">CHANNEL<input id="campChannel" placeholder="Social, email, paid, SEO…"></label><label class="field">AUDIENCE<input id="campAudience"></label><label class="field">BUDGET ($)<input id="campBudget" type="number" min="0"></label></div><label class="field">OBJECTIVE<textarea id="campObjective" rows="3"></textarea></label><button class="btn primary" id="saveCampaign">Save Campaign</button>');
+  $("saveCampaign").onclick=async()=>{try{await action("create_campaign",{name:$("campName").value,channel:$("campChannel").value,audience:$("campAudience").value,budgetCents:Number($("campBudget").value||0)*100,objective:$("campObjective").value});closeModal();renderMarketing()}catch(e){alert(e.message)}};
+}
+async function renderAI(){
+  const d=await api("ai_company"),agents=d.agents||[],tasks=d.tasks||[],approvals=d.approvals||[];
+  const byDept={};agents.forEach(a=>(byDept[a.department]||(byDept[a.department]=[])).push(a));
+  $("content").innerHTML='<section class="hero aiHero"><div class="brand">MW AI COMPANY</div><h2>Your virtual company workforce.</h2><p>Founder → executives → directors → managers → specialists. AI analyzes, drafts, coordinates, and escalates. You retain authority over consequential actions.</p><div class="heroActions"><button class="btn primary" id="objectiveBtn">Give MW a Company Objective</button><button class="btn blue" id="chatAI">Ask Founder AI</button></div></section>'+
+    '<div class="stats">'+stat("AI Employees",agents.length)+stat("Open Tasks",tasks.filter(x=>!["completed","cancelled"].includes(x.status)).length)+stat("Awaiting Approval",approvals.length)+stat("Departments",Object.keys(byDept).length)+'</div>'+
+    sectionHead("Founder Approval Queue","Pricing, contracts, money, deployment, destructive changes, official methodology, and important external communications stay under human control.")+
+    '<div class="list">'+(approvals.length?approvals.map(x=>'<div class="card approval"><div class="row" style="padding:0;border:0;background:transparent"><div>'+badge(x.risk_level,x.risk_level==="critical"||x.risk_level==="high"?"bad":"warn")+'<h3 style="margin:7px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.description||"")+'</p></div><div class="heroActions"><button class="btn small good" data-approve-ai="'+esc(x.id)+'">Approve</button><button class="btn small danger" data-reject-ai="'+esc(x.id)+'">Reject</button></div></div></div>').join(""):'<div class="card empty">No AI actions are waiting for Founder approval.</div>')+'</div>'+
+    sectionHead("AI Task Board","Work created by Founder objectives and department planning.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Owner</th><th>Task</th><th>Department</th><th>Priority</th><th>Status</th><th>Approval</th></tr></thead><tbody>'+tasks.map(x=>'<tr><td>'+esc(x.agent_code||"—")+'</td><td><b>'+esc(x.title)+'</b><br><small>'+esc(x.description||"")+'</small></td><td>'+esc(x.department||"—")+'</td><td>'+esc(x.priority)+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.approval_status||"—")+'</td></tr>').join("")+'</tbody></table></div>'+
+    sectionHead("AI Organization","Every AI employee has a defined job, manager, mission, KPIs, and authority level.")+
+    Object.keys(byDept).map(dept=>'<div class="sectionHead"><div><h2 style="font-size:17px">'+esc(dept)+'</h2></div></div><div class="agentGrid">'+byDept[dept].map(a=>'<div class="agent"><div class="dept">'+esc(a.org_level.toUpperCase())+'</div><h3>'+esc(a.title)+'</h3><p>'+esc(a.mission)+'</p><small>Reports to: '+esc(a.manager_code||"Founder")+' · Authority: '+esc(a.authority_level)+'</small></div>').join("")+'</div>').join("");
+  $("objectiveBtn").onclick=openObjectiveModal;$("chatAI").onclick=openAIModal;
+  document.querySelectorAll("[data-approve-ai]").forEach(b=>b.onclick=()=>reviewAIApproval(b.dataset.approveAi,"approved"));
+  document.querySelectorAll("[data-reject-ai]").forEach(b=>b.onclick=()=>reviewAIApproval(b.dataset.rejectAi,"rejected"));
+}
+async function reviewAIApproval(id,decision){try{await action("review_approval",{id:id,decision:decision});renderAI()}catch(e){alert(e.message)}}
+function openObjectiveModal(){
+  modal("Give MW Dynasty a Company Objective",'<p class="muted">Founder AI will break this objective into department tasks and create approval requests for consequential actions. Nothing consequential executes automatically.</p><label class="field">FOUNDER OBJECTIVE<textarea id="objectiveText" rows="7" placeholder="Example: Prepare MW Dynasty for a school district partnership."></textarea></label><button class="btn primary" id="buildPlan">Build AI Work Plan</button><div id="planStatus" class="status"></div>');
+  $("buildPlan").onclick=async()=>{const b=$("buildPlan"),st=$("planStatus"),objective=$("objectiveText").value.trim();if(!objective)return; b.disabled=true;st.textContent="Founder AI is assigning departments…";try{const d=await ai("plan",{objective:objective});st.textContent=(d.summary||"Plan created")+" · "+(d.tasks||[]).length+" tasks · "+(d.approvals||[]).length+" approvals.";setTimeout(()=>{closeModal();setView("ai")},900)}catch(e){st.textContent=e.message;st.className="status error"}finally{b.disabled=false}};
+}
+function openAIModal(){
+  const hist=aiHistory.map(x=>'<div class="bubble '+(x.role==="user"?"user":"ai")+'"><b>'+(x.role==="user"?"Founder":"Founder AI")+'</b><br>'+esc(x.text)+'</div>').join("");
+  modal("Founder AI",'<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask me about MW Dynasty revenue, Coaches, Athletes, website conversion, system health, support, or company priorities.</div>')+'</div><div class="chatRow"><textarea id="aiMessage" placeholder="Ask Founder AI…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>');
+  $("aiSend").onclick=async()=>{const q=$("aiMessage").value.trim();if(!q)return;aiHistory.push({role:"user",text:q});$("aiChat").innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';$("aiMessage").value="";$("aiSend").disabled=true;try{const d=await ai("chat",{message:q});aiHistory.push({role:"ai",text:d.answer||""});$("aiChat").innerHTML+='<div class="bubble ai"><b>Founder AI</b><br>'+esc(d.answer||"")+'</div>';$("aiChat").scrollTop=$("aiChat").scrollHeight}catch(e){$("aiChat").innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}finally{$("aiSend").disabled=false}};
+}
+async function renderKnowledge(){
+  const d=await api("knowledge"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER METHODOLOGY ENGINE</div><h2>Teach MW once. Govern it everywhere.</h2><p>Founder principles become structured, reviewable knowledge proposals. AI can map conflicts and affected areas, but official MW methodology changes only after your approval.</p><div class="heroActions"><button class="btn primary" id="addKnowledge">Add Founder Principle</button></div></section>'+
+    '<div class="list">'+(items.length?items.map(x=>'<div class="card knowledgeCard"><div class="row" style="padding:0;border:0;background:transparent"><div>'+badge(x.status,x.status==="published"?"good":x.status==="rejected"?"bad":"purple")+'<h3 style="margin:8px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.principle_text)+'</p><small>Affected: '+esc((x.affected_areas||[]).join(", ")||"Not mapped yet")+'</small>'+(x.conflict_notes?'<p class="muted"><b>Conflict notes:</b> '+esc(x.conflict_notes)+'</p>':"")+'</div><div class="heroActions">'+(x.status==="review"?'<button class="btn small good" data-kapprove="'+esc(x.id)+'">Approve</button><button class="btn small danger" data-kreject="'+esc(x.id)+'">Reject</button>':"")+(x.status==="approved"?'<button class="btn small primary" data-kpublish="'+esc(x.id)+'">Publish</button>':"")+'</div></div></div>').join(""):'<div class="card empty">No Founder knowledge proposals yet.</div>')+'</div>';
+  $("addKnowledge").onclick=openKnowledgeModal;
+  document.querySelectorAll("[data-kapprove]").forEach(b=>b.onclick=()=>knowledgeDecision(b.dataset.kapprove,"approved"));
+  document.querySelectorAll("[data-kreject]").forEach(b=>b.onclick=()=>knowledgeDecision(b.dataset.kreject,"rejected"));
+  document.querySelectorAll("[data-kpublish]").forEach(b=>b.onclick=()=>knowledgeDecision(b.dataset.kpublish,"published"));
+}
+function openKnowledgeModal(){
+  modal("Add Founder Principle",'<p class="muted">Add the principle in your own words. It stays in review until you approve it.</p><label class="field">TITLE<input id="knowledgeTitle"></label><label class="field">FOUNDER PRINCIPLE<textarea id="knowledgePrinciple" rows="8"></textarea></label><label class="field">AFFECTED AREAS <input id="knowledgeAreas" placeholder="Track, Strength, Sprint School, Coach MW…"></label><label class="field">CONFLICT NOTES<textarea id="knowledgeConflict" rows="3"></textarea></label><button class="btn primary" id="saveKnowledge">Create Proposal</button>');
+  $("saveKnowledge").onclick=async()=>{try{await action("create_knowledge",{title:$("knowledgeTitle").value,principle:$("knowledgePrinciple").value,affectedAreas:$("knowledgeAreas").value.split(",").map(x=>x.trim()).filter(Boolean),conflictNotes:$("knowledgeConflict").value});closeModal();renderKnowledge()}catch(e){alert(e.message)}};
+}
+async function knowledgeDecision(id,decision){try{await action("review_knowledge",{id:id,decision:decision});renderKnowledge()}catch(e){alert(e.message)}}
+async function renderSupport(){
+  const d=await api("support"),m=d.member_requests||[],p=d.public_requests||[],del=d.deletion_requests||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">CUSTOMER SUCCESS & SUPPORT</div><h2>Support is an operating system, not an inbox.</h2><p>Member issues, public website requests, account deletion workflows, and AI-assisted triage all roll up here.</p></section>'+
+    '<div class="stats">'+stat("Member Requests",m.length)+stat("Public Requests",p.length)+stat("Deletion Requests",del.length)+stat("Open Total",m.concat(p).filter(x=>!["closed","resolved"].includes(x.status)).length)+'</div>'+
+    sectionHead("Recent Support","Message content stays out of executive summaries by design; Founder sees category, source, status, and timing.")+
+    '<div class="list">'+m.concat(p).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,100).map(x=>'<div class="row"><div><b>'+esc((x.category||"Support").replaceAll("_"," "))+'</b><small>'+esc(x.source||"member")+' · App '+esc(x.app_version||"—")+'</small></div><div class="right">'+badge(x.status||"open",["closed","resolved"].includes(x.status)?"good":"warn")+'<small>'+date(x.created_at)+'</small></div></div>').join("")+'</div>'+
+    sectionHead("Account Deletion","High-trust account cleanup workflow.")+
+    '<div class="list">'+(del.length?del.map(x=>'<div class="row"><div><b>Deletion Request</b><small>'+esc(x.status||"pending")+'</small></div><div class="right"><small>'+date(x.requested_at)+'</small></div></div>').join(""):'<div class="card empty">No account deletion requests.</div>')+'</div>';
+}
+async function renderProduct(){
+  const d=await api("system"),diag=d.diagnostics||{};
+  $("content").innerHTML='<section class="hero"><div class="brand">PRODUCT & TECHNOLOGY</div><h2>Release health, product reliability, and technical operations.</h2><p>Founder visibility into the live product without mixing this with the Athlete or Coach experience.</p></section>'+
+    '<div class="stats">'+stat("App Version",d.app_version||"—")+stat("iOS Build",d.ios_build||"—")+stat("Errors 24h",diag.errors_24h||0)+stat("Warnings 24h",diag.warnings_24h||0)+stat("Diagnostics 24h",diag.events_24h||0)+stat("Billing Transitions",d.pending_billing_transitions||0)+'</div>'+
+    '<div class="card" style="margin-top:14px"><div class="brand">RELEASE OPERATING MODEL</div><h3>Build → TestFlight → Diagnostics → Fix → Submit</h3><p class="muted">Release & QA AI owns regression analysis; CTO AI owns technical risk; Founder approval remains required for major production deployments.</p></div>';
+}
+function integrityRows(obj){return Object.entries(obj||{}).filter(([k])=>k!=="checked_at").map(([k,v])=>'<div class="row"><div><b>'+esc(k.replaceAll("_"," "))+'</b></div><div class="right">'+badge(String(v),Number(v)===0?"good":"bad")+'</div></div>').join("")}
+async function renderSystem(){
+  const d=await api("system"),diag=d.diagnostics||{},latest=diag.latest||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">SYSTEM HEALTH</div><h2>Technical and billing integrity in one screen.</h2><p>Launch diagnostics plus deterministic billing/entitlement invariants catch problems that crash reports alone cannot.</p></section>'+
+    '<div class="stats">'+stat("Errors 24h",diag.errors_24h||0)+stat("Warnings 24h",diag.warnings_24h||0)+stat("Events 24h",diag.events_24h||0)+stat("Pending Billing",d.pending_billing_transitions||0)+'</div>'+
+    '<div class="grid2">'+
+      '<div>'+sectionHead("Billing Integrity","Zero is the healthy value for each invariant.")+'<div class="list">'+integrityRows(d.billing_integrity)+'</div></div>'+
+      '<div>'+sectionHead("Latest Diagnostics","Non-sensitive app/build/API reliability events.")+'<div class="list">'+latest.slice(0,30).map(x=>'<div class="row"><div><b>'+esc(x.event_type||"event")+'</b><small>'+esc((x.surface||"")+" · "+(x.route||x.code||""))+'</small></div><div class="right">'+badge(x.severity||"info",x.severity==="error"?"bad":x.severity==="warn"?"warn":"blue")+'<small>'+date(x.created_at)+'</small></div></div>').join("")+'</div></div></div>';
+}
+async function renderSecurity(){
+  const d=await api("audit"),items=d.items||[];
+  $("content").innerHTML='<section class="hero"><div class="brand">SECURITY & AUDIT</div><h2>Founder authority stays explicit and auditable.</h2><p>Founder-only OS access, RLS-protected business tables, deterministic approval gates, and a platform audit trail.</p></section>'+
+    '<div class="card"><b>Authority model</b><p class="muted">Founder / Owner has platform-wide executive visibility. Admin, Coach, Athlete, and AI workforce roles do not inherit Founder authority. AI recommendations never override pricing, payments, contracts, production deployment, destructive security/data actions, or official MW methodology.</p></div>'+
+    sectionHead("Platform Audit Trail","Recent consequential actions recorded by MW Dynasty.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>When</th><th>Actor Role</th><th>Action</th><th>Target</th><th>Reason</th></tr></thead><tbody>'+items.map(x=>'<tr><td>'+esc(date(x.created_at))+'</td><td>'+esc(x.actor_role||"—")+'</td><td>'+esc(x.action||"—")+'</td><td>'+esc((x.target_type||"—")+" · "+(x.target_id||""))+'</td><td>'+esc(x.reason||"—")+'</td></tr>').join("")+'</tbody></table></div>';
+}
+async function renderAnalytics(){
+  const [o,r,w]=await Promise.all([api("overview"),api("revenue"),api("website")]),m=o.metrics||{};
+  const athleteConv=metricPercent(w.website_paid_30d||0,w.website_accounts_30d||0);
+  $("content").innerHTML='<section class="hero"><div class="brand">BUSINESS INTELLIGENCE</div><h2>One source of truth for MW Dynasty.</h2><p>Growth, revenue, memberships, website funnel, customer operations, and product health become measurable business intelligence.</p></section>'+
+    '<div class="stats">'+stat("Estimated MRR",money(r.estimated_mrr_cents))+stat("New Accounts",m.new_accounts_30d||0,"30 days")+stat("Web Sessions",w.sessions_30d||0,"30 days")+stat("Website Paid Conv.",athleteConv+"%","Paid website journeys / accounts")+stat("Active Athletes",m.athletes_active||0)+stat("Active Coaches",m.coaches_active||0)+stat("Open Support",m.open_support||0)+stat("Errors 24h",m.diagnostic_errors_24h||0)+'</div>'+
+    '<div class="card" style="margin-top:14px"><div class="brand">DATA & ANALYTICS AI</div><h3>Metrics should explain decisions, not decorate a dashboard.</h3><p class="muted">The BI layer feeds Founder AI with current MW operating data. As traffic and paid members grow, cohort retention, ARPU, plan mix, conversion, sponsorship utilization, engagement, and customer-health reporting can build on this same foundation.</p></div>';
+}
+async function renderView(v){
+  loading();
+  try{
+    if(v==="home")return await renderHome();
+    if(v==="attention")return await renderAttention();
+    if(v==="coaches")return await renderCoaches();
+    if(v==="athletes")return await renderAthletes();
+    if(v==="applications")return await renderApplications();
+    if(v==="revenue")return await renderRevenue();
+    if(v==="sponsorships")return await renderSponsorships();
+    if(v==="organizations")return await renderOrganizations();
+    if(v==="website")return await renderWebsite();
+    if(v==="marketing")return await renderMarketing();
+    if(v==="ai")return await renderAI();
+    if(v==="knowledge")return await renderKnowledge();
+    if(v==="support")return await renderSupport();
+    if(v==="product")return await renderProduct();
+    if(v==="system")return await renderSystem();
+    if(v==="security")return await renderSecurity();
+    if(v==="analytics")return await renderAnalytics();
+  }catch(e){$("content").innerHTML='<div class="card"><h2>Founder OS could not load this section.</h2><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="renderView(currentView)">Try Again</button></div>'}
+}
+function bindGo(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>setView(b.dataset.go))}
+function modal(title,body){$("modalRoot").innerHTML='<div class="modal" id="modal"><div class="modalCard"><div class="modalTop"><h2>'+esc(title)+'</h2><button class="btn small" id="modalClose">Close</button></div><div style="margin-top:12px">'+body+'</div></div></div>';$("modalClose").onclick=closeModal;$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()})}
+function closeModal(){$("modalRoot").innerHTML=""}
+async function enter(s){
+  const user=await authUser(s.access_token),profile=await founderProfile(user,s.access_token);save(Object.assign({},s,{user:user}));
+  $("founderName").textContent=[profile.first_name,profile.last_name].filter(Boolean).join(" ")||"Founder";
+  $("login").classList.add("hidden");$("appShell").classList.remove("hidden");await setView("home");
+}
+$("loginForm").onsubmit=async e=>{e.preventDefault();const b=$("loginBtn"),st=$("loginStatus");b.disabled=true;st.textContent="Verifying Founder access…";st.className="status";try{const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||"Sign in failed.");await enter(d)}catch(err){clear();st.textContent=err.message;st.className="status error"}finally{b.disabled=false}};
+document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+$("menuBtn").onclick=()=>$("sidebar").classList.toggle("open");
+$("refreshBtn").onclick=()=>{cache={};renderView(currentView)};
+$("founderAIQuick").onclick=openAIModal;
+$("signOut").onclick=()=>{clear();location.reload()};
+(async()=>{try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s?.access_token)await enter(s)}catch{clear()}})();
 </script>
-</body></html>
+</body>
+</html>
