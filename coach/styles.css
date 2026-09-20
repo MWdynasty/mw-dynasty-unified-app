@@ -1644,3 +1644,22 @@ html.mw-native-app .coach-login-bg:after{
     left:55%!important;
   }
 }
+
+
+/* MW COACH RESTORE STANDARD TEXT v12 */
+@media(min-width:901px){
+  html:not(.mw-native-app) .coach-login-standard{
+    left:50%!important;
+    top:auto!important;
+    bottom:24px!important;
+    transform:translateX(-50%)!important;
+  }
+}
+@media(min-width:901px) and (max-width:1180px){
+  html:not(.mw-native-app) .coach-login-standard{
+    left:50%!important;
+    top:auto!important;
+    bottom:24px!important;
+    transform:translateX(-50%)!important;
+  }
+}
