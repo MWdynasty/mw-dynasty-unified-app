@@ -200,19 +200,32 @@ function openCampaignModal(){
   $("saveCampaign").onclick=async()=>{try{await action("create_campaign",{name:$("campName").value,channel:$("campChannel").value,audience:$("campAudience").value,budgetCents:Number($("campBudget").value||0)*100,objective:$("campObjective").value});closeModal();renderMarketing()}catch(e){alert(e.message)}};
 }
 async function renderAI(){
-  const d=await api("ai_company"),agents=d.agents||[],tasks=d.tasks||[],approvals=d.approvals||[];
+  const d=await api("ai_company"),agents=d.agents||[],tasks=d.tasks||[],approvals=d.approvals||[],runs=d.recent_runs||[];
   const byDept={};agents.forEach(a=>(byDept[a.department]||(byDept[a.department]=[])).push(a));
   $("content").innerHTML='<section class="hero aiHero"><div class="brand">MW AI COMPANY</div><h2>Your virtual company workforce.</h2><p>Founder → executives → directors → managers → specialists. AI analyzes, drafts, coordinates, and escalates. You retain authority over consequential actions.</p><div class="heroActions"><button class="btn primary" id="objectiveBtn">Give MW a Company Objective</button><button class="btn blue" id="chatAI">Ask Founder AI</button></div></section>'+
-    '<div class="stats">'+stat("AI Employees",agents.length)+stat("Open Tasks",tasks.filter(x=>!["completed","cancelled"].includes(x.status)).length)+stat("Awaiting Approval",approvals.length)+stat("Departments",Object.keys(byDept).length)+'</div>'+
+    '<div class="stats">'+stat("AI Employees",agents.length)+stat("Open Tasks",tasks.filter(x=>!["completed","cancelled"].includes(x.status)).length)+stat("Awaiting Approval",approvals.length)+stat("AI Work Runs",runs.length,"Recent stored work")+'</div>'+
     sectionHead("Founder Approval Queue","Pricing, contracts, money, deployment, destructive changes, official methodology, and important external communications stay under human control.")+
     '<div class="list">'+(approvals.length?approvals.map(x=>'<div class="card approval"><div class="row" style="padding:0;border:0;background:transparent"><div>'+badge(x.risk_level,x.risk_level==="critical"||x.risk_level==="high"?"bad":"warn")+'<h3 style="margin:7px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.description||"")+'</p></div><div class="heroActions"><button class="btn small good" data-approve-ai="'+esc(x.id)+'">Approve</button><button class="btn small danger" data-reject-ai="'+esc(x.id)+'">Reject</button></div></div></div>').join(""):'<div class="card empty">No AI actions are waiting for Founder approval.</div>')+'</div>'+
     sectionHead("AI Task Board","Work created by Founder objectives and department planning.")+
-    '<div class="tableWrap"><table class="table"><thead><tr><th>Owner</th><th>Task</th><th>Department</th><th>Priority</th><th>Status</th><th>Approval</th></tr></thead><tbody>'+tasks.map(x=>'<tr><td>'+esc(x.agent_code||"—")+'</td><td><b>'+esc(x.title)+'</b><br><small>'+esc(x.description||"")+'</small></td><td>'+esc(x.department||"—")+'</td><td>'+esc(x.priority)+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.approval_status||"—")+'</td></tr>').join("")+'</tbody></table></div>'+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Owner</th><th>Task</th><th>Department</th><th>Priority</th><th>Status</th><th>Approval</th><th>Work</th></tr></thead><tbody>'+tasks.map(x=>'<tr><td>'+esc(x.agent_code||"—")+'</td><td><b>'+esc(x.title)+'</b><br><small>'+esc(x.description||"")+'</small>'+(x.output_summary?'<br><small style="color:#93d6ff">AI work is ready to review.</small>':"")+'</td><td>'+esc(x.department||"—")+'</td><td>'+esc(x.priority)+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.approval_status||"—")+'</td><td>'+(["queued","in_progress","blocked"].includes(x.status)?'<button class="btn small blue" data-run-task="'+esc(x.id)+'">Run AI</button>':"")+(x.output_summary?'<button class="btn small" style="margin-left:5px" data-view-task="'+esc(x.id)+'">View</button>':"")+'</td></tr>').join("")+'</tbody></table></div>'+
+    sectionHead("Recent AI Work","Stored analysis and drafts from MW AI employees.")+
+    '<div class="list">'+(runs.length?runs.slice(0,15).map(x=>'<div class="row"><div><b>'+esc(x.agent_code||"AI employee")+' · '+esc(x.run_type||"analysis")+'</b><small>'+esc((x.output_summary||"").slice(0,180))+(String(x.output_summary||"").length>180?"…":"")+'</small></div><div class="right">'+badge(x.status,x.status==="completed"?"good":"bad")+'<small>'+date(x.created_at)+'</small></div></div>').join(""):'<div class="card empty">No AI employee work has been run yet.</div>')+'</div>'+
     sectionHead("AI Organization","Every AI employee has a defined job, manager, mission, KPIs, and authority level.")+
     Object.keys(byDept).map(dept=>'<div class="sectionHead"><div><h2 style="font-size:17px">'+esc(dept)+'</h2></div></div><div class="agentGrid">'+byDept[dept].map(a=>'<div class="agent"><div class="dept">'+esc(a.org_level.toUpperCase())+'</div><h3>'+esc(a.title)+'</h3><p>'+esc(a.mission)+'</p><small>Reports to: '+esc(a.manager_code||"Founder")+' · Authority: '+esc(a.authority_level)+'</small></div>').join("")+'</div>').join("");
   $("objectiveBtn").onclick=openObjectiveModal;$("chatAI").onclick=openAIModal;
   document.querySelectorAll("[data-approve-ai]").forEach(b=>b.onclick=()=>reviewAIApproval(b.dataset.approveAi,"approved"));
   document.querySelectorAll("[data-reject-ai]").forEach(b=>b.onclick=()=>reviewAIApproval(b.dataset.rejectAi,"rejected"));
+  document.querySelectorAll("[data-run-task]").forEach(b=>b.onclick=()=>runAITask(b.dataset.runTask,b));
+  document.querySelectorAll("[data-view-task]").forEach(b=>b.onclick=()=>{const t=tasks.find(x=>x.id===b.dataset.viewTask);if(t)modal("AI Work · "+t.title,'<div class="bubble ai">'+esc(t.output_summary||"No work output stored.")+'</div>')});
+}
+async function runAITask(id,button){
+  if(button){button.disabled=true;button.textContent="Working…"}
+  try{
+    const d=await ai("execute_task",{taskId:id});
+    cache.ai_company=null;
+    modal("AI Work Complete",'<div class="bubble ai">'+esc(d.answer||"Task completed.")+'</div>'+(d.requiresApproval?'<p class="muted">This task remains in Founder approval status. No consequential action was executed.</p>':'<p class="muted">Analysis/drafting work completed and stored in the Founder OS.</p>'));
+  }catch(e){alert(e.message)}
+  finally{if(button){button.disabled=false;button.textContent="Run AI"};cache={};setTimeout(()=>renderAI(),250)}
 }
 async function reviewAIApproval(id,decision){try{await action("review_approval",{id:id,decision:decision});renderAI()}catch(e){alert(e.message)}}
 function openObjectiveModal(){
