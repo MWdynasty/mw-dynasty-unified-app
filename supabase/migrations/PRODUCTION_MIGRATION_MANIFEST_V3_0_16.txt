@@ -111,3 +111,8 @@ Note: v7/v8 numbering is shared with separate Founder security-review and AI-bac
 
 20260920_founder_os_v14_security_snapshot.sql
 - Adds a Founder-only live security posture RPC for SECURITY DEFINER inventory, RLS/no-policy direct-grant evidence, and open/resolved security risks.
+
+20260920_founder_os_v15_objectives.sql
+- Adds Founder-tracked company objectives, objective-linked AI tasks/approvals, ordered execution plans, progress reporting, and Founder-only objective status controls.
+- Founder AI plans now become durable cross-department company objectives instead of disconnected task batches.
+
