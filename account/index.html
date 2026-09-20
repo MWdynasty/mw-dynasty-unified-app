@@ -233,9 +233,16 @@ async function cancelNativeCoachPlanTransition(reason='app_store_cancelled'){
 }
 async function requestCoachPlanChange(tier,planCode,provider){
   const status=el('coachPlanChangeStatus');status.textContent='';
-  if(provider==='apple'&&!document.documentElement.classList.contains('mw-native-app')){
-    status.textContent='Opening App Store subscription management. MW updates your tier only after Apple confirms the change.';
-    location.assign('https://apps.apple.com/account/subscriptions');
+  if(provider==='apple'){
+    status.textContent='Opening App Store subscription management. MW changes your Coach tier only after Apple confirms the new subscription product.';
+    try{
+      const manage=window.webkit?.messageHandlers?.mwManageSubscriptions;
+      if(manage){manage.postMessage({});return}
+      location.assign('https://apps.apple.com/account/subscriptions');
+    }catch(e){
+      status.textContent='App Store subscription management could not be opened.';
+      status.className='status err';
+    }
     return;
   }
   Array.from(el('coachPlanChangeActions').querySelectorAll('button')).forEach(b=>b.disabled=true);
@@ -243,14 +250,6 @@ async function requestCoachPlanChange(tier,planCode,provider){
   try{
     const r=await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'coach_plan_change',requestedTier:tier})});
     const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Coach membership change could not be prepared.');
-    if(d.providerResult?.provider==='apple'){
-      const purchase=window.webkit?.messageHandlers?.mwPurchase;
-      if(!purchase)throw new Error('App Store membership changes are not available in this build yet.');
-      status.textContent='Opening the App Store to confirm your Coach membership change…';
-      window.mwPendingCoachPlanTransitionId=d.result?.transition_id||null;
-      purchase.postMessage({planCode,sponsorQuantity:0,accessToken:session.access_token});
-      return;
-    }
     if(d.providerResult?.providerAction==='downgrade_scheduled'){
       status.textContent=`Downgrade scheduled for ${dateText(d.providerResult.effectiveAt)}. Your current Coach features stay active until then.`;
     }else{
