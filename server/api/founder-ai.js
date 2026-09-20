@@ -78,7 +78,7 @@ module.exports=async function handler(req,res){
   try{
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const mode=['brief','chat','plan','execute_task','triage_support'].includes(body.mode)?body.mode:'chat';
+    const mode=['brief','chat','plan','execute_task','triage_support','department_brief'].includes(body.mode)?body.mode:'chat';
     const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk,launch]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company'),
       rpcNamed(token,'mw_founder_finance_snapshot',{}),
@@ -123,6 +123,61 @@ Human authority is mandatory:
 SECURED MW BUSINESS CONTEXT:
 ${JSON.stringify(context).slice(0,90000)}`;
 
+    if(mode==='department_brief'){
+      const department=clean(body.department,120);
+      if(!department)return res.status(400).json({error:'Department is required.'});
+      const playbooks=await rpcNamed(token,'mw_founder_ai_playbooks_snapshot',{});
+      const agents=(playbooks.agents||[]).filter(a=>String(a.department)===department&&a.status!=='retired');
+      if(!agents.length)return res.status(400).json({error:'Unknown MW AI department.'});
+      const lead=agents.find(a=>a.org_level==='executive')||agents.find(a=>!a.manager_code)||agents[0];
+
+      let departmentData={};
+      try{
+        if(department==='Finance') departmentData={finance,revenue};
+        else if(department==='Technology') departmentData={system,launch};
+        else if(department==='Product') departmentData={website,customer_success:context.customer_success,system};
+        else if(department==='Marketing') departmentData={website,marketing_sales:await rpc(token,'marketing_sales')};
+        else if(department==='Sales') departmentData={marketing_sales:await rpc(token,'marketing_sales'),organizations:await rpc(token,'organizations')};
+        else if(department==='Customer Success') departmentData={customer_success:context.customer_success,support:await rpcNamed(token,'mw_founder_support_triage_snapshot',{})};
+        else if(department==='Performance / Coaching') departmentData={programs:await rpcNamed(token,'mw_founder_program_control',{}),knowledge:await rpc(token,'knowledge')};
+        else if(department==='Operations') departmentData={overview,launch,operations:await rpcNamed(token,'mw_founder_management_snapshot',{p_section:'operations'})};
+        else if(department==='Data & Analytics') departmentData={overview,finance,website,system,customer_success:context.customer_success};
+        else if(department==='Legal / Compliance') departmentData={risk,launch,security:await rpcNamed(token,'mw_founder_security_snapshot',{})};
+        else if(department==='People / HR') departmentData={people:await rpcNamed(token,'mw_founder_management_snapshot',{p_section:'people'}),objectives:await rpcNamed(token,'mw_founder_ai_objectives_snapshot',{})};
+        else if(department==='Executive Office') departmentData=context;
+        else departmentData=context;
+      }catch{departmentData=context}
+
+      const instructions=guard+`
+You are now operating as the MW Dynasty department lead:
+Title: ${lead.title}
+Department: ${department}
+Mission: ${lead.mission}
+Authority: ${lead.authority_level}
+Daily duties: ${JSON.stringify(lead.daily_duties||[])}
+Weekly duties: ${JSON.stringify(lead.weekly_duties||[])}
+Monthly duties: ${JSON.stringify(lead.monthly_duties||[])}
+Data domains: ${JSON.stringify(lead.data_domains||[])}
+Escalation rules: ${JSON.stringify(lead.escalation_rules||[])}
+Prepare a concise department operating brief. Include:
+1. Current department pulse.
+2. What changed or needs attention from the available data.
+3. Top 3 priorities.
+4. Risks/blockers.
+5. Decisions or approvals required from the Founder.
+6. What the department should do next.
+Do not claim that work was executed. Do not expose personal customer content. If the data needed for a conclusion is not available, say so explicitly.
+DEPARTMENT DATA:
+${JSON.stringify(departmentData).slice(0,70000)}`;
+
+      const answer=await openai(instructions,`Prepare the current ${department} operating brief for the Founder.`,2600);
+      const stored=await insert(token,'founder_department_briefs',[{
+        department,lead_agent_code:lead.code,brief_type:'department',status:'completed',
+        model:process.env.OPENAI_MODEL||'gpt-5.6-sol',summary:answer.slice(0,12000),
+        metrics:{generated_at:new Date().toISOString(),lead_title:lead.title}
+      }]).catch(()=>[]);
+      return res.status(200).json({ok:true,mode,department,lead:{code:lead.code,title:lead.title},answer,brief:stored[0]||null});
+    }
     if(mode==='brief'){
       const answer=await openai(guard,`Prepare today's MW Dynasty executive briefing. Cover: company pulse, revenue/memberships, tracked operating costs and contribution, Athlete/Coach growth, customer-retention health, website funnel, support, full-launch readiness, system health, top risks, and decisions that need the Founder. Do not invent trends that are not in the data. Clearly separate launch blockers from optional improvements.`,2800);
       await insert(token,'founder_ai_runs',[{
