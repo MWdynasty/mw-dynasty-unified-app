@@ -77,6 +77,13 @@ label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900
           <button id="billingBtn" class="btn" style="display:none">Manage Billing</button>
           <button id="sponsorBillingBtn" class="btn ghost" style="display:none">Manage Sponsored Seats</button>
         </div>
+        <div id="coachPlanChangeWrap" class="sponsorBox" style="display:none;margin-top:14px">
+          <div class="eyebrow">Coach Membership</div>
+          <div class="title" style="font-size:18px">Change Membership</div>
+          <p id="coachPlanChangeCopy" class="muted">Upgrade or downgrade without creating a second subscription.</p>
+          <div id="coachPlanChangeActions" class="actions"></div>
+          <div id="coachPlanChangeStatus" class="status"></div>
+        </div>
         <div id="selfPayWrap" class="sponsorBox" style="display:none;margin-top:14px">
           <div class="eyebrow">Continue With Your Own Membership</div>
           <div id="selfPayTitle" class="title" style="font-size:18px">Keep your MW access</div>
@@ -170,10 +177,70 @@ function render(data){
   const sponsoredAthlete=!isCoach&&String(b.billing_type||'')==='coach_sponsored';
   el('selfPayWrap').style.display=sponsoredAthlete?'block':'none';
   if(sponsoredAthlete)renderSelfPay(b);
+  const canChangeCoachPlan=isCoach&&['stripe','apple'].includes(provider)&&!!b.current_plan_code;
+  el('coachPlanChangeWrap').style.display=canChangeCoachPlan?'block':'none';
+  if(canChangeCoachPlan)renderCoachPlanChange(b);
   // Unpaid members see normal activation. Sponsored athletes use the dedicated handoff
   // so they are never charged while a Coach-paid period is still active.
   el('activationWrap').style.display=!sponsoredAthlete&&((!stripe&&!apple)||((apple||stripe)&&isCoach&&sponsorTotal===0))?'block':'none';
   renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:(apple||stripe)&&isCoach,sponsorTotal});
+}
+function renderCoachPlanChange(b){
+  const current=String(b.current_plan_code||''),provider=String(b.provider||'').toLowerCase(),pending=b.pending_transition||null;
+  const plans=[
+    ['coach_core','core','Coach Core',49],
+    ['coach_intelligence','intelligence','Coach Intelligence',79],
+    ['mw_sprint_performance','mw_sprint_performance','Sprint Performance',109]
+  ];
+  const box=el('coachPlanChangeActions'),copy=el('coachPlanChangeCopy');box.innerHTML='';
+  if(pending&&pending.type==='plan_change'){
+    const target=plan(pending.to_plan_code);
+    copy.textContent=pending.status==='scheduled'
+      ? `${target} is scheduled for ${dateText(pending.effective_at)}. Your current membership stays active until then.`
+      : `${target} is waiting for your payment provider to confirm the change. Your current membership stays active until confirmation.`;
+  }else{
+    copy.textContent=provider==='apple'
+      ? 'Your base Coach membership is managed by Apple. Membership changes are confirmed by the App Store before MW access changes.'
+      : 'Upgrades are confirmed by Stripe before access changes. Downgrades take effect at the end of the current paid period.';
+  }
+  plans.forEach(([code,tier,name,price])=>{
+    const button=document.createElement('button');button.type='button';button.className='btn';
+    if(code===current){button.textContent=`${name} — Current`;button.disabled=true}
+    else if(pending?.type==='plan_change'&&pending?.to_plan_code===code){button.textContent=`${name} — Pending`;button.disabled=true}
+    else{button.textContent=`Change to ${name} — ${price}/mo`;button.onclick=()=>requestCoachPlanChange(tier,code,provider)}
+    box.appendChild(button);
+  });
+}
+async function requestCoachPlanChange(tier,planCode,provider){
+  const status=el('coachPlanChangeStatus');status.textContent='';
+  if(provider==='apple'&&!document.documentElement.classList.contains('mw-native-app')){
+    status.textContent='Opening App Store subscription management. MW updates your tier only after Apple confirms the change.';
+    location.assign('https://apps.apple.com/account/subscriptions');
+    return;
+  }
+  Array.from(el('coachPlanChangeActions').querySelectorAll('button')).forEach(b=>b.disabled=true);
+  status.textContent='Preparing your membership change…';
+  try{
+    const r=await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'coach_plan_change',requestedTier:tier})});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Coach membership change could not be prepared.');
+    if(d.providerResult?.provider==='apple'){
+      const purchase=window.webkit?.messageHandlers?.mwPurchase;
+      if(!purchase)throw new Error('App Store membership changes are not available in this build yet.');
+      status.textContent='Opening the App Store to confirm your Coach membership change…';
+      purchase.postMessage({planCode,sponsorQuantity:0,accessToken:session.access_token});
+      return;
+    }
+    if(d.providerResult?.providerAction==='downgrade_scheduled'){
+      status.textContent=`Downgrade scheduled for ${dateText(d.providerResult.effectiveAt)}. Your current Coach features stay active until then.`;
+    }else{
+      status.textContent='Stripe is confirming your upgrade. MW will change access only after Stripe confirms payment.';
+    }
+    setTimeout(()=>load(),900);
+  }catch(e){
+    status.textContent=e.message||'Coach membership change could not be completed.';
+    status.className='status err';
+    if(account?.billing)renderCoachPlanChange(account.billing);
+  }
 }
 function renderSelfPay(b){
   const pending=b.pending_transition||null,btn=el('selfPayBtn'),title=el('selfPayTitle'),copy=el('selfPayCopy');
@@ -351,9 +418,10 @@ async function openBillingPortal(){
   }
 }
 window.mwNativePurchaseResult=function(result){
-  if(result?.ok){billingMessage('Payment confirmed. MW Dynasty is switching your membership…');setTimeout(()=>location.reload(),700);return}
+  if(result?.ok){billingMessage('Payment confirmed. MW Dynasty is syncing your membership…');setTimeout(()=>location.reload(),700);return}
   billingMessage(result?.error||'App Store purchase could not be confirmed.',true);
   if(el('selfPayBtn'))el('selfPayBtn').disabled=false;
+  if(account?.billing&&coachRole(account?.user?.role))renderCoachPlanChange(account.billing);
 };
 async function load(){
   session=readSession();
