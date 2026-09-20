@@ -449,11 +449,27 @@ function openSopModal(){
 }
 async function renderPeople(){
   const d=await api("people"),roles=d.roles||[];
-  $("content").innerHTML='<section class="hero"><div class="brand">PEOPLE & HR</div><h2>Build the organization before it becomes chaotic.</h2><p>AI workforce today, planned human roles tomorrow. Every role should have a mission, reporting line, responsibilities, and measurable scorecard.</p><div class="heroActions"><button class="btn primary" id="addPeopleRole">Plan Human Role</button><button class="btn" data-go="ai">View AI Workforce</button></div></section>'+
-    '<div class="stats">'+stat("AI Workforce",d.ai_headcount||0)+stat("Planned Human Roles",d.planned_human_roles||0)+stat("Role Plans",roles.length)+stat("People Lead","Chief People Officer AI")+'</div>'+
-    '<div class="grid2">'+(roles.length?roles.map(x=>'<div class="card"><div class="brand">'+esc(x.department)+'</div><h3>'+esc(x.title)+'</h3><p class="muted">'+esc(x.mission||"")+'</p><div>'+badge(x.role_type,"purple")+' '+badge(x.status,x.status==="active"||x.status==="filled"?"good":"warn")+'</div><small>Reports to: '+esc(x.reports_to||"Founder")+' · Priority: '+esc(x.priority)+'</small></div>').join(""):'<div class="card empty">No future human roles planned yet.</div>')+'</div>';
+  const human=roles.filter(x=>x.role_type!=="ai"),planned=human.filter(x=>["planned","hiring"].includes(x.status)),active=human.filter(x=>["active","filled"].includes(x.status));
+  const departments=[...new Set(human.map(x=>x.department).filter(Boolean))].sort();
+  const priority=planned.filter(x=>["high","urgent"].includes(x.priority));
+  $("content").innerHTML='<section class="hero"><div class="brand">PEOPLE & ORGANIZATION</div><h2>Build the company before you need the headcount.</h2><p>MW now has a full human organization plan alongside the AI workforce. Planned roles do not mean people are hired—they define what the company will need as revenue, customers, and operational complexity grow.</p><div class="heroActions"><button class="btn primary" id="addPeopleRole">Plan Human Role</button><button class="btn" data-go="ai">View AI Workforce</button></div></section>'+
+    '<div class="stats">'+
+      stat("AI Workforce",d.ai_headcount||0)+
+      stat("Human Org Roles",human.length)+
+      stat("Currently Active",active.length)+
+      stat("Future Hires",planned.length)+
+      stat("High-Priority Future Roles",priority.length)+
+      stat("Departments",departments.length)+
+    '</div>'+
+    sectionHead("Human Organization Plan","Founder/CEO plus the future leadership, managers, specialists, customer support, sales, engineering, finance, coaching, and operations roles MW can add when the business justifies them.")+
+    departments.map(dept=>{
+      const list=human.filter(x=>x.department===dept);
+      return '<div class="sectionHead"><div><h2 style="font-size:17px">'+esc(dept)+'</h2><p>'+esc(list.length+" planned / active role"+(list.length===1?"":"s"))+'</p></div></div><div class="grid3">'+list.map(x=>'<div class="card"><div class="brand">'+esc(String(x.role_type||"role").replaceAll("_"," ").toUpperCase())+'</div><h3 style="margin:8px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.mission||"")+'</p><div style="margin:10px 0">'+badge(x.status,x.status==="active"||x.status==="filled"?"good":x.priority==="urgent"||x.priority==="high"?"warn":"blue")+' '+badge(x.priority,x.priority==="urgent"?"bad":x.priority==="high"?"warn":"")+'</div><small>Reports to: '+esc(x.reports_to||"Founder / CEO")+'</small>'+(Array.isArray(x.scorecard)&&x.scorecard.length?'<p class="muted" style="margin-top:9px"><b>Scorecard:</b> '+esc(x.scorecard.join(" · "))+'</p>':"")+'</div>').join("")+'</div>';
+    }).join("")+
+    '<div class="card" style="margin-top:18px"><div class="brand">HIRING PRINCIPLE</div><h3>Roles exist before payroll does.</h3><p class="muted">The Founder OS should show what MW needs without pretending every role should be hired immediately. AI carries defined work today; human roles can move from planned → hiring → filled only when workload, revenue, risk, or customer experience justifies the expense.</p></div>';
   bindGo();$("addPeopleRole").onclick=openPeopleModal;
 }
+
 function openPeopleModal(){
   modal("Plan MW Role",'<div class="formGrid"><label class="field">ROLE TITLE<input id="peopleTitle"></label><label class="field">DEPARTMENT<input id="peopleDept"></label><label class="field">REPORTS TO<input id="peopleReports"></label><label class="field">PRIORITY<select id="peoplePriority"><option>normal</option><option>high</option><option>urgent</option><option>low</option></select></label></div><label class="field">MISSION<textarea id="peopleMission" rows="4"></textarea></label><label class="field">RESPONSIBILITIES <input id="peopleResp" placeholder="Comma-separated"></label><label class="field">SCORECARD / KPIs <input id="peopleKpi" placeholder="Comma-separated"></label><button class="btn primary" id="savePeopleRole">Save Role Plan</button>');
   $("savePeopleRole").onclick=async()=>{try{await action("create_people_role",{title:$("peopleTitle").value,department:$("peopleDept").value,reportsTo:$("peopleReports").value,priority:$("peoplePriority").value,mission:$("peopleMission").value,responsibilities:$("peopleResp").value.split(",").map(x=>x.trim()).filter(Boolean),scorecard:$("peopleKpi").value.split(",").map(x=>x.trim()).filter(Boolean),roleType:"future_hire",status:"planned"});closeModal();renderPeople()}catch(e){alert(e.message)}};
