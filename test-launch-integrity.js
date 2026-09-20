@@ -53,6 +53,23 @@ includes('supabase/migrations/20260920_founder_os_v3_ai_runs.sql','founder_ai_ru
 includes('server/api/founder-ai.js',"mode==='execute_task'",'Founder AI task execution mode missing');
 includes('founder/index.html','Run AI','Founder AI task execution control missing');
 includes('founder/index.html','OFFICIAL MW PROGRAM CONTROL','Founder Program Control UI missing');
+includes('supabase/migrations/20260920_founder_os_v4_management_intelligence.sql','mw_founder_customer_health','Founder customer-health intelligence missing');
+includes('supabase/migrations/20260920_founder_os_v4_management_intelligence.sql','mw_founder_support_triage_snapshot','Founder support triage migration missing');
+includes('supabase/migrations/20260920_founder_os_v4_management_intelligence.sql','mw_founder_capture_kpi_snapshot','Founder KPI snapshot migration missing');
+includes('supabase/migrations/20260920_founder_os_v5_audit.sql','mw_audit_founder_os_change','Founder OS audit trigger missing');
+includes('supabase/migrations/20260920_founder_os_v6_operating_sops.sql','App Store / TestFlight Release Gate','Founder operating SOP seed missing');
+includes('server/api/founder-ai.js',"mode==='triage_support'",'Support Manager AI triage mode missing');
+includes('server/api/founder.js',"section==='customer_health'",'Founder customer-health API route missing');
+includes('server/api/founder.js',"section==='kpi_history'",'Founder KPI history API route missing');
+includes('founder/index.html','Run AI Triage','Founder support AI triage control missing');
+includes('founder/index.html','Operating Contribution','Founder finance contribution view missing');
+includes('founder/index.html','Visit → Signup','Founder website conversion funnel missing');
+includes('assets/mw-web-analytics.js','if(NATIVE)return false','Website analytics must exclude native app sessions');
+includes('account/index.html',"MWWebAnalytics?.track('checkout_start'",'Web checkout-start tracking missing');
+includes('coach/app.js',"MWWebAnalytics?.track('signup_complete'",'Coach web application completion tracking missing');
+includes('athlete/index.html','/assets/mw-web-analytics.js','Athlete web entry analytics missing');
+includes('coach/index.html','/assets/mw-web-analytics.js','Coach web entry analytics missing');
+
 
 
 const accountHtml=read('account/index.html');
