@@ -765,6 +765,7 @@ function renderCoachMembershipSelection(session=authSession){
         </div>
         <div class="coach-membership-total"><div><span>Coach membership</span><b>&#36;${p.monthly}/mo</b></div>${sponsorOn?`<div><span>${sponsorQty} sponsored athlete${sponsorQty===1?'':'s'}</span><b>&#36;${sponsorTotal}/mo</b></div>`:''}<div class="total"><span>Total today</span><b>&#36;${total}/mo</b></div></div>
         <button type="button" id="coachMembershipContinue" class="coach-login-submit coach-membership-continue"><span>${isNative?'Continue to App Purchase':'Continue to Secure Payment'}</span><span>→</span></button>
+        ${isNative?'<button type="button" id="coachRestorePurchase" class="back" style="width:100%;margin-top:10px">Restore App Store Purchase</button>':''}
         <p class="coach-membership-note">No setup fee. Sponsorship is optional. Your Coach dashboard unlocks after payment is confirmed.</p>
         <div id="coachMembershipMessage" class="login-message" role="status" aria-live="polite"></div>
       </section>
@@ -792,6 +793,14 @@ function renderCoachMembershipSelection(session=authSession){
         location.assign(d.url);
       }catch(e){msg.textContent=e.message||'Membership setup could not continue.';msg.className='login-message show error';btn.disabled=false}
     };
+    if(isNative&&document.getElementById('coachRestorePurchase')){
+      document.getElementById('coachRestorePurchase').onclick=()=>{
+        const token=authSession?.access_token||session?.access_token,restore=window.webkit?.messageHandlers?.mwRestorePurchase;
+        if(!token||!restore){msg.textContent='App Store restore is not available in this build yet.';msg.className='login-message show error';return}
+        msg.textContent='Checking your App Store membership…';msg.className='login-message show neutral';
+        restore.postMessage({planCode:PLANS[selected].planCode,accessToken:token});
+      };
+    }
   };
   draw();
   (async()=>{
