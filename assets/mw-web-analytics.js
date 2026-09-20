@@ -4,6 +4,7 @@
   var SB_URL='https://keqgunlfwhjgcsurynef.supabase.co';
   var SB_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
   var KEY='mwWebAnalyticsSessionV1';
+  var NATIVE=/MWDynasty-iOS\//i.test(navigator.userAgent||'')||document.documentElement.classList.contains('mw-native-app');
   function sid(){
     try{
       var v=localStorage.getItem(KEY);
@@ -29,6 +30,7 @@
     });return out;
   }
   async function track(eventType,extra){
+    if(NATIVE)return false;
     extra=extra||{};
     var q=params();
     var body={
@@ -50,7 +52,7 @@
       });
     }catch{}
   }
-  window.MWWebAnalytics={track:track,sessionKey:sid()};
+  window.MWWebAnalytics={track:track,sessionKey:sid(),native:NATIVE};
   document.addEventListener('click',function(e){
     var el=e.target&&e.target.closest?e.target.closest('[data-mw-event]'):null;
     if(!el)return;
