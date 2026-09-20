@@ -495,3 +495,21 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
   }
   .coach-field input{text-align:center!important;padding-left:42px!important}
 }
+
+/* Shared MW Dynasty crest lockup for the coach sign-in screen. */
+.coach-login-brand{display:flex!important;align-items:center!important;gap:15px!important}
+.coach-login-crest{display:block!important;width:clamp(58px,6vw,92px)!important;height:clamp(58px,6vw,92px)!important;object-fit:cover!important;border-radius:22%!important;border:1px solid rgba(230,189,69,.62)!important;box-shadow:0 10px 24px rgba(0,0,0,.42),0 0 24px rgba(36,132,244,.18)!important;flex:0 0 auto!important}
+.coach-login-wordmark{min-width:0!important}
+@media(min-width:821px){
+  .coach-login-header{grid-template-columns:minmax(330px,410px) 1fr 280px!important}
+  .coach-login-mw{font-size:clamp(46px,4.7vw,72px)!important}
+  .coach-login-coach{font-size:clamp(30px,3.2vw,50px)!important}
+  .coach-login-tagline{font-size:clamp(8px,.72vw,12px)!important}
+}
+@media(max-width:640px){
+  .coach-login-brand{gap:9px!important}
+  .coach-login-crest{width:54px!important;height:54px!important;border-radius:14px!important}
+}
+@media(max-width:390px){
+  .coach-login-crest{width:46px!important;height:46px!important;border-radius:12px!important}
+}

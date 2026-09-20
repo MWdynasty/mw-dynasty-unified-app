@@ -495,9 +495,12 @@ function renderLogin(message=''){
       <div class="coach-login-bg" aria-hidden="true"></div>
       <header class="coach-login-header">
         <div class="coach-login-brand" aria-label="MW Coach">
-          <div class="coach-login-mw">MW</div>
-          <div class="coach-login-coach">DYNASTY</div>
-          <div class="coach-login-tagline">COACH LOGIN • LEAD • DEVELOP • BUILD</div>
+          <img class="coach-login-crest" src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty crest">
+          <div class="coach-login-wordmark">
+            <div class="coach-login-mw">MW</div>
+            <div class="coach-login-coach">DYNASTY</div>
+            <div class="coach-login-tagline">COACH LOGIN • LEAD • DEVELOP • BUILD</div>
+          </div>
         </div>
         <nav class="coach-login-nav" aria-label="MW Coach values">
           <span>DISCIPLINE</span><i></i><span>DEVELOPMENT</span><i></i><span>DOMINANCE</span><i></i><span>RESOURCES</span>
