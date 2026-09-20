@@ -92,3 +92,8 @@ Additional production Founder OS migrations are source-controlled and applied:
 - Corrects the launch billing gate so internal test Coach entitlements are informational while production billing-integrity invariants remain release-blocking.
 
 Note: v7/v8 numbering is shared with separate Founder security-review and AI-backlog migrations; filenames are unique and all are idempotent.
+
+
+20260920_founder_os_v10_human_org_plan.sql
+- Seeds the Founder/CEO plus 23 planned future human roles across operations, finance, technology, product, marketing, sales, customer success, performance, analytics, legal/compliance, and people operations.
+- Planned roles are organizational design records only; they do not claim that employees have been hired.
