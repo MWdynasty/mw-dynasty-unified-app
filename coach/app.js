@@ -475,7 +475,7 @@ function renderCoachTourStep(){
     navPreview.innerHTML=buttons.map(btn=>{
       const art=btn.querySelector('.mwNavArt'),label=btn.querySelector('span:last-child')?.textContent?.trim()||'MW';
       const bg=art?getComputedStyle(art).backgroundImage:'none';
-      return `<div><i style="background-image:${bg}"></i><span>${escapeHtml(label)}</span></div>`;
+      return `<div><i style='background-image:${bg}'></i><span>${escapeHtml(label)}</span></div>`;
     }).join('');
     const firstArt=buttons[0]?.querySelector('.mwNavArt');
     const firstBg=firstArt?getComputedStyle(firstArt).backgroundImage:'none';
