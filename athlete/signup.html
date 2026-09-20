@@ -7,7 +7,7 @@
 <title>Create MW Athlete Account</title>
 <link rel="icon" href="/favicon.png" type="image/png">
 <script>if(/MWDynasty-iOS\//i.test(navigator.userAgent||'')){document.documentElement.classList.add('mw-native-app')}</script>
-<script src="/assets/mw-diagnostics.js"></script>
+<script src="/assets/mw-diagnostics.js"></script>\n<script src="/assets/mw-web-analytics.js"></script>
 <style>
 :root{--gold:#efbd43;--gold2:#ffd76b;--ink:#02060b;--panel:#050e16;--muted:#9ba8b2;--line:rgba(235,190,75,.46)}
 *{box-sizing:border-box}
@@ -110,6 +110,7 @@ btn.onclick=async()=>{
   if(password.length<8)return msg('Use at least 8 characters for your password.',true);
   if(password!==confirm)return msg('The passwords do not match.',true);
   if(!document.getElementById('terms').checked)return msg('Please confirm eligibility and accept the Terms and Privacy Policy.',true);
+  try{window.MWWebAnalytics?.track('signup_start',{audience:'athlete',metadata:{step:'account_submit'}})}catch{}
   btn.disabled=true;btn.textContent='CREATING ACCOUNT…';msg('Creating your MW Dynasty Athlete account…');
   try{
     const continueUrl='/athlete/?plan=mw_athlete';
@@ -120,6 +121,7 @@ btn.onclick=async()=>{
     })});
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.msg||d.error_description||d.message||'Account could not be created.');
+    try{window.MWWebAnalytics?.track('signup_complete',{audience:'athlete',metadata:{email_confirmation:!d.access_token}})}catch{}
     if(d.access_token){
       localStorage.setItem('mwSupabaseSession',JSON.stringify(d));
       msg('Account created. Opening membership…');
