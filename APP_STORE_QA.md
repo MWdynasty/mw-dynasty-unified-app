@@ -1,3 +1,20 @@
+# MW Dynasty 3.0.16 — Build 13 App Store / TestFlight QA
+
+## Current release gate — 2026-09-20
+- App version: 3.0.16
+- iOS build: 13
+- Bundle ID: `com.mwdynasty.app`
+- Native production URL: `https://app.mwdynasty.com/`
+- Athlete App Store product: `com.mwdynasty.app.athlete.monthly`
+- Coach Core product: `com.mwdynasty.app.coach.core.monthly`
+- Coach Intelligence product: `com.mwdynasty.app.coach.intelligence.monthly`
+- Sprint Performance product: `com.mwdynasty.app.coach.sprintperformance.monthly`
+- Signed Codemagic workflow now runs App Store privacy/product preflight and submits the signed IPA to TestFlight.
+- Apple-paid Coach plan changes are App Store-managed; MW updates access only after Apple verification/server notification.
+- App Store Server Notifications must use Version 2 for both sandbox and production.
+- Billing Grace Period should be enabled in sandbox first and validated before production.
+- Historical QA notes below are retained for regression history; any older build-number references are superseded by this section.
+
 # MW Dynasty 3.0.4 — App Store Candidate QA
 
 ## Completed in this build
