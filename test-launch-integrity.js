@@ -50,6 +50,19 @@ includes('supabase/migrations/20260920_founder_os_v1.sql','private.mw_is_founder
 includes('supabase/migrations/20260920_founder_os_v1.sql','founder_ai_agents','Founder AI workforce schema missing');
 includes('supabase/migrations/20260920_founder_os_v2_program_control.sql','mw_founder_program_control','Founder Program Control migration missing');
 includes('supabase/migrations/20260920_founder_os_v3_ai_runs.sql','founder_ai_runs','Founder AI work-run audit table missing');
+includes('supabase/migrations/20260920_founder_os_v4_management_intelligence.sql','mw_founder_customer_health','Founder customer-health intelligence missing');
+includes('supabase/migrations/20260920_founder_os_v4_management_intelligence.sql','mw_founder_finance_snapshot','Founder finance intelligence missing');
+includes('supabase/migrations/20260920_founder_os_v5_audit.sql','mw_audit_founder_os_change','Founder mutation audit trigger missing');
+includes('supabase/migrations/20260920_founder_os_v6_operating_sops.sql','App Store / TestFlight Release Gate','Founder launch SOP seeds missing');
+includes('supabase/migrations/20260920_founder_os_v7_launch_readiness.sql','mw_founder_launch_readiness','Founder launch-readiness RPC missing');
+includes('supabase/migrations/20260920_founder_os_v8_launch_audit.sql','mw_audit_founder_launch_gates','Founder launch gate audit missing');
+includes('server/api/founder.js',"section==='launch'",'Founder launch-readiness API route missing');
+includes('server/api/founder.js',"action==='update_launch_gate'",'Founder launch gate action missing');
+includes('server/api/founder-ai.js',"mode==='triage_support'",'Founder support AI triage missing');
+includes('founder/index.html','FULL LAUNCH READINESS','Founder Launch Readiness UI missing');
+includes('founder/index.html','Customer Success Watch','Founder customer-success watch missing');
+includes('founder/index.html','AI Support Triage','Founder support triage UI missing');
+
 includes('server/api/founder-ai.js',"mode==='execute_task'",'Founder AI task execution mode missing');
 includes('founder/index.html','Run AI','Founder AI task execution control missing');
 includes('founder/index.html','OFFICIAL MW PROGRAM CONTROL','Founder Program Control UI missing');
