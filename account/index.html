@@ -207,20 +207,28 @@ function renderPlanActions(role,options={}){
   renderSponsorPlans(plans);
 }
 function renderSponsorPlans(plans){
-  if(!Array.isArray(plans))plans=[
+  const allPlans=[
     ['coach_core','Coach Core',49,5],
     ['coach_intelligence','Coach Intelligence',79,6],
     ['mw_sprint_performance','Sprint Performance',109,7]
   ];
+  const appleCoach=String(account?.billing?.provider||'').toLowerCase()==='apple';
+  if(!Array.isArray(plans)){
+    plans=appleCoach
+      ? allPlans.filter(p=>p[0]===String(account?.billing?.current_plan_code||''))
+      : allPlans;
+  }
   const qty=Math.max(1,Math.min(250,Number(el('sponsorQuantity').value)||1));
   el('sponsorQuantity').value=qty;
   const box=el('sponsorPlanActions');box.innerHTML='';
   plans.forEach(([code,name,base,seat])=>{
-    const total=base+(qty*seat);
+    const total=appleCoach?(qty*seat):(base+(qty*seat));
     const button=document.createElement('button');
     button.type='button';button.className='btn';
-    button.textContent=`${name} + ${qty} athlete${qty===1?'':'s'} — ${total}/mo`;
-    button.onclick=()=>checkout(code,qty,account?.billing?.provider==='apple');
+    button.textContent=appleCoach
+      ? `Add ${qty} sponsored athlete${qty===1?'':'s'} — $${total}/mo`
+      : `${name} + ${qty} athlete${qty===1?'':'s'} — $${total}/mo`;
+    button.onclick=()=>checkout(code,qty,appleCoach);
     box.appendChild(button);
   });
 }
