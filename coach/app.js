@@ -587,6 +587,7 @@ function renderLogin(message=''){
 /* MW coach signup tab hook */
 document.addEventListener('click',function(e){const b=e.target.closest&&e.target.closest('[data-coach-signup]');if(!b)return;e.preventDefault();renderCoachApplication();});
 function renderCoachApplication(){
+  try{window.MWWebAnalytics?.track('signup_start',{audience:'coach',metadata:{flow:'coach_application'}})}catch{}
   const existing=document.getElementById('coachApplyModal');if(existing)existing.remove();
   const wrap=document.createElement('div');wrap.id='coachApplyModal';wrap.className='coach-apply-modal';
   wrap.innerHTML=`<div class="coach-apply-backdrop" data-close="1"></div><section class="coach-apply-card coach-signup-wizard" role="dialog" aria-modal="true" aria-labelledby="coachApplyTitle">
@@ -703,6 +704,7 @@ async function submitCoachApplication(e){
   try{
     const r=await fetch(`${SUPABASE_URL}/functions/v1/mw-coach-apply`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Application could not be submitted.');
+    try{window.MWWebAnalytics?.track('signup_complete',{audience:'coach',metadata:{flow:'coach_application',verification_status:String(d.verification_status||'submitted')}})}catch{}
     const card=document.querySelector('#coachApplyModal .coach-apply-card');
     const auto=d.verification_status==='auto_approved',denied=d.verification_status==='denied';
     const kicker=auto?'COACH VERIFIED':denied?'VERIFICATION COMPLETE':'APPLICATION RECEIVED';
