@@ -76,6 +76,9 @@ includes('server/api/founder.js',"section==='partnerships'",'Founder partnership
 includes('server/api/founder-ai.js',"mode==='partnership_proposal'",'Founder partnership AI drafting mode missing');
 includes('founder/index.html','BUSINESS DEVELOPMENT & PARTNERSHIPS','Founder partnership center missing');
 includes('founder/index.html','Record as Sent','Founder proposal human-send recording control missing');
+includes('supabase/migrations/20260920_founder_os_v18_ai_operating_queue.sql','mw_founder_ai_operating_queue_snapshot','Founder proactive AI operating queue missing');
+includes('supabase/migrations/20260920_founder_os_v19_queue_reconciliation.sql','System signal resolved','Founder AI signal reconciliation missing');
+includes('founder/index.html','Proactive AI Operating Queue','Founder proactive AI queue UI missing');
 includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
 includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
 
