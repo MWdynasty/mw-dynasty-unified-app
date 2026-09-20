@@ -180,14 +180,29 @@ async function renderOrganizations(){
 async function renderWebsite(){
   const d=await api("website"),h=d.health||{},pages=d.top_pages||[],events=d.events||[];
   const web=h.website||{},app=h.app||{};
-  $("content").innerHTML='<section class="hero"><div class="brand">WEBSITE & GROWTH CENTER</div><h2>The website is part of the company OS.</h2><p>Public website health, app entry health, acquisition funnel, signup starts, checkout starts, and page-level conversion signals.</p></section>'+
+  const count=type=>Number((events.find(x=>x.event===type)||{}).count||0);
+  const signupStarts=Number(d.signup_starts_30d||count("signup_start")||0);
+  const checkoutStarts=Number(d.checkout_starts_30d||count("checkout_start")||0);
+  const accounts=Number(d.website_accounts_30d||0),paid=Number(d.website_paid_30d||0),sessions=Number(d.sessions_30d||0);
+  const visitToSignup=metricPercent(signupStarts,sessions);
+  const signupToCheckout=metricPercent(checkoutStarts,signupStarts);
+  const accountToPaid=metricPercent(paid,accounts);
+  $("content").innerHTML='<section class="hero"><div class="brand">WEBSITE & GROWTH CENTER</div><h2>The website is part of the company OS.</h2><p>Public website health, app entry health, acquisition funnel, conversion, signup starts, checkout starts, and page-level behavior roll into Founder intelligence.</p></section>'+
     '<div class="grid2"><div class="card"><div class="health"><i class="healthDot '+(web.ok?"ok":"")+'"></i><div><b>mwdynasty.com</b><small>'+esc(web.ok?"Online · "+web.latency_ms+" ms":"Needs attention · "+(web.error||web.status||"unknown"))+'</small></div></div></div><div class="card"><div class="health"><i class="healthDot '+(app.ok?"ok":"")+'"></i><div><b>app.mwdynasty.com</b><small>'+esc(app.ok?"Online · "+app.latency_ms+" ms":"Needs attention · "+(app.error||app.status||"unknown"))+'</small></div></div></div></div>'+
-    '<div class="stats" style="margin-top:12px">'+stat("Website Sessions",d.sessions_30d||0,"30 days")+stat("Page Views",d.page_views_30d||0,"30 days")+stat("Signup Starts",d.signup_starts_30d||0,"30 days")+stat("Checkout Starts",d.checkout_starts_30d||0,"30 days")+stat("Website Accounts",d.website_accounts_30d||0,"30 days")+stat("Paid Journeys",d.website_paid_30d||0,"30 days")+'</div>'+
+    '<div class="stats" style="margin-top:12px">'+
+      stat("Website Sessions",sessions,"30 days")+
+      stat("Visit → Signup",visitToSignup+"%",signupStarts+" starts")+
+      stat("Signup → Checkout",signupToCheckout+"%",checkoutStarts+" checkout starts")+
+      stat("Account → Paid",accountToPaid+"%",paid+" paid journeys")+
+      stat("Page Views",d.page_views_30d||0,"30 days")+
+      stat("Website Accounts",accounts,"30 days")+
+    '</div>'+
     '<div class="grid2">'+
-      '<div>'+sectionHead("Top Pages","Page traffic collected by MW Growth analytics.")+'<div class="list">'+(pages.length?pages.map(x=>'<div class="row"><div><b>'+esc(x.page)+'</b><small>'+esc(x.sessions)+" unique sessions"+'</small></div><div class="right"><b>'+esc(x.views)+'</b><small>views</small></div></div>').join(""):'<div class="card empty">Website analytics will populate as traffic arrives.</div>')+'</div></div>'+
-      '<div>'+sectionHead("Funnel Events","Tracked actions across the website/app entry flow.")+'<div class="list">'+(events.length?events.map(x=>'<div class="row"><div><b>'+esc(String(x.event).replaceAll("_"," "))+'</b></div><div class="right"><b>'+esc(x.count)+'</b></div></div>').join(""):'<div class="card empty">No tracked events yet.</div>')+'</div></div></div>'+
-    '<div class="card" style="margin-top:14px"><b>Public-site integration status</b><p class="muted">MW Growth analytics is now available as a shared tracker. The Founder Center can already monitor live uptime for both domains and website-channel onboarding. Page-level public-site traffic appears once the tracker is included on the public marketing deployment.</p></div>';
+      '<div>'+sectionHead("Top Pages","Page traffic collected by MW Growth analytics.")+'<div class="list">'+(pages.length?pages.map(x=>'<div class="row"><div><b>'+esc(x.page)+'</b><small>'+esc(x.sessions)+" unique sessions"+'</small></div><div class="right"><b>'+esc(x.views)+'</b><small>views</small></div></div>').join(""):'<div class="card empty">Website analytics will populate as tracked traffic arrives.</div>')+'</div></div>'+
+      '<div>'+sectionHead("Funnel Events","Tracked actions across the website and app-entry flow.")+'<div class="list">'+(events.length?events.map(x=>'<div class="row"><div><b>'+esc(String(x.event).replaceAll("_"," "))+'</b></div><div class="right"><b>'+esc(x.count)+'</b></div></div>').join(""):'<div class="card empty">No tracked events yet.</div>')+'</div></div></div>'+
+    '<div class="card" style="margin-top:14px"><b>Public-site integration status</b><p class="muted">Founder OS monitors both live domains now. Conversion events are collected on the app-side website flows we control. The standalone public marketing deployment still needs the shared MW Growth tracker inserted in its own source before every public page view and CTA can appear here.</p></div>';
 }
+
 async function renderMarketing(){
   const d=await api("marketing_sales"),leads=d.leads||[],campaigns=d.campaigns||[];
   $("content").innerHTML='<section class="hero"><div class="brand">MARKETING & SALES</div><h2>Build demand, manage pipeline, close partnerships.</h2><p>Marketing campaigns and a Founder-owned CRM for Coaches, schools, clubs, and strategic partners.</p></section>'+
@@ -272,22 +287,65 @@ function openKnowledgeModal(){
 }
 async function knowledgeDecision(id,decision){try{await action("review_knowledge",{id:id,decision:decision});renderKnowledge()}catch(e){alert(e.message)}}
 async function renderSupport(){
-  const d=await api("support"),m=d.member_requests||[],p=d.public_requests||[],del=d.deletion_requests||[];
-  $("content").innerHTML='<section class="hero"><div class="brand">CUSTOMER SUCCESS & SUPPORT</div><h2>Support is an operating system, not an inbox.</h2><p>Member issues, public website requests, account deletion workflows, and AI-assisted triage all roll up here.</p></section>'+
-    '<div class="stats">'+stat("Member Requests",m.length)+stat("Public Requests",p.length)+stat("Deletion Requests",del.length)+stat("Open Total",m.concat(p).filter(x=>!["closed","resolved"].includes(x.status)).length)+'</div>'+
-    sectionHead("Recent Support","Message content stays out of executive summaries by design; Founder sees category, source, status, and timing.")+
-    '<div class="list">'+m.concat(p).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,100).map(x=>'<div class="row"><div><b>'+esc((x.category||"Support").replaceAll("_"," "))+'</b><small>'+esc(x.source||"member")+' · App '+esc(x.app_version||"—")+'</small></div><div class="right">'+badge(x.status||"open",["closed","resolved"].includes(x.status)?"good":"warn")+'<small>'+date(x.created_at)+'</small></div></div>').join("")+'</div>'+
+  const [d,t,h]=await Promise.all([api("support"),api("support_triage"),api("customer_health")]);
+  const m=d.member_requests||[],p=d.public_requests||[],del=d.deletion_requests||[],triage=t.items||[];
+  const athletes=h.athletes||[],coaches=h.coaches||[];
+  const athleteAttention=athletes.filter(x=>x.health!=="healthy");
+  const coachAttention=coaches.filter(x=>x.health!=="healthy");
+  $("content").innerHTML='<section class="hero"><div class="brand">CUSTOMER SUCCESS & SUPPORT</div><h2>Know who needs help before they disappear.</h2><p>Support triage, account issues, customer-retention signals, open requests, and response drafts live in one Customer Success operating view.</p></section>'+
+    '<div class="stats">'+
+      stat("Open Support",m.concat(p).filter(x=>!["closed","resolved"].includes(x.status)).length)+
+      stat("High / Urgent Triage",triage.filter(x=>["high","urgent"].includes(x.priority)).length)+
+      stat("Athletes to Watch",athleteAttention.length)+
+      stat("Coaches to Watch",coachAttention.length)+
+      stat("Deletion Requests",del.length)+
+      stat("AI Drafts Ready",triage.filter(x=>x.triage_status==="draft_ready").length)+
+    '</div>'+
+    sectionHead("AI Support Triage","Support Manager AI can summarize the issue, prioritize it, suggest the next action, and prepare a response draft. It never sends the response automatically.")+
+    '<div class="list">'+(triage.length?triage.map(x=>'<div class="card '+(["urgent","high"].includes(x.priority)?"approval":"")+'"><div class="row" style="padding:0;border:0;background:transparent"><div>'+badge(x.priority,x.priority==="urgent"||x.priority==="high"?"bad":x.priority==="normal"?"warn":"blue")+' '+badge(x.triage_status,x.triage_status==="draft_ready"?"good":"")+'<h3 style="margin:8px 0">'+esc(String(x.category||"support").replaceAll("_"," "))+'</h3><p class="muted">'+esc(x.issue_summary||x.message_excerpt||"Support request awaiting triage.")+'</p><small>'+esc(x.request_source||"member")+' · '+date(x.created_at)+(x.requires_founder?" · Founder review required":"")+'</small>'+(x.suggested_next_action?'<p class="muted"><b>Suggested next:</b> '+esc(x.suggested_next_action)+'</p>':"")+'</div><div class="heroActions">'+(x.triage_status!=="draft_ready"?'<button class="btn small blue" data-triage-ai="'+esc(x.id)+'">Run AI Triage</button>':'<button class="btn small" data-triage-view="'+esc(x.id)+'">View Draft</button>')+'<button class="btn small good" data-triage-reviewed="'+esc(x.id)+'">Reviewed</button></div></div></div>').join(""):'<div class="card empty">No open support requests need triage.</div>')+'</div>'+
+    '<div class="grid2">'+
+      '<div>'+sectionHead("Athlete Customer Health","Business-retention signals only: access, onboarding, recent training activity, support, and app reliability.")+'<div class="list">'+(athleteAttention.length?athleteAttention.slice(0,15).map(x=>'<div class="row"><div><b>'+esc(x.name||"Athlete")+'</b><small>'+esc((x.signals||[]).join(" · ")||"No active warning signals")+'</small></div><div class="right">'+badge(x.score+" / 100",x.health==="high_risk"?"bad":"warn")+'<small>'+esc(x.health.replaceAll("_"," "))+'</small></div></div>').join(""):'<div class="card empty">No Athlete customer-health warnings.</div>')+'</div></div>'+
+      '<div>'+sectionHead("Coach Customer Health","Account, billing, activity, support, and app reliability signals for retention follow-up.")+'<div class="list">'+(coachAttention.length?coachAttention.slice(0,15).map(x=>'<div class="row"><div><b>'+esc(x.name||"Coach")+'</b><small>'+esc((x.signals||[]).join(" · ")||"No active warning signals")+'</small></div><div class="right">'+badge(x.score+" / 100",x.health==="high_risk"?"bad":"warn")+'<small>'+esc(x.health.replaceAll("_"," "))+'</small></div></div>').join(""):'<div class="card empty">No Coach customer-health warnings.</div>')+'</div></div>'+
+    '</div>'+
     sectionHead("Account Deletion","High-trust account cleanup workflow.")+
     '<div class="list">'+(del.length?del.map(x=>'<div class="row"><div><b>Deletion Request</b><small>'+esc(x.status||"pending")+'</small></div><div class="right"><small>'+date(x.requested_at)+'</small></div></div>').join(""):'<div class="card empty">No account deletion requests.</div>')+'</div>';
+
+  document.querySelectorAll("[data-triage-ai]").forEach(b=>b.onclick=async()=>{
+    b.disabled=true;b.textContent="Triaging…";
+    try{await ai("triage_support",{triageId:b.dataset.triageAi});cache={};await renderSupport()}
+    catch(e){alert(e.message);b.disabled=false;b.textContent="Run AI Triage"}
+  });
+  document.querySelectorAll("[data-triage-view]").forEach(b=>b.onclick=()=>{
+    const x=triage.find(t=>String(t.id)===String(b.dataset.triageView));
+    if(!x)return;
+    modal("Support Draft",'<div class="card"><b>Issue Summary</b><p class="muted">'+esc(x.issue_summary||"—")+'</p><b>Suggested Next Action</b><p class="muted">'+esc(x.suggested_next_action||"—")+'</p><b>Draft Response</b><div class="bubble ai" style="margin-top:8px">'+esc(x.response_draft||"No draft stored.")+'</div>'+(x.requires_founder?'<p class="muted">Founder review is required before any external action.</p>':"")+'</div>');
+  });
+  document.querySelectorAll("[data-triage-reviewed]").forEach(b=>b.onclick=async()=>{
+    try{await action("update_support_triage",{id:b.dataset.triageReviewed,triageStatus:"reviewed"});cache={};await renderSupport()}catch(e){alert(e.message)}
+  });
 }
+
 async function renderCosts(){
-  const d=await api("finance_costs"),items=d.items||[];
-  $("content").innerHTML='<section class="hero"><div class="brand">CFO OFFICE</div><h2>Revenue is only half the picture.</h2><p>Track recurring tools, infrastructure, AI, Apple/Stripe-related operating costs, contractors, and one-time expenses so MW can see an operating run-rate instead of gross revenue alone.</p><div class="heroActions"><button class="btn primary" id="addCost">Add Cost</button></div></section>'+
-    '<div class="stats">'+stat("Monthly Cost Estimate",money(d.monthly_cost_estimate_cents))+stat("One-Time Costs",money(d.one_time_costs_30d_cents),"Last 30 days")+stat("Active Cost Items",items.filter(x=>x.status==="active").length)+stat("Cost Categories",new Set(items.map(x=>x.category)).size)+'</div>'+
-    sectionHead("Operating Cost Register","Manual cost register now; provider-direct cost feeds can connect later without changing the Founder architecture.")+
-    '<div class="tableWrap"><table class="table"><thead><tr><th>Vendor</th><th>Category</th><th>Description</th><th>Amount</th><th>Cadence</th><th>Status</th></tr></thead><tbody>'+items.map(x=>'<tr><td>'+esc(x.vendor||"—")+'</td><td>'+esc(x.category)+'</td><td>'+esc(x.description||"—")+'</td><td>'+money(x.amount_cents)+'</td><td>'+esc(x.cadence)+'</td><td>'+esc(x.status)+'</td></tr>').join("")+'</tbody></table></div>';
+  const d=await api("finance"),items=d.costs||[];
+  const margin=d.tracked_operating_margin_percent==null?"—":d.tracked_operating_margin_percent+"%";
+  $("content").innerHTML='<section class="hero"><div class="brand">CFO OFFICE</div><h2>Revenue, costs, and operating contribution.</h2><p>Track recurring tools, infrastructure, AI, Apple/Stripe-related costs, contractors, and variable usage so MW sees more than gross subscription revenue.</p><div class="heroActions"><button class="btn primary" id="addCost">Add Cost</button></div></section>'+
+    '<div class="stats">'+
+      stat("Estimated MRR",money(d.estimated_mrr_cents))+
+      stat("ARR Run Rate",money(d.estimated_arr_cents))+
+      stat("Tracked Monthly Cost",money(d.tracked_monthly_operating_cost_proxy_cents),"Fixed + recent usage proxy")+
+      stat("Operating Contribution",money(d.tracked_operating_contribution_cents),"Before taxes and untracked costs")+
+      stat("Tracked Margin",margin)+
+      stat("New Subscriptions",d.new_subscriptions_30d||0,"30 days")+
+      stat("Cancellations",d.cancelled_subscriptions_30d||0,"30 days")+
+      stat("Active Paid Subs",d.active_paying_subscriptions||0)+
+    '</div>'+
+    (items.length?"" : '<div class="card" style="margin-top:14px;border-color:#715b2e"><b>Cost tracking is not populated yet.</b><p class="muted">Operating contribution will look artificially high until recurring and usage costs are entered. Add Vercel, Supabase, OpenAI, email, Apple Developer, contractors, and other real MW costs as they occur.</p></div>')+
+    sectionHead("Operating Cost Register","Monthly and annual costs feed the run-rate. Usage entries from the last 30 days are treated as a current monthly proxy.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Vendor</th><th>Category</th><th>Description</th><th>Amount</th><th>Cadence</th><th>Monthly Eq.</th><th>Status</th><th>Action</th></tr></thead><tbody>'+items.map(x=>'<tr><td>'+esc(x.vendor||"—")+'</td><td>'+esc(x.category||"—")+'</td><td>'+esc(x.description||"—")+'</td><td>'+money(x.amount_cents)+'</td><td>'+esc(x.cadence||"—")+'</td><td>'+money(x.monthly_equivalent_cents||0)+'</td><td>'+esc(x.status||"—")+'</td><td><button class="btn small" data-cost-toggle="'+esc(x.id)+'" data-cost-status="'+esc(x.status||"active")+'">'+(x.status==="active"?"Pause":"Activate")+'</button></td></tr>').join("")+'</tbody></table></div>';
   $("addCost").onclick=openCostModal;
+  document.querySelectorAll("[data-cost-toggle]").forEach(b=>b.onclick=async()=>{try{await action("update_cost",{id:b.dataset.costToggle,status:b.dataset.costStatus==="active"?"inactive":"active"});cache={};renderCosts()}catch(e){alert(e.message)}});
 }
+
 function openCostModal(){
   modal("Add MW Operating Cost",'<div class="formGrid"><label class="field">VENDOR<input id="costVendor"></label><label class="field">CATEGORY<input id="costCategory" placeholder="AI, Hosting, Apple, Email…"></label><label class="field">AMOUNT ($)<input id="costAmount" type="number" min="0" step=".01"></label><label class="field">CADENCE<select id="costCadence"><option value="monthly">Monthly</option><option value="annual">Annual</option><option value="one_time">One-time</option><option value="usage">Usage / variable</option></select></label></div><label class="field">DESCRIPTION<input id="costDescription"></label><button class="btn primary" id="saveCost">Save Cost</button>');
   $("saveCost").onclick=async()=>{try{await action("create_cost",{vendor:$("costVendor").value,category:$("costCategory").value,amountCents:Math.round(Number($("costAmount").value||0)*100),cadence:$("costCadence").value,description:$("costDescription").value});closeModal();renderCosts()}catch(e){alert(e.message)}};
@@ -351,12 +409,29 @@ async function renderSecurity(){
     '<div class="tableWrap"><table class="table"><thead><tr><th>When</th><th>Actor Role</th><th>Action</th><th>Target</th><th>Reason</th></tr></thead><tbody>'+items.map(x=>'<tr><td>'+esc(date(x.created_at))+'</td><td>'+esc(x.actor_role||"—")+'</td><td>'+esc(x.action||"—")+'</td><td>'+esc((x.target_type||"—")+" · "+(x.target_id||""))+'</td><td>'+esc(x.reason||"—")+'</td></tr>').join("")+'</tbody></table></div>';
 }
 async function renderAnalytics(){
-  const [o,r,w]=await Promise.all([api("overview"),api("revenue"),api("website")]),m=o.metrics||{};
-  const athleteConv=metricPercent(w.website_paid_30d||0,w.website_accounts_30d||0);
-  $("content").innerHTML='<section class="hero"><div class="brand">BUSINESS INTELLIGENCE</div><h2>One source of truth for MW Dynasty.</h2><p>Growth, revenue, memberships, website funnel, customer operations, and product health become measurable business intelligence.</p></section>'+
-    '<div class="stats">'+stat("Estimated MRR",money(r.estimated_mrr_cents))+stat("New Accounts",m.new_accounts_30d||0,"30 days")+stat("Web Sessions",w.sessions_30d||0,"30 days")+stat("Website Paid Conv.",athleteConv+"%","Paid website journeys / accounts")+stat("Active Athletes",m.athletes_active||0)+stat("Active Coaches",m.coaches_active||0)+stat("Open Support",m.open_support||0)+stat("Errors 24h",m.diagnostic_errors_24h||0)+'</div>'+
-    '<div class="card" style="margin-top:14px"><div class="brand">DATA & ANALYTICS AI</div><h3>Metrics should explain decisions, not decorate a dashboard.</h3><p class="muted">The BI layer feeds Founder AI with current MW operating data. As traffic and paid members grow, cohort retention, ARPU, plan mix, conversion, sponsorship utilization, engagement, and customer-health reporting can build on this same foundation.</p></div>';
+  const [o,f,w,h,k]=await Promise.all([api("overview"),api("finance"),api("website"),api("customer_health"),api("kpi_history")]);
+  const m=o.metrics||{},hist=k.items||[],ath=h.athletes||[],co=h.coaches||[];
+  const paidConv=metricPercent(w.website_paid_30d||0,w.website_accounts_30d||0);
+  const first=hist[0]||{},last=hist[hist.length-1]||{};
+  const mrrDelta=(Number(last.estimated_mrr_cents)||0)-(Number(first.estimated_mrr_cents)||0);
+  const athleteDelta=(Number(last.athletes_active)||0)-(Number(first.athletes_active)||0);
+  const coachDelta=(Number(last.coaches_active)||0)-(Number(first.coaches_active)||0);
+  $("content").innerHTML='<section class="hero"><div class="brand">BUSINESS INTELLIGENCE</div><h2>One source of truth for MW Dynasty.</h2><p>Revenue, cost structure, customer health, website conversion, support, growth, and product reliability become measurable operating intelligence.</p></section>'+
+    '<div class="stats">'+
+      stat("Estimated MRR",money(f.estimated_mrr_cents),(mrrDelta>=0?"+":"")+money(mrrDelta)+" vs first snapshot")+
+      stat("Operating Contribution",money(f.tracked_operating_contribution_cents),"Tracked MRR minus tracked monthly cost proxy")+
+      stat("Website Paid Conv.",paidConv+"%","Paid website journeys / accounts")+
+      stat("Athletes to Watch",ath.filter(x=>x.health!=="healthy").length)+
+      stat("Coaches to Watch",co.filter(x=>x.health!=="healthy").length)+
+      stat("Active Athletes",m.athletes_active||0,(athleteDelta>=0?"+":"")+athleteDelta+" vs first snapshot")+
+      stat("Active Coaches",m.coaches_active||0,(coachDelta>=0?"+":"")+coachDelta+" vs first snapshot")+
+      stat("Errors 24h",m.diagnostic_errors_24h||0)+
+    '</div>'+
+    sectionHead("90-Day KPI History","Founder OS captures one rolling company snapshot per day when Business Intelligence is opened.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Date</th><th>MRR</th><th>Tracked Cost</th><th>Contribution</th><th>Athletes</th><th>Coaches</th><th>Web Sessions</th><th>Open Support</th><th>Errors</th></tr></thead><tbody>'+hist.map(x=>'<tr><td>'+esc(x.snapshot_date)+'</td><td>'+money(x.estimated_mrr_cents)+'</td><td>'+money(x.recurring_cost_cents)+'</td><td>'+money(x.operating_contribution_cents)+'</td><td>'+esc(x.athletes_active)+'</td><td>'+esc(x.coaches_active)+'</td><td>'+esc(x.website_sessions_30d)+'</td><td>'+esc(x.open_support)+'</td><td>'+esc(x.diagnostic_errors_24h)+'</td></tr>').join("")+'</tbody></table></div>'+
+    '<div class="card" style="margin-top:14px"><div class="brand">DATA & ANALYTICS AI</div><h3>Metrics should explain decisions, not decorate a dashboard.</h3><p class="muted">This history is the base for trend detection, churn analysis, customer cohorts, ARPU, plan mix, sponsorship utilization, engagement, and future forecasting. Founder AI receives current finance and customer-success context without exposing unnecessary customer content.</p></div>';
 }
+
 async function renderView(v){
   loading();
   try{
