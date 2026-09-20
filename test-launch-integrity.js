@@ -56,6 +56,10 @@ includes('supabase/migrations/20260920_founder_os_v5_audit.sql','mw_audit_founde
 includes('supabase/migrations/20260920_founder_os_v6_operating_sops.sql','App Store / TestFlight Release Gate','Founder launch SOP seeds missing');
 includes('supabase/migrations/20260920_founder_os_v7_launch_readiness.sql','mw_founder_launch_readiness','Founder launch-readiness RPC missing');
 includes('supabase/migrations/20260920_founder_os_v8_launch_audit.sql','mw_audit_founder_launch_gates','Founder launch gate audit missing');
+includes('supabase/migrations/20260920_founder_os_v9_launch_billing_gate.sql','internal_test_coach_entitlements','Founder launch billing gate correction missing');
+includes('supabase/migrations/20260920_founder_os_v10_human_org_plan.sql','Chief Operating Officer','Founder human organization plan missing');
+includes('founder/index.html','PEOPLE & ORGANIZATION','Founder People organization center missing');
+
 includes('server/api/founder.js',"section==='launch'",'Founder launch-readiness API route missing');
 includes('server/api/founder.js',"action==='update_launch_gate'",'Founder launch gate action missing');
 includes('server/api/founder-ai.js',"mode==='triage_support'",'Founder support AI triage missing');
