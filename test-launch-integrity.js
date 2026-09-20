@@ -37,7 +37,7 @@ includes('account/index.html','/assets/mw-diagnostics.js','Account diagnostics c
 includes('supabase/migrations/20260921_launch_diagnostics.sql','mw_launch_diagnostics_insert_own','Diagnostics RLS insert policy missing');
 const accountHtml=read('account/index.html');
 ok((accountHtml.match(/<!doctype html>/gi)||[]).length===1,'Account page must contain exactly one document');
-ok((accountHtml.match(/<\\/html>/gi)||[]).length===1,'Account page must contain exactly one closing html tag');
+ok((accountHtml.match(/<\/html>/gi)||[]).length===1,'Account page must contain exactly one closing html tag');
 
 
 
