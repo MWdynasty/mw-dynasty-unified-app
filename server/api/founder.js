@@ -163,6 +163,19 @@ module.exports=async function handler(req,res){
       }}));
       return res.status(200).json({ok:true,item:row});
     }
+    if(action==='update_campaign'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Campaign id required.'});
+      const patch={updated_at:new Date().toISOString()};
+      if(['draft','scheduled','active','paused','completed','cancelled'].includes(b.status))patch.status=b.status;
+      if(typeof b.audience==='string')patch.audience=clean(b.audience,160)||null;
+      if(typeof b.objective==='string')patch.objective=clean(b.objective,1000)||null;
+      if(Number.isFinite(Number(b.budgetCents)))patch.budget_cents=Math.max(0,Math.round(Number(b.budgetCents)));
+      if(Number.isFinite(Number(b.spendCents)))patch.spend_cents=Math.max(0,Math.round(Number(b.spendCents)));
+      if(Number.isFinite(Number(b.leads)))patch.leads=Math.max(0,Math.round(Number(b.leads)));
+      if(Number.isFinite(Number(b.conversions)))patch.conversions=Math.max(0,Math.round(Number(b.conversions)));
+      const row=one(await rest(token,`founder_marketing_campaigns?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
     if(action==='create_cost'){
       const category=clean(b.category,100),amount=Math.max(0,Number(b.amountCents)||0);
       if(!category||!Number.isFinite(amount))return res.status(400).json({error:'Cost category and amount are required.'});
