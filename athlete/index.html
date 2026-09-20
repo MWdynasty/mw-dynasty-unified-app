@@ -2455,6 +2455,12 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }
   }
 
+  function confirmedSignupSessionFromUrl(){
+    const h=new URLSearchParams(location.hash.replace(/^#/,''));
+    const type=h.get('type')||'';
+    if(!['signup','email'].includes(type)||!h.get('access_token'))return null;
+    return {access_token:h.get('access_token'),refresh_token:h.get('refresh_token')||'',token_type:h.get('token_type')||'bearer',expires_in:Number(h.get('expires_in')||3600),expires_at:Math.floor(Date.now()/1000)+Number(h.get('expires_in')||3600)};
+  }
   function recoveryRedirect(){return location.origin+location.pathname}
   async function requestPasswordReset(){
     const email=document.querySelector('#mwAuthEmail').value.trim();
@@ -2591,7 +2597,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     authStatus('Creating your athlete account…');
     signupSubmit.disabled=true;
     try{
-      const r=await fetch(SUPABASE_URL+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password,data:{account_type:'athlete',signup_source:document.documentElement.classList.contains('mw-native-app')?'ios':'website'}})});
+      const signupRedirect=location.origin+'/athlete/';const r=await fetch(SUPABASE_URL+'/auth/v1/signup?redirect_to='+encodeURIComponent(signupRedirect),{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password,data:{account_type:'athlete',signup_source:document.documentElement.classList.contains('mw-native-app')?'ios':'website'}})});
       const d=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(d.msg||d.error_description||d.error||'Could not create athlete account');
       if(d.access_token){
@@ -2614,7 +2620,11 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='block';authStatus('');
   document.querySelector('#mwSavePassword').onclick=saveRecoveredPassword;
   const out=document.querySelector('#mwSignOut');if(out)out.onclick=async()=>{out.disabled=true;out.textContent='SIGNING OUT…';try{const t=token();if(t)await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+t}})}catch(e){console.warn('MW remote sign-out unavailable',e)}finally{clearSession();location.replace('/athlete/')}};
-  if(!initRecoveryMode()) resume();
+  if(!initRecoveryMode()){
+    const confirmed=confirmedSignupSessionFromUrl();
+    if(confirmed){saveSession(confirmed,true);history.replaceState({},document.title,location.pathname);renderAthleteMembership(confirmed)}
+    else resume();
+  }
 })();
 </script>
 
