@@ -35,6 +35,20 @@ includes('coach/index.html','/assets/mw-diagnostics.js','Coach diagnostics clien
 includes('athlete/index.html','/assets/mw-diagnostics.js','Athlete diagnostics client missing');
 includes('account/index.html','/assets/mw-diagnostics.js','Account diagnostics client missing');
 includes('supabase/migrations/20260921_launch_diagnostics.sql','mw_launch_diagnostics_insert_own','Diagnostics RLS insert policy missing');
+includes('founder/index.html','FOUNDER OPERATING SYSTEM','Founder OS shell missing');
+includes('founder/index.html','Website & Growth','Founder OS website center missing');
+includes('founder/index.html','AI Company','Founder OS AI company missing');
+includes('founder/index.html','MW Knowledge','Founder OS methodology center missing');
+includes('server/api/founder.js','Founder / Owner access required','Founder API authorization gate missing');
+includes('server/api/founder-ai.js','Founder / Owner access required','Founder AI authorization gate missing');
+includes('server/api/founder-ai.js','Consequential actions must be prepared as approval requests','Founder AI human-approval guard missing');
+includes('api/mw.js',"'founder': require('../server/api/founder')",'Founder API route missing');
+includes('api/mw.js',"'founder/ai': require('../server/api/founder-ai')",'Founder AI route missing');
+includes('assets/mw-web-analytics.js','mw_record_web_event','Website analytics client missing');
+includes('supabase/migrations/20260920_founder_os_v1.sql','mw_founder_os_snapshot','Founder OS database snapshot RPC missing');
+includes('supabase/migrations/20260920_founder_os_v1.sql','private.mw_is_founder()','Founder OS database role gate missing');
+includes('supabase/migrations/20260920_founder_os_v1.sql','founder_ai_agents','Founder AI workforce schema missing');
+
 const accountHtml=read('account/index.html');
 ok((accountHtml.match(/<!doctype html>/gi)||[]).length===1,'Account page must contain exactly one document');
 ok((accountHtml.match(/<\/html>/gi)||[]).length===1,'Account page must contain exactly one closing html tag');
