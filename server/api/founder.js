@@ -48,7 +48,9 @@ module.exports=async function handler(req,res){
     const {token}=await founderAuth(req);
     if(req.method==='GET'){
       const section=clean(req.query?.section||'overview',40).toLowerCase();
-      const data=await rpc(token,'mw_founder_os_snapshot',{p_section:section});
+      const data=section==='programs'
+        ?await rpc(token,'mw_founder_program_control',{})
+        :await rpc(token,'mw_founder_os_snapshot',{p_section:section});
       if(section==='website'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
         return res.status(200).json({ok:true,data:{...data,health:{website:site,app}}});
