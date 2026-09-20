@@ -508,11 +508,6 @@ function renderLogin(message=''){
       </header>
 
       <div class="coach-login-content">
-        <div class="coach-login-copy">
-          <h1>I’M A<br><strong>COACH</strong></h1>
-          <p>LEAD <span>•</span> DEVELOP <span>•</span> BUILD</p>
-        </div>
-
         <div class="coach-login-person" role="img" aria-label="Coach standing trackside"></div>
 
         <div class="coach-login-card-wrap">
