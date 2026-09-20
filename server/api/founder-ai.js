@@ -137,24 +137,42 @@ ${JSON.stringify(context).slice(0,90000)}`;
       if(!objective)return res.status(400).json({error:'Founder objective required.'});
       const planInstructions=guard+`
 For PLAN mode return JSON only, no markdown, with this exact shape:
-{"summary":"...","tasks":[{"agent_code":"existing agent code","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":true|false}],"approvals":[{"category":"...","title":"...","description":"...","risk_level":"low|medium|high|critical"}]}
-Use only agent_code values present in SECURED MW BUSINESS CONTEXT. Break work into a practical maximum of 12 tasks. Mark pricing, contracts, payments, production deployment, destructive data/security changes, official methodology changes, and important external communications as requiring Founder approval.`;
+{"summary":"...","objective":{"title":"...","priority":"low|normal|high|urgent","owner_agent_code":"existing agent code","success_definition":"..."},"tasks":[{"agent_code":"existing agent code","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":true|false,"sequence_no":1}],"approvals":[{"category":"...","title":"...","description":"...","risk_level":"low|medium|high|critical"}]}
+Use only agent_code values present in SECURED MW BUSINESS CONTEXT. Break work into a practical maximum of 12 tasks and give them a sensible execution order. The objective should describe what success looks like, not just repeat the Founder request. Mark pricing, contracts, payments, production deployment, destructive data/security changes, official methodology changes, and important external communications as requiring Founder approval.`;
       const text=await openai(planInstructions,`Founder objective: ${objective}`,3200);
       let plan;try{plan=parseJson(text)}catch{return res.status(502).json({error:'Founder AI produced a plan that could not be safely parsed. Try again.'})}
       const agents=new Map((aiCompany.agents||[]).map(a=>[a.code,a]));
-      const tasks=(Array.isArray(plan.tasks)?plan.tasks:[]).slice(0,12).filter(t=>agents.has(String(t.agent_code||''))).map(t=>{
+      const objectiveSpec=plan.objective&&typeof plan.objective==='object'?plan.objective:{};
+      const requestedOwner=String(objectiveSpec.owner_agent_code||'chief_of_staff');
+      const objectiveOwner=agents.has(requestedOwner)?requestedOwner:'chief_of_staff';
+      const storedObjectiveRows=await insert(token,'founder_ai_objectives',[{
+        title:clean(objectiveSpec.title,180)||clean(objective,180)||'MW Dynasty company objective',
+        description:objective,
+        priority:['low','normal','high','urgent'].includes(objectiveSpec.priority)?objectiveSpec.priority:'normal',
+        status:'active',
+        owner_agent_code:objectiveOwner,
+        success_definition:clean(objectiveSpec.success_definition,3000)||clean(plan.summary,3000)||null,
+        source:'founder_ai'
+      }]);
+      const storedObjective=storedObjectiveRows[0]||null;
+      if(!storedObjective)return res.status(500).json({error:'Founder AI could not create the company objective.'});
+      const tasks=(Array.isArray(plan.tasks)?plan.tasks:[]).slice(0,12).filter(t=>agents.has(String(t.agent_code||''))).map((t,index)=>{
         const a=agents.get(String(t.agent_code));
         const requires=!!t.requires_approval;
         return {
           agent_code:a.code,title:clean(t.title,160)||'Founder objective task',description:clean(t.description,2000)||null,
           department:a.department,priority:['low','normal','high','urgent'].includes(t.priority)?t.priority:'normal',
           status:requires?'waiting_approval':'queued',source:'founder_ai',requires_approval:requires,
-          approval_status:requires?'pending':null,metadata:{objective:objective.slice(0,1000)}
+          approval_status:requires?'pending':null,
+          objective_id:storedObjective.id,
+          sequence_no:Number.isFinite(Number(t.sequence_no))?Math.max(1,Math.round(Number(t.sequence_no))):index+1,
+          metadata:{objective:objective.slice(0,1000)}
         };
       });
       const storedTasks=await insert(token,'founder_ai_tasks',tasks);
       const taskApprovals=storedTasks.filter(t=>t.requires_approval).map(t=>({
         task_id:t.id,
+        objective_id:storedObjective.id,
         category:'ai_task_approval',
         title:`Approve: ${clean(t.title,140)}`,
         description:clean(t.description,2000)||'Founder approval is required before this task can proceed.',
@@ -164,12 +182,13 @@ Use only agent_code values present in SECURED MW BUSINESS CONTEXT. Break work in
       }));
       const generalApprovals=(Array.isArray(plan.approvals)?plan.approvals:[]).slice(0,12).map(a=>({
         task_id:null,
+        objective_id:storedObjective.id,
         category:clean(a.category,80)||'founder_decision',title:clean(a.title,160)||'Founder approval',
         description:clean(a.description,2000)||null,risk_level:['low','medium','high','critical'].includes(a.risk_level)?a.risk_level:'medium',
         status:'pending',requested_by_agent_code:null,requested_action:{objective:objective.slice(0,1000)}
       }));
       const storedApprovals=await insert(token,'founder_approvals',[...taskApprovals,...generalApprovals]);
-      return res.status(200).json({ok:true,mode,summary:clean(plan.summary,3000),tasks:storedTasks,approvals:storedApprovals});
+      return res.status(200).json({ok:true,mode,summary:clean(plan.summary,3000),objective:storedObjective,tasks:storedTasks,approvals:storedApprovals});
     }
     if(mode==='triage_support'){
       const triageId=clean(body.triageId,80);
