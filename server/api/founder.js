@@ -54,6 +54,7 @@ module.exports=async function handler(req,res){
       else if(section==='finance') data=await rpc(token,'mw_founder_finance_snapshot',{});
       else if(section==='customer_health') data=await rpc(token,'mw_founder_customer_health',{});
       else if(section==='support_triage') data=await rpc(token,'mw_founder_support_triage_snapshot',{});
+      else if(section==='notifications') data=await rpc(token,'mw_founder_notifications_snapshot',{});
       else if(section==='launch'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
         const ok=!!site.ok&&!!app.ok;
@@ -223,6 +224,20 @@ module.exports=async function handler(req,res){
       if(typeof b.ownerAgentCode==='string')patch.owner_agent_code=clean(b.ownerAgentCode,80)||null;
       const row=one(await rest(token,`founder_support_triage?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
       return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_notification'){
+      const id=clean(b.id,80),status=clean(b.status,20);
+      if(!id||!['unread','read','dismissed'].includes(status))return res.status(400).json({error:'Valid notification and status required.'});
+      const row=one(await rest(token,`founder_notifications?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{
+        status,read_at:status==='read'?new Date().toISOString():null,updated_at:new Date().toISOString()
+      }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='mark_all_notifications_read'){
+      const rows=await rest(token,'founder_notifications?status=eq.unread',{method:'PATCH',body:{
+        status:'read',read_at:new Date().toISOString(),updated_at:new Date().toISOString()
+      }});
+      return res.status(200).json({ok:true,updated:Array.isArray(rows)?rows.length:0});
     }
     if(action==='update_launch_gate'){
       const gateCode=clean(b.gateCode,100);
