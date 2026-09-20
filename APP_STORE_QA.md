@@ -13,6 +13,9 @@
 - Apple-paid Coach plan changes are App Store-managed; MW updates access only after Apple verification/server notification.
 - App Store Server Notifications must use Version 2 for both sandbox and production.
 - Billing Grace Period should be enabled in sandbox first and validated before production.
+- TestFlight Launch Diagnostics are enabled automatically in the native iPhone build. Validate app-session start, navigation, API/network failures, successful sync timing, entitlement snapshots, StoreKit results, and the manual **Send Diagnostics Now** controls in Athlete Settings and Coach Profile.
+- Launch Diagnostics intentionally exclude passwords, auth tokens, request/message bodies, email addresses, Coach MW message content, uploaded photos, and payment-card information.
+
 - Historical QA notes below are retained for regression history; any older build-number references are superseded by this section.
 
 # MW Dynasty 3.0.4 — App Store Candidate QA
