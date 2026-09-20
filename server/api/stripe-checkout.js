@@ -155,7 +155,7 @@ module.exports = async function stripeCheckout(req, res) {
     }
 
     const billingResp = await fetch(
-      `${SUPABASE_URL}/rest/v1/billing_subscriptions?beneficiary_user_id=eq.${encodeURIComponent(user.id)}&audience=eq.${encodeURIComponent(product.audience)}&select=plan_code,status,current_period_end,provider,billing_type&limit=1`,
+      `${SUPABASE_URL}/rest/v1/billing_subscriptions?beneficiary_user_id=eq.${encodeURIComponent(user.id)}&audience=eq.${encodeURIComponent(product.audience)}&select=plan_code,status,current_period_end,provider,billing_type,metadata&limit=1`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
     );
     const billingRows = await billingResp.json().catch(() => []);
@@ -215,6 +215,25 @@ module.exports = async function stripeCheckout(req, res) {
     if (!sponsorshipOnly && sponsorPrice) {
       form['line_items[1][price]'] = sponsorPrice;
       form['line_items[1][quantity]'] = String(sponsorQuantity);
+    }
+
+    if (sponsorshipOnly) {
+      // Keep the sponsor add-on on the same monthly boundary as the Coach base
+      // membership. The first partial period is prorated, then renewals line up.
+      const basePeriodEndMs = billing?.current_period_end ? new Date(billing.current_period_end).getTime() : NaN;
+      const nowMs = Date.now();
+      if (Number.isFinite(basePeriodEndMs) && basePeriodEndMs > nowMs + 5 * 60 * 1000 && basePeriodEndMs < nowMs + 35 * 24 * 60 * 60 * 1000) {
+        form['subscription_data[billing_cycle_anchor]'] = String(Math.floor(basePeriodEndMs / 1000));
+        form['subscription_data[proration_behavior]'] = 'create_prorations';
+      }
+
+      // Reuse the Coach's existing Stripe customer when the base membership is
+      // already on Stripe so one customer portal controls both subscriptions.
+      const existingCustomer = String(billing?.metadata?.stripe_customer_id || '');
+      if (String(billing?.provider || '') === 'stripe' && existingCustomer.startsWith('cus_')) {
+        delete form.customer_email;
+        form.customer = existingCustomer;
+      }
     }
     const session = await stripe('/checkout/sessions', { method: 'POST', form });
     if (!session.url) throw new Error('Stripe did not return a checkout URL.');
