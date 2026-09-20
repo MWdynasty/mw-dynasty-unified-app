@@ -77,3 +77,18 @@ These migrations are already applied to production project keqgunlfwhjgcsurynef.
 
 20260920_founder_os_v8_ai_operating_backlog.sql
 - Seeds the real Founder AI launch/operations backlog for Release QA, Security, Website Growth, Finance, Legal/Risk, Support, Operations, and Data.
+
+
+2026-09-20 Founder full-launch command layer
+Additional production Founder OS migrations are source-controlled and applied:
+
+20260920_founder_os_v7_launch_readiness.sql
+- Adds deterministic full-launch gates for code, billing, website, security, App Store, TestFlight, real-device sandbox QA, and final Founder go-live approval.
+
+20260920_founder_os_v8_launch_audit.sql
+- Adds Founder audit logging for launch-gate changes.
+
+20260920_founder_os_v9_launch_billing_gate.sql
+- Corrects the launch billing gate so internal test Coach entitlements are informational while production billing-integrity invariants remain release-blocking.
+
+Note: v7/v8 numbering is shared with separate Founder security-review and AI-backlog migrations; filenames are unique and all are idempotent.
