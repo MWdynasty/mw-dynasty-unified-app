@@ -1050,16 +1050,7 @@ html.mw-native-app .mwLoginStory:after{
         <div class="mwLoginActions">
           <button id="mwAuthLogin" class="mwLoginButton" type="button">Sign In <span>→</span></button>
           <a class="mwLoginRoleSwitch" href="/coach/">COACH SIGN IN <span>→</span></a>
-          <button id="mwAthleteSignupOpen" class="mwLoginSignupTab" type="button">SIGN UP <span>→</span></button>
-        </div>
-
-        <div id="mwAthleteSignup" class="mwAuthReset mwLoginReset">
-          <div class="mwLoginCardHead"><h3>Create Athlete Account</h3><p>Create your MW Dynasty Athlete account. We’ll guide you one step at a time.</p></div>
-          <div class="mwLoginField"><span aria-hidden="true">✉</span><input id="mwSignupEmail" type="email" autocomplete="email" placeholder="Enter your email" aria-label="Signup email"></div>
-          <div class="mwLoginField"><span aria-hidden="true">▣</span><input id="mwSignupPassword" type="password" autocomplete="new-password" placeholder="Create a password" aria-label="Create password"></div>
-          <div class="mwLoginField"><span aria-hidden="true">▣</span><input id="mwSignupConfirm" type="password" autocomplete="new-password" placeholder="Confirm password" aria-label="Confirm password"></div>
-          <button id="mwAthleteSignupSubmit" class="mwLoginButton" type="button">Create Athlete Account <span>→</span></button>
-          <button id="mwAthleteSignupCancel" class="mwLoginSignupTab" type="button">BACK TO SIGN IN</button>
+          <a id="mwAthleteSignupOpen" class="mwLoginSignupTab" href="/athlete/signup.html?plan=mw_athlete">SIGN UP <span>→</span></a>
         </div>
 
         <div id="mwAuthReset" class="mwAuthReset mwLoginReset">
@@ -2591,47 +2582,6 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 
   const pwToggle=document.querySelector('#mwTogglePassword');
   if(pwToggle) pwToggle.onclick=()=>{const f=document.querySelector('#mwAuthPassword');const show=f.type==='password';f.type=show?'text':'password';pwToggle.textContent=show?'◌':'◉';pwToggle.setAttribute('aria-label',show?'Hide password':'Show password')};
-  const signupPanel=document.querySelector('#mwAthleteSignup');
-  const signupOpen=document.querySelector('#mwAthleteSignupOpen');
-  const signupSubmit=document.querySelector('#mwAthleteSignupSubmit');
-  const signupCancel=document.querySelector('#mwAthleteSignupCancel');
-  function showAthleteSignup(show){
-    if(!signupPanel)return;
-    signupPanel.classList.toggle('show',!!show);
-    document.querySelector('#mwAuthLogin').style.display=show?'none':'block';
-    document.querySelector('.mwLoginRoleSwitch').style.display=show?'none':'flex';
-    signupOpen.style.display=show?'none':'flex';
-    document.querySelector('#mwForgotPassword').style.display=show?'none':'inline-block';
-    authStatus('');
-  }
-  async function createAthleteAccount(){
-    const email=document.querySelector('#mwSignupEmail').value.trim();
-    const password=document.querySelector('#mwSignupPassword').value;
-    const confirm=document.querySelector('#mwSignupConfirm').value;
-    if(!email){authStatus('Enter your email.',true);return}
-    if(password.length<8){authStatus('Use at least 8 characters for your password.',true);return}
-    if(password!==confirm){authStatus('The passwords do not match.',true);return}
-    authStatus('Creating your athlete account…');
-    signupSubmit.disabled=true;
-    try{
-      const signupRedirect=location.origin+'/athlete/';const r=await fetch(SUPABASE_URL+'/auth/v1/signup?redirect_to='+encodeURIComponent(signupRedirect),{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password,data:{account_type:'athlete',signup_source:document.documentElement.classList.contains('mw-native-app')?'ios':'website'}})});
-      const d=await r.json().catch(()=>({}));
-      if(!r.ok)throw new Error(d.msg||d.error_description||d.error||'Could not create athlete account');
-      if(d.access_token){
-        saveSession(d,true);
-        renderAthleteMembership(d);
-      }else{
-        showAthleteSignup(false);
-        document.querySelector('#mwAuthEmail').value=email;
-        authStatus('Account created. Check your email to verify your account, then sign in.');
-      }
-    }catch(e){authStatus(e.message||'Could not create athlete account',true)}
-    finally{signupSubmit.disabled=false}
-  }
-  if(signupOpen)signupOpen.onclick=()=>showAthleteSignup(true);
-  if(signupCancel)signupCancel.onclick=()=>showAthleteSignup(false);
-  if(signupSubmit)signupSubmit.onclick=createAthleteAccount;
-
   document.querySelector('#mwAuthLogin').onclick=login;
   document.querySelector('#mwAuthPassword').onkeydown=e=>{if(e.key==='Enter')login()};
   document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='block';authStatus('');
