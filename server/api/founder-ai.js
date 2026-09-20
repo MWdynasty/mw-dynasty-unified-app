@@ -79,11 +79,12 @@ module.exports=async function handler(req,res){
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const mode=['brief','chat','plan','execute_task','triage_support'].includes(body.mode)?body.mode:'chat';
-    const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk]=await Promise.all([
+    const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk,launch]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company'),
       rpcNamed(token,'mw_founder_finance_snapshot',{}),
       rpcNamed(token,'mw_founder_customer_health',{}),
-      rpcNamed(token,'mw_founder_management_snapshot',{p_section:'risk'})
+      rpcNamed(token,'mw_founder_management_snapshot',{p_section:'risk'}),
+      rpcNamed(token,'mw_founder_launch_readiness',{})
     ]);
     const athleteHealth=Array.isArray(customerHealth.athletes)?customerHealth.athletes:[];
     const coachHealth=Array.isArray(customerHealth.coaches)?customerHealth.coaches:[];
@@ -91,6 +92,14 @@ module.exports=async function handler(req,res){
       generated_at:new Date().toISOString(),
       founder:{first_name:profile.first_name||'Founder'},
       overview,revenue,finance,website,system,
+      launch_readiness:{
+        required_total:launch.required_total||0,
+        required_verified:launch.required_verified||0,
+        required_remaining:launch.required_remaining||0,
+        ready_for_founder_go_live:!!launch.ready_for_founder_go_live,
+        fully_launch_ready:!!launch.fully_launch_ready,
+        open_gates:(launch.gates||[]).filter(x=>x.required&&x.status!=='verified').slice(0,25).map(x=>({category:x.category,title:x.title,status:x.status,severity:x.severity,verification_source:x.verification_source,evidence:x.evidence}))
+      },
       customer_success:{
         athlete_high_risk:athleteHealth.filter(x=>x.health==='high_risk').length,
         athlete_watch:athleteHealth.filter(x=>x.health==='watch').length,
@@ -115,8 +124,13 @@ SECURED MW BUSINESS CONTEXT:
 ${JSON.stringify(context).slice(0,90000)}`;
 
     if(mode==='brief'){
-      const answer=await openai(guard,`Prepare today's MW Dynasty executive briefing. Cover: company pulse, revenue/memberships, tracked operating costs and contribution, Athlete/Coach growth, customer-retention health, website funnel, support, launch/system health, top risks, and decisions that need the Founder. Do not invent trends that are not in the data.`,2600);
-      return res.status(200).json({ok:true,mode,answer});
+      const answer=await openai(guard,`Prepare today's MW Dynasty executive briefing. Cover: company pulse, revenue/memberships, tracked operating costs and contribution, Athlete/Coach growth, customer-retention health, website funnel, support, full-launch readiness, system health, top risks, and decisions that need the Founder. Do not invent trends that are not in the data. Clearly separate launch blockers from optional improvements.`,2800);
+      await insert(token,'founder_ai_runs',[{
+        task_id:null,agent_code:'chief_of_staff',run_type:'briefing',status:'completed',
+        model:process.env.OPENAI_MODEL||'gpt-5.6-sol',output_summary:answer.slice(0,12000),
+        metadata:{kind:'executive_brief',required_launch_remaining:Number(launch.required_remaining||0)}
+      }]).catch(()=>[]);
+      return res.status(200).json({ok:true,mode,answer,launch:{required_remaining:launch.required_remaining||0,fully_launch_ready:!!launch.fully_launch_ready}});
     }
     if(mode==='plan'){
       const objective=clean(body.objective,6000);
