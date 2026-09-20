@@ -68,6 +68,7 @@ html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;fon
       <div class="desktop-choices">
         <button id="athleteDesktop" class="desktop-choice"><strong>I'M AN ATHLETE</strong><span>Create profile · Train · Compete →</span></button>
         <button id="coachDesktop" class="desktop-choice"><strong>I'M A COACH</strong><span>Sign in · Lead · Build →</span></button>
+        <button id="memberDesktop" class="desktop-choice"><strong>MEMBER SIGN IN</strong><span>Open your athlete account →</span></button>
       </div>
     </section>
   </main>
@@ -81,6 +82,7 @@ document.getElementById('athleteChoice').addEventListener('click',()=>enter('ath
 document.getElementById('coachChoice').addEventListener('click',()=>enter('coach','/coach'));
 document.getElementById('athleteDesktop').addEventListener('click',()=>enter('athlete','/athlete/signup.html?plan=mw_athlete'));
 document.getElementById('coachDesktop').addEventListener('click',()=>enter('coach','/coach'));
+document.getElementById('memberDesktop').addEventListener('click',()=>enter('athlete','/athlete/'));
 const stage=document.querySelector('.role-stage');
 if(stage&&window.matchMedia('(hover:hover) and (pointer:fine)').matches&&!window.matchMedia('(prefers-reduced-motion:reduce)').matches){
   stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;stage.style.transform=`rotateY(${(x*2.4).toFixed(2)}deg) rotateX(${(-y*1.8).toFixed(2)}deg) translateZ(0)`});
