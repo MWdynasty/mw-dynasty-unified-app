@@ -202,8 +202,14 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     private func showConnectionError(_ detail: String) {
         let escaped = detail.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+        let rawURL = (Bundle.main.object(forInfoDictionaryKey: "MWProductionURL") as? String) ?? "https://app.mwdynasty.com/"
+        let retryURL = rawURL
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "'", with: "&#39;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
         let html = """
-        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>Connection needed</h2><p>MW Dynasty needs an internet connection to sync training, Coach MW, and your account.</p><p style="color:#9fb0bb">\(escaped)</p><button onclick="location.reload()" style="padding:14px 18px;border:0;border-radius:10px;background:#e9b949;font-weight:800">TRY AGAIN</button></body></html>
+        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>Connection needed</h2><p>MW Dynasty needs an internet connection to sync training, Coach MW, and your account.</p><p style="color:#9fb0bb">\(escaped)</p><button onclick="location.href='\(retryURL)'" style="padding:14px 18px;border:0;border-radius:10px;background:#e9b949;font-weight:800">TRY AGAIN</button></body></html>
         """
         webView.loadHTMLString(html, baseURL: nil)
     }
