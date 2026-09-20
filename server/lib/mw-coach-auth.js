@@ -33,7 +33,8 @@ async function getAccountContext(req,{requireAthlete=false}={}){
     const paidStatus=['active','trialing','cancel_at_period_end'].includes(String(billing?.status||''));
     const paidPeriod=!billing?.current_period_end||new Date(billing.current_period_end).getTime()>Date.now();
     const expectedPlan={core:'coach_core',intelligence:'coach_intelligence',mw_sprint_performance:'mw_sprint_performance'}[String(entitlement?.access_tier||'')];
-    const billingMatches=String(billing?.billing_type||'')==='individual'&&String(billing?.plan_code||'')===String(expectedPlan||'');
+    const recognizedProvider=['stripe','apple'].includes(String(billing?.provider||''));
+    const billingMatches=recognizedProvider&&String(billing?.billing_type||'')==='individual'&&String(billing?.plan_code||'')===String(expectedPlan||'');
     if(!entitlement||(!internalTest&&(!billing||!paidStatus||!paidPeriod||!billingMatches))){
       throw Object.assign(new Error('An active paid MW Coach membership is required for Coach access.'),{status:403});
     }
