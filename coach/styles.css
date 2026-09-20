@@ -1639,3 +1639,40 @@ html.mw-native-app .coach-login-bg:after{
     appearance:none!important;
   }
 }
+
+/* MW VERIFIED COACH SIGNUP WIZARD v22 */
+.coach-signup-wizard{width:min(760px,96vw)!important}
+.coach-signup-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 22px}
+.coach-signup-progress>div{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid #294657;border-radius:12px;color:#8fa0aa;background:#06131b;font-size:12px;font-weight:850;letter-spacing:.04em}
+.coach-signup-progress b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid #3a5261;font-size:11px}
+.coach-signup-progress>div.active{color:#fff;border-color:#efbf38;background:rgba(239,191,56,.08)}
+.coach-signup-progress>div.active b,.coach-signup-progress>div.done b{background:#efbf38;border-color:#efbf38;color:#071018}
+.coach-signup-progress>div.done{color:#d7c88f;border-color:rgba(239,191,56,.35)}
+.coach-signup-step{display:none}
+.coach-signup-step.active{display:grid;gap:14px}
+.coach-signup-step-head{margin-bottom:2px}
+.coach-signup-step-head>span{display:block;color:#efbf38;font-size:10px;font-weight:950;letter-spacing:.18em;margin-bottom:5px}
+.coach-signup-step-head h3{margin:0 0 5px;font-size:24px;letter-spacing:-.025em}
+.coach-signup-step-head p{margin:0;color:#9eb0ba;font-size:13px;line-height:1.45}
+.coach-signup-actions{display:grid;grid-template-columns:minmax(110px,.34fr) minmax(0,1fr);gap:10px;align-items:stretch}
+.coach-signup-back{min-height:54px;border:1px solid #385363;border-radius:14px;background:#07131b;color:#fff;font-weight:850}
+.coach-apply-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
+.coach-apply-summary>div{padding:12px;border:1px solid #294657;border-radius:12px;background:#06131b}
+.coach-apply-summary span{display:block;color:#8fa0aa;font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.coach-apply-summary b{display:block;color:#fff;font-size:13px;overflow-wrap:anywhere}
+.coach-apply-certify{display:flex!important;grid-template-columns:none!important;align-items:flex-start;gap:10px!important;padding:12px;border:1px solid rgba(239,191,56,.28);border-radius:12px;background:rgba(239,191,56,.055);font-size:12px!important;line-height:1.45}
+.coach-apply-certify input{flex:0 0 auto;width:18px!important;height:18px!important;min-height:18px!important;margin:1px 0 0!important;accent-color:#efbf38}
+.coach-apply-result{text-align:center;padding:12px 4px 4px}
+.coach-apply-result-icon{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:#efbf38;color:#071018;font-size:32px;font-weight:1000;box-shadow:0 0 36px rgba(239,191,56,.22)}
+.coach-apply-result h2{margin:6px 0 10px!important;font-size:32px!important}
+.coach-apply-result>p{max-width:570px;margin:0 auto 18px;color:#c8d1d6;line-height:1.55}
+.coach-apply-next-steps{display:grid;gap:9px;text-align:left;margin:0 auto 20px;padding:16px;border:1px solid #294657;border-radius:14px;background:#06131b}
+.coach-apply-next-steps b{color:#efbf38}
+.coach-apply-next-steps span{color:#dce3e7;font-size:13px;line-height:1.4}
+@media(max-width:600px){
+  .coach-signup-progress span{display:none}
+  .coach-signup-progress>div{min-height:40px}
+  .coach-apply-summary{grid-template-columns:1fr}
+  .coach-signup-actions{grid-template-columns:1fr}
+  .coach-signup-back{order:2}
+}
