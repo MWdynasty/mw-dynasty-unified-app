@@ -44,8 +44,8 @@ html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;fon
   .desktop-kicker{font-size:12px;letter-spacing:.22em;color:#dfb154;font-weight:800}
   .desktop-entry h1{font-size:clamp(46px,6vw,84px);line-height:.96;max-width:700px;margin:18px 0;font-family:Georgia,serif;letter-spacing:-.04em}
   .desktop-entry p{font-size:clamp(18px,2vw,24px);line-height:1.45;color:#d6dde5;max-width:620px;margin:0 0 30px}
-  .desktop-choices{display:flex;gap:16px;flex-wrap:wrap;margin-top:32px}
-  .desktop-choice{width:min(310px,42vw);text-align:left;padding:23px 25px;border:1px solid rgba(237,194,102,.6);background:rgba(4,12,21,.7);color:#fff;cursor:pointer;border-radius:12px;transition:transform .18s ease,background .18s ease}
+  .desktop-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:min(100%,1020px);margin-top:32px}
+  .desktop-choice{width:100%;min-height:122px;text-align:left;padding:23px 25px;border:1px solid rgba(237,194,102,.6);background:rgba(4,12,21,.7);color:#fff;cursor:pointer;border-radius:12px;transition:transform .18s ease,background .18s ease}
   .desktop-choice:hover{transform:translateY(-4px);background:rgba(24,37,50,.86)}
   .desktop-choice strong{display:block;font-size:23px;letter-spacing:.06em}.desktop-choice span{display:block;color:#e4c16b;margin-top:8px;font-size:14px}
 }
@@ -66,9 +66,9 @@ html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;fon
       <h1>Train with purpose.<br>Lead with precision.</h1>
       <p>Choose your MW Dynasty experience to create your profile, manage your program, and sign in securely from any computer.</p>
       <div class="desktop-choices">
-        <button id="athleteDesktop" class="desktop-choice"><strong>I'M AN ATHLETE</strong><span>Create profile · Train · Compete →</span></button>
+        <button id="athleteDesktop" class="desktop-choice"><strong>CREATE ATHLETE PROFILE</strong><span>New athlete? Start your profile and membership →</span></button>
         <button id="coachDesktop" class="desktop-choice"><strong>I'M A COACH</strong><span>Sign in · Lead · Build →</span></button>
-        <button id="memberDesktop" class="desktop-choice"><strong>MEMBER SIGN IN</strong><span>Open your athlete account →</span></button>
+        <button id="memberDesktop" class="desktop-choice"><strong>ATHLETE SIGN IN</strong><span>Already a member? Open your account →</span></button>
       </div>
     </section>
   </main>
