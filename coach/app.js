@@ -828,6 +828,21 @@ function renderCoachPasswordReset(session){
     try{const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{method:'PUT',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({password:p})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.message||'Password could not be updated.');history.replaceState({},document.title,location.pathname);if(session.mw_link_type==='invite'){persistSession(session,true);renderCoachMembershipSelection(session)}else{clearSession();renderLogin('Password updated. Sign in with your new password.')}}catch(err){say(err.message||'Password could not be updated.');b.disabled=false;b.innerHTML='<span>Save New Password</span><span>→</span>'}
   };
 }
+async function waitForCoachActivation(session){
+  const params=new URLSearchParams(location.search);
+  if(params.get('checkout')!=='success')return false;
+  app.innerHTML=`<div class="coach-membership-screen"><section class="coach-membership-shell coach-membership-finalizing"><div class="coach-apply-kicker">MW DYNASTY • PAYMENT RECEIVED</div><h1>Setting up your Coach account…</h1><p>Payment is complete. We’re unlocking your membership and sponsored-athlete seats now.</p><div class="login-spinner" aria-hidden="true"></div></section></div>`;
+  for(let i=0;i<10;i++){
+    try{await verifyCoachAccess(session);history.replaceState({},document.title,location.pathname);dashboard();return true}catch{}
+    await new Promise(r=>setTimeout(r,1200));
+  }
+  history.replaceState({},document.title,location.pathname);
+  renderCoachMembershipSelection(session);
+  const msg=document.getElementById('coachMembershipMessage');
+  if(msg){msg.textContent='Payment was received and activation is still syncing. Give it a moment, then sign in again.';msg.className='login-message show neutral'}
+  return true;
+}
+
 async function initAuth(){
   await loadPricingCatalog();
   const recovery=recoverySessionFromUrl();if(recovery){renderCoachPasswordReset(recovery);return}
@@ -838,6 +853,7 @@ async function initAuth(){
       let active=stored;
       if(!(await validateSession(active)))active=await refreshCoachSession(active);
       if(active&&await validateSession(active)){
+        if(await waitForCoachActivation(active))return;
         try{await verifyCoachAccess(active);dashboard();return}
         catch{renderCoachMembershipSelection(active);return}
       }
