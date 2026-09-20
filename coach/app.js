@@ -759,11 +759,13 @@ function renderCoachMembershipSelection(session=authSession){
         <div class="coach-membership-head"><div class="coach-apply-kicker">MW DYNASTY • COACH</div><h1>Choose what fits your program.</h1><p>Your coaching role is verified. Pick a membership, add sponsored athletes only if you want them, then you're ready for checkout.</p></div>
         <div class="coach-membership-plans">${planCards()}</div>
         <div class="coach-sponsor-choice">
-          <div><b>Sponsor athletes?</b><span>Optional. You can also add sponsored athletes later.</span></div>
-          <div class="coach-sponsor-buttons"><button type="button" data-sponsor="no" class="${!sponsorOn?'selected':''}">No thanks</button><button type="button" data-sponsor="yes" class="${sponsorOn?'selected':''}">Yes, add athletes</button></div>
-          ${sponsorOn?`<div class="coach-sponsor-qty"><button type="button" data-qty="-1" aria-label="Remove one athlete">−</button><div><b>${sponsorQty}</b><span>Sponsored athlete${sponsorQty===1?'':'s'} · &#36;${p.sponsor}/athlete/mo</span></div><button type="button" data-qty="1" aria-label="Add one athlete">+</button></div>`:''}
+          ${isNative
+            ? `<div><b>Sponsored athletes come next</b><span>Activate your Coach membership through the App Store first. You can add sponsored-athlete seats from Account & Billing immediately after activation.</span></div>`
+            : `<div><b>Sponsor athletes?</b><span>Optional. You can also add sponsored athletes later.</span></div>
+               <div class="coach-sponsor-buttons"><button type="button" data-sponsor="no" class="${!sponsorOn?'selected':''}">No thanks</button><button type="button" data-sponsor="yes" class="${sponsorOn?'selected':''}">Yes, add athletes</button></div>
+               ${sponsorOn?`<div class="coach-sponsor-qty"><button type="button" data-qty="-1" aria-label="Remove one athlete">−</button><div><b>${sponsorQty}</b><span>Sponsored athlete${sponsorQty===1?'':'s'} · &#36;${p.sponsor}/athlete/mo</span></div><button type="button" data-qty="1" aria-label="Add one athlete">+</button></div>`:''}`}
         </div>
-        <div class="coach-membership-total"><div><span>Coach membership</span><b>&#36;${p.monthly}/mo</b></div>${sponsorOn?`<div><span>${sponsorQty} sponsored athlete${sponsorQty===1?'':'s'}</span><b>&#36;${sponsorTotal}/mo</b></div>`:''}<div class="total"><span>Total today</span><b>&#36;${total}/mo</b></div></div>
+        <div class="coach-membership-total"><div><span>Coach membership</span><b>&#36;${p.monthly}/mo</b></div>${!isNative&&sponsorOn?`<div><span>${sponsorQty} sponsored athlete${sponsorQty===1?'':'s'}</span><b>&#36;${sponsorTotal}/mo</b></div>`:''}<div class="total"><span>Total today</span><b>&#36;${isNative?p.monthly:total}/mo</b></div></div>
         <button type="button" id="coachMembershipContinue" class="coach-login-submit coach-membership-continue"><span>${isNative?'Continue to App Purchase':'Continue to Secure Payment'}</span><span>→</span></button>
         ${isNative?'<button type="button" id="coachRestorePurchase" class="back" style="width:100%;margin-top:10px">Restore App Store Purchase</button>':''}
         <p class="coach-membership-note">No setup fee. Sponsorship is optional. Your Coach dashboard unlocks after payment is confirmed.</p>
@@ -811,7 +813,7 @@ function renderCoachMembershipSelection(session=authSession){
       if(journey){
         const map={coach_core:'core',coach_intelligence:'intelligence',mw_sprint_performance:'performance'},key=map[journey.selected_plan_code];
         if(key&&PLANS[key])selected=key;
-        sponsorQty=Math.max(1,Math.min(250,Number(journey.sponsored_athlete_seats||1)));sponsorOn=Number(journey.sponsored_athlete_seats||0)>0;draw();
+        sponsorQty=Math.max(1,Math.min(250,Number(journey.sponsored_athlete_seats||1)));sponsorOn=!isNative&&Number(journey.sponsored_athlete_seats||0)>0;draw();
       }
       if(new URLSearchParams(location.search).get('checkout')==='cancelled'){
         const msg=document.getElementById('coachMembershipMessage');if(msg){msg.textContent='Checkout was cancelled. Your membership choice is saved — continue whenever you’re ready.';msg.className='login-message show neutral'}
