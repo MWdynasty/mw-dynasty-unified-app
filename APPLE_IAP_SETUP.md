@@ -37,6 +37,20 @@ The private key must stay in server secrets only and must never be committed to 
 ### Billing Grace Period
 Enable Billing Grace Period in **Sandbox only first**. Validate grace-period entry/recovery before enabling it in Production.
 
+### 2026 purchase-option check
+For each of the four MW Dynasty auto-renewable subscriptions, review **Purchase Options** in App Store Connect and turn **multiseat purchasing OFF for launch**. MW Dynasty's Coach-sponsored athlete seats use the separate MW sponsorship system and must not be confused with Apple's subscription quantity/multiseat feature.
+
+### Native purchase-screen review gate
+The iPhone app must:
+- purchase Athlete and Coach base memberships with StoreKit only;
+- show the subscription name, monthly duration, and full monthly renewal price;
+- provide **Restore Purchases**;
+- provide accessible **Terms of Use** and **Privacy Policy** links;
+- never send a new native membership purchase to Stripe;
+- never offer sponsored-athlete Stripe checkout inside the iPhone app.
+
+Web purchases continue to use Stripe. Existing web-paid accounts may sign into the iPhone app, but web billing actions are not promoted from the native purchase flow.
+
 
 This file is the single source of truth for the native iOS payment wiring added for Build 13.
 
