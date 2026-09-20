@@ -27,6 +27,18 @@ includes('account/index.html','restorePurchasesBtn','Restore Purchases control m
 includes('account/index.html','/terms.html','Terms of Use link missing from native subscription flow');
 includes('account/index.html','/privacy.html','Privacy Policy link missing from native subscription flow');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','let planCode = (body["planCode"] as? String) ?? "auto"','Automatic App Store restore discovery missing');
+includes('assets/mw-diagnostics.js',"window.MWDiag={event:event,snapshot:snapshot,flush:flush,report:report,enable:enable,status:status,version:VERSION}",'Launch diagnostics client missing');
+includes('server/api/diagnostics.js','launch_diagnostics','Launch diagnostics API missing');
+includes('api/mw.js',"'diagnostics': require('../server/api/diagnostics')",'Diagnostics API gateway route missing');
+includes('vercel.json','"/api/diagnostics"','Diagnostics Vercel rewrite missing');
+includes('coach/index.html','/assets/mw-diagnostics.js','Coach diagnostics client missing');
+includes('athlete/index.html','/assets/mw-diagnostics.js','Athlete diagnostics client missing');
+includes('account/index.html','/assets/mw-diagnostics.js','Account diagnostics client missing');
+includes('supabase/migrations/20260921_launch_diagnostics.sql','mw_launch_diagnostics_insert_own','Diagnostics RLS insert policy missing');
+const accountHtml=read('account/index.html');
+ok((accountHtml.match(/<!doctype html>/gi)||[]).length===1,'Account page must contain exactly one document');
+ok((accountHtml.match(/<\\/html>/gi)||[]).length===1,'Account page must contain exactly one closing html tag');
+
 
 
 
