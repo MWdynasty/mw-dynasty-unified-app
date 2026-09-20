@@ -365,32 +365,35 @@ const COACH_TOUR_RANK={core:1,intelligence:2,performance:3};
 const COACH_TOURS={
   core:[
     {icon:'✦',title:'Welcome to MW Coach Core',body:'Your command center for athletes, teams, programs, attendance, meets and communication.',hint:'A fast walkthrough of the tools you will use most.',target:null,label:'COACH CORE'},
+    {icon:'',title:'Your New Navigation Buttons',body:'These 3D MW buttons are your main Coach navigation. Use them to move quickly between your command center, team, coaching tools, messages and profile.',hint:'The tutorial will point to these same buttons as you learn the Coach platform.',target:'#sideNav',label:'NEW NAVIGATION',navPreview:true},
     {icon:'📅',title:'Set the Training Year',body:'MW Standard Week 1 begins the day after Labor Day. Keep that standard calendar, or choose a Custom Season Start in Account when your team needs a different Week 1.',hint:'Assigned athletes inherit your coach calendar and placement. Independent athletes joining late use MW Smart Entry.',target:'.coach-training-year-card',label:'TRAINING YEAR'},
-    {icon:'♟',title:'Manage Your Athletes',body:'Open the athlete roster to review profiles, assignments and the athletes connected to your coach account.',hint:'Athlete access stays scoped to the athletes you are authorized to coach.',target:'[data-page="athletes"]',label:'ATHLETES'},
-    {icon:'✉',title:'Build Your Program',body:'Use Programs to create, save and manage your own coaching plan inside MW Dynasty.',hint:'Coach Core is built around your program and your coaching workflow.',target:'[data-page="programs"]',label:'PROGRAMS'},
+    {icon:'♟',title:'Manage Your Athletes',body:'Open the athlete roster to review profiles, assignments and the athletes connected to your coach account.',hint:'Athlete access stays scoped to the athletes you are authorized to coach.',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
+    {icon:'✉',title:'Build Your Program',body:'Use Programs to create, save and manage your own coaching plan inside MW Dynasty.',hint:'Coach Core is built around your program and your coaching workflow.',target:'#sideNav [data-page="programs"]',label:'PROGRAMS'},
     {icon:'✓',title:'Run the Day-to-Day',body:'Calendar, meets and attendance keep practices, competitions and participation organized in one place.',hint:'Your operational tools live together in the Coach navigation.',target:'[data-page="attendance"]',label:'ATTENDANCE'},
-    {icon:'💬',title:'Stay Connected',body:'Use Messages to communicate with your athletes and keep important follow-up inside the platform.',hint:'Coach communication stays attached to the coaching workspace.',target:'[data-page="messages"]',label:'MESSAGES'},
-    {icon:'⚙',title:'You’re Ready to Coach',body:'Your Account shows your assigned MW Coach tier. You can replay this tutorial there anytime.',hint:'MW Dynasty controls coach access; coaches cannot change their own tier.',target:'[data-page="account"]',label:'ACCOUNT'}
+    {icon:'💬',title:'Stay Connected',body:'Use Messages to communicate with your athletes and keep important follow-up inside the platform.',hint:'Coach communication stays attached to the coaching workspace.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
+    {icon:'⚙',title:'You’re Ready to Coach',body:'Your Account shows your assigned MW Coach tier. You can replay this tutorial there anytime.',hint:'MW Dynasty controls coach access; coaches cannot change their own tier.',target:'#sideNav [data-page="account"]',label:'ACCOUNT'}
   ],
   intelligence:[
     {icon:'✦',title:'Welcome to MW Coach Intelligence',body:'Your coaching program stays yours — MW Intelligence adds roster monitoring, AI priorities and decision support.',hint:'AI detects and recommends. You remain the coach in control.',target:null,label:'COACH INTELLIGENCE'},
+    {icon:'',title:'Your New Navigation Buttons',body:'These 3D MW buttons are your main Coach navigation. Use them to move quickly between Home, Team, Coach MW, Messages and Profile.',hint:'The icon artwork in this tutorial now matches the buttons you actually use in the Coach app.',target:'#sideNav',label:'NEW NAVIGATION',navPreview:true},
     {icon:'📅',title:'Your Team’s Training Calendar',body:'MW Standard Week 1 begins the day after Labor Day, or you can set a Custom Season Start. That calendar becomes the reference for roster monitoring and season intelligence.',hint:'Coach-assigned athletes follow your calendar and placement; independent late joiners use Smart Entry.',target:'.coach-training-year-card',label:'TRAINING YEAR'},
     {icon:'◉',title:'Know Who Needs You',body:'The Athlete Status Board separates your roster into On Track, Watch and Needs Attention, with the reason for every flag.',hint:'Start here when you need to know where your attention matters most.',target:'.athlete-status-section',label:'ATHLETE STATUS'},
     {icon:'☑',title:'AI Task Board',body:'MW turns roster signals into a prioritized coaching task list so important follow-up does not get buried.',hint:'Review the recommendation before taking action.',target:'[data-page="taskboard"]',label:'AI TASK BOARD'},
     {icon:'▣',title:'Plan the Season',body:'AI Season Planner helps organize your season around your own program, competition calendar and athlete needs.',hint:'Use it to support your plan — not replace your coaching judgment.',target:'[data-page="season"]',label:'SEASON PLANNER'},
-    {icon:'☻',title:'Coach MW AI',body:'Ask Coach MW questions about athletes, workload, planning and MW coaching intelligence from one assistant.',hint:'Coach MW recommends. You approve before execution.',target:'[data-page="coachmw"]',label:'COACH MW AI'},
+    {icon:'☻',title:'Coach MW AI',body:'Ask Coach MW questions about athletes, workload, planning and MW coaching intelligence from one assistant.',hint:'Coach MW recommends. You approve before execution.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW AI'},
     {icon:'▱',title:'See the Signals',body:'AI Insights summarizes workload, PR coverage, training recency and other roster-level signals for faster review.',hint:'Use the insight as a reason to inspect the supporting athlete data.',target:'[data-page="insights"]',label:'AI INSIGHTS'},
-    {icon:'⚙',title:'Intelligence Is Ready',body:'Your Account shows your assigned platform, and the complete tutorial can be replayed whenever you need it.',hint:'You stay in control of every coaching decision.',target:'[data-page="account"]',label:'ACCOUNT'}
+    {icon:'⚙',title:'Intelligence Is Ready',body:'Your Account shows your assigned platform, and the complete tutorial can be replayed whenever you need it.',hint:'You stay in control of every coaching decision.',target:'#sideNav [data-page="account"]',label:'ACCOUNT'}
   ],
   performance:[
     {icon:'✦',title:'Welcome to MW Sprint Performance',body:'This is the complete MW ecosystem: the 41-week sprint system, strength, education, pacing and full Coach Intelligence.',hint:'The system has the plan. Technology helps you execute it.',target:null,label:'SPRINT PERFORMANCE'},
+    {icon:'',title:'Your New Navigation Buttons',body:'These 3D MW buttons are your main Coach navigation. Use them to move quickly between Home, Team, Coach MW, Messages and Profile.',hint:'The icon artwork in this tutorial now matches the buttons you actually use in the Coach app.',target:'#sideNav',label:'NEW NAVIGATION',navPreview:true},
     {icon:'📅',title:'The 41-Week Training Year',body:'The standard MW cycle begins the day after Labor Day and progresses through all 41 weeks. Coaches can set a Custom Week 1 when their team calendar requires it.',hint:'Assigned athletes inherit the coach calendar and placement. Late independent athletes use Smart Entry so track + strength begin at a prepared point.',target:'.coach-training-year-card',label:'TRAINING YEAR'},
     {icon:'◉',title:'Start With Athlete Status',body:'See who is On Track, who needs to be watched and who needs immediate coaching attention — with the reason for each flag.',hint:'Roster intelligence is built into the complete performance system.',target:'.athlete-status-section',label:'ATHLETE STATUS'},
     {icon:'🏃',title:'The 41-Week MW Track Program',body:'Open the protected MW Track Program to see the exact progressive sprint prescription, recovery, cues and circuit order.',hint:'This is the sprint-program backbone of MW Dynasty.',target:'[data-page="mwtrack"]',label:'MW TRACK PROGRAM'},
     {icon:'🏋',title:'Strength & Power',body:'The weight-room plan is synchronized with the sprint system so loading and progression support the track work.',hint:'Track and strength are designed to work as one progression.',target:'[data-page="strength"]',label:'STRENGTH & POWER'},
     {icon:'◷',title:'Individualize the Pace',body:'Pacing Tools use athlete PR data to calculate individualized target times for training reps.',hint:'Better targets help athletes execute the prescribed intent of the session.',target:'[data-page="pacing"]',label:'PACING TOOLS'},
-    {icon:'☻',title:'Coach MW AI',body:'Coach MW connects the MW system, your roster and coaching intelligence so you can ask questions in context.',hint:'Detect → Analyze → Recommend → Coach Approves → Execute.',target:'[data-page="coachmw"]',label:'COACH MW AI'},
-    {icon:'⚙',title:'The Complete System Is Ready',body:'Use your Account to confirm your platform access and replay this walkthrough whenever you want a refresher.',hint:'MW Sprint Performance keeps the methodology, tools and athlete intelligence in one coach workspace.',target:'[data-page="account"]',label:'ACCOUNT'}
+    {icon:'☻',title:'Coach MW AI',body:'Coach MW connects the MW system, your roster and coaching intelligence so you can ask questions in context.',hint:'Detect → Analyze → Recommend → Coach Approves → Execute.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW AI'},
+    {icon:'⚙',title:'The Complete System Is Ready',body:'Use your Account to confirm your platform access and replay this walkthrough whenever you want a refresher.',hint:'MW Sprint Performance keeps the methodology, tools and athlete intelligence in one coach workspace.',target:'#sideNav [data-page="account"]',label:'ACCOUNT'}
   ]
 };
 const COACH_UPGRADE_TOURS={
@@ -398,7 +401,7 @@ const COACH_UPGRADE_TOURS={
     {icon:'⚡',title:'Coach Intelligence Is Unlocked',body:'Your platform now adds live roster intelligence and AI decision support on top of your coaching workflow.',hint:'Here are the biggest new tools.',target:null,label:'WHAT’S NEW'},
     {icon:'◉',title:'Athlete Status Board',body:'Your roster is now organized into On Track, Watch and Needs Attention so you can prioritize faster.',hint:'Every flag includes the reason MW detected it.',target:'.athlete-status-section',label:'NEW · ATHLETE STATUS'},
     {icon:'☑',title:'AI Priorities',body:'The AI Task Board turns athlete signals into daily coaching priorities for you to review.',hint:'You decide what gets approved and acted on.',target:'[data-page="taskboard"]',label:'NEW · AI TASK BOARD'},
-    {icon:'☻',title:'Coach MW + Insights',body:'Coach MW AI and AI Insights give you deeper context without taking control away from the coach.',hint:'Your upgraded platform is ready.',target:'[data-page="coachmw"]',label:'NEW · COACH MW'}
+    {icon:'☻',title:'Coach MW + Insights',body:'Coach MW AI and AI Insights give you deeper context without taking control away from the coach.',hint:'Your upgraded platform is ready.',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MW'}
   ],
   performance:[
     {icon:'⚡',title:'MW Sprint Performance Is Unlocked',body:'You now have the complete MW system plus the full Coach Intelligence layer.',hint:'Here are the major tools added with this platform.',target:null,label:'WHAT’S NEW'},
@@ -410,7 +413,7 @@ const COACH_UPGRADE_TOURS={
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v26`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v27`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
@@ -434,7 +437,7 @@ function coachTourEnsureDashboard(){
 function coachTourOpenNavIfNeeded(step){
   const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');
   if(!navEl||!menu)return;
-  if(step?.target?.startsWith('[data-page=')&&window.matchMedia('(max-width:820px)').matches){navEl.classList.add('open');menu.setAttribute('aria-expanded','true');menu.textContent='Close';}
+  if((step?.target==='#sideNav'||step?.target?.includes('#sideNav'))&&window.matchMedia('(max-width:820px)').matches){navEl.classList.add('open');menu.setAttribute('aria-expanded','true');menu.textContent='Close';}
 }
 function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');if(navEl&&menu&&window.matchMedia('(max-width:820px)').matches){navEl.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu';}}
 function startCoachTour(opts={}){
@@ -445,7 +448,7 @@ function startCoachTour(opts={}){
   if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
   document.getElementById('coachTour')?.remove();
   const root=document.createElement('div');root.id='coachTour';root.className=`coach-tour ${PLANS[experience].theme} ${mode==='upgrade'?'upgrade':''}`;
-  root.innerHTML=`<div class="coach-tour-spotlight" id="coachTourSpotlight"></div><div class="coach-tour-tag" id="coachTourTag"></div><section class="coach-tour-card" id="coachTourCard" role="dialog" aria-modal="true" aria-label="${escapeHtml(PLANS[experience].name)} tutorial"><div class="coach-tour-top"><div class="coach-tour-kicker">MW DYNASTY · ${mode==='upgrade'?'WHAT’S NEW':'GUIDED TOUR'}</div><div class="coach-tour-step" id="coachTourStep"></div></div><div class="coach-tour-lead"><div class="coach-tour-icon" id="coachTourIcon"></div><div><h2 id="coachTourTitle"></h2><p id="coachTourBody"></p></div></div><div class="coach-tour-hint" id="coachTourHint"></div><div class="coach-tour-dots" id="coachTourDots"></div><div class="coach-tour-actions"><button type="button" class="coach-tour-skip" id="coachTourSkip">SKIP</button><button type="button" class="coach-tour-back" id="coachTourBack">BACK</button><button type="button" class="coach-tour-next" id="coachTourNext">NEXT</button></div></section>`;
+  root.innerHTML=`<div class="coach-tour-spotlight" id="coachTourSpotlight"></div><div class="coach-tour-tag" id="coachTourTag"></div><section class="coach-tour-card" id="coachTourCard" role="dialog" aria-modal="true" aria-label="${escapeHtml(PLANS[experience].name)} tutorial"><div class="coach-tour-top"><div class="coach-tour-kicker">MW DYNASTY · ${mode==='upgrade'?'WHAT’S NEW':'GUIDED TOUR'}</div><div class="coach-tour-step" id="coachTourStep"></div></div><div class="coach-tour-lead"><div class="coach-tour-icon" id="coachTourIcon"></div><div><h2 id="coachTourTitle"></h2><p id="coachTourBody"></p></div></div><div class="coach-tour-nav-preview" id="coachTourNavPreview"></div><div class="coach-tour-hint" id="coachTourHint"></div><div class="coach-tour-dots" id="coachTourDots"></div><div class="coach-tour-actions"><button type="button" class="coach-tour-skip" id="coachTourSkip">SKIP</button><button type="button" class="coach-tour-back" id="coachTourBack">BACK</button><button type="button" class="coach-tour-next" id="coachTourNext">NEXT</button></div></section>`;
   document.body.appendChild(root);
   coachTourState={mode,steps,index:0,root};
   root.querySelector('#coachTourSkip').onclick=()=>finishCoachTour(true);
@@ -458,7 +461,26 @@ function renderCoachTourStep(){
   const st=coachTourState;if(!st)return;const step=st.steps[st.index],root=st.root;
   coachTourOpenNavIfNeeded(step);
   root.querySelector('#coachTourStep').textContent=`${st.index+1} OF ${st.steps.length}`;
-  root.querySelector('#coachTourIcon').textContent=step.icon||'✦';
+  const tourIcon=root.querySelector('#coachTourIcon'),navPreview=root.querySelector('#coachTourNavPreview');
+  if(tourIcon){tourIcon.classList.remove('mw-tour-nav-art');tourIcon.style.backgroundImage='';tourIcon.textContent=step.icon||'✦'}
+  if(navPreview){navPreview.classList.toggle('show',!!step.navPreview);navPreview.innerHTML=''}
+  const tourTarget=step.target?document.querySelector(step.target):null;
+  const targetArt=tourTarget?.matches?.('.nav-btn')?tourTarget.querySelector('.mwNavArt'):tourTarget?.querySelector?.('.mwNavArt');
+  if(targetArt&&tourIcon){
+    const bg=getComputedStyle(targetArt).backgroundImage;
+    if(bg&&bg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=bg;tourIcon.textContent=''}
+  }
+  if(step.navPreview&&navPreview){
+    const buttons=[...document.querySelectorAll('#sideNav .nav-btn')].slice(0,5);
+    navPreview.innerHTML=buttons.map(btn=>{
+      const art=btn.querySelector('.mwNavArt'),label=btn.querySelector('span:last-child')?.textContent?.trim()||'MW';
+      const bg=art?getComputedStyle(art).backgroundImage:'none';
+      return `<div><i style="background-image:${bg}"></i><span>${escapeHtml(label)}</span></div>`;
+    }).join('');
+    const firstArt=buttons[0]?.querySelector('.mwNavArt');
+    const firstBg=firstArt?getComputedStyle(firstArt).backgroundImage:'none';
+    if(tourIcon&&firstBg&&firstBg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=firstBg;tourIcon.textContent=''}
+  }
   root.querySelector('#coachTourTitle').textContent=step.title;
   root.querySelector('#coachTourBody').textContent=step.body;
   root.querySelector('#coachTourHint').textContent=step.hint||'';
