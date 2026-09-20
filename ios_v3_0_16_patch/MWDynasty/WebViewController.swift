@@ -20,6 +20,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         content.add(self, name: "mwPermissions")
         content.add(self, name: "mwPurchase")
         content.add(self, name: "mwRestorePurchase")
+        content.add(self, name: "mwManageSubscriptions")
 
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -66,6 +67,13 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any] else { return }
+        if message.name == "mwManageSubscriptions" {
+            Task { @MainActor [weak self] in
+                await self?.openAppStoreSubscriptionManagement()
+            }
+            return
+        }
+
         if message.name == "mwRestorePurchase" {
             guard let planCode = body["planCode"] as? String,
                   let accessToken = body["accessToken"] as? String,
@@ -198,6 +206,19 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>Connection needed</h2><p>MW Dynasty needs an internet connection to sync training, Coach MW, and your account.</p><p style="color:#9fb0bb">\(escaped)</p><button onclick="location.reload()" style="padding:14px 18px;border:0;border-radius:10px;background:#e9b949;font-weight:800">TRY AGAIN</button></body></html>
         """
         webView.loadHTMLString(html, baseURL: nil)
+    }
+
+    @MainActor
+    private func openAppStoreSubscriptionManagement() async {
+        guard let scene = view.window?.windowScene else {
+            sendPurchaseResult(["ok": false, "error": "App Store subscription management is unavailable right now."])
+            return
+        }
+        do {
+            try await AppStore.showManageSubscriptions(in: scene)
+        } catch {
+            sendPurchaseResult(["ok": false, "error": "App Store subscription management could not be opened."])
+        }
     }
 
     @MainActor
@@ -340,5 +361,6 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPermissions")
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPurchase")
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwRestorePurchase")
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwManageSubscriptions")
     }
 }
