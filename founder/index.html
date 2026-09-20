@@ -58,6 +58,7 @@
       <button class="navBtn" data-view="revenue"><span>$</span>Revenue & Billing</button>
       <button class="navBtn" data-view="costs"><span>−</span>Costs & Finance</button>
       <button class="navBtn" data-view="sponsorships"><span>◎</span>Sponsorships</button>
+      <button class="navBtn" data-view="partnerships"><span>◇</span>Partnerships</button>
       <button class="navBtn" data-view="website"><span>⌘</span>Website & Growth</button>
       <button class="navBtn" data-view="marketing"><span>↗</span>Marketing & Sales</button>
     </div>
@@ -96,7 +97,7 @@ const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[];
-const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -244,6 +245,49 @@ async function renderOrganizations(){
   $("content").innerHTML='<section class="hero"><div class="brand">ORGANIZATIONS & TEAMS</div><h2>Schools, clubs, teams, and memberships.</h2><p>The organization layer gives MW room to grow beyond individual Coach accounts without giving away Founder authority.</p></section>'+
     '<div class="grid3">'+(items.length?items.map(x=>'<div class="card"><div class="brand">ORGANIZATION</div><h3>'+esc(x.name)+'</h3><div class="grid2">'+stat("Members",x.members||0)+stat("Teams",x.teams||0)+stat("Coaches",x.coaches||0)+stat("Athletes",x.athletes||0)+'</div></div>').join(""):'<div class="card empty">No organizations created yet.</div>')+'</div>';
 }
+async function renderPartnerships(){
+  const d=await api("partnerships",true),items=d.opportunities||[],proposals=d.proposals||[];
+  const open=items.filter(x=>!["won","lost"].includes(x.stage)),won=items.filter(x=>x.stage==="won");
+  const inReview=proposals.filter(x=>x.status==="review");
+  $("content").innerHTML='<section class="hero"><div class="brand">BUSINESS DEVELOPMENT & PARTNERSHIPS</div><h2>Schools, districts, clubs, teams, and strategic partners.</h2><p>Partnership opportunities get a dedicated pipeline, internal value model, AI-assisted proposal drafting, Founder approval, and a clean handoff into the MW organization system when a relationship is won.</p><div class="heroActions"><button class="btn primary" id="addPartnership">Add Partnership Opportunity</button></div></section>'+
+    '<div class="stats">'+
+      stat("Open Opportunities",open.length)+
+      stat("Pipeline MRR",money(d.pipeline_value_cents||0),"Internal estimate only")+
+      stat("Est. Athletes",d.estimated_athletes_open||0,"Open pipeline")+
+      stat("Won MRR",money(d.won_value_cents||0))+
+      stat("Proposal Review",inReview.length)+
+      stat("Won Partnerships",won.length)+
+    '</div>'+
+    sectionHead("Partnership Pipeline","AI may research and draft. Founder approval is required before proposal terms are treated as approved, and nothing is sent automatically.")+
+    '<div class="list">'+(items.length?items.map(x=>{
+      const next={research:"qualified",qualified:"discovery",discovery:"pilot",pilot:"proposal",proposal:"legal",legal:"won"}[x.stage];
+      const stageType=x.stage==="won"?"good":x.stage==="lost"?"bad":x.stage==="legal"||x.stage==="proposal"?"warn":"blue";
+      return '<div class="card"><div class="row" style="border:0;background:transparent;padding:0"><div>'+badge(x.stage,stageType)+' '+badge(x.opportunity_type,"purple")+'<h3 style="margin:8px 0">'+esc(x.organization_name)+'</h3><p class="muted">'+esc(x.notes||"No notes yet.")+'</p><small>Owner: '+esc(x.assigned_agent_code||"partnerships")+' · Next: '+esc(x.next_action||"Not set")+'</small></div><div class="right"><b>'+money(x.estimated_monthly_value_cents||0)+'/mo</b><small>'+esc((x.estimated_coaches||0)+" Coaches · "+(x.estimated_athletes||0)+" Athletes")+'</small><small>'+esc((x.proposal_count||0)+" proposal"+(Number(x.proposal_count)===1?"":"s"))+'</small></div></div><div class="heroActions">'+
+        (next?'<button class="btn small blue" data-partnership-stage="'+esc(x.id)+'" data-next-stage="'+esc(next)+'">Advance to '+esc(next)+'</button>':"")+
+        (!["won","lost"].includes(x.stage)?'<button class="btn small primary" data-partnership-proposal="'+esc(x.id)+'">Draft AI Proposal</button><button class="btn small danger" data-partnership-lost="'+esc(x.id)+'">Mark Lost</button>':"")+
+        '</div></div>';
+    }).join(""):'<div class="card empty">No partnership opportunities yet.</div>')+'</div>'+
+    sectionHead("Proposal Review","Proposal drafts never leave MW Dynasty automatically. Review, approve, then record when a human has actually sent one.")+
+    '<div class="list">'+(proposals.length?proposals.map(p=>'<div class="card '+(p.status==="review"?"approval":"")+'"><div class="row" style="border:0;background:transparent;padding:0"><div>'+badge(p.status,p.status==="approved"||p.status==="accepted"?"good":p.status==="rejected"?"bad":p.status==="review"?"warn":"blue")+'<h3 style="margin:8px 0">'+esc(p.title)+'</h3><p class="muted">'+esc(p.scope_summary||"")+'</p><small>'+esc(p.organization_name||"Organization")+' · '+date(p.created_at)+'</small></div><div class="heroActions"><button class="btn small" data-proposal-view="'+esc(p.id)+'">View Draft</button>'+(p.status==="review"?'<button class="btn small good" data-proposal-approve="'+esc(p.id)+'">Approve</button><button class="btn small danger" data-proposal-reject="'+esc(p.id)+'">Reject</button>':"")+(p.status==="approved"?'<button class="btn small blue" data-proposal-sent="'+esc(p.id)+'">Record as Sent</button>':"")+'</div></div></div>').join(""):'<div class="card empty">No partnership proposals yet.</div>')+'</div>';
+
+  $("addPartnership").onclick=openPartnershipModal;
+  document.querySelectorAll("[data-partnership-stage]").forEach(b=>b.onclick=async()=>{try{await action("update_partnership",{id:b.dataset.partnershipStage,stage:b.dataset.nextStage});cache={};renderPartnerships()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-partnership-lost]").forEach(b=>b.onclick=async()=>{if(!confirm("Mark this partnership opportunity as lost?"))return;try{await action("update_partnership",{id:b.dataset.partnershipLost,stage:"lost"});cache={};renderPartnerships()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-partnership-proposal]").forEach(b=>b.onclick=()=>openPartnershipProposalModal(b.dataset.partnershipProposal,items.find(x=>String(x.id)===String(b.dataset.partnershipProposal))));
+  document.querySelectorAll("[data-proposal-view]").forEach(b=>b.onclick=()=>{const p=proposals.find(x=>String(x.id)===String(b.dataset.proposalView));if(!p)return;modal("Partnership Proposal · "+p.organization_name,'<div class="card"><b>'+esc(p.title)+'</b><p class="muted"><b>Scope:</b> '+esc(p.scope_summary||"—")+'</p><p class="muted"><b>Pricing:</b> '+esc(p.pricing_notes||"—")+'</p><p class="muted"><b>Terms:</b> '+esc(p.terms_notes||"—")+'</p></div><div class="bubble ai" style="margin-top:12px">'+esc(p.draft_content||"No draft content stored.")+'</div>')});
+  document.querySelectorAll("[data-proposal-approve]").forEach(b=>b.onclick=async()=>{try{await action("review_partnership_proposal",{id:b.dataset.proposalApprove,decision:"approved"});cache={};renderPartnerships()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-proposal-reject]").forEach(b=>b.onclick=async()=>{try{await action("review_partnership_proposal",{id:b.dataset.proposalReject,decision:"rejected"});cache={};renderPartnerships()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-proposal-sent]").forEach(b=>b.onclick=async()=>{if(!confirm("Only record this as sent if a human actually sent the approved proposal. Continue?"))return;try{await action("record_partnership_proposal_sent",{id:b.dataset.proposalSent});cache={};renderPartnerships()}catch(e){alert(e.message)}});
+}
+function openPartnershipModal(){
+  modal("Add Partnership Opportunity",'<div class="formGrid"><label class="field">ORGANIZATION<input id="partnershipOrg"></label><label class="field">TYPE<select id="partnershipType"><option>school</option><option>district</option><option>club</option><option>team</option><option>brand</option><option>partner</option><option>other</option></select></label><label class="field">CONTACT NAME<input id="partnershipContact"></label><label class="field">CONTACT EMAIL<input id="partnershipEmail" type="email"></label><label class="field">EST. COACHES<input id="partnershipCoaches" type="number" min="0"></label><label class="field">EST. ATHLETES<input id="partnershipAthletes" type="number" min="0"></label><label class="field">INTERNAL EST. MONTHLY VALUE ($)<input id="partnershipValue" type="number" min="0"></label><label class="field">NEXT ACTION<input id="partnershipNext"></label></div><label class="field">NOTES<textarea id="partnershipNotes" rows="4"></textarea></label><button class="btn primary" id="savePartnership">Save Opportunity</button>');
+  $("savePartnership").onclick=async()=>{try{await action("create_partnership",{organizationName:$("partnershipOrg").value,opportunityType:$("partnershipType").value,contactName:$("partnershipContact").value,contactEmail:$("partnershipEmail").value,estimatedCoaches:Number($("partnershipCoaches").value||0),estimatedAthletes:Number($("partnershipAthletes").value||0),estimatedMonthlyValueCents:Math.round(Number($("partnershipValue").value||0)*100),nextAction:$("partnershipNext").value,notes:$("partnershipNotes").value,assignedAgentCode:"partnerships"});closeModal();cache={};renderPartnerships()}catch(e){alert(e.message)}};
+}
+function openPartnershipProposalModal(id,opportunity){
+  modal("Draft AI Partnership Proposal",'<p class="muted">This creates an internal draft for '+esc(opportunity?.organization_name||"the organization")+'. It will not be sent. Pricing and terms remain Founder-controlled.</p><label class="field">OPTIONAL FOUNDER PRICING GUIDANCE<textarea id="partnershipPricing" rows="4" placeholder="Leave blank if no special partnership price has been approved."></textarea></label><button class="btn primary" id="draftPartnershipProposal">Create Internal Draft</button><div id="partnershipProposalStatus" class="status"></div>');
+  $("draftPartnershipProposal").onclick=async()=>{const b=$("draftPartnershipProposal"),st=$("partnershipProposalStatus");b.disabled=true;st.textContent="Partnerships AI is preparing the internal draft…";try{await ai("partnership_proposal",{opportunityId:id,pricingGuidance:$("partnershipPricing").value});closeModal();cache={};renderPartnerships()}catch(e){st.textContent=e.message;st.className="status error"}finally{b.disabled=false}};
+}
+
 async function renderWebsite(){
   const d=await api("website"),h=d.health||{},pages=d.top_pages||[],events=d.events||[];
   const web=h.website||{},app=h.app||{};
@@ -722,6 +766,7 @@ async function renderView(v){
     if(v==="revenue")return await renderRevenue();
     if(v==="costs")return await renderCosts();
     if(v==="sponsorships")return await renderSponsorships();
+    if(v==="partnerships")return await renderPartnerships();
     if(v==="organizations")return await renderOrganizations();
     if(v==="website")return await renderWebsite();
     if(v==="marketing")return await renderMarketing();
