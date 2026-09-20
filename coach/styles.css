@@ -1549,62 +1549,8 @@ html.mw-native-app .coach-login-bg:after{
   }
 }
 
-
-/* MW COACH CARD FULL VIEWPORT CENTER v15 */
-@media(min-width:901px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    position:fixed!important;
-    left:56%!important;
-    right:auto!important;
-    top:50vh!important;
-    bottom:auto!important;
-    width:min(500px,38vw)!important;
-    max-height:calc(100vh - 48px)!important;
-    margin:0!important;
-    padding:0!important;
-    transform:translate(-50%,-50%)!important;
-    z-index:12!important;
-  }
-}
-@media(min-width:901px) and (max-width:1180px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    left:56%!important;
-    top:50vh!important;
-    bottom:auto!important;
-    width:min(470px,44vw)!important;
-    transform:translate(-50%,-50%)!important;
-  }
-}
-
-
-/* MW COACH CARD REFERENCE POSITION v16 */
-@media(min-width:901px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    position:absolute!important;
-    left:50%!important;
-    right:auto!important;
-    top:49%!important;
-    bottom:auto!important;
-    width:min(500px,38vw)!important;
-    margin:0!important;
-    padding:0!important;
-    transform:translate(-50%,-50%)!important;
-    z-index:12!important;
-  }
-}
-@media(min-width:901px) and (max-width:1180px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    left:50%!important;
-    right:auto!important;
-    top:49%!important;
-    bottom:auto!important;
-    width:min(470px,44vw)!important;
-    transform:translate(-50%,-50%)!important;
-  }
-}
-
-
-/* MW COACH FIT AND CENTER CARD v17 */
+/* MW COACH CARD BETWEEN PEOPLE FINAL v18
+   One rule only: center the card in the visible stage without transform scaling. */
 @media(min-width:901px){
   html:not(.mw-native-app) .coach-login-card-wrap{
     position:absolute!important;
@@ -1612,22 +1558,80 @@ html.mw-native-app .coach-login-bg:after{
     right:auto!important;
     top:50%!important;
     bottom:auto!important;
-    width:500px!important;
-    max-width:none!important;
+    width:min(430px,34vw)!important;
+    max-width:430px!important;
     max-height:none!important;
     margin:0!important;
     padding:0!important;
-    transform:translate(-50%,-50%) scale(.78)!important;
+    transform:translate(-50%,-50%)!important;
     transform-origin:center center!important;
     z-index:12!important;
+  }
+  html:not(.mw-native-app) .coach-login-card{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:20px 22px 18px!important;
+    transform:none!important;
+  }
+  html:not(.mw-native-app) .coach-login-card h2{
+    margin:0 0 6px!important;
+    padding-right:112px!important;
+    font-size:36px!important;
+    line-height:.92!important;
+  }
+  html:not(.mw-native-app) .coach-login-card>p{
+    margin:0 0 13px!important;
+    font-size:13px!important;
+    line-height:1.3!important;
+  }
+  html:not(.mw-native-app) .coach-login-form{
+    display:grid!important;
+    gap:8px!important;
+  }
+  html:not(.mw-native-app) .coach-field{
+    min-height:48px!important;
+    height:48px!important;
+    margin:0!important;
+  }
+  html:not(.mw-native-app) .coach-field input{
+    height:48px!important;
+    font-size:15px!important;
+  }
+  html:not(.mw-native-app) .coach-login-options{
+    margin:1px 2px!important;
+    min-height:24px!important;
+  }
+  html:not(.mw-native-app) .coach-login-submit{
+    min-height:49px!important;
+    height:49px!important;
+    margin:0!important;
+    font-size:18px!important;
+  }
+  html:not(.mw-native-app) .coach-login-athlete-switch,
+  html:not(.mw-native-app) .coach-login-signup-tab{
+    min-height:44px!important;
+    height:44px!important;
+    margin:0!important;
+    padding:0 14px!important;
+  }
+  html:not(.mw-native-app) .coach-login-role-back{
+    position:absolute!important;
+    top:16px!important;
+    right:16px!important;
+    left:auto!important;
+    bottom:auto!important;
+    padding:10px 12px!important;
+    font-size:10px!important;
+    z-index:3!important;
   }
 }
 @media(min-width:901px) and (max-width:1180px){
   html:not(.mw-native-app) .coach-login-card-wrap{
     left:50%!important;
     top:50%!important;
-    width:500px!important;
-    transform:translate(-50%,-50%) scale(.72)!important;
-    transform-origin:center center!important;
+    width:min(400px,38vw)!important;
+    max-width:400px!important;
+    transform:translate(-50%,-50%)!important;
   }
 }
