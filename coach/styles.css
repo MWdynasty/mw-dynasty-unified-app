@@ -607,3 +607,268 @@ html.mw-native-app .coach-login-bg:after{
     backdrop-filter:blur(18px)!important;
   }
 }
+
+
+/* MW NATIVE COACH = ATHLETE LOGIN LAYOUT v2 */
+.coach-login-access-note{display:none}
+
+@media(max-width:640px){
+  html.mw-native-app .coach-login-screen{
+    min-height:100svh!important;
+    padding:0!important;
+    display:block!important;
+    overflow:auto!important;
+    background:#02070b!important;
+  }
+  html.mw-native-app .coach-login-stage{
+    position:relative!important;
+    width:100%!important;
+    min-height:100svh!important;
+    border:0!important;
+    border-radius:0!important;
+    overflow:hidden!important;
+    box-shadow:none!important;
+    display:block!important;
+    background:
+      radial-gradient(ellipse at 50% -8%,rgba(232,187,72,.22) 0%,rgba(232,187,72,.07) 24%,transparent 48%),
+      radial-gradient(circle at 84% 16%,rgba(50,127,184,.16),transparent 30%),
+      linear-gradient(180deg,#0a1822 0%,#061019 42%,#02070b 100%)!important;
+  }
+  html.mw-native-app .coach-login-bg{
+    position:absolute!important;
+    inset:0!important;
+    z-index:0!important;
+    background-image:
+      linear-gradient(180deg,rgba(255,255,255,.025),transparent 24%,rgba(0,0,0,.36) 72%,rgba(0,0,0,.72)),
+      repeating-linear-gradient(104deg,transparent 0 15%,rgba(226,182,67,.075) 15.15% 15.45%,transparent 15.6% 30%),
+      radial-gradient(ellipse at 50% 110%,rgba(226,182,67,.13),transparent 48%)!important;
+    background-size:cover!important;
+    background-position:center!important;
+  }
+  html.mw-native-app .coach-login-bg:after{
+    content:""!important;
+    position:absolute!important;
+    inset:0!important;
+    opacity:.7!important;
+    transform:none!important;
+    mask-image:none!important;
+    background:
+      linear-gradient(180deg,transparent 0 58%,rgba(0,0,0,.32) 100%),
+      repeating-linear-gradient(90deg,transparent 0 16%,rgba(235,195,88,.12) 16.2% 16.55%,transparent 16.8% 33%)!important;
+  }
+
+  html.mw-native-app .coach-login-header{
+    position:absolute!important;
+    z-index:9!important;
+    inset:max(58px,calc(env(safe-area-inset-top) + 16px)) 18px auto!important;
+    padding:0!important;
+    display:block!important;
+    pointer-events:none!important;
+  }
+  html.mw-native-app .coach-login-brand{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    transform:none!important;
+    transform-origin:initial!important;
+    line-height:.84!important;
+  }
+  html.mw-native-app .coach-login-crest{
+    display:block!important;
+    width:48px!important;
+    height:48px!important;
+    border-radius:13px!important;
+    object-fit:cover!important;
+    flex:0 0 auto!important;
+    border:1px solid rgba(239,191,56,.48)!important;
+    box-shadow:0 10px 24px rgba(0,0,0,.42),0 0 24px rgba(36,132,244,.18)!important;
+  }
+  html.mw-native-app .coach-login-wordmark{min-width:0!important}
+  html.mw-native-app .coach-login-coach{
+    font-size:30px!important;
+    line-height:.9!important;
+    font-weight:1000!important;
+    font-style:normal!important;
+    letter-spacing:-.055em!important;
+    color:#f4f4f4!important;
+  }
+  html.mw-native-app .coach-login-tagline{
+    margin-top:6px!important;
+    color:#eabb48!important;
+    font-size:7px!important;
+    line-height:1.2!important;
+    font-weight:950!important;
+    letter-spacing:.21em!important;
+    white-space:nowrap!important;
+  }
+  html.mw-native-app .coach-login-nav,
+  html.mw-native-app .coach-login-mission,
+  html.mw-native-app .coach-login-copy,
+  html.mw-native-app .coach-login-person,
+  html.mw-native-app .coach-login-features,
+  html.mw-native-app .coach-login-mobile-brand,
+  html.mw-native-app .coach-login-role-back{display:none!important}
+
+  html.mw-native-app .coach-login-content{
+    position:relative!important;
+    z-index:2!important;
+    display:block!important;
+    min-height:100svh!important;
+    padding:0!important;
+  }
+  html.mw-native-app .coach-login-card-wrap{
+    position:absolute!important;
+    inset:auto 12px auto 12px!important;
+    top:clamp(300px,37svh,340px)!important;
+    margin:0!important;
+    padding:0!important;
+    display:block!important;
+    z-index:7!important;
+  }
+  html.mw-native-app .coach-login-card{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:430px!important;
+    margin:0 auto!important;
+    padding:17px 14px 15px!important;
+    border:1px solid rgba(231,184,76,.72)!important;
+    border-radius:14px!important;
+    background:linear-gradient(180deg,rgba(5,18,27,.95),rgba(2,9,14,.985))!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.045)!important;
+    backdrop-filter:blur(18px)!important;
+  }
+  html.mw-native-app .coach-login-card h2{
+    margin:0 0 6px!important;
+    font-size:21px!important;
+    line-height:1.05!important;
+    letter-spacing:-.03em!important;
+  }
+  html.mw-native-app .coach-login-card>p{
+    margin:0 0 11px!important;
+    color:#d0d7da!important;
+    font-size:10.5px!important;
+    line-height:1.45!important;
+  }
+  html.mw-native-app .coach-login-form{display:grid!important;gap:0!important}
+  html.mw-native-app .coach-field{
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    margin:7px 0!important;
+    min-height:45px!important;
+    height:45px!important;
+    border:1px solid #2c4b5b!important;
+    border-radius:10px!important;
+    background:#071821!important;
+    padding:0!important;
+    gap:0!important;
+  }
+  html.mw-native-app .coach-field>span{
+    position:absolute!important;
+    left:16px!important;
+    top:50%!important;
+    transform:translateY(-50%)!important;
+    width:auto!important;
+    z-index:2!important;
+    color:#f0f4f5!important;
+    font-size:15px!important;
+  }
+  html.mw-native-app .coach-field input{
+    box-sizing:border-box!important;
+    width:100%!important;
+    height:45px!important;
+    border:0!important;
+    background:transparent!important;
+    color:#fff!important;
+    padding:0 48px 0 46px!important;
+    text-align:center!important;
+    font-size:16px!important;
+    outline:none!important;
+  }
+  html.mw-native-app .coach-field input::placeholder{color:#8b9aa2!important}
+  html.mw-native-app .coach-password-toggle{
+    position:absolute!important;
+    right:10px!important;
+    top:50%!important;
+    transform:translateY(-50%)!important;
+    border:0!important;
+    background:transparent!important;
+    color:#e5ebed!important;
+    font-size:18px!important;
+    padding:8px!important;
+  }
+  html.mw-native-app .coach-login-options{
+    display:flex!important;
+    justify-content:space-between!important;
+    align-items:center!important;
+    gap:12px!important;
+    margin:6px 1px 7px!important;
+    font-size:9.7px!important;
+  }
+  html.mw-native-app .coach-remember{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    color:#edf0f1!important;
+    font-size:9.7px!important;
+  }
+  html.mw-native-app .coach-remember input{accent-color:#e5b240!important}
+  html.mw-native-app .coach-forgot{
+    border:0!important;
+    background:none!important;
+    color:#efbd43!important;
+    font-size:9.7px!important;
+    font-weight:850!important;
+    padding:8px 0!important;
+  }
+  html.mw-native-app .coach-login-submit{
+    width:100%!important;
+    height:47px!important;
+    min-height:47px!important;
+    margin-top:4px!important;
+    border:1px solid #f3ca63!important;
+    border-radius:10px!important;
+    background:linear-gradient(100deg,#c88a1a 0%,#f6d16d 49%,#d99d27 100%)!important;
+    color:#090909!important;
+    font-size:16px!important;
+    font-weight:1000!important;
+    box-shadow:0 12px 30px rgba(219,165,45,.20)!important;
+  }
+  html.mw-native-app .coach-login-athlete-switch{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    margin-top:10px!important;
+    border:1px solid rgba(85,201,255,.42)!important;
+    border-radius:12px!important;
+    background:linear-gradient(145deg,#102333,#050b11)!important;
+    color:#dff4ff!important;
+    padding:13px 14px!important;
+    font-size:11px!important;
+    font-weight:950!important;
+    letter-spacing:.07em!important;
+    text-decoration:none!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 0 rgba(1,5,8,.78),0 9px 15px rgba(0,0,0,.26)!important;
+  }
+  html.mw-native-app .coach-login-access-note{
+    display:block!important;
+    text-align:center!important;
+    margin-top:8px!important;
+    color:#ecf0f2!important;
+    font-size:8.2px!important;
+    line-height:1.45!important;
+  }
+  html.mw-native-app .coach-login-access-note a{
+    color:#efbd43!important;
+    text-decoration:underline!important;
+  }
+  html.mw-native-app .login-message{
+    text-align:center!important;
+    margin:2px 0!important;
+    font-size:9px!important;
+    min-height:0!important;
+  }
+}
