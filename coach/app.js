@@ -665,7 +665,11 @@ async function submitCoachApplication(e){
     coaching_level:document.getElementById('applyLevel').value,
     years_coaching:document.getElementById('applyYears').value||null,
     website_or_social:document.getElementById('applySocial').value.trim(),
-    reason:`Verification method: ${verifyMethod}\nVerification detail: ${verifyDetail}\nApproximate athletes coached: ${athleteCount}\n\nIntended use: ${rawReason}`
+    verification_method:verifyMethod,
+    verification_detail:verifyDetail,
+    athlete_count:Number(athleteCount),
+    channel:document.documentElement.classList.contains('mw-native-app')?'ios':'website',
+    reason:rawReason
   };
   b.disabled=true;b.innerHTML='<span class="login-spinner"></span><span>Submitting for verification…</span>';m.textContent='Creating your pending coach application…';m.className='login-message show neutral';
   try{
