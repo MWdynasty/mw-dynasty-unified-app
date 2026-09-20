@@ -1608,3 +1608,18 @@ html.mw-native-app .coach-login-bg:after{
     transform:translateX(-50%)!important;
   }
 }
+
+/* MW COACH WEBSITE ATHLETE-MATCH BRIGHTNESS v20 */
+@media(min-width:901px){
+  html:not(.mw-native-app) .coach-login-bg{
+    filter:saturate(1.02) contrast(1.01) brightness(1.14)!important;
+    background:
+      linear-gradient(90deg,rgba(2,7,10,.38) 0%,rgba(2,7,10,.13) 38%,rgba(2,7,10,.14) 62%,rgba(2,7,10,.44) 100%),
+      linear-gradient(180deg,rgba(2,6,9,.02),rgba(2,6,9,.30) 100%),
+      url('../assets/mw-stadium-athlete-coach-v22.jpg') center/cover no-repeat!important;
+  }
+  html:not(.mw-native-app) .coach-login-bg:after{
+    background:radial-gradient(circle at 50% 42%,transparent 0 32%,rgba(0,0,0,.03) 62%,rgba(0,0,0,.14) 100%)!important;
+    opacity:1!important;
+  }
+}
