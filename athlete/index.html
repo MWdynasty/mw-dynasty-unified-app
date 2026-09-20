@@ -2897,4 +2897,44 @@ document.addEventListener('click',e=>{
   }
 }
 </style>
+<style id="mw-athlete-card-full-containment-v2">
+/* Athlete website only: enlarge the OUTER gold sign-in card so every action and support line
+   is inside it. Background exposure/brightness is intentionally untouched. */
+@media(min-width:821px){
+  html:not(.mw-native-app) #mwAuth .mwLoginCard{
+    width:min(500px,calc(100vw - 48px))!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:24px 24px 22px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwLoginActions{
+    width:100%!important;
+    box-sizing:border-box!important;
+    margin:8px 0 0!important;
+    padding:0!important;
+    gap:10px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwLoginActions .mwLoginButton,
+  html:not(.mw-native-app) #mwAuth .mwLoginActions .mwLoginRoleSwitch,
+  html:not(.mw-native-app) #mwAuth .mwLoginActions .mwLoginSignupTab{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    flex:0 0 auto!important;
+    margin:0!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwAuthStatus,
+  html:not(.mw-native-app) #mwAuth .mwLoginAccessNote{
+    position:static!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+    flex:0 0 auto!important;
+  }
+}
+</style>
 </body></html>
