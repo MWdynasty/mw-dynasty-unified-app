@@ -146,25 +146,31 @@ module.exports=async(req,res)=>{
       return res.status(200).json({ok:true,result,checkoutRequired:true,checkoutAudience:'athlete'});
     }
     if(action==='coach_plan_change'){
-      const result=await rpc('mw_request_coach_plan_change',token,{p_requested_tier:String(body.requestedTier||'')});
       const billing=await rpc('mw_billing_status',token,{});
-      if(String(billing?.provider||'')==='stripe'){
-        try{
-          const providerResult=await applyStripeCoachPlanChange(token,user.id,result);
-          if(providerResult?.providerReference){
-            await rpc('mw_register_own_billing_transition_provider',token,{p_transition_id:result.transition_id,p_provider:'stripe',p_provider_reference:providerResult.providerReference});
-          }
-          return res.status(200).json({ok:true,result,providerResult,checkoutRequired:false,checkoutAudience:'coach'});
-        }catch(e){
-          await rpc('mw_cancel_own_billing_transition',token,{p_transition_id:result.transition_id,p_reason:'stripe_provider_update_failed'}).catch(()=>null);
-          throw e;
-        }
-      }
       if(String(billing?.provider||'')==='apple'){
-        return res.status(200).json({ok:true,result,providerResult:{provider:'apple',providerAction:'app_store_required'},checkoutRequired:false,checkoutAudience:'coach'});
+        return res.status(200).json({
+          ok:true,
+          result:{requestedTier:String(body.requestedTier||''),currentPlanCode:billing.current_plan_code},
+          providerResult:{provider:'apple',providerAction:'app_store_required'},
+          checkoutRequired:false,
+          checkoutAudience:'coach'
+        });
       }
-      await rpc('mw_cancel_own_billing_transition',token,{p_transition_id:result.transition_id,p_reason:'unsupported_provider'}).catch(()=>null);
-      return res.status(409).json({error:'Your Coach membership provider is not ready for a plan change yet.'});
+      if(String(billing?.provider||'')!=='stripe'){
+        return res.status(409).json({error:'Your Coach membership provider is not ready for a plan change yet.'});
+      }
+
+      const result=await rpc('mw_request_coach_plan_change',token,{p_requested_tier:String(body.requestedTier||'')});
+      try{
+        const providerResult=await applyStripeCoachPlanChange(token,user.id,result);
+        if(providerResult?.providerReference){
+          await rpc('mw_register_own_billing_transition_provider',token,{p_transition_id:result.transition_id,p_provider:'stripe',p_provider_reference:providerResult.providerReference});
+        }
+        return res.status(200).json({ok:true,result,providerResult,checkoutRequired:false,checkoutAudience:'coach'});
+      }catch(e){
+        await rpc('mw_cancel_own_billing_transition',token,{p_transition_id:result.transition_id,p_reason:'stripe_provider_update_failed'}).catch(()=>null);
+        throw e;
+      }
     }
     if(action==='cancel_billing_transition'){
       const transitionId=String(body.transitionId||'');
