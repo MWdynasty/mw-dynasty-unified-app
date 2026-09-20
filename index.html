@@ -43,7 +43,7 @@ html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;fon
 <link rel="stylesheet" href="/assets/mw-unified-theme.css">
 <link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
 <link rel="stylesheet" href="/assets/mw-responsive-v25.css">
-</head>
+<script src="/assets/mw-web-analytics.js"></script>\n</head>
 <body>
 <div class="role-wrap">
   <main class="role-stage" aria-label="Choose how you use MW Dynasty">
@@ -56,8 +56,9 @@ html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;fon
 const MW_NATIVE_APP=/MWDynasty-iOS\//i.test(navigator.userAgent||'');
 function enter(role,path){
   try{ localStorage.setItem('mwDynastyRoleChoice',role); }catch(e){}
+  try{ window.MWWebAnalytics?.track('role_choice',{audience:role,metadata:{destination:path}}); }catch(e){}
   const destination=MW_NATIVE_APP?(role==='coach'?'/coach/':'/athlete/'):path;
-  window.location.assign(destination);
+  setTimeout(()=>window.location.assign(destination),60);
 }
 document.getElementById('athleteChoice').addEventListener('click',()=>enter('athlete','/athlete/start.html'));
 document.getElementById('coachChoice').addEventListener('click',()=>enter('coach','/coach/start.html'));
