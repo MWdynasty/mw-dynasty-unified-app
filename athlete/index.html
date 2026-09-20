@@ -2668,4 +2668,37 @@ document.addEventListener('click',e=>{
  if(e.target.closest('[data-practice-coach]')){exit();document.querySelector('[data-v="coach"]')?.click()}
 });
 })();
-</script></body></html>
+</script>
+<style id="mw-login-fit-2026">
+/* Desktop sign-in: use a true wide composition so the artwork fills the screen instead of
+   looking like a cropped phone card. Keep the form centered and readable over the image. */
+@media (min-width: 821px){
+  #mwAuth .mwLoginRunner{
+    background-image:
+      linear-gradient(90deg,rgba(2,7,10,.72) 0%,rgba(2,7,10,.30) 38%,rgba(2,7,10,.34) 62%,rgba(2,7,10,.78) 100%),
+      linear-gradient(180deg,rgba(2,6,9,.10),rgba(2,6,9,.62) 100%),
+      url('/assets/mw-stadium-athlete-coach-v22.jpg')!important;
+    background-size:cover!important;
+    background-position:center 52%!important;
+  }
+  #mwAuth .mwLoginCard{
+    left:50%!important;
+    right:auto!important;
+    top:54%!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(460px,calc(100vw - 48px))!important;
+    background:linear-gradient(180deg,rgba(4,13,19,.94),rgba(2,7,10,.975))!important;
+  }
+  #mwAuth .mwLoginField input{text-align:center!important;padding-left:46px!important}
+}
+@media (max-width:820px){
+  #mwAuth .mwLoginRunner{
+    background-image:
+      linear-gradient(180deg,rgba(2,7,9,.06),rgba(2,7,9,.18) 40%,rgba(2,7,9,.90) 100%),
+      url('/assets/mw-stadium-athlete-coach-v22.jpg')!important;
+    background-size:cover!important;
+    background-position:center 46%!important;
+  }
+  #mwAuth .mwLoginField input{text-align:center!important;padding-left:44px!important}
+}
+</style></body></html>

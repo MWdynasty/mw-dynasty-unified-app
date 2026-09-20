@@ -471,3 +471,27 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 .coach-profile-hero h2{margin:4px 0}.coach-profile-hero p{margin:0;color:var(--muted)}
 .coach-profile-section{margin-bottom:10px}.coach-profile-section>summary{cursor:pointer;padding:4px 0;letter-spacing:.07em}.coach-profile-inner{padding-top:12px}
 @media(max-width:620px){.mw-message-head{align-items:stretch;flex-direction:column}.mw-message-head button{width:100%}.coach-profile-hero{padding:14px}.coach-profile-monogram{width:54px;height:54px}}
+
+/* 2026 sign-in fit: wide desktop artwork with a centered, consistent login panel. */
+@media(min-width:821px){
+  .coach-login-bg{
+    background:
+      linear-gradient(90deg,rgba(2,8,13,.64) 0%,rgba(2,8,13,.22) 44%,rgba(2,8,13,.38) 66%,rgba(2,8,13,.82) 100%),
+      linear-gradient(180deg,rgba(5,16,24,.18),rgba(1,5,8,.72)),
+      url('../assets/mw-coach-desktop-login-v22.jpg') center/cover no-repeat!important;
+  }
+  .coach-login-content{display:block!important;min-height:0!important;padding:0!important}
+  .coach-login-person{display:none!important}
+  .coach-login-copy{opacity:.92!important}
+  .coach-login-card-wrap{position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;padding:42px 24px 0!important;z-index:7!important}
+  .coach-login-card{width:min(470px,calc(100vw - 48px))!important;background:linear-gradient(180deg,rgba(4,13,19,.94),rgba(2,7,10,.975))!important}
+  .coach-field input{text-align:center!important;padding-left:42px!important}
+}
+@media(max-width:820px){
+  .coach-login-bg{
+    background:
+      linear-gradient(180deg,rgba(2,8,13,.10),rgba(2,8,13,.18) 38%,rgba(2,8,13,.88) 100%),
+      url('../assets/mw-coach-desktop-login-v22.jpg') center/cover no-repeat!important;
+  }
+  .coach-field input{text-align:center!important;padding-left:42px!important}
+}
