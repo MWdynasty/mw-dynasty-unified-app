@@ -1,33 +1,41 @@
 const { authenticate, SUPABASE_URL, SUPABASE_KEY } = require('../lib/mw-coach-auth');
 
-const PLANS = {
-  mw_athlete: {
-    audience: 'athlete',
-    productName: 'Athlete Membership',
-    amount: 1900,
-  },
-  coach_core: {
-    audience: 'coach',
-    productName: 'Coach Core',
-    amount: 4900,
-    sponsorProductName: 'Coach Core Sponsored Athlete',
-    sponsorAmount: 500,
-  },
-  coach_intelligence: {
-    audience: 'coach',
-    productName: 'Coach Intelligence',
-    amount: 7900,
-    sponsorProductName: 'Coach Intelligence Sponsored Athlete',
-    sponsorAmount: 600,
-  },
-  mw_sprint_performance: {
-    audience: 'coach',
-    productName: 'MW Sprint Performance System',
-    amount: 10900,
-    sponsorProductName: 'MW Sprint Performance Sponsored Athlete',
-    sponsorAmount: 700,
-  },
+const PLAN_PRODUCTS = {
+  mw_athlete: { audience: 'athlete', productName: 'Athlete Membership' },
+  coach_core: { audience: 'coach', productName: 'Coach Core', sponsorProductName: 'Coach Core Sponsored Athlete' },
+  coach_intelligence: { audience: 'coach', productName: 'Coach Intelligence', sponsorProductName: 'Coach Intelligence Sponsored Athlete' },
+  mw_sprint_performance: { audience: 'coach', productName: 'MW Sprint Performance System', sponsorProductName: 'MW Sprint Performance Sponsored Athlete' },
 };
+
+async function loadCatalogPlan(planCode, token) {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/membership_plans?plan_code=eq.${encodeURIComponent(planCode)}&active=eq.true&monthly_enabled=eq.true&select=plan_code,audience,monthly_price_cents,sponsored_athlete_price_cents&limit=1`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
+  );
+  const rows = await response.json().catch(() => []);
+  if (!response.ok) throw Object.assign(new Error('MW membership pricing is temporarily unavailable.'), { status: 503 });
+  const plan = Array.isArray(rows) ? rows[0] : null;
+  if (!plan) throw Object.assign(new Error('This MW membership is not currently available.'), { status: 400 });
+  return plan;
+}
+
+async function markCheckoutStarted(token, planCode, sponsorQuantity, providerReference = null) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_mark_membership_checkout_started`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      p_plan_code: planCode,
+      p_sponsor_quantity: sponsorQuantity,
+      p_provider: 'stripe',
+      p_provider_reference: providerReference,
+    }),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw Object.assign(new Error(data?.message || data?.hint || data?.details || 'MW checkout state could not be prepared.'), { status: response.status });
+  }
+  return data;
+}
 
 function parseBody(req) {
   if (!req.body) return {};
@@ -88,18 +96,20 @@ module.exports = async function stripeCheckout(req, res) {
   try {
     const body = parseBody(req);
     const planCode = String(body.planCode || '');
-    const plan = PLANS[planCode];
-    if (!plan) return res.status(400).json({ error: 'Choose a valid MW membership.' });
+    const product = PLAN_PRODUCTS[planCode];
+    if (!product) return res.status(400).json({ error: 'Choose a valid MW membership.' });
 
     const sponsorQuantity = Number.isInteger(Number(body.sponsorQuantity)) ? Number(body.sponsorQuantity) : 0;
     const requestedReturnPath = String(body.returnPath || '').trim();
     const returnPath = requestedReturnPath.startsWith('/account') ? '/account/' : '';
     if (sponsorQuantity < 0 || sponsorQuantity > 250) return res.status(400).json({ error: 'Sponsor quantity must be between 0 and 250.' });
-    if (plan.audience === 'athlete' && sponsorQuantity !== 0) return res.status(400).json({ error: 'Athlete memberships cannot include sponsored-athlete seats.' });
+    if (product.audience === 'athlete' && sponsorQuantity !== 0) return res.status(400).json({ error: 'Athlete memberships cannot include sponsored-athlete seats.' });
 
     // Checkout intentionally permits a verified/invited account that has not paid yet.
     // Product access remains locked until the Stripe webhook creates an active entitlement.
     const { token, user } = await authenticate(req);
+    const catalog = await loadCatalogPlan(planCode, token);
+    if (catalog.audience !== product.audience) return res.status(409).json({ error: 'MW membership catalog mismatch.' });
     const profileResp = await fetch(
       `${SUPABASE_URL}/rest/v1/profiles?select=role,account_status&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
@@ -109,12 +119,16 @@ module.exports = async function stripeCheckout(req, res) {
     if (!profileResp.ok || !profile) return res.status(403).json({ error: 'MW profile not found for this account.' });
     const role = String(profile.role || 'athlete');
     if (!['invited','active'].includes(String(profile.account_status || ''))) return res.status(403).json({ error: 'This MW account is not eligible for checkout.' });
-    if (plan.audience === 'athlete' && role !== 'athlete') return res.status(403).json({ error: 'Choose a coach membership for this account.' });
-    if (plan.audience === 'coach' && !['coach', 'admin', 'founder_owner'].includes(role)) return res.status(403).json({ error: 'Choose an athlete membership for this account.' });
+    if (product.audience === 'athlete' && role !== 'athlete') return res.status(403).json({ error: 'Choose a coach membership for this account.' });
+    if (product.audience === 'coach' && !['coach', 'admin', 'founder_owner'].includes(role)) return res.status(403).json({ error: 'Choose an athlete membership for this account.' });
+
+    // Preserve the selected membership before leaving MW Dynasty. If checkout is abandoned,
+    // the same account can resume without losing its verification or onboarding progress.
+    await markCheckoutStarted(token, planCode, sponsorQuantity);
 
     const [basePrice, sponsorPrice] = await Promise.all([
-      findPrice(plan.productName, plan.amount),
-      sponsorQuantity ? findPrice(plan.sponsorProductName, plan.sponsorAmount) : Promise.resolve(null),
+      findPrice(product.productName, Number(catalog.monthly_price_cents)),
+      sponsorQuantity ? findPrice(product.sponsorProductName, Number(catalog.sponsored_athlete_price_cents || 0)) : Promise.resolve(null),
     ]);
     const base = appUrl(req);
     const form = {
@@ -123,10 +137,10 @@ module.exports = async function stripeCheckout(req, res) {
       client_reference_id: user.id,
       success_url: returnPath
         ? `${base}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`
-        : `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+        : `${base}/${product.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: returnPath
         ? `${base}${returnPath}?checkout=cancelled`
-        : `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=cancelled`,
+        : `${base}/${product.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=cancelled`,
       'line_items[0][price]': basePrice,
       'line_items[0][quantity]': '1',
       'metadata[mw_user_id]': user.id,
@@ -142,7 +156,15 @@ module.exports = async function stripeCheckout(req, res) {
     }
     const session = await stripe('/checkout/sessions', { method: 'POST', form });
     if (!session.url) throw new Error('Stripe did not return a checkout URL.');
-    return res.status(200).json({ ok: true, url: session.url });
+    // Attach the provider session to the already-preserved checkout state. This is idempotent.
+    await markCheckoutStarted(token, planCode, sponsorQuantity, session.id);
+    return res.status(200).json({
+      ok: true,
+      url: session.url,
+      planCode,
+      sponsorQuantity,
+      monthlyTotalCents: Number(catalog.monthly_price_cents) + sponsorQuantity * Number(catalog.sponsored_athlete_price_cents || 0),
+    });
   } catch (error) {
     console.error('MW Stripe checkout error', error);
     return res.status(error.status || 500).json({ error: error.message || 'Checkout is temporarily unavailable.' });
