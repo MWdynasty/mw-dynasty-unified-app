@@ -11,10 +11,17 @@ const pkg=JSON.parse(read('package.json'));
 ok(pkg.version==='3.0.16','package.json version must be 3.0.16');
 includes('manifest.webmanifest','App 3.0.16','manifest description must match 3.0.16');
 includes('assets/mw-native.js',"MW_APP_VERSION='3.0.16'",'web native bridge version mismatch');
-includes('athlete/index.html','MW Dynasty 3.0.16 · iOS Build 12','athlete visible app version mismatch');
+includes('athlete/index.html','MW Dynasty 3.0.16 · iOS Build 13','athlete visible app version mismatch');
 includes('ios_v3_0_16_patch/Config/Release.xcconfig','MARKETING_VERSION = 3.0.16','iOS marketing version mismatch');
-includes('ios_v3_0_16_patch/Config/Release.xcconfig','CURRENT_PROJECT_VERSION = 12','iOS build number mismatch');
+includes('ios_v3_0_16_patch/Config/Release.xcconfig','CURRENT_PROJECT_VERSION = 13','iOS build number mismatch');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','MWDynasty-iOS/3.0.16','iOS user agent version mismatch');
+includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.athlete.monthly','Athlete App Store product ID missing');
+includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.coach.core.monthly','Coach Core App Store product ID missing');
+includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.coach.intelligence.monthly','Coach Intelligence App Store product ID missing');
+includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.coach.sprintperformance.monthly','Sprint Performance App Store product ID missing');
+includes('codemagic.yaml','submit_to_testflight: true','Codemagic signed build must submit to TestFlight');
+includes('codemagic.yaml','bundle_identifier: com.mwdynasty.app','Codemagic bundle identifier mismatch');
+
 
 const signup=read('athlete/signup.html');
 ok(signup.includes('id="dob"')&&signup.includes('id="last"'),'athlete signup must collect last name and DOB');
