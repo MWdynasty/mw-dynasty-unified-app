@@ -539,6 +539,7 @@ function renderLogin(message=''){
               <div id="loginMessage" class="login-message ${message?'show':''}" role="status" aria-live="polite">${escapeHtml(message)}</div>
               <button id="loginSubmit" class="coach-login-submit" type="submit"><span>Sign In</span><span aria-hidden="true">→</span></button>
               <a class="coach-login-athlete-switch" href="/athlete/">ATHLETE SIGN IN <span aria-hidden="true">→</span></a>
+              <button class="coach-login-signup-tab" type="button" data-coach-signup="1">SIGN UP <span aria-hidden="true">→</span></button>
             </form>
             <div class="coach-login-access-note"><b>MW Coach requires an authorized MW Dynasty account.</b> Need account help? <a href="/support.html" target="_blank" rel="noopener">Contact MW Support</a>.</div>
             <div class="coach-login-access-note"><a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> • <a href="/terms.html" target="_blank" rel="noopener">Terms</a> • <a href="/support.html" target="_blank" rel="noopener">Support</a></div>
@@ -558,6 +559,8 @@ function renderLogin(message=''){
   bindLogin();
   if(new URLSearchParams(location.search).get('apply')==='1')renderCoachApplication();
 }
+/* MW coach signup tab hook */
+document.addEventListener('click',function(e){const b=e.target.closest&&e.target.closest('[data-coach-signup]');if(!b)return;e.preventDefault();renderCoachApplication();});
 function renderCoachApplication(){
   const existing=document.getElementById('coachApplyModal');if(existing)existing.remove();
   const wrap=document.createElement('div');wrap.id='coachApplyModal';wrap.className='coach-apply-modal';
