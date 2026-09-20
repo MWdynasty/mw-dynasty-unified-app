@@ -498,7 +498,7 @@ function renderLogin(message=''){
           <img class="coach-login-crest" src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty crest">
           <div class="coach-login-wordmark">
             <div class="coach-login-coach">DYNASTY</div>
-            <div class="coach-login-tagline">COACH LOGIN • LEAD • DEVELOP • BUILD</div>
+            <div class="coach-login-tagline">COACH • LEAD • DEVELOP • BUILD</div>
           </div>
         </div>
         <nav class="coach-login-nav" aria-label="MW Coach values">
@@ -540,6 +540,8 @@ function renderLogin(message=''){
               <button id="loginSubmit" class="coach-login-submit" type="submit"><span>Sign In</span><span aria-hidden="true">→</span></button>
               <a class="coach-login-athlete-switch" href="/athlete/">ATHLETE SIGN IN <span aria-hidden="true">→</span></a>
             </form>
+            <div class="coach-login-access-note"><b>MW Coach requires an authorized MW Dynasty account.</b> Need account help? <a href="/support.html" target="_blank" rel="noopener">Contact MW Support</a>.</div>
+            <div class="coach-login-access-note"><a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> • <a href="/terms.html" target="_blank" rel="noopener">Terms</a> • <a href="/support.html" target="_blank" rel="noopener">Support</a></div>
           </div>
         </div>
       </div>
