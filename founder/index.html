@@ -224,13 +224,42 @@ async function renderWebsite(){
 
 async function renderMarketing(){
   const d=await api("marketing_sales"),leads=d.leads||[],campaigns=d.campaigns||[];
-  $("content").innerHTML='<section class="hero"><div class="brand">MARKETING & SALES</div><h2>Build demand, manage pipeline, close partnerships.</h2><p>Marketing campaigns and a Founder-owned CRM for Coaches, schools, clubs, and strategic partners.</p></section>'+
-    '<div class="stats">'+stat("Open Pipeline",money(d.pipeline_value_cents))+stat("Won MRR",money(d.won_value_cents))+stat("Leads",leads.length)+stat("Campaigns",campaigns.length)+'</div>'+
+  const openLeads=leads.filter(x=>!["won","lost"].includes(x.stage));
+  const won=leads.filter(x=>x.stage==="won");
+  const activeCampaigns=campaigns.filter(x=>x.status==="active");
+  const spend=campaigns.reduce((n,x)=>n+(Number(x.spend_cents)||0),0);
+  const campaignLeads=campaigns.reduce((n,x)=>n+(Number(x.leads)||0),0);
+  const campaignConversions=campaigns.reduce((n,x)=>n+(Number(x.conversions)||0),0);
+  $("content").innerHTML='<section class="hero"><div class="brand">MARKETING & SALES</div><h2>Build demand, manage pipeline, close partnerships.</h2><p>Campaign performance and a Founder-owned CRM give the virtual sales and marketing teams one shared operating system.</p></section>'+
+    '<div class="stats">'+
+      stat("Open Pipeline",money(d.pipeline_value_cents))+
+      stat("Won MRR",money(d.won_value_cents))+
+      stat("Open Leads",openLeads.length)+
+      stat("Won Leads",won.length)+
+      stat("Active Campaigns",activeCampaigns.length)+
+      stat("Campaign Spend",money(spend))+
+      stat("Campaign Leads",campaignLeads)+
+      stat("Conversions",campaignConversions)+
+    '</div>'+
     '<div class="grid2">'+
-      '<div>'+sectionHead("Sales Pipeline","Virtual sales team uses the same Founder-owned CRM.",'<button class="btn small primary" id="addLead">Add Lead</button>')+'<div class="list">'+(leads.length?leads.map(x=>'<div class="row"><div><b>'+esc(x.organization||x.name||"Lead")+'</b><small>'+esc((x.lead_type||"lead")+" · "+(x.source||"direct"))+'</small></div><div class="right">'+badge(x.stage,x.stage==="won"?"good":x.stage==="lost"?"bad":"blue")+'<small>'+money(x.estimated_monthly_value_cents)+'/mo</small></div></div>').join(""):'<div class="card empty">No sales leads yet.</div>')+'</div></div>'+
-      '<div>'+sectionHead("Marketing Campaigns","Track campaigns, audience, budget, leads, and conversions.",'<button class="btn small primary" id="addCampaign">Add Campaign</button>')+'<div class="list">'+(campaigns.length?campaigns.map(x=>'<div class="row"><div><b>'+esc(x.name)+'</b><small>'+esc((x.channel||"channel")+" · "+(x.audience||"audience"))+'</small></div><div class="right">'+badge(x.status,x.status==="active"?"good":"")+'<small>'+esc((x.leads||0)+" leads · "+(x.conversions||0)+" conversions")+'</small></div></div>').join(""):'<div class="card empty">No campaigns yet.</div>')+'</div></div></div>';
+      '<div>'+sectionHead("Sales Pipeline","Move opportunities through a real operating pipeline.",'<button class="btn small primary" id="addLead">Add Lead</button>')+
+        '<div class="list">'+(leads.length?leads.map(x=>{
+          const next={new:"qualified",qualified:"contacted",contacted:"meeting",meeting:"proposal",proposal:"negotiation",negotiation:"won"}[x.stage];
+          return '<div class="card"><div class="row" style="border:0;background:transparent;padding:0"><div><b>'+esc(x.organization||x.name||"Lead")+'</b><small>'+esc((x.lead_type||"lead")+" · "+(x.source||"direct"))+'</small><small>Next: '+esc(x.next_action||"No next action set")+'</small></div><div class="right">'+badge(x.stage,x.stage==="won"?"good":x.stage==="lost"?"bad":"blue")+'<small>'+money(x.estimated_monthly_value_cents)+'/mo</small></div></div>'+(next?'<div class="heroActions"><button class="btn small blue" data-lead-stage="'+esc(x.id)+'" data-next-stage="'+esc(next)+'">Advance to '+esc(next)+'</button><button class="btn small danger" data-lead-lost="'+esc(x.id)+'">Mark Lost</button></div>':"")+'</div>';
+        }).join(""):'<div class="card empty">No sales leads yet.</div>')+'</div></div>'+
+      '<div>'+sectionHead("Marketing Campaigns","Track spend, leads, conversions, and campaign status.",'<button class="btn small primary" id="addCampaign">Add Campaign</button>')+
+        '<div class="list">'+(campaigns.length?campaigns.map(x=>'<div class="card"><div class="row" style="border:0;background:transparent;padding:0"><div><b>'+esc(x.name)+'</b><small>'+esc((x.channel||"channel")+" · "+(x.audience||"audience"))+'</small></div><div class="right">'+badge(x.status,x.status==="active"?"good":x.status==="cancelled"?"bad":"")+'</div></div><div class="grid3" style="margin-top:10px">'+stat("Spend",money(x.spend_cents||0))+stat("Leads",x.leads||0)+stat("Conversions",x.conversions||0)+'</div><div class="heroActions"><button class="btn small" data-campaign-edit="'+esc(x.id)+'">Update Performance</button></div></div>').join(""):'<div class="card empty">No campaigns yet.</div>')+'</div></div></div>';
   $("addLead").onclick=openLeadModal;$("addCampaign").onclick=openCampaignModal;
+  document.querySelectorAll("[data-lead-stage]").forEach(b=>b.onclick=async()=>{try{await action("update_lead",{id:b.dataset.leadStage,stage:b.dataset.nextStage});cache={};renderMarketing()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-lead-lost]").forEach(b=>b.onclick=async()=>{if(!confirm("Mark this opportunity as lost?"))return;try{await action("update_lead",{id:b.dataset.leadLost,stage:"lost"});cache={};renderMarketing()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-campaign-edit]").forEach(b=>{b.onclick=()=>{const x=campaigns.find(c=>String(c.id)===String(b.dataset.campaignEdit));if(x)openCampaignPerformanceModal(x)}}); 
 }
+function openCampaignPerformanceModal(x){
+  modal("Update Campaign Performance",'<div class="formGrid"><label class="field">STATUS<select id="editCampaignStatus"><option>draft</option><option>scheduled</option><option>active</option><option>paused</option><option>completed</option><option>cancelled</option></select></label><label class="field">SPEND ($)<input id="editCampaignSpend" type="number" min="0" step=".01" value="'+esc((Number(x.spend_cents||0)/100).toFixed(2))+'"></label><label class="field">LEADS<input id="editCampaignLeads" type="number" min="0" value="'+esc(x.leads||0)+'"></label><label class="field">CONVERSIONS<input id="editCampaignConversions" type="number" min="0" value="'+esc(x.conversions||0)+'"></label></div><button class="btn primary" id="saveCampaignPerformance">Save Performance</button>');
+  $("editCampaignStatus").value=x.status||"draft";
+  $("saveCampaignPerformance").onclick=async()=>{try{await action("update_campaign",{id:x.id,status:$("editCampaignStatus").value,spendCents:Math.round(Number($("editCampaignSpend").value||0)*100),leads:Number($("editCampaignLeads").value||0),conversions:Number($("editCampaignConversions").value||0)});closeModal();cache={};renderMarketing()}catch(e){alert(e.message)}};
+}
+
 function openLeadModal(){
   modal("Add Sales Lead",'<div class="formGrid"><label class="field">NAME<input id="leadName"></label><label class="field">ORGANIZATION<input id="leadOrg"></label><label class="field">TYPE<select id="leadType"><option>coach</option><option>school</option><option>club</option><option>partner</option><option>other</option></select></label><label class="field">EST. MONTHLY VALUE ($)<input id="leadValue" type="number" min="0"></label></div><label class="field">NEXT ACTION<input id="leadNext"></label><button class="btn primary" id="saveLead">Save Lead</button>');
   $("saveLead").onclick=async()=>{try{await action("create_lead",{name:$("leadName").value,organization:$("leadOrg").value,leadType:$("leadType").value,estimatedMonthlyValueCents:Number($("leadValue").value||0)*100,nextAction:$("leadNext").value,assignedAgentCode:"sales_rep"});closeModal();renderMarketing()}catch(e){alert(e.message)}};
