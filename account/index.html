@@ -198,6 +198,9 @@ function renderCoachPlanChange(b){
     copy.textContent=pending.status==='scheduled'
       ? `${target} is scheduled for ${dateText(pending.effective_at)}. Your current membership stays active until then.`
       : `${target} is waiting for your payment provider to confirm the change. Your current membership stays active until confirmation.`;
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='btn ghost';cancel.textContent='Cancel Pending Change';
+    cancel.onclick=()=>cancelCoachPlanTransition(pending.id);
+    box.appendChild(cancel);
   }else{
     copy.textContent=provider==='apple'
       ? 'Your base Coach membership is managed by Apple. Membership changes are confirmed by the App Store before MW access changes.'
@@ -210,6 +213,23 @@ function renderCoachPlanChange(b){
     else{button.textContent=`Change to ${name} — ${price}/mo`;button.onclick=()=>requestCoachPlanChange(tier,code,provider)}
     box.appendChild(button);
   });
+}
+async function cancelCoachPlanTransition(transitionId){
+  const status=el('coachPlanChangeStatus');status.textContent='Cancelling pending membership change…';
+  try{
+    const r=await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'cancel_billing_transition',transitionId,reason:'user_cancelled'})});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Pending membership change could not be cancelled.');
+    status.textContent='Pending membership change cancelled.';
+    window.mwPendingCoachPlanTransitionId=null;
+    await load();
+  }catch(e){status.textContent=e.message||'Pending membership change could not be cancelled.';status.className='status err'}
+}
+async function cancelNativeCoachPlanTransition(reason='app_store_cancelled'){
+  const id=window.mwPendingCoachPlanTransitionId;if(!id)return;
+  try{
+    await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'cancel_billing_transition',transitionId:id,reason})});
+  }catch{}
+  window.mwPendingCoachPlanTransitionId=null;
 }
 async function requestCoachPlanChange(tier,planCode,provider){
   const status=el('coachPlanChangeStatus');status.textContent='';
@@ -227,6 +247,7 @@ async function requestCoachPlanChange(tier,planCode,provider){
       const purchase=window.webkit?.messageHandlers?.mwPurchase;
       if(!purchase)throw new Error('App Store membership changes are not available in this build yet.');
       status.textContent='Opening the App Store to confirm your Coach membership change…';
+      window.mwPendingCoachPlanTransitionId=d.result?.transition_id||null;
       purchase.postMessage({planCode,sponsorQuantity:0,accessToken:session.access_token});
       return;
     }
@@ -417,8 +438,12 @@ async function openBillingPortal(){
     button.disabled=false;
   }
 }
-window.mwNativePurchaseResult=function(result){
-  if(result?.ok){billingMessage('Payment confirmed. MW Dynasty is syncing your membership…');setTimeout(()=>location.reload(),700);return}
+window.mwNativePurchaseResult=async function(result){
+  if(result?.ok){
+    window.mwPendingCoachPlanTransitionId=null;
+    billingMessage('Payment confirmed. MW Dynasty is syncing your membership…');setTimeout(()=>location.reload(),700);return
+  }
+  if(window.mwPendingCoachPlanTransitionId)await cancelNativeCoachPlanTransition(result?.cancelled?'app_store_cancelled':'app_store_purchase_failed');
   billingMessage(result?.error||'App Store purchase could not be confirmed.',true);
   if(el('selfPayBtn'))el('selfPayBtn').disabled=false;
   if(account?.billing&&coachRole(account?.user?.role))renderCoachPlanChange(account.billing);
