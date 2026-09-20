@@ -1518,33 +1518,12 @@ html.mw-native-app .coach-login-bg:after{
   html:not(.mw-native-app) .coach-login-brand{transform:scale(.88)!important;transform-origin:left top!important}
 }
 
-
-/* MW COACH WEBSITE CENTER SIGN-IN v8 */
-@media(min-width:901px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    left:50%!important;
-    right:auto!important;
-    top:50%!important;
-    width:min(510px,37vw)!important;
-    margin:0!important;
-    transform:translate(-50%,-45%)!important;
-  }
-}
-@media(min-width:901px) and (max-width:1180px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    left:50%!important;
-    right:auto!important;
-    width:min(470px,43vw)!important;
-    transform:translate(-50%,-45%)!important;
-  }
-}
-
-
-/* MW COACH WEBSITE TRUE CENTER v9 */
+/* MW COACH WEBSITE FINAL CARD POSITION v14
+   Keep all approved artwork/text positions unchanged. Only position the login card. */
 @media(min-width:901px){
   html:not(.mw-native-app) .coach-login-card-wrap{
     position:absolute!important;
-    left:50%!important;
+    left:56%!important;
     right:auto!important;
     top:50%!important;
     bottom:auto!important;
@@ -1558,167 +1537,14 @@ html.mw-native-app .coach-login-bg:after{
     margin:0!important;
     transform:none!important;
   }
-  html:not(.mw-native-app) .coach-login-role-back{
-    position:absolute!important;
-    top:16px!important;
-    right:16px!important;
-    margin:0!important;
-  }
 }
 @media(min-width:901px) and (max-width:1180px){
   html:not(.mw-native-app) .coach-login-card-wrap{
-    left:50%!important;
-    right:auto!important;
-    top:50%!important;
-    width:min(470px,44vw)!important;
-    transform:translate(-50%,-50%)!important;
-  }
-}
-
-
-/* MW COACH SIGN-IN BETWEEN ATHLETES v10 */
-@media(min-width:901px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    position:absolute!important;
-    left:50%!important;
-    right:auto!important;
-    top:auto!important;
-    bottom:8.5vh!important;
-    width:min(500px,38vw)!important;
-    margin:0!important;
-    padding:0!important;
-    transform:translateX(-50%)!important;
-    z-index:12!important;
-  }
-  html:not(.mw-native-app) .coach-login-standard{
-    left:50%!important;
-    bottom:calc(8.5vh + 590px)!important;
-    transform:translateX(-50%)!important;
-    z-index:13!important;
-  }
-}
-@media(min-width:901px) and (max-width:1180px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    left:50%!important;
-    right:auto!important;
-    top:auto!important;
-    bottom:6vh!important;
-    width:min(470px,44vw)!important;
-    transform:translateX(-50%)!important;
-  }
-}
-
-
-/* MW COACH OPTICAL CENTER FIX v11 */
-@media(min-width:901px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    position:absolute!important;
-    left:55%!important;
-    right:auto!important;
-    top:50%!important;
-    bottom:auto!important;
-    width:min(500px,38vw)!important;
-    margin:0!important;
-    padding:0!important;
-    transform:translate(-50%,-50%)!important;
-    z-index:12!important;
-  }
-  html:not(.mw-native-app) .coach-login-standard{
-    left:55%!important;
-    bottom:auto!important;
-    top:calc(50% - 330px)!important;
-    transform:translateX(-50%)!important;
-    z-index:13!important;
-  }
-}
-@media(min-width:901px) and (max-width:1180px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    left:55%!important;
+    left:56%!important;
     right:auto!important;
     top:50%!important;
     bottom:auto!important;
     width:min(470px,44vw)!important;
     transform:translate(-50%,-50%)!important;
-  }
-  html:not(.mw-native-app) .coach-login-standard{
-    left:55%!important;
-  }
-}
-
-
-/* MW COACH RESTORE STANDARD TEXT v12 */
-@media(min-width:901px){
-  html:not(.mw-native-app) .coach-login-standard{
-    left:50%!important;
-    top:auto!important;
-    bottom:24px!important;
-    transform:translateX(-50%)!important;
-  }
-}
-@media(min-width:901px) and (max-width:1180px){
-  html:not(.mw-native-app) .coach-login-standard{
-    left:50%!important;
-    top:auto!important;
-    bottom:24px!important;
-    transform:translateX(-50%)!important;
-  }
-}
-
-
-/* MW COACH CLEAN CENTER REPAIR v13 */
-@media(min-width:901px){
-  /* Keep the slogan exactly at its original bottom-center location. */
-  html:not(.mw-native-app) .coach-login-standard{
-    position:absolute!important;
-    left:50%!important;
-    right:auto!important;
-    top:auto!important;
-    bottom:24px!important;
-    transform:translateX(-50%)!important;
-    z-index:5!important;
-  }
-
-  /* Place only the login card in the open center lane between both figures. */
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    position:absolute!important;
-    left:52%!important;
-    right:auto!important;
-    top:48%!important;
-    bottom:auto!important;
-    width:min(500px,38vw)!important;
-    margin:0!important;
-    padding:0!important;
-    transform:translate(-50%,-50%)!important;
-    z-index:12!important;
-  }
-
-  /* Website button belongs inside the card without covering title/copy. */
-  html:not(.mw-native-app) .coach-login-role-back{
-    position:absolute!important;
-    top:18px!important;
-    right:18px!important;
-    left:auto!important;
-    bottom:auto!important;
-    margin:0!important;
-    z-index:3!important;
-  }
-  html:not(.mw-native-app) .coach-login-card h2{
-    padding-right:132px!important;
-  }
-}
-@media(min-width:901px) and (max-width:1180px){
-  html:not(.mw-native-app) .coach-login-card-wrap{
-    left:52%!important;
-    right:auto!important;
-    top:48%!important;
-    bottom:auto!important;
-    width:min(470px,44vw)!important;
-    transform:translate(-50%,-50%)!important;
-  }
-  html:not(.mw-native-app) .coach-login-standard{
-    left:50%!important;
-    top:auto!important;
-    bottom:24px!important;
-    transform:translateX(-50%)!important;
   }
 }
