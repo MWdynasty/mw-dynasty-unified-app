@@ -1229,3 +1229,13 @@ html.mw-native-app .coach-login-bg:after{
   html.mw-native-app .coach-login-mobile-brand,
   html.mw-native-app .coach-login-role-back{display:none!important}
 }
+
+
+/* MW LOGIN SIGNUP TAB */
+.coach-login-signup-tab{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;
+  margin-top:10px;border:1px solid rgba(235,190,75,.58);border-radius:12px;
+  background:rgba(4,13,18,.82);color:#efc45d;padding:12px 14px;font-size:11px;font-weight:950;
+  letter-spacing:.08em;text-decoration:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);cursor:pointer;
+}
+.coach-login-signup-tab:active{transform:translateY(2px)}
