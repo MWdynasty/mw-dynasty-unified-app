@@ -538,8 +538,6 @@ function renderLogin(message=''){
               <button id="loginSubmit" class="coach-login-submit" type="submit"><span>Sign In</span><span aria-hidden="true">→</span></button>
               <a class="coach-login-athlete-switch" href="/athlete/">ATHLETE SIGN IN <span aria-hidden="true">→</span></a>
             </form>
-            <div class="coach-login-divider"><span></span><b>NEW COACH?</b><span></span></div>
-            <div class="coach-login-contact">Don’t have a coach account yet? <button type="button" id="contactAdmin">Create an Account</button></div>
           </div>
         </div>
       </div>
@@ -554,8 +552,7 @@ function renderLogin(message=''){
     </section>
   </div>`;
   bindLogin();
-  const contact=document.getElementById('contactAdmin');
-  if(contact)contact.addEventListener('click',renderCoachApplication);
+  if(new URLSearchParams(location.search).get('apply')==='1')renderCoachApplication();
 }
 function renderCoachApplication(){
   const existing=document.getElementById('coachApplyModal');if(existing)existing.remove();
