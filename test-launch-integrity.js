@@ -67,6 +67,10 @@ includes('server/api/founder.js',"section==='objectives'",'Founder objective API
 includes('server/api/founder-ai.js','founder_ai_objectives','Founder AI objective creation missing');
 includes('founder/index.html','COMPANY OBJECTIVES','Founder company objective UI missing');
 includes('founder/index.html','Run Next Safe Task','Founder objective execution control missing');
+includes('supabase/migrations/20260920_founder_os_v16_ai_playbooks.sql','mw_founder_ai_playbooks_snapshot','Founder AI playbook migration missing');
+includes('server/api/founder-ai.js',"mode==='department_brief'",'Founder AI department briefing mode missing');
+includes('founder/index.html','Department Leadership Briefs','Founder department briefing UI missing');
+includes('founder/index.html','View Playbook','Founder AI employee playbook UI missing');
 includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
 includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
 
