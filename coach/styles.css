@@ -1517,3 +1517,24 @@ html.mw-native-app .coach-login-bg:after{
   html:not(.mw-native-app) .coach-login-copy h1{font-size:64px!important}
   html:not(.mw-native-app) .coach-login-brand{transform:scale(.88)!important;transform-origin:left top!important}
 }
+
+
+/* MW COACH WEBSITE CENTER SIGN-IN v8 */
+@media(min-width:901px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    left:50%!important;
+    right:auto!important;
+    top:50%!important;
+    width:min(510px,37vw)!important;
+    margin:0!important;
+    transform:translate(-50%,-45%)!important;
+  }
+}
+@media(min-width:901px) and (max-width:1180px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    left:50%!important;
+    right:auto!important;
+    width:min(470px,43vw)!important;
+    transform:translate(-50%,-45%)!important;
+  }
+}
