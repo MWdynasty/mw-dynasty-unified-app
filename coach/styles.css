@@ -130,7 +130,7 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 .coach-login-mission{text-align:right;font-size:12px;line-height:1.65;letter-spacing:.18em;font-weight:800;color:#edf1f4}.coach-login-mission div{width:42px;height:3px;background:#e6bd45;margin:15px 0 0 auto}
 .coach-login-content{display:grid;grid-template-columns:minmax(270px,.72fr) minmax(360px,1.15fr) minmax(390px,.86fr);align-items:end;gap:12px;padding:0 42px 6px;position:relative;z-index:1;min-height:590px}
 .coach-login-copy{align-self:center;padding:25px 0 60px 4px;z-index:2}.coach-login-copy h1{font-size:clamp(46px,4.5vw,78px);line-height:.88;margin:0;font-weight:1000;letter-spacing:-.045em}.coach-login-copy h1 strong{color:#efbf38}.coach-login-rule{display:block;width:72px;height:5px;background:#efbf38;margin:24px 0 20px}.coach-login-copy p{font-size:18px;line-height:1.55;letter-spacing:.05em;color:#f3f4f5;margin:0}
-.coach-login-person{align-self:stretch;min-height:590px;background-image:linear-gradient(180deg,rgba(4,13,19,.08) 0%,rgba(4,13,19,0) 65%,rgba(4,13,19,.55) 100%),url('coach-login-hero.jpg');background-size:cover;background-position:center 14%;background-repeat:no-repeat;filter:saturate(.88) contrast(1.05);mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 94%,transparent 100%);border-radius:18px 18px 0 0}
+.coach-login-person{align-self:stretch;min-height:590px;background-image:linear-gradient(180deg,rgba(4,13,19,.08) 0%,rgba(4,13,19,0) 65%,rgba(4,13,19,.55) 100%),url('../assets/mw-stadium-athlete-coach-v22.jpg');background-size:cover;background-position:center 14%;background-repeat:no-repeat;filter:saturate(.88) contrast(1.05);mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 94%,transparent 100%);border-radius:18px 18px 0 0}
 .coach-login-card-wrap{align-self:center;display:flex;justify-content:flex-end;padding-bottom:38px}.coach-login-card{width:min(100%,500px);padding:30px 30px 24px;border:1px solid rgba(230,189,69,.62);border-radius:18px;background:linear-gradient(180deg,rgba(5,15,22,.94),rgba(2,10,16,.94));box-shadow:0 24px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(12px)}
 .coach-login-card h2{font-size:40px;line-height:1;margin:0 0 8px;letter-spacing:-.035em}.coach-login-card>p{margin:0 0 24px;color:#e0e5e8;font-size:16px}.coach-login-mobile-brand{display:none}
 .coach-login-form{display:grid;gap:15px}.coach-field{display:flex;align-items:center;gap:13px;min-height:58px;border:1px solid #254150;border-radius:10px;background:#06151e;padding:0 14px;color:#fff}.coach-field>span{width:22px;text-align:center;font-size:18px;color:#f4f4f4}.coach-field input{flex:1;min-width:0;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font-size:16px!important;box-shadow:none!important;padding:0!important;min-height:0!important}.coach-field input::placeholder{color:#8595a0}.coach-password-toggle{border:0;background:transparent;color:#fff;font-size:18px;min-width:42px;min-height:42px;cursor:pointer}
@@ -141,7 +141,7 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
 .coach-login-screen .login-message{margin-top:2px}.coach-login-screen .login-spinner{border-color:rgba(7,16,24,.25);border-top-color:#071018}
 /* Desktop coach access uses a true wide web canvas, never a portrait app card. */
 @media(min-width:901px){
-  .coach-login-bg{background:linear-gradient(90deg,rgba(2,8,13,.38),rgba(2,8,13,.16) 50%,rgba(2,8,13,.72)),url('../assets/mw-coach-desktop-login-v22.jpg') center/cover}
+  .coach-login-bg{background:linear-gradient(90deg,rgba(2,8,13,.38),rgba(2,8,13,.16) 50%,rgba(2,8,13,.72)),url('../assets/mw-stadium-athlete-coach-v22.jpg') center/cover}
   .coach-login-bg:after{display:none}
   .coach-login-content{display:flex;min-height:590px;align-items:center;justify-content:flex-end;padding:0 58px 30px}
   .coach-login-copy,.coach-login-person{display:none}
@@ -478,7 +478,7 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
     background:
       linear-gradient(90deg,rgba(2,8,13,.64) 0%,rgba(2,8,13,.22) 44%,rgba(2,8,13,.38) 66%,rgba(2,8,13,.82) 100%),
       linear-gradient(180deg,rgba(5,16,24,.18),rgba(1,5,8,.72)),
-      url('../assets/mw-coach-desktop-login-v22.jpg') center/cover no-repeat!important;
+      url('../assets/mw-stadium-athlete-coach-v22.jpg') center/cover no-repeat!important;
   }
   .coach-login-content{display:block!important;min-height:0!important;padding:0!important}
   .coach-login-person{display:none!important}
@@ -491,7 +491,7 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
   .coach-login-bg{
     background:
       linear-gradient(180deg,rgba(2,8,13,.10),rgba(2,8,13,.18) 38%,rgba(2,8,13,.88) 100%),
-      url('../assets/mw-coach-desktop-login-v22.jpg') center/cover no-repeat!important;
+      url('../assets/mw-stadium-athlete-coach-v22.jpg') center/cover no-repeat!important;
   }
   .coach-field input{text-align:center!important;padding-left:42px!important}
 }
