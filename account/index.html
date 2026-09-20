@@ -194,13 +194,21 @@ function renderCoachPlanChange(b){
   ];
   const box=el('coachPlanChangeActions'),copy=el('coachPlanChangeCopy');box.innerHTML='';
   if(pending&&pending.type==='plan_change'){
-    const target=plan(pending.to_plan_code);
-    copy.textContent=pending.status==='scheduled'
-      ? `${target} is scheduled for ${dateText(pending.effective_at)}. Your current membership stays active until then.`
-      : `${target} is waiting for your payment provider to confirm the change. Your current membership stays active until confirmation.`;
-    const cancel=document.createElement('button');cancel.type='button';cancel.className='btn ghost';cancel.textContent='Cancel Pending Change';
-    cancel.onclick=()=>cancelCoachPlanTransition(pending.id);
-    box.appendChild(cancel);
+    const target=plan(pending.to_plan_code),paymentFailed=String(pending.payment_failed||'false')==='true';
+    if(paymentFailed){
+      copy.textContent=`The payment for ${target} did not complete. Your current Coach membership and features are unchanged. Update your Stripe payment method; Stripe will apply the upgrade only after payment succeeds.`;
+      const fix=document.createElement('button');fix.type='button';fix.className='btn';fix.textContent='Fix Payment in Stripe';
+      fix.onclick=openBillingPortal;box.appendChild(fix);
+    }else{
+      copy.textContent=pending.status==='scheduled'
+        ? `${target} is scheduled for ${dateText(pending.effective_at)}. Your current membership stays active until then.`
+        : `${target} is waiting for your payment provider to confirm the change. Your current membership stays active until confirmation.`;
+    }
+    if(pending.direction==='downgrade'){
+      const cancel=document.createElement('button');cancel.type='button';cancel.className='btn ghost';cancel.textContent='Cancel Pending Downgrade';
+      cancel.onclick=()=>cancelCoachPlanTransition(pending.id);
+      box.appendChild(cancel);
+    }
   }else{
     copy.textContent=provider==='apple'
       ? 'Your base Coach membership is managed by Apple. Membership changes are confirmed by the App Store before MW access changes.'
@@ -210,7 +218,264 @@ function renderCoachPlanChange(b){
     const button=document.createElement('button');button.type='button';button.className='btn';
     if(code===current){button.textContent=`${name} — Current`;button.disabled=true}
     else if(pending?.type==='plan_change'&&pending?.to_plan_code===code){button.textContent=`${name} — Pending`;button.disabled=true}
-    else{button.textContent=`Change to ${name} — ${price}/mo`;button.onclick=()=>requestCoachPlanChange(tier,code,provider)}
+    else{button.textContent='Change to '+name+' — button.onclick=()=>requestCoachPlanChange(tier,code,provider)}
+    box.appendChild(button);
+  });
+}
+async function cancelCoachPlanTransition(transitionId){
+  const status=el('coachPlanChangeStatus');status.textContent='Cancelling pending membership change…';
+  try{
+    const r=await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'cancel_billing_transition',transitionId,reason:'user_cancelled'})});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Pending membership change could not be cancelled.');
+    status.textContent='Pending membership change cancelled.';
+    window.mwPendingCoachPlanTransitionId=null;
+    await load();
+  }catch(e){status.textContent=e.message||'Pending membership change could not be cancelled.';status.className='status err'}
+}
+async function cancelNativeCoachPlanTransition(reason='app_store_cancelled'){
+  const id=window.mwPendingCoachPlanTransitionId;if(!id)return;
+  try{
+    await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'cancel_billing_transition',transitionId:id,reason})});
+  }catch{}
+  window.mwPendingCoachPlanTransitionId=null;
+}
+async function requestCoachPlanChange(tier,planCode,provider){
+  const status=el('coachPlanChangeStatus');status.textContent='';
+  if(provider==='apple'){
+    status.textContent='Opening App Store subscription management. MW changes your Coach tier only after Apple confirms the new subscription product.';
+    try{
+      const manage=window.webkit?.messageHandlers?.mwManageSubscriptions;
+      if(manage){manage.postMessage({});return}
+      location.assign('https://apps.apple.com/account/subscriptions');
+    }catch(e){
+      status.textContent='App Store subscription management could not be opened.';
+      status.className='status err';
+    }
+    return;
+  }
+  Array.from(el('coachPlanChangeActions').querySelectorAll('button')).forEach(b=>b.disabled=true);
+  status.textContent='Preparing your membership change…';
+  try{
+    const r=await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'coach_plan_change',requestedTier:tier})});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Coach membership change could not be prepared.');
+    if(d.providerResult?.providerAction==='downgrade_scheduled'){
+      status.textContent=`Downgrade scheduled for ${dateText(d.providerResult.effectiveAt)}. Your current Coach features stay active until then.`;
+    }else{
+      status.textContent='Stripe is confirming your upgrade. MW will change access only after Stripe confirms payment.';
+    }
+    setTimeout(()=>load(),900);
+  }catch(e){
+    status.textContent=e.message||'Coach membership change could not be completed.';
+    status.className='status err';
+    if(account?.billing)renderCoachPlanChange(account.billing);
+  }
+}
+function renderSelfPay(b){
+  const pending=b.pending_transition||null,btn=el('selfPayBtn'),title=el('selfPayTitle'),copy=el('selfPayCopy');
+  btn.disabled=false;btn.onclick=null;
+  if(!pending){
+    title.textContent='Keep MW Dynasty after Coach sponsorship';
+    copy.textContent='You are currently sponsored by your Coach. You can schedule your own $19/month Athlete membership to begin only after the Coach-paid period ends—no overlapping charge.';
+    btn.textContent='Switch to My Own Membership';
+    btn.onclick=requestSelfPayTransition;
+    return;
+  }
+  const opensAt=pending.checkout_opens_at||pending.effective_at,openMs=opensAt?new Date(opensAt).getTime():NaN,now=Date.now();
+  const grace=pending.grace_ends_at?dateText(pending.grace_ends_at):null;
+  title.textContent='Self-pay transition scheduled';
+  if(Number.isFinite(openMs)&&openMs>now){
+    copy.textContent=`Your Coach sponsorship stays active through ${dateText(opensAt)}. Your own membership checkout opens then, so you are not charged twice.`;
+    btn.textContent=`Checkout opens ${dateText(opensAt)}`;btn.disabled=true;return;
+  }
+  copy.textContent=`Your Coach-paid period has ended. Activate your own Athlete membership now${grace?` during the transition window ending ${grace}`:''} to continue without interruption.`;
+  btn.textContent='Activate My Athlete Membership — $19/mo';
+  btn.onclick=()=>startSelfPayCheckout(pending.id);
+}
+async function requestSelfPayTransition(){
+  const btn=el('selfPayBtn');btn.disabled=true;btn.textContent='Scheduling…';billingMessage('');
+  try{
+    const r=await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'athlete_self_pay',billingCycle:'monthly'})});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Self-pay transition could not be scheduled.');
+    billingMessage('Your own membership is scheduled to begin after Coach sponsorship ends. No overlapping charge.');
+    await load();
+  }catch(e){billingMessage(e.message||'Self-pay transition could not be scheduled.',true);btn.disabled=false;btn.textContent='Switch to My Own Membership'}
+}
+async function startSelfPayCheckout(transitionId){
+  const btn=el('selfPayBtn');btn.disabled=true;
+  if(document.documentElement.classList.contains('mw-native-app')){
+    const native=window.webkit?.messageHandlers?.mwPurchase;
+    if(!native){billingMessage('App Store purchase is not available in this build yet.',true);btn.disabled=false;return}
+    billingMessage('Opening the App Store purchase…');
+    native.postMessage({planCode:'mw_athlete',sponsorQuantity:0,accessToken:session.access_token});
+    return;
+  }
+  await checkout('mw_athlete',0,false,transitionId);
+  btn.disabled=false;
+}
+function renderPlanActions(role,options={}){
+  const coach=coachRole(role),appleCoach=!!options.appleCoach;
+  el('coachChooser').style.display=coach?'block':'none';
+  el('athletePlanActions').style.display=coach?'none':'flex';
+  if(coach&&appleCoach){
+    el('membershipOnlyTab').style.display='none';
+    el('sponsorshipTab').style.display='none';
+    el('coachMembershipPanel').style.display='none';
+    el('sponsorshipPanel').style.display='block';
+    const current=String(options.currentPlanCode||'');
+    const plans=[['coach_core','Coach Core',49,5],['coach_intelligence','Coach Intelligence',79,6],['mw_sprint_performance','Sprint Performance',109,7]];
+    const chosen=plans.find(p=>p[0]===current);
+    renderSponsorPlans(chosen?[chosen]:[]);
+    return;
+  }
+  el('membershipOnlyTab').style.display='';
+  el('sponsorshipTab').style.display='';
+  el('coachMembershipPanel').style.display='block';
+  el('sponsorshipPanel').style.display='none';
+  const membershipBox=el('planActions'),athleteBox=el('athletePlanActions');
+  membershipBox.innerHTML='';athleteBox.innerHTML='';
+
+  if(!coach){
+    const button=document.createElement('button');
+    button.type='button';button.className='btn';button.textContent='Athlete Membership — $19/mo';
+    button.onclick=()=>checkout('mw_athlete',0);
+    athleteBox.appendChild(button);
+    return;
+  }
+
+  const plans=[
+    ['coach_core','Coach Core',49,5],
+    ['coach_intelligence','Coach Intelligence',79,6],
+    ['mw_sprint_performance','Sprint Performance',109,7]
+  ];
+  plans.forEach(([code,name,base])=>{
+    const button=document.createElement('button');
+    button.type='button';button.className='btn';button.textContent=`${name} — ${base}/mo`;
+    button.onclick=()=>checkout(code,0);
+    membershipBox.appendChild(button);
+  });
+  renderSponsorPlans(plans);
+}
+function renderSponsorPlans(plans){
+  const allPlans=[
+    ['coach_core','Coach Core',49,5],
+    ['coach_intelligence','Coach Intelligence',79,6],
+    ['mw_sprint_performance','Sprint Performance',109,7]
+  ];
+  const provider=String(account?.billing?.provider||'').toLowerCase();
+  const addOnCoach=['apple','stripe'].includes(provider)&&coachRole(account?.user?.role);
+  if(!Array.isArray(plans)){
+    plans=addOnCoach
+      ? allPlans.filter(p=>p[0]===String(account?.billing?.current_plan_code||''))
+      : allPlans;
+  }
+  const qty=Math.max(1,Math.min(250,Number(el('sponsorQuantity').value)||1));
+  el('sponsorQuantity').value=qty;
+  const box=el('sponsorPlanActions');box.innerHTML='';
+  plans.forEach(([code,name,base,seat])=>{
+    const total=addOnCoach?(qty*seat):(base+(qty*seat));
+    const button=document.createElement('button');
+    button.type='button';button.className='btn';
+    button.textContent=addOnCoach
+      ? `Add ${qty} sponsored athlete${qty===1?'':'s'} — ${total}/mo`
+      : `${name} + ${qty} athlete${qty===1?'':'s'} — ${total}/mo`;
+    button.onclick=()=>checkout(code,qty,addOnCoach);
+    box.appendChild(button);
+  });
+}
+function setCoachMembershipTab(tab){
+  const sponsorship=tab==='sponsorship';
+  el('membershipOnlyTab').classList.toggle('active',!sponsorship);
+  el('sponsorshipTab').classList.toggle('active',sponsorship);
+  el('coachMembershipPanel').style.display=sponsorship?'none':'block';
+  el('sponsorshipPanel').style.display=sponsorship?'block':'none';
+}
+async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false,transitionId=null){
+  billingMessage('Opening secure Stripe checkout…');
+  try{
+    const response=await fetch('/api/stripe/checkout',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+      body:JSON.stringify({planCode,sponsorQuantity,returnPath:'/account/',sponsorshipOnly,transitionId})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.url)throw new Error(data.error||'Checkout is unavailable.');
+    location.assign(data.url);
+  }catch(e){billingMessage(e.message||'Checkout is unavailable.',true)}
+}
+async function openSponsorBillingPortal(){
+  const button=el('sponsorBillingBtn');button.disabled=true;billingMessage('Opening sponsored-seat billing…');
+  try{
+    const response=await fetch('/api/stripe/portal',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+      body:JSON.stringify({sponsorshipOnly:true})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.url)throw new Error(data.error||'Sponsored-seat billing is unavailable.');
+    location.assign(data.url);
+  }catch(e){
+    billingMessage(e.message||'Sponsored-seat billing is unavailable.',true);
+    button.disabled=false;
+  }
+}
+async function openBillingPortal(){
+  const button=el('billingBtn'),provider=String(button.dataset.provider||'');
+  button.disabled=true;
+  if(provider==='apple'){
+    billingMessage('Opening your App Store subscriptions…');
+    try{
+      const native=window.webkit?.messageHandlers?.mwManageSubscriptions;
+      if(native){native.postMessage({});button.disabled=false;return}
+      location.assign('https://apps.apple.com/account/subscriptions');
+    }catch(e){billingMessage('App Store subscription management could not be opened.',true);button.disabled=false}
+    return;
+  }
+  billingMessage('Opening secure billing…');
+  try{
+    const response=await fetch('/api/stripe/portal',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+      body:'{}'
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.url)throw new Error(data.error||'Billing portal is unavailable.');
+    location.assign(data.url);
+  }catch(e){
+    billingMessage(e.message||'Billing portal is unavailable.',true);
+    button.disabled=false;
+  }
+}
+window.mwNativePurchaseResult=async function(result){
+  if(result?.ok){
+    window.mwPendingCoachPlanTransitionId=null;
+    billingMessage('Payment confirmed. MW Dynasty is syncing your membership…');setTimeout(()=>location.reload(),700);return
+  }
+  if(window.mwPendingCoachPlanTransitionId)await cancelNativeCoachPlanTransition(result?.cancelled?'app_store_cancelled':'app_store_purchase_failed');
+  billingMessage(result?.error||'App Store purchase could not be confirmed.',true);
+  if(el('selfPayBtn'))el('selfPayBtn').disabled=false;
+  if(account?.billing&&coachRole(account?.user?.role))renderCoachPlanChange(account.billing);
+};
+async function load(){
+  session=readSession();
+  if(!session){el('signedOutView').style.display='block';return}
+  try{const data=await rpc('mw_account_profile',{});el('signedOutView').style.display='none';el('accountView').style.display='block';render(data)}
+  catch(e){clearSession();el('signedOutView').style.display='block';el('accountView').style.display='none'}
+}
+el('saveBtn').onclick=async()=>{const btn=el('saveBtn');btn.disabled=true;btn.textContent='Saving…';message('');try{const data=await rpc('mw_update_account_profile',{p_first_name:el('firstName').value.trim(),p_last_name:el('lastName').value.trim()||null,p_organization:el('organization').value.trim()||null,p_coach_title:el('coachTitle').value.trim()||null});render(data);message('Profile saved.')}catch(e){message(e.message||'Could not save profile.',true)}finally{btn.disabled=false;btn.textContent='Save Profile'}};
+el('openPlatformBtn').onclick=()=>{location.href=coachRole(account?.user?.role)?'/coach':'/athlete/'};
+el('billingBtn').onclick=openBillingPortal;
+el('sponsorBillingBtn').onclick=openSponsorBillingPortal;
+el('membershipOnlyTab').onclick=()=>setCoachMembershipTab('membership');
+el('sponsorshipTab').onclick=()=>setCoachMembershipTab('sponsorship');
+el('sponsorQuantity').addEventListener('input',()=>renderSponsorPlans());
+el('signOutBtn').onclick=()=>{clearSession();location.reload()};
+const checkoutState=new URLSearchParams(location.search).get('checkout');
+if(checkoutState==='success') billingMessage('Payment completed. MW Dynasty is syncing your membership now.');
+if(checkoutState==='cancelled') billingMessage('Checkout cancelled. No membership change was made.');
+load();
+</script>
+</body>
+</html>+price+'/mo';button.onclick=()=>requestCoachPlanChange(tier,code,provider)}
     box.appendChild(button);
   });
 }
