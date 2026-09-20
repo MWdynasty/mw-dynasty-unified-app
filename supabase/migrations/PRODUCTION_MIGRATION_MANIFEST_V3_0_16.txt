@@ -104,3 +104,10 @@ Note: v7/v8 numbering is shared with separate Founder security-review and AI-bac
 
 20260920_founder_os_v12_notification_sync.sql
 - Synchronizes current unresolved Founder events into the notification center so important states are visible even if they occurred before the notification triggers existed.
+
+
+20260920_founder_os_v13_rls_intentionality_review.sql
+- Records the completed review of the seven RLS-enabled/no-policy tables: no direct anon/authenticated table grants were found, so the fail-closed design is intentional.
+
+20260920_founder_os_v14_security_snapshot.sql
+- Adds a Founder-only live security posture RPC for SECURITY DEFINER inventory, RLS/no-policy direct-grant evidence, and open/resolved security risks.
