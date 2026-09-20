@@ -587,7 +587,7 @@ function renderCoachApplication(){
           <label>Coaching level<select id="applyLevel" required><option value="">Select</option><option>High School</option><option>College</option><option>Club / AAU</option><option>Private Coach</option><option>Middle School</option><option>Professional</option><option>Other</option></select></label>
           <label>Years coaching<input id="applyYears" type="number" min="0" max="80" inputmode="numeric" required></label>
         </div>
-        <label>Approximate athletes coached<input id="applyAthleteCount" type="number" min="1" max="5000" inputmode="numeric" required placeholder="Example: 24"></label>
+        <label>Approximate athletes coached <span class="coach-apply-optional">(optional)</span><input id="applyAthleteCount" type="number" min="1" max="5000" inputmode="numeric" placeholder="Example: 24"></label>
         <label>How can we verify your coaching role?
           <select id="applyVerifyMethod" required>
             <option value="">Select a verification method</option>
@@ -606,13 +606,13 @@ function renderCoachApplication(){
       <section class="coach-signup-step" data-signup-step="3">
         <div class="coach-signup-step-head"><span>STEP 3 OF 3</span><h3>Review & Submit</h3><p>Your application will go to MW Dynasty for review. Submitting this application does not unlock the Coach app.</p></div>
         <div id="coachApplySummary" class="coach-apply-summary"></div>
-        <label>How do you plan to use MW Coach?<textarea id="applyReason" rows="5" minlength="20" maxlength="1600" required placeholder="Tell us about your athletes, program, and how you plan to use MW Dynasty."></textarea></label>
+        <label>Anything you'd like us to know? <span class="coach-apply-optional">(optional)</span><textarea id="applyReason" rows="3" maxlength="1600" placeholder="Optional"></textarea></label>
         <label class="coach-apply-certify"><input id="applyCertify" type="checkbox" required><span>I certify that the coaching and organization information I provided is accurate and may be verified by MW Dynasty.</span></label>
         <div id="coachApplyMessage" class="login-message" role="status" aria-live="polite"></div>
         <div class="coach-signup-actions"><button class="coach-signup-back" type="button" data-prev-step="2">← Back</button><button id="coachApplySubmit" class="coach-login-submit" type="submit"><span>Submit for Coach Verification</span><span>→</span></button></div>
       </section>
     </form>
-    <p class="coach-apply-foot"><b>Access stays locked while your application is pending.</b> After Founder/Admin approval and tier assignment, MW Dynasty sends a controlled invitation to finish account setup and create your password.</p>
+    <p class="coach-apply-foot"><b>That's it.</b> We'll verify your coaching role first. If approved, you'll choose your membership, optionally add sponsored-athlete seats, and complete payment before Coach access is activated.</p>
   </section>`;
   document.body.appendChild(wrap);
   wrap.querySelectorAll('[data-close="1"]').forEach(x=>x.addEventListener('click',()=>wrap.remove()));
@@ -667,7 +667,7 @@ async function submitCoachApplication(e){
     website_or_social:document.getElementById('applySocial').value.trim(),
     verification_method:verifyMethod,
     verification_detail:verifyDetail,
-    athlete_count:Number(athleteCount),
+    athlete_count:athleteCount?Number(athleteCount):null,
     channel:document.documentElement.classList.contains('mw-native-app')?'ios':'website',
     reason:rawReason
   };
@@ -681,7 +681,7 @@ async function submitCoachApplication(e){
       <div class="coach-apply-kicker">APPLICATION RECEIVED</div>
       <h2>Coach Verification Pending</h2>
       <p>Your MW Dynasty Coach application has been submitted for review. You do <b>not</b> have Coach app access yet.</p>
-      <div class="coach-apply-next-steps"><b>What happens next</b><span>1. MW Dynasty verifies your coaching information.</span><span>2. Founder/Admin reviews the application and assigns the approved Coach tier.</span><span>3. If approved, you receive a secure invitation to finish account setup and create your password.</span><span>4. Only then can the Coach app be activated.</span></div>
+      <div class="coach-apply-next-steps"><b>What happens next</b><span>1. We verify your coaching role.</span><span>2. If approved, you choose your Coach membership.</span><span>3. Add sponsored athletes if you want, then complete payment.</span><span>4. Finish account setup and enter Coach MW Dynasty.</span></div>
       <button type="button" class="coach-login-submit" data-finish-coach-apply="1"><span>Return to Coach Sign In</span><span>→</span></button>
     </div>`;
     card.querySelector('[data-finish-coach-apply]')?.addEventListener('click',()=>document.getElementById('coachApplyModal')?.remove());
