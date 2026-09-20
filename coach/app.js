@@ -738,6 +738,57 @@ async function signOut(){
   if(token){try{await fetch(`${SUPABASE_URL}/auth/v1/logout`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}})}catch{}}
   renderLogin('You have been signed out.');
 }
+
+function renderCoachMembershipSelection(session=authSession){
+  if(session?.access_token)authSession=session;
+  const isNative=document.documentElement.classList.contains('mw-native-app');
+  let selected='core',sponsorOn=false,sponsorQty=1;
+  const planCards=()=>Object.entries(PLANS).map(([key,p])=>`<button type="button" class="coach-member-plan ${key===selected?'selected':''}" data-member-plan="${key}">
+    <span class="coach-member-check">✓</span><span class="coach-member-plan-name">${escapeHtml(p.name)}</span>
+    <b>${p.monthly}<small>/mo</small></b><span>${key==='core'?'Team management + core coaching tools':key==='intelligence'?'Core tools + Coach MW intelligence':'Complete MW sprint system + intelligence'}</span>
+  </button>`).join('');
+  const draw=()=>{
+    const p=PLANS[selected],sponsorTotal=sponsorOn?sponsorQty*p.sponsor:0,total=p.monthly+sponsorTotal;
+    app.innerHTML=`<div class="coach-membership-screen">
+      <section class="coach-membership-shell">
+        <div class="coach-membership-progress"><span class="done">✓ Verified</span><i></i><span class="active">2 Membership</span><i></i><span>3 Payment</span><i></i><span>4 Start Coaching</span></div>
+        <div class="coach-membership-head"><div class="coach-apply-kicker">MW DYNASTY • COACH</div><h1>Choose what fits your program.</h1><p>Your coaching role is verified. Pick a membership, add sponsored athletes only if you want them, then you're ready for checkout.</p></div>
+        <div class="coach-membership-plans">${planCards()}</div>
+        <div class="coach-sponsor-choice">
+          <div><b>Sponsor athletes?</b><span>Optional. You can also add sponsored athletes later.</span></div>
+          <div class="coach-sponsor-buttons"><button type="button" data-sponsor="no" class="${!sponsorOn?'selected':''}">No thanks</button><button type="button" data-sponsor="yes" class="${sponsorOn?'selected':''}">Yes, add athletes</button></div>
+          ${sponsorOn?`<div class="coach-sponsor-qty"><button type="button" data-qty="-1" aria-label="Remove one athlete">−</button><div><b>${sponsorQty}</b><span>Sponsored athlete${sponsorQty===1?'':'s'} · ${p.sponsor}/athlete/mo</span></div><button type="button" data-qty="1" aria-label="Add one athlete">+</button></div>`:''}
+        </div>
+        <div class="coach-membership-total"><div><span>Coach membership</span><b>${p.monthly}/mo</b></div>${sponsorOn?`<div><span>${sponsorQty} sponsored athlete${sponsorQty===1?'':'s'}</span><b>${sponsorTotal}/mo</b></div>`:''}<div class="total"><span>Total today</span><b>${total}/mo</b></div></div>
+        <button type="button" id="coachMembershipContinue" class="coach-login-submit coach-membership-continue"><span>${isNative?'Continue to App Purchase':'Continue to Secure Payment'}</span><span>→</span></button>
+        <p class="coach-membership-note">No setup fee. Sponsorship is optional. Your Coach dashboard unlocks after payment is confirmed.</p>
+        <div id="coachMembershipMessage" class="login-message" role="status" aria-live="polite"></div>
+      </section>
+    </div>`;
+    app.querySelectorAll('[data-member-plan]').forEach(b=>b.onclick=()=>{selected=b.dataset.memberPlan;draw()});
+    app.querySelectorAll('[data-sponsor]').forEach(b=>b.onclick=()=>{sponsorOn=b.dataset.sponsor==='yes';draw()});
+    app.querySelectorAll('[data-qty]').forEach(b=>b.onclick=()=>{sponsorQty=Math.max(1,Math.min(250,sponsorQty+Number(b.dataset.qty||0)));draw()});
+    document.getElementById('coachMembershipContinue').onclick=async()=>{
+      const btn=document.getElementById('coachMembershipContinue'),msg=document.getElementById('coachMembershipMessage'),plan=PLANS[selected],qty=sponsorOn?sponsorQty:0;
+      btn.disabled=true;msg.textContent='Preparing your membership…';msg.className='login-message show neutral';
+      try{
+        if(isNative){
+          const nativePurchase=window.webkit?.messageHandlers?.mwPurchase;
+          if(!nativePurchase)throw new Error('App purchase setup is not available in this build yet. Your membership choice is saved for the next step.');
+          nativePurchase.postMessage({planCode:plan.planCode,sponsorQuantity:qty});
+          msg.textContent='Opening secure in-app purchase…';return;
+        }
+        const token=authSession?.access_token||session?.access_token;if(!token)throw new Error('Your secure setup session expired. Sign in again.');
+        const r=await fetch('/api/stripe/checkout',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({planCode:plan.planCode,sponsorQuantity:qty})});
+        const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Secure checkout could not start.');
+        if(!d.url)throw new Error('Secure checkout link was not returned.');
+        location.assign(d.url);
+      }catch(e){msg.textContent=e.message||'Membership setup could not continue.';msg.className='login-message show error';btn.disabled=false}
+    };
+  };
+  draw();
+}
+
 function bindLogin(){
   const form=document.getElementById('loginForm'),pass=document.getElementById('loginPassword'),toggle=document.getElementById('togglePassword'),forgot=document.getElementById('forgotPassword');
   toggle.addEventListener('click',()=>{const show=pass.type==='password';pass.type=show?'text':'password';toggle.textContent=show?'Hide':'Show';toggle.setAttribute('aria-label',show?'Hide password':'Show password')});
@@ -752,23 +803,29 @@ function bindLogin(){
     const email=document.getElementById('loginEmail').value.trim(),password=pass.value,remember=document.getElementById('rememberMe').checked;
     if(!email||!password)return setLoginMessage('Enter both your email address and password.');
     setLoginBusy(true);setLoginMessage('Signing you in…','neutral');
-    try{const session=await supabasePasswordLogin(email,password);await verifyCoachAccess(session);persistSession(session,remember);dashboard()}catch(err){clearSession();setLoginMessage(err.message)}finally{setLoginBusy(false)}
+    try{
+      const session=await supabasePasswordLogin(email,password);
+      persistSession(session,remember);
+      try{await verifyCoachAccess(session);dashboard()}
+      catch(accessErr){renderCoachMembershipSelection(session)}
+    }catch(err){clearSession();setLoginMessage(err.message)}finally{setLoginBusy(false)}
   });
 }
 function recoverySessionFromUrl(){
   const h=new URLSearchParams(location.hash.replace(/^#/,''));
-  if(h.get('type')!=='recovery'||!h.get('access_token'))return null;
-  return {access_token:h.get('access_token'),refresh_token:h.get('refresh_token')||'',token_type:h.get('token_type')||'bearer',expires_in:Number(h.get('expires_in')||3600),expires_at:Math.floor(Date.now()/1000)+Number(h.get('expires_in')||3600)};
+  const type=h.get('type')||'';
+  if(!['recovery','invite'].includes(type)||!h.get('access_token'))return null;
+  return {mw_link_type:type,access_token:h.get('access_token'),refresh_token:h.get('refresh_token')||'',token_type:h.get('token_type')||'bearer',expires_in:Number(h.get('expires_in')||3600),expires_at:Math.floor(Date.now()/1000)+Number(h.get('expires_in')||3600)};
 }
 function renderCoachPasswordReset(session){
   authSession=session;
-  app.innerHTML=`<div class="coach-login-screen"><section class="coach-login-stage"><div class="coach-login-bg" aria-hidden="true"></div><div class="coach-login-content"><div class="coach-login-card-wrap"><div class="coach-login-card"><div class="coach-login-mobile-brand"><span>MW</span> DYNASTY · COACH</div><h2>Create New Password</h2><p>Choose a new password for your MW Dynasty Coach account.</p><form id="coachResetForm" class="coach-login-form"><label class="coach-field"><span>▣</span><input id="coachResetPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" required></label><label class="coach-field"><span>▣</span><input id="coachResetConfirm" type="password" autocomplete="new-password" placeholder="Confirm new password" required></label><div id="coachResetMessage" class="login-message" role="status"></div><button id="coachResetSubmit" class="coach-login-submit" type="submit"><span>Save New Password</span><span>→</span></button></form></div></div></div></section></div>`;
+  app.innerHTML=`<div class="coach-login-screen"><section class="coach-login-stage"><div class="coach-login-bg" aria-hidden="true"></div><div class="coach-login-content"><div class="coach-login-card-wrap"><div class="coach-login-card"><div class="coach-login-mobile-brand"><span>MW</span> DYNASTY · COACH</div><h2>${session.mw_link_type==='invite'?'Finish Your Coach Setup':'Create New Password'}</h2><p>${session.mw_link_type==='invite'?'You’re verified. Create your password, then choose your membership.':'Choose a new password for your MW Dynasty Coach account.'}</p><form id="coachResetForm" class="coach-login-form"><label class="coach-field"><span>▣</span><input id="coachResetPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" required></label><label class="coach-field"><span>▣</span><input id="coachResetConfirm" type="password" autocomplete="new-password" placeholder="Confirm new password" required></label><div id="coachResetMessage" class="login-message" role="status"></div><button id="coachResetSubmit" class="coach-login-submit" type="submit"><span>Save New Password</span><span>→</span></button></form></div></div></div></section></div>`;
   document.getElementById('coachResetForm').onsubmit=async e=>{
     e.preventDefault();const p=document.getElementById('coachResetPassword').value,q=document.getElementById('coachResetConfirm').value,m=document.getElementById('coachResetMessage'),b=document.getElementById('coachResetSubmit');
     const say=(t,bad=true)=>{m.textContent=t;m.className='login-message show '+(bad?'error':'success')};
     if(p.length<8)return say('Use at least 8 characters.');if(p!==q)return say('The passwords do not match.');
     b.disabled=true;b.textContent='Saving…';
-    try{const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{method:'PUT',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({password:p})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.message||'Password could not be updated.');clearSession();history.replaceState({},document.title,location.pathname);renderLogin('Password updated. Sign in with your new password.')}catch(err){say(err.message||'Password could not be updated.');b.disabled=false;b.innerHTML='<span>Save New Password</span><span>→</span>'}
+    try{const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{method:'PUT',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({password:p})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.message||'Password could not be updated.');history.replaceState({},document.title,location.pathname);if(session.mw_link_type==='invite'){persistSession(session,true);renderCoachMembershipSelection(session)}else{clearSession();renderLogin('Password updated. Sign in with your new password.')}}catch(err){say(err.message||'Password could not be updated.');b.disabled=false;b.innerHTML='<span>Save New Password</span><span>→</span>'}
   };
 }
 async function initAuth(){
@@ -780,7 +837,10 @@ async function initAuth(){
     try{
       let active=stored;
       if(!(await validateSession(active)))active=await refreshCoachSession(active);
-      if(active&&await validateSession(active)){await verifyCoachAccess(active);dashboard();return}
+      if(active&&await validateSession(active)){
+        try{await verifyCoachAccess(active);dashboard();return}
+        catch{renderCoachMembershipSelection(active);return}
+      }
     }catch{}
     clearSession();
   }
