@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050403">
+<script>if(/MWDynasty-iOS\//i.test(navigator.userAgent||'')){document.documentElement.classList.add('mw-native-app')}</script>
 <title>MW Dynasty · Account</title>
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="stylesheet" href="/assets/mw-unified-theme.css">
@@ -70,7 +71,8 @@ label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900
         <div class="row"><span>Billing Cycle</span><span id="billingCycle">—</span></div>
         <div class="row"><span>Renews / Ends</span><span id="periodEnd">—</span></div>
         <div class="row"><span>Payment Provider</span><span id="providerValue">—</span></div>
-        <p class="muted" style="margin-top:14px">Membership access shown here comes from the same Stripe + Supabase system used by the MW Dynasty platform.</p>
+        <div id="sponsorSeatsRow" class="row" style="display:none"><span>Sponsored Seats</span><span id="sponsorSeatsValue">—</span></div>
+        <p class="muted" style="margin-top:14px">MW Dynasty verifies billing with the payment provider before membership or sponsored-athlete access changes.</p>
         <div class="actions">
           <button id="billingBtn" class="btn" style="display:none">Manage Billing</button>
         </div>
@@ -149,15 +151,37 @@ function render(data){
   el('firstName').value=u.first_name||'';el('lastName').value=u.last_name||'';
   const isCoach=coachRole(u.role);el('coachFields').style.display=isCoach?'grid':'none';el('orgRow').style.display=isCoach?'flex':'none';el('titleRow').style.display=isCoach?'flex':'none';el('organization').value=u.coach_organization||'';el('coachTitle').value=u.coach_title||'';el('orgValue').textContent=u.coach_organization||'—';el('titleValue').textContent=u.coach_title||'—';
   el('planName').textContent=plan(b.current_plan_code);el('subscriptionStatus').textContent=nice(b.subscription_status);el('billingType').textContent=nice(b.billing_type);el('billingCycle').textContent=nice(b.billing_cycle);el('periodEnd').textContent=dateText(b.current_period_end);el('providerValue').textContent=nice(b.provider);
-  const stripe=String(b.provider||'')==='stripe';
-  el('billingBtn').style.display=stripe?'inline-block':'none';
-  el('activationWrap').style.display=stripe?'none':'block';
-  renderPlanActions(u.role);
+  const provider=String(b.provider||'').toLowerCase(),stripe=provider==='stripe',apple=provider==='apple';
+  const billingBtn=el('billingBtn');
+  billingBtn.style.display=(stripe||apple)?'inline-block':'none';
+  billingBtn.textContent=apple?'Manage App Store Subscription':'Manage Billing';
+  billingBtn.dataset.provider=provider;
+  const sponsorTotal=Number(b.sponsored_seats_total||0),sponsorUsed=Number(b.sponsored_seats_used||0),sponsorAvailable=Number(b.sponsored_seats_available||0);
+  el('sponsorSeatsRow').style.display=isCoach?'flex':'none';
+  el('sponsorSeatsValue').textContent=isCoach?`${sponsorUsed} used · ${sponsorAvailable} available · ${sponsorTotal} total`:'—';
+  // Unpaid members see normal activation. Apple-paid Coaches see only the sponsored-seat add-on.
+  el('activationWrap').style.display=(!stripe&&!apple)||(apple&&isCoach)?'block':'none';
+  renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:apple&&isCoach});
 }
-function renderPlanActions(role){
-  const coach=coachRole(role);
+function renderPlanActions(role,options={}){
+  const coach=coachRole(role),appleCoach=!!options.appleCoach;
   el('coachChooser').style.display=coach?'block':'none';
   el('athletePlanActions').style.display=coach?'none':'flex';
+  if(coach&&appleCoach){
+    el('membershipOnlyTab').style.display='none';
+    el('sponsorshipTab').style.display='none';
+    el('coachMembershipPanel').style.display='none';
+    el('sponsorshipPanel').style.display='block';
+    const current=String(options.currentPlanCode||'');
+    const plans=[['coach_core','Coach Core',49,5],['coach_intelligence','Coach Intelligence',79,6],['mw_sprint_performance','Sprint Performance',109,7]];
+    const chosen=plans.find(p=>p[0]===current);
+    renderSponsorPlans(chosen?[chosen]:[]);
+    return;
+  }
+  el('membershipOnlyTab').style.display='';
+  el('sponsorshipTab').style.display='';
+  el('coachMembershipPanel').style.display='block';
+  el('sponsorshipPanel').style.display='none';
   const membershipBox=el('planActions'),athleteBox=el('athletePlanActions');
   membershipBox.innerHTML='';athleteBox.innerHTML='';
 
@@ -196,7 +220,7 @@ function renderSponsorPlans(plans){
     const button=document.createElement('button');
     button.type='button';button.className='btn';
     button.textContent=`${name} + ${qty} athlete${qty===1?'':'s'} — ${total}/mo`;
-    button.onclick=()=>checkout(code,qty);
+    button.onclick=()=>checkout(code,qty,account?.billing?.provider==='apple');
     box.appendChild(button);
   });
 }
@@ -207,13 +231,13 @@ function setCoachMembershipTab(tab){
   el('coachMembershipPanel').style.display=sponsorship?'none':'block';
   el('sponsorshipPanel').style.display=sponsorship?'block':'none';
 }
-async function checkout(planCode,sponsorQuantity=0){
+async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false){
   billingMessage('Opening secure Stripe checkout…');
   try{
     const response=await fetch('/api/stripe/checkout',{
       method:'POST',
       headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
-      body:JSON.stringify({planCode,sponsorQuantity,returnPath:'/account/'})
+      body:JSON.stringify({planCode,sponsorQuantity,returnPath:'/account/',sponsorshipOnly})
     });
     const data=await response.json().catch(()=>({}));
     if(!response.ok||!data.url)throw new Error(data.error||'Checkout is unavailable.');
@@ -221,7 +245,18 @@ async function checkout(planCode,sponsorQuantity=0){
   }catch(e){billingMessage(e.message||'Checkout is unavailable.',true)}
 }
 async function openBillingPortal(){
-  const button=el('billingBtn');button.disabled=true;billingMessage('Opening secure billing…');
+  const button=el('billingBtn'),provider=String(button.dataset.provider||'');
+  button.disabled=true;
+  if(provider==='apple'){
+    billingMessage('Opening your App Store subscriptions…');
+    try{
+      const native=window.webkit?.messageHandlers?.mwManageSubscriptions;
+      if(native){native.postMessage({});button.disabled=false;return}
+      location.assign('https://apps.apple.com/account/subscriptions');
+    }catch(e){billingMessage('App Store subscription management could not be opened.',true);button.disabled=false}
+    return;
+  }
+  billingMessage('Opening secure billing…');
   try{
     const response=await fetch('/api/stripe/portal',{
       method:'POST',
