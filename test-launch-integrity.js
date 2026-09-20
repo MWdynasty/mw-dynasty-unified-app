@@ -48,6 +48,12 @@ includes('assets/mw-web-analytics.js','mw_record_web_event','Website analytics c
 includes('supabase/migrations/20260920_founder_os_v1.sql','mw_founder_os_snapshot','Founder OS database snapshot RPC missing');
 includes('supabase/migrations/20260920_founder_os_v1.sql','private.mw_is_founder()','Founder OS database role gate missing');
 includes('supabase/migrations/20260920_founder_os_v1.sql','founder_ai_agents','Founder AI workforce schema missing');
+includes('supabase/migrations/20260920_founder_os_v2_program_control.sql','mw_founder_program_control','Founder Program Control migration missing');
+includes('supabase/migrations/20260920_founder_os_v3_ai_runs.sql','founder_ai_runs','Founder AI work-run audit table missing');
+includes('server/api/founder-ai.js',"mode==='execute_task'",'Founder AI task execution mode missing');
+includes('founder/index.html','Run AI','Founder AI task execution control missing');
+includes('founder/index.html','OFFICIAL MW PROGRAM CONTROL','Founder Program Control UI missing');
+
 
 const accountHtml=read('account/index.html');
 ok((accountHtml.match(/<!doctype html>/gi)||[]).length===1,'Account page must contain exactly one document');
