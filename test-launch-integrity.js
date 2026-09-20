@@ -60,6 +60,11 @@ includes('supabase/migrations/20260920_founder_os_v9_launch_billing_gate.sql','i
 includes('supabase/migrations/20260920_founder_os_v10_human_org_plan.sql','Chief Operating Officer','Founder human organization plan missing');
 includes('supabase/migrations/20260920_founder_os_v11_notifications.sql','mw_founder_notifications_snapshot','Founder notification center migration missing');
 includes('supabase/migrations/20260920_founder_os_v12_notification_sync.sql','mw_sync_founder_notifications','Founder notification sync missing');
+includes('supabase/migrations/20260920_founder_os_v13_rls_intentionality_review.sql','fail-closed','Founder RLS intentionality review missing');
+includes('supabase/migrations/20260920_founder_os_v14_security_snapshot.sql','mw_founder_security_snapshot','Founder live security snapshot missing');
+includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
+includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
+
 includes('server/api/founder.js',"action==='update_notification'",'Founder notification action missing');
 includes('founder/index.html','FOUNDER NOTIFICATIONS','Founder notifications UI missing');
 
