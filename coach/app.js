@@ -604,7 +604,7 @@ function renderCoachApplication(){
       </section>
 
       <section class="coach-signup-step" data-signup-step="3">
-        <div class="coach-signup-step-head"><span>STEP 3 OF 3</span><h3>Review & Submit</h3><p>Your application will go to MW Dynasty for review. Submitting this application does not unlock the Coach app.</p></div>
+        <div class="coach-signup-step-head"><span>STEP 3 OF 3</span><h3>Review & Submit</h3><p>We'll verify what we can automatically. If anything is unclear, MW Dynasty will review it—no extra work from you.</p></div>
         <div id="coachApplySummary" class="coach-apply-summary"></div>
         <label>Anything you'd like us to know? <span class="coach-apply-optional">(optional)</span><textarea id="applyReason" rows="3" maxlength="1600" placeholder="Optional"></textarea></label>
         <label class="coach-apply-certify"><input id="applyCertify" type="checkbox" required><span>I certify that the coaching and organization information I provided is accurate and may be verified by MW Dynasty.</span></label>
@@ -650,7 +650,6 @@ async function submitCoachApplication(e){
   const form=document.getElementById('coachApplyForm');
   if(!form.checkValidity()){form.reportValidity();return}
   const rawReason=document.getElementById('applyReason').value.trim();
-  if(rawReason.length<20){m.textContent='Please tell us a little more about your coaching background and intended use.';m.className='login-message show error';return}
   const verifyMethod=document.getElementById('applyVerifyMethod').value;
   const verifyDetail=document.getElementById('applyVerifyDetail').value.trim();
   const athleteCount=document.getElementById('applyAthleteCount').value;
@@ -676,12 +675,17 @@ async function submitCoachApplication(e){
     const r=await fetch(`${SUPABASE_URL}/functions/v1/mw-coach-apply`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Application could not be submitted.');
     const card=document.querySelector('#coachApplyModal .coach-apply-card');
+    const auto=d.verification_status==='auto_approved',denied=d.verification_status==='denied';
+    const kicker=auto?'COACH VERIFIED':denied?'VERIFICATION COMPLETE':'APPLICATION RECEIVED';
+    const title=auto?'You’re Verified':denied?'Application Not Approved':'Quick Review Needed';
+    const copy=auto?'We verified your coaching role automatically. Check your email for your secure setup link—membership and optional sponsored athletes are next.':denied?'We couldn’t approve this Coach application. If you believe this decision should be reviewed, MW Support can help.':'We received everything. A quick MW Dynasty review is needed before membership and payment unlock. You don’t need to submit anything again.';
+    const steps=auto?'<span>1. Open the secure setup email.</span><span>2. Create your password and choose your Coach membership.</span><span>3. Add sponsored athletes if you want.</span><span>4. Complete payment and enter Coach MW Dynasty.</span>':denied?'<span>Contact MW Support if you believe the information should be reviewed.</span>':'<span>1. MW Dynasty reviews the verification details.</span><span>2. If approved, we email your secure setup link.</span><span>3. Choose membership, optional sponsored athletes, and pay.</span><span>4. Enter Coach MW Dynasty.</span>';
     if(card)card.innerHTML=`<div class="coach-apply-result">
-      <div class="coach-apply-result-icon">✓</div>
-      <div class="coach-apply-kicker">APPLICATION RECEIVED</div>
-      <h2>Coach Verification Pending</h2>
-      <p>Your MW Dynasty Coach application has been submitted for review. You do <b>not</b> have Coach app access yet.</p>
-      <div class="coach-apply-next-steps"><b>What happens next</b><span>1. We verify your coaching role.</span><span>2. If approved, you choose your Coach membership.</span><span>3. Add sponsored athletes if you want, then complete payment.</span><span>4. Finish account setup and enter Coach MW Dynasty.</span></div>
+      <div class="coach-apply-result-icon">${denied?'!':'✓'}</div>
+      <div class="coach-apply-kicker">${kicker}</div>
+      <h2>${title}</h2>
+      <p>${copy}</p>
+      <div class="coach-apply-next-steps"><b>What happens next</b>${steps}</div>
       <button type="button" class="coach-login-submit" data-finish-coach-apply="1"><span>Return to Coach Sign In</span><span>→</span></button>
     </div>`;
     card.querySelector('[data-finish-coach-apply]')?.addEventListener('click',()=>document.getElementById('coachApplyModal')?.remove());
