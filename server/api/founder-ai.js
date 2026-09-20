@@ -60,7 +60,7 @@ module.exports=async function handler(req,res){
   try{
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const mode=['brief','chat','plan'].includes(body.mode)?body.mode:'chat';
+    const mode=['brief','chat','plan','execute_task'].includes(body.mode)?body.mode:'chat';
     const [overview,revenue,website,system,aiCompany]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company')
     ]);
@@ -115,6 +115,65 @@ Use only agent_code values present in SECURED MW BUSINESS CONTEXT. Break work in
         insert(token,'founder_ai_tasks',tasks),insert(token,'founder_approvals',approvals)
       ]);
       return res.status(200).json({ok:true,mode,summary:clean(plan.summary,3000),tasks:storedTasks,approvals:storedApprovals});
+    }
+    if(mode==='execute_task'){
+      const taskId=clean(body.taskId,80);
+      if(!taskId)return res.status(400).json({error:'AI task id required.'});
+      const taskRows=await (async()=>{
+        const r=await fetch(`${SUPABASE_URL}/rest/v1/founder_ai_tasks?id=eq.${encodeURIComponent(taskId)}&select=*&limit=1`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}});
+        const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'AI task could not be loaded.');return Array.isArray(d)?d:[];
+      })();
+      const task=taskRows[0];
+      if(!task)return res.status(404).json({error:'AI task not found.'});
+      const agentRows=await (async()=>{
+        const r=await fetch(`${SUPABASE_URL}/rest/v1/founder_ai_agents?code=eq.${encodeURIComponent(task.agent_code||'')}&select=*&limit=1`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}});
+        const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'AI employee could not be loaded.');return Array.isArray(d)?d:[];
+      })();
+      const agent=agentRows[0];
+      if(!agent)return res.status(400).json({error:'Assigned AI employee is unavailable.'});
+
+      const taskInstructions=guard+`
+You are now operating specifically as this MW Dynasty AI employee:
+Title: ${agent.title}
+Department: ${agent.department}
+Mission: ${agent.mission}
+Authority: ${agent.authority_level}
+Responsibilities: ${JSON.stringify(agent.responsibilities||[])}
+KPIs: ${JSON.stringify(agent.kpis||[])}
+
+Complete the assigned task as analysis/drafting work only. Do not claim that external actions, deployments, payments, contracts, emails, customer changes, security changes, or methodology changes were executed.
+If execution outside the Founder OS would be needed, end with a short "Founder action required" section that states exactly what needs approval or a human/tool action.
+Use current secured MW data when relevant and flag missing evidence instead of guessing.`;
+
+      const answer=await openai(taskInstructions,`Assigned task: ${task.title}\n\nDescription: ${task.description||'No additional description.'}`,3200);
+      const requiresApproval=!!task.requires_approval;
+      const nextStatus=requiresApproval?'waiting_approval':'completed';
+      const patch=await fetch(`${SUPABASE_URL}/rest/v1/founder_ai_tasks?id=eq.${encodeURIComponent(task.id)}`,{
+        method:'PATCH',
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},
+        body:JSON.stringify({
+          status:nextStatus,
+          output_summary:answer.slice(0,12000),
+          completed_at:requiresApproval?null:new Date().toISOString(),
+          updated_at:new Date().toISOString()
+        })
+      });
+      const updated=await patch.json().catch(()=>[]);
+      if(!patch.ok)throw new Error(updated?.message||'AI task result could not be stored.');
+
+      await fetch(`${SUPABASE_URL}/rest/v1/founder_ai_runs`,{
+        method:'POST',
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=minimal'},
+        body:JSON.stringify({
+          task_id:task.id,agent_code:agent.code,
+          run_type:agent.authority_level==='draft'?'draft':'analysis',
+          status:'completed',model:process.env.OPENAI_MODEL||'gpt-5.6-sol',
+          output_summary:answer.slice(0,12000),
+          metadata:{requires_approval:requiresApproval,department:agent.department}
+        })
+      }).catch(()=>null);
+
+      return res.status(200).json({ok:true,mode,task:Array.isArray(updated)?updated[0]:updated,answer,requiresApproval});
     }
     const question=clean(body.message,8000);
     if(!question)return res.status(400).json({error:'Ask Founder AI a question.'});
