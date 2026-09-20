@@ -1575,3 +1575,30 @@ html.mw-native-app .coach-login-bg:after{
     transform:translate(-50%,-50%)!important;
   }
 }
+
+
+/* MW COACH CARD REFERENCE POSITION v16 */
+@media(min-width:901px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    position:absolute!important;
+    left:50%!important;
+    right:auto!important;
+    top:49%!important;
+    bottom:auto!important;
+    width:min(500px,38vw)!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translate(-50%,-50%)!important;
+    z-index:12!important;
+  }
+}
+@media(min-width:901px) and (max-width:1180px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    left:50%!important;
+    right:auto!important;
+    top:49%!important;
+    bottom:auto!important;
+    width:min(470px,44vw)!important;
+    transform:translate(-50%,-50%)!important;
+  }
+}
