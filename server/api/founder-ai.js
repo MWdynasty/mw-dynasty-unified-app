@@ -78,7 +78,7 @@ module.exports=async function handler(req,res){
   try{
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const mode=['brief','chat','plan','execute_task','triage_support','department_brief'].includes(body.mode)?body.mode:'chat';
+    const mode=['brief','chat','plan','execute_task','triage_support','department_brief','partnership_proposal'].includes(body.mode)?body.mode:'chat';
     const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk,launch]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company'),
       rpcNamed(token,'mw_founder_finance_snapshot',{}),
@@ -123,6 +123,55 @@ Human authority is mandatory:
 SECURED MW BUSINESS CONTEXT:
 ${JSON.stringify(context).slice(0,90000)}`;
 
+    if(mode==='partnership_proposal'){
+      const opportunityId=clean(body.opportunityId,80);
+      if(!opportunityId)return res.status(400).json({error:'Partnership opportunity id required.'});
+      const partnerships=await rpcNamed(token,'mw_founder_partnerships_snapshot',{});
+      const opportunity=(partnerships.opportunities||[]).find(x=>String(x.id)===opportunityId);
+      if(!opportunity)return res.status(404).json({error:'Partnership opportunity not found.'});
+
+      const proposalInstructions=`You are the MW Dynasty Partnerships AI working for the Founder.
+Prepare a proposal draft for an organization opportunity. This is an internal draft only.
+Return JSON only with this exact shape:
+{"title":"...","scope_summary":"...","pricing_notes":"...","terms_notes":"...","draft_content":"..."}
+Rules:
+- Do not send anything.
+- Do not claim an agreement exists.
+- Do not invent contract terms, discounts, guarantees, exclusivity, or legal commitments.
+- Do not invent a price. If the Founder has not approved a specific partnership price, pricing_notes must clearly say pricing requires Founder approval and draft_content should use a neutral pricing placeholder.
+- You may describe MW Dynasty's Athlete, Coach, sponsorship, training, analytics, and onboarding capabilities only at a high level supported by the secured business context.
+- Avoid promising product capabilities or integrations that are not verified.
+- Keep the proposal professional, concise, and suitable for a school, district, club, team, or partner.
+- Any contract/legal language must be marked for legal/Founder review.`;
+
+      const input=`Opportunity:
+Organization: ${opportunity.organization_name}
+Type: ${opportunity.opportunity_type}
+Stage: ${opportunity.stage}
+Estimated coaches: ${opportunity.estimated_coaches||0}
+Estimated athletes: ${opportunity.estimated_athletes||0}
+Internal estimated monthly value: ${opportunity.estimated_monthly_value_cents||0} cents
+Next action: ${opportunity.next_action||'Not set'}
+Notes: ${clean(opportunity.notes,2500)||'None'}
+
+Founder pricing guidance: ${clean(body.pricingGuidance,1600)||'No specific partnership price has been approved.'}
+
+Prepare the internal proposal draft now.`;
+
+      const raw=await openai(proposalInstructions,input,2600);
+      let result;try{result=parseJson(raw)}catch{return res.status(502).json({error:'Partnership AI returned an unreadable proposal draft. Try again.'})}
+      const stored=await insert(token,'founder_partnership_proposals',[{
+        opportunity_id:opportunity.id,
+        title:clean(result.title,220)||`MW Dynasty Partnership Proposal · ${opportunity.organization_name}`,
+        scope_summary:clean(result.scope_summary,3000)||null,
+        pricing_notes:clean(result.pricing_notes,2500)||'Pricing requires Founder approval.',
+        terms_notes:clean(result.terms_notes,2500)||'Terms require Founder/legal review.',
+        draft_content:clean(result.draft_content,12000)||null,
+        status:'review',
+        requires_founder:true
+      }]);
+      return res.status(200).json({ok:true,mode,proposal:stored[0]||null});
+    }
     if(mode==='department_brief'){
       const department=clean(body.department,120);
       if(!department)return res.status(400).json({error:'Department is required.'});
