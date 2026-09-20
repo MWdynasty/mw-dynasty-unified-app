@@ -1524,7 +1524,7 @@ html.mw-native-app .coach-login-bg:after{
 @media(min-width:901px){
   html:not(.mw-native-app) .coach-login-card-wrap{
     position:fixed!important;
-    left:calc(50vw + 220px)!important;
+    left:calc(50vw + 124px)!important;
     right:auto!important;
     top:auto!important;
     bottom:72px!important;
@@ -1599,7 +1599,7 @@ html.mw-native-app .coach-login-bg:after{
 }
 @media(min-width:901px) and (max-width:1180px){
   html:not(.mw-native-app) .coach-login-card-wrap{
-    left:calc(50vw + 220px)!important;
+    left:calc(50vw + 124px)!important;
     right:auto!important;
     top:auto!important;
     bottom:64px!important;
