@@ -776,13 +776,15 @@ function renderCoachMembershipSelection(session=authSession){
       const btn=document.getElementById('coachMembershipContinue'),msg=document.getElementById('coachMembershipMessage'),plan=PLANS[selected],qty=sponsorOn?sponsorQty:0;
       btn.disabled=true;msg.textContent='Preparing your membership…';msg.className='login-message show neutral';
       try{
+        const token=authSession?.access_token||session?.access_token;if(!token)throw new Error('Your secure setup session expired. Sign in again.');
         if(isNative){
+          const save=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_mark_membership_checkout_started`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({p_plan_code:plan.planCode,p_sponsor_quantity:qty,p_provider:'apple',p_provider_reference:null})});
+          const saved=await save.json().catch(()=>({}));if(!save.ok)throw new Error(saved.message||saved.hint||'Membership choice could not be saved.');
           const nativePurchase=window.webkit?.messageHandlers?.mwPurchase;
           if(!nativePurchase)throw new Error('App purchase setup is not available in this build yet. Your membership choice is saved for the next step.');
           nativePurchase.postMessage({planCode:plan.planCode,sponsorQuantity:qty});
           msg.textContent='Opening secure in-app purchase…';return;
         }
-        const token=authSession?.access_token||session?.access_token;if(!token)throw new Error('Your secure setup session expired. Sign in again.');
         const r=await fetch('/api/stripe/checkout',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({planCode:plan.planCode,sponsorQuantity:qty})});
         const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Secure checkout could not start.');
         if(!d.url)throw new Error('Secure checkout link was not returned.');
@@ -791,6 +793,21 @@ function renderCoachMembershipSelection(session=authSession){
     };
   };
   draw();
+  (async()=>{
+    const token=authSession?.access_token||session?.access_token;if(!token)return;
+    try{
+      const r=await fetch(`${SUPABASE_URL}/rest/v1/onboarding_journeys?audience=eq.coach&select=selected_plan_code,sponsored_athlete_seats,payment_status&order=updated_at.desc&limit=1`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}});
+      const rows=await r.json().catch(()=>[]),journey=Array.isArray(rows)?rows[0]:null;
+      if(journey){
+        const map={coach_core:'core',coach_intelligence:'intelligence',mw_sprint_performance:'performance'},key=map[journey.selected_plan_code];
+        if(key&&PLANS[key])selected=key;
+        sponsorQty=Math.max(1,Math.min(250,Number(journey.sponsored_athlete_seats||1)));sponsorOn=Number(journey.sponsored_athlete_seats||0)>0;draw();
+      }
+      if(new URLSearchParams(location.search).get('checkout')==='cancelled'){
+        const msg=document.getElementById('coachMembershipMessage');if(msg){msg.textContent='Checkout was cancelled. Your membership choice is saved — continue whenever you’re ready.';msg.className='login-message show neutral'}
+      }
+    }catch{}
+  })();
 }
 
 function bindLogin(){
