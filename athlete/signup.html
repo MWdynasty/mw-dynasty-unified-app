@@ -1,19 +1,136 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Create MW Athlete Account</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#02060b">
+<title>Create MW Athlete Account</title>
+<link rel="icon" href="/favicon.png" type="image/png">
 <style>
-:root{--gold:#efbd43;--blue:#159cff;--muted:#9aa7b1}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 12%,#0c2538 0,transparent 38%),linear-gradient(#02070b,#010405);color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:max(18px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}.wrap{width:min(470px,100%);margin:auto}.back{border:1px solid #2d4353;background:#07131d;color:#dce8f0;border-radius:999px;padding:10px 14px;font-weight:800}.brand{text-align:center;margin:28px 0 22px}.brand h1{margin:14px 0 4px;font-size:30px}.brand p{margin:0;color:var(--muted)}.card{border:1px solid rgba(239,189,67,.55);border-radius:22px;background:linear-gradient(155deg,rgba(8,18,27,.98),rgba(3,8,12,.99));padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.48)}label{display:block;margin:13px 0;color:#c6d0d7;font-size:11px;font-weight:800;letter-spacing:.06em}input{display:block;margin-top:7px;width:100%;height:54px;border:1px solid #315064;border-radius:11px;background:#071923;color:white;padding:0 14px;font-size:16px;outline:none}input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(239,189,67,.09)}.check{display:flex;gap:10px;align-items:flex-start;margin:16px 0;color:#bac5cd;font-size:11px;line-height:1.45}.check input{width:18px;height:18px;margin:0;accent-color:var(--gold)}a{color:#60c7ff}.submit{width:100%;height:56px;border:1px solid #f5d37a;border-radius:11px;background:linear-gradient(100deg,#c78a1b,#f4cf68,#d79a26);color:#090909;font-size:16px;font-weight:950}.status{min-height:22px;text-align:center;margin-top:12px;color:#72d3ff;font-size:12px;line-height:1.45}.status.err{color:#ff9cab}.signin{text-align:center;margin-top:18px;color:#aab5bd;font-size:12px}.signin a{font-weight:900}.small{text-align:center;color:#78858e;font-size:10px;margin-top:12px}
-</style><link rel="icon" href="/favicon.png" type="image/png">
-<link rel="stylesheet" href="/assets/mw-unified-theme.css"><link rel="stylesheet" href="/assets/mw-premium-v2.css"><link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
-<link rel="stylesheet" href="/assets/mw-responsive-v25.css">
-</head><body><div class="wrap"><button class="back" onclick="location.href='/athlete/'">← Athlete Sign In</button><div class="brand"><div style="font-size:13px;font-weight:900;letter-spacing:.34em;color:#efbd43;margin-bottom:10px">MW DYNASTY</div><h1>Create Your Athlete Profile</h1><p>First create your profile. Secure membership payment is next.</p></div><section class="card"><label>FIRST NAME<input id="first" autocomplete="given-name" maxlength="80" placeholder="First name"></label><label>LAST NAME<input id="last" autocomplete="family-name" maxlength="80" placeholder="Last name"></label><label>DATE OF BIRTH<input id="dob" type="date" autocomplete="bday"></label><label>EMAIL<input id="email" type="email" autocomplete="email" placeholder="you@example.com"></label><label>PASSWORD<input id="password" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label><label>CONFIRM PASSWORD<input id="confirm" type="password" autocomplete="new-password" placeholder="Confirm password"></label><label class="check"><input id="terms" type="checkbox"><span>I confirm I am at least 13 years old and agree to the <a href="/terms.html" target="_blank">Terms</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>.</span></label><button id="create" class="submit">Create Profile &amp; Continue →</button><div id="status" class="status"></div></section><div class="signin">Already have an athlete account? <a href="/athlete/">Sign In</a></div><div class="small">MW Dynasty · Athlete Membership · $19/month</div></div>
+:root{--gold:#efbd43;--gold2:#ffd76b;--ink:#02060b;--panel:#050e16;--muted:#9ba8b2;--line:rgba(235,190,75,.46)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#02060b;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+.mwSignupPage{position:relative;min-height:100dvh;padding:max(18px,env(safe-area-inset-top)) 14px max(28px,env(safe-area-inset-bottom));isolation:isolate}
+.mwSignupBackdrop{position:fixed;inset:0;z-index:-2;background:
+  linear-gradient(180deg,rgba(2,6,11,.18) 0%,rgba(2,6,11,.55) 36%,rgba(2,6,11,.94) 76%,#02060b 100%),
+  url('/assets/mw-athlete-login-v21.jpg') center 28%/cover no-repeat}
+.mwSignupBackdrop:after{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 50% 15%,rgba(29,108,161,.13),transparent 31%),
+  linear-gradient(90deg,rgba(2,6,11,.28),transparent 40%,rgba(2,6,11,.28))}
+.mwSignupShell{width:min(500px,100%);margin:0 auto}
+.mwSignupBrand{display:flex;align-items:center;gap:11px;padding:2px 2px 16px}
+.mwSignupCrest{width:58px;height:58px;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.38)}
+.mwSignupWord{line-height:.92}
+.mwSignupWord b{display:block;font-size:31px;letter-spacing:-.055em;font-weight:1000}
+.mwSignupWord span{display:block;margin-top:7px;color:var(--gold2);font-size:8px;font-weight:900;letter-spacing:.15em}
+.mwSignupCard{border:1px solid var(--line);border-radius:27px;background:linear-gradient(180deg,rgba(5,16,24,.955),rgba(2,8,13,.99));box-shadow:0 28px 85px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:22px}
+.mwSignupBack{display:inline-flex;align-items:center;gap:6px;color:#e8c565;text-decoration:none;font-size:10px;font-weight:900;letter-spacing:.05em;margin-bottom:17px}
+.mwSignupStep{color:#75c9f1;font-size:9px;font-weight:950;letter-spacing:.14em}
+.mwSignupCard h1{font-size:34px;line-height:1.01;letter-spacing:-.035em;margin:8px 0 8px}
+.mwSignupLead{margin:0 0 19px;color:#c5ced5;font-size:13px;line-height:1.5}
+.mwSignupGrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.mwSignupField{display:block;min-width:0}
+.mwSignupField.full{grid-column:1/-1}
+.mwSignupField span{display:block;margin:0 0 7px;color:#d9dee2;font-size:9px;font-weight:900;letter-spacing:.08em}
+.mwSignupField input{display:block;width:100%;height:54px;border:1px solid rgba(235,190,75,.38);border-radius:14px;background:rgba(2,9,14,.92);color:#fff;padding:0 14px;font-size:16px;outline:none}
+.mwSignupField input::placeholder{color:#788692}
+.mwSignupField input:focus{border-color:var(--gold2);box-shadow:0 0 0 3px rgba(239,189,67,.09)}
+.mwSignupCheck{display:flex;gap:10px;align-items:flex-start;margin:17px 0;color:#b9c4cc;font-size:11px;line-height:1.5}
+.mwSignupCheck input{flex:0 0 auto;width:19px;height:19px;margin:1px 0 0;accent-color:var(--gold)}
+.mwSignupCheck a{color:#75c9f1}
+.mwSignupSubmit{width:100%;height:58px;border:0;border-radius:14px;background:linear-gradient(180deg,#ffdb69,#d89b24);color:#0a0907;font-size:14px;font-weight:1000;letter-spacing:.04em;box-shadow:0 12px 28px rgba(215,153,32,.18)}
+.mwSignupSubmit:disabled{opacity:.58}
+.mwSignupStatus{min-height:22px;margin-top:12px;text-align:center;color:#70cff7;font-size:11px;line-height:1.45}
+.mwSignupStatus.err{color:#ff9cab}
+.mwSignupFooter{text-align:center;margin-top:15px;color:#9aa6af;font-size:11px;line-height:1.5}
+.mwSignupFooter a{color:#efc75f;font-weight:900;text-decoration:none}
+.mwSignupNote{margin-top:12px;border-top:1px solid rgba(235,190,75,.18);padding-top:12px;color:#84929d;font-size:9px;line-height:1.45;text-align:center}
+@media(max-width:390px){.mwSignupGrid{grid-template-columns:1fr}.mwSignupField.full{grid-column:auto}.mwSignupCard{padding:19px}.mwSignupCard h1{font-size:31px}}
+@media(min-width:700px){.mwSignupPage{display:grid;place-items:center;padding:32px}.mwSignupShell{width:min(520px,100%)}}
+</style>
+</head>
+<body>
+<div class="mwSignupPage">
+  <div class="mwSignupBackdrop" aria-hidden="true"></div>
+  <main class="mwSignupShell">
+    <div class="mwSignupBrand">
+      <img class="mwSignupCrest" src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty crest">
+      <div class="mwSignupWord"><b>DYNASTY</b><span>ATHLETE • DISCIPLINE BUILDS FREEDOM</span></div>
+    </div>
+
+    <section class="mwSignupCard">
+      <a class="mwSignupBack" href="/athlete/">← ATHLETE SIGN IN</a>
+      <div class="mwSignupStep">STEP 1 OF 4 • ACCOUNT</div>
+      <h1>Create Athlete Account</h1>
+      <p class="mwSignupLead">Create your MW Dynasty account first. Membership comes next, followed by your Athlete Profile and Entry Assessment.</p>
+
+      <div class="mwSignupGrid">
+        <label class="mwSignupField"><span>FIRST NAME</span><input id="first" autocomplete="given-name" maxlength="80" placeholder="First name"></label>
+        <label class="mwSignupField"><span>LAST NAME</span><input id="last" autocomplete="family-name" maxlength="80" placeholder="Last name"></label>
+        <label class="mwSignupField full"><span>DATE OF BIRTH • 13+</span><input id="dob" type="date" autocomplete="bday"></label>
+        <label class="mwSignupField full"><span>EMAIL</span><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+        <label class="mwSignupField"><span>PASSWORD</span><input id="password" type="password" autocomplete="new-password" placeholder="8+ characters"></label>
+        <label class="mwSignupField"><span>CONFIRM PASSWORD</span><input id="confirm" type="password" autocomplete="new-password" placeholder="Repeat password"></label>
+      </div>
+
+      <label class="mwSignupCheck">
+        <input id="terms" type="checkbox">
+        <span>I confirm I am at least 13 years old and agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+      </label>
+
+      <button id="create" class="mwSignupSubmit" type="button">CREATE ACCOUNT &amp; CONTINUE →</button>
+      <div id="status" class="mwSignupStatus"></div>
+      <div class="mwSignupNote">Next: Membership → Payment → Athlete Profile → Entry Assessment</div>
+    </section>
+
+    <div class="mwSignupFooter">Already have an Athlete account? <a href="/athlete/">Sign In</a></div>
+  </main>
+</div>
 <script>
 const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
 const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
-const status=document.getElementById('status'),btn=document.getElementById('create'),dobInput=document.getElementById('dob');
-function msg(t,e=false){status.textContent=t;status.className='status'+(e?' err':'')}
+const statusEl=document.getElementById('status'),btn=document.getElementById('create'),dobInput=document.getElementById('dob');
+const isNative=/MWDynasty-iOS\//i.test(navigator.userAgent||'');
+function msg(t,e=false){statusEl.textContent=t;statusEl.className='mwSignupStatus'+(e?' err':'')}
 function maxEligibleDob(){const d=new Date();d.setFullYear(d.getFullYear()-13);return d.toISOString().slice(0,10)}
 function ageAtLeast13(value){if(!value)return false;const dob=new Date(value+'T00:00:00');if(Number.isNaN(dob.getTime()))return false;const today=new Date();let age=today.getFullYear()-dob.getFullYear();const m=today.getMonth()-dob.getMonth();if(m<0||(m===0&&today.getDate()<dob.getDate()))age--;return age>=13}
 dobInput.max=maxEligibleDob();
-btn.onclick=async()=>{const first=document.getElementById('first').value.trim(),last=document.getElementById('last').value.trim(),dob=dobInput.value,email=document.getElementById('email').value.trim().toLowerCase(),password=document.getElementById('password').value,confirm=document.getElementById('confirm').value;if(!first||!last||!dob||!email||!password)return msg('Complete your first name, last name, date of birth, email, and password.',true);if(!ageAtLeast13(dob))return msg('MW Dynasty athlete accounts require age 13 or older.',true);if(password.length<8)return msg('Use at least 8 characters for your password.',true);if(password!==confirm)return msg('The passwords do not match.',true);if(!document.getElementById('terms').checked)return msg('Please confirm eligibility and accept the Terms and Privacy Policy.',true);btn.disabled=true;btn.textContent='Creating Profile…';msg('Creating your MW Athlete profile…');try{const continueUrl='/athlete/?plan=mw_athlete';const u=SUPABASE_URL+'/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+continueUrl);const r=await fetch(u,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password,data:{first_name:first,last_name:last,date_of_birth:dob}})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.error_description||d.message||'Account could not be created.');if(d.access_token){localStorage.setItem('mwSupabaseSession',JSON.stringify(d));msg('Profile created. Opening secure payment…');setTimeout(()=>location.href=continueUrl,700)}else{msg('Profile created. Check your email to confirm your address, then sign in to continue to secure payment.');btn.textContent='Profile Created ✓'}}catch(e){msg(e.message||'Profile could not be created.',true);btn.disabled=false;btn.textContent='Create Profile & Continue →'}};
+btn.onclick=async()=>{
+  const first=document.getElementById('first').value.trim();
+  const last=document.getElementById('last').value.trim();
+  const dob=dobInput.value;
+  const email=document.getElementById('email').value.trim().toLowerCase();
+  const password=document.getElementById('password').value;
+  const confirm=document.getElementById('confirm').value;
+  if(!first||!last||!dob||!email||!password)return msg('Complete your name, date of birth, email, and password.',true);
+  if(!ageAtLeast13(dob))return msg('MW Dynasty Athlete accounts require age 13 or older.',true);
+  if(password.length<8)return msg('Use at least 8 characters for your password.',true);
+  if(password!==confirm)return msg('The passwords do not match.',true);
+  if(!document.getElementById('terms').checked)return msg('Please confirm eligibility and accept the Terms and Privacy Policy.',true);
+  btn.disabled=true;btn.textContent='CREATING ACCOUNT…';msg('Creating your MW Dynasty Athlete account…');
+  try{
+    const continueUrl='/athlete/?plan=mw_athlete';
+    const u=SUPABASE_URL+'/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+continueUrl);
+    const r=await fetch(u,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({
+      email,password,
+      data:{first_name:first,last_name:last,date_of_birth:dob,account_type:'athlete',signup_source:isNative?'ios':'website'}
+    })});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.msg||d.error_description||d.message||'Account could not be created.');
+    if(d.access_token){
+      localStorage.setItem('mwSupabaseSession',JSON.stringify(d));
+      msg('Account created. Opening membership…');
+      setTimeout(()=>location.href=continueUrl,650);
+    }else{
+      msg('Account created. Check your email to confirm your address, then sign in to continue to membership.');
+      btn.textContent='ACCOUNT CREATED ✓';
+    }
+  }catch(e){
+    msg(e.message||'Account could not be created.',true);
+    btn.disabled=false;btn.textContent='CREATE ACCOUNT & CONTINUE →';
+  }
+};
 </script>
-</body></html>
+</body>
+</html>
