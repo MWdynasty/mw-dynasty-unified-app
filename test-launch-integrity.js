@@ -71,6 +71,11 @@ includes('supabase/migrations/20260920_founder_os_v16_ai_playbooks.sql','mw_foun
 includes('server/api/founder-ai.js',"mode==='department_brief'",'Founder AI department briefing mode missing');
 includes('founder/index.html','Department Leadership Briefs','Founder department briefing UI missing');
 includes('founder/index.html','View Playbook','Founder AI employee playbook UI missing');
+includes('supabase/migrations/20260920_founder_os_v17_partnerships.sql','mw_founder_partnerships_snapshot','Founder partnership migration missing');
+includes('server/api/founder.js',"section==='partnerships'",'Founder partnership API route missing');
+includes('server/api/founder-ai.js',"mode==='partnership_proposal'",'Founder partnership AI drafting mode missing');
+includes('founder/index.html','BUSINESS DEVELOPMENT & PARTNERSHIPS','Founder partnership center missing');
+includes('founder/index.html','Record as Sent','Founder proposal human-send recording control missing');
 includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
 includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
 
