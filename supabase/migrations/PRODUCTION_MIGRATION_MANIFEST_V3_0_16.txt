@@ -46,3 +46,27 @@ The following production migrations are now captured from Supabase's authoritati
 20260920145929 prevent_unpaid_states_from_granting_entitlement
 
 These files were captured from supabase_migrations.schema_migrations after production application, so the repository now preserves the exact applied SQL rather than a reconstructed approximation.
+
+
+2026-09-20 Founder Operating System
+The Founder OS production foundation is source-controlled in these idempotent migrations:
+
+20260920_founder_os_v1.sql
+- Founder-only business tables, AI workforce, CRM, campaigns, website events, and core Founder snapshot RPC.
+
+20260920_founder_os_v2_program_control.sql
+- Founder Program Control and expanded AI workforce.
+
+20260920_founder_os_v3_ai_runs.sql
+- Audited AI employee analysis/drafting work runs.
+
+20260920_founder_os_v4_management_intelligence.sql
+- Finance/cost management, People/HR, SOPs, legal/risk, customer-health scoring, AI support triage, and KPI history.
+
+20260920_founder_os_v5_audit.sql
+- Founder OS mutation audit triggers with direct contact/response text redaction.
+
+20260920_founder_os_v6_operating_sops.sql
+- Review-stage launch, verification, billing, support, methodology, and website QA SOPs plus known website-analytics risk.
+
+These migrations are already applied to production project keqgunlfwhjgcsurynef.
