@@ -1081,15 +1081,52 @@ async function coachAdminRequest(method='GET',body=null){
 }
 async function coachApplicationsPage(){
   if(!accountAccess.isFounder){toast('Founder access required');return dashboard()}
-  pageBase('Coach Applications','Review every coach before MW Dynasty access is granted.',`<div class="founder-app-head"><div><b>Vetted Coach Access</b><p>Approve the coach, assign exactly one tier, then MW Dynasty sends the secure invitation.</p></div><button class="back" id="refreshCoachApps">Refresh</button></div><div id="coachAppsState" class="tile">Loading applications…</div><div id="coachAppsList" class="founder-app-list"></div>`);
-  const load=async()=>{const state=document.getElementById('coachAppsState'),list=document.getElementById('coachAppsList');state.style.display='block';state.textContent='Loading applications…';list.innerHTML='';try{const d=await coachAdminRequest();const apps=d.applications||[];state.textContent=apps.length?`${apps.filter(a=>a.status==='pending').length} pending · ${apps.length} total application${apps.length===1?'':'s'}`:'No coach applications yet.';list.innerHTML=apps.map(a=>`<article class="founder-app-card"><div class="founder-app-top"><div><span class="founder-status ${escapeHtml(a.status)}">${escapeHtml(a.status)}</span><h3>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</h3><p>${escapeHtml(a.email)}${a.organization?' · '+escapeHtml(a.organization):''}</p></div><small>${new Date(a.created_at).toLocaleDateString()}</small></div><div class="founder-app-meta"><span>${escapeHtml(a.coach_title||a.coaching_level||'Coach role not provided')}</span><span>${escapeHtml(a.organization||'Organization not provided')}</span><span>${a.years_coaching??'—'} years</span><span>${escapeHtml([a.city,a.state].filter(Boolean).join(', ')||'Location not provided')}</span></div><p class="founder-reason">${escapeHtml(a.reason)}</p>${a.status==='pending'?`<div class="founder-review"><label>Coach Tier<select data-tier="${a.id}"><option value="core">MW Coach Core</option><option value="intelligence">Coach Intelligence</option><option value="mw_sprint_performance">MW Sprint Performance</option></select></label><label>Founder Notes<textarea rows="2" data-notes="${a.id}" placeholder="Optional internal review notes"></textarea></label><div class="founder-actions"><button class="action" data-approve="${a.id}">Approve + Send Invite</button><button class="back founder-reject" data-reject="${a.id}">Reject</button></div></div>`:`<div class="founder-reviewed"><b>${a.access_tier?escapeHtml(tierLabel(a.access_tier)):escapeHtml(a.status)}</b>${a.invited_at?`<span>Invitation sent ${new Date(a.invited_at).toLocaleDateString()}</span>`:''}</div>`}</article>`).join('');bindCoachApplicationActions(load)}catch(e){state.textContent=e.message}};document.getElementById('refreshCoachApps').onclick=load;load();
+  pageBase('Coach Applications','Review only the applications MW Dynasty could not verify automatically.',`<div class="founder-app-head"><div><b>Coach Verification Center</b><p>Strong matches are verified automatically. Unclear applications come here for a human decision. Membership and payment happen after verification.</p></div><button class="back" id="refreshCoachApps">Refresh</button></div><div id="coachAppsState" class="tile">Loading applications…</div><div id="coachAppsList" class="founder-app-list"></div>`);
+  const verificationLabel=a=>a.verification_status==='auto_approved'?'Auto-Verified':a.verification_status==='approved'?'Verified':a.verification_status==='needs_review'?'Needs Review':a.verification_status==='denied'?'Denied':'Pending';
+  const verificationClass=a=>a.verification_status==='auto_approved'||a.verification_status==='approved'?'approved':a.verification_status==='denied'?'rejected':'pending';
+  const evidenceHTML=a=>{
+    const e=a.verification_evidence||{},p=e.page_check||{};
+    const signals=[
+      ['Institutional domain',e.institutional_domain===true?'Matched':e.institutional_domain===false?'Not confirmed':'—'],
+      ['Name on source',p.nameMatch===true?'Matched':p.checked?'Not confirmed':'Not checked'],
+      ['Coaching role',p.coachMatch===true?'Matched':p.checked?'Not confirmed':'Not checked'],
+      ['Organization',p.orgMatch===true?'Matched':p.checked?'Not confirmed':'Not checked']
+    ];
+    return `<div class="founder-app-meta">${signals.map(([k,v])=>`<span><small>${escapeHtml(k)}</small><br><b>${escapeHtml(v)}</b></span>`).join('')}</div>`;
+  };
+  const load=async()=>{
+    const state=document.getElementById('coachAppsState'),list=document.getElementById('coachAppsList');state.style.display='block';state.textContent='Loading applications…';list.innerHTML='';
+    try{
+      const d=await coachAdminRequest(),apps=d.applications||[],needs=apps.filter(a=>a.verification_status==='needs_review'&&a.status==='pending'),verified=apps.filter(a=>['auto_approved','approved'].includes(a.verification_status));
+      state.innerHTML=apps.length?`<b>${needs.length} need${needs.length===1?'s':''} your review</b> · ${verified.length} verified · ${apps.length} total`:'No coach applications yet.';
+      list.innerHTML=apps.map(a=>{
+        const needsReview=a.verification_status==='needs_review'&&a.status==='pending';
+        const source=a.verification_detail||'No verification source provided';
+        const reason=a.decision_reason||a.review_notes||'Verification decision pending.';
+        const decision=a.decision_mode==='automatic'?'Automatic':a.decision_mode==='manual'?'Manual':'Awaiting review';
+        return `<article class="founder-app-card">
+          <div class="founder-app-top"><div><span class="founder-status ${verificationClass(a)}">${escapeHtml(verificationLabel(a))}</span><h3>${escapeHtml(a.first_name)} ${escapeHtml(a.last_name)}</h3><p>${escapeHtml(a.email)}${a.organization?' · '+escapeHtml(a.organization):''}</p></div><small>${new Date(a.created_at).toLocaleDateString()}</small></div>
+          <div class="founder-app-meta"><span>${escapeHtml(a.coach_title||a.coaching_level||'Coach role not provided')}</span><span>${escapeHtml(a.organization||'Organization not provided')}</span><span>${a.years_coaching??'—'} years</span><span>${a.athlete_count??'—'} athletes</span><span>${escapeHtml([a.city,a.state].filter(Boolean).join(', ')||'Location not provided')}</span></div>
+          <div class="tile" style="margin-top:12px"><div class="eyebrow">VERIFICATION EVIDENCE</div><p><b>${escapeHtml(a.verification_method||'Verification source')}</b><br><small>${escapeHtml(source)}</small></p>${evidenceHTML(a)}<p><b>MW decision:</b> ${escapeHtml(reason)}</p><small>${escapeHtml(decision)} decision${a.verification_checked_at?' · checked '+new Date(a.verification_checked_at).toLocaleString():''}</small></div>
+          ${a.reason?`<p class="founder-reason">${escapeHtml(a.reason)}</p>`:''}
+          ${needsReview?`<div class="founder-review"><label>Founder Notes<textarea rows="2" data-notes="${a.id}" placeholder="Optional internal review notes"></textarea></label><div class="founder-actions"><button class="action" data-approve="${a.id}">Approve Coach</button><button class="back founder-reject" data-reject="${a.id}">Deny</button></div><small>Approval verifies the person and sends secure account setup. The coach chooses membership and sponsored-athlete seats next; Coach app access stays locked until payment is confirmed.</small></div>`:`<div class="founder-reviewed"><b>${escapeHtml(verificationLabel(a))}</b><span>${a.payment_status==='paid'?'Payment confirmed':a.payment_status==='ready'?'Membership + payment unlocked':a.payment_status==='checkout_started'?'Checkout started':a.payment_status==='failed'?'Payment failed':'Payment locked'}${a.invited_at?' · setup sent '+new Date(a.invited_at).toLocaleDateString():''}</span></div>`}
+        </article>`;
+      }).join('');
+      bindCoachApplicationActions(load);
+    }catch(e){state.textContent=e.message}
+  };
+  document.getElementById('refreshCoachApps').onclick=load;load();
 }
-function tierLabel(t){return ({core:'MW Coach Core',intelligence:'Coach Intelligence',mw_sprint_performance:'MW Sprint Performance'})[t]||t}
 function bindCoachApplicationActions(reload){
-  document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=async()=>{const id=b.dataset.approve,tier=document.querySelector(`[data-tier="${id}"]`).value,notes=document.querySelector(`[data-notes="${id}"]`).value;b.disabled=true;b.textContent='Approving…';try{const d=await coachAdminRequest('POST',{id,action:'approve',access_tier:tier,review_notes:notes});toast(d.message||'Coach approved and invitation sent');await reload()}catch(e){toast(e.message);b.disabled=false;b.textContent='Approve + Send Invite'}});
-  document.querySelectorAll('[data-reject]').forEach(b=>b.onclick=async()=>{const id=b.dataset.reject;const reason=prompt('Reason for rejecting this coach application?')||'';if(!reason.trim())return; b.disabled=true;try{await coachAdminRequest('POST',{id,action:'reject',rejection_reason:reason,review_notes:document.querySelector(`[data-notes="${id}"]`)?.value||''});toast('Coach application rejected');await reload()}catch(e){toast(e.message);b.disabled=false}})
+  document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=async()=>{
+    const id=b.dataset.approve,notes=document.querySelector(`[data-notes="${id}"]`)?.value||'';b.disabled=true;b.textContent='Approving…';
+    try{const d=await coachAdminRequest('POST',{id,action:'approve',review_notes:notes});toast(d.message||'Coach verified. Secure setup sent.');await reload()}catch(e){toast(e.message);b.disabled=false;b.textContent='Approve Coach'}
+  });
+  document.querySelectorAll('[data-reject]').forEach(b=>b.onclick=async()=>{
+    const id=b.dataset.reject,reason=prompt('Why is this Coach application being denied?')||'';if(!reason.trim())return;b.disabled=true;
+    try{await coachAdminRequest('POST',{id,action:'reject',rejection_reason:reason,review_notes:document.querySelector(`[data-notes="${id}"]`)?.value||''});toast('Coach application denied');await reload()}catch(e){toast(e.message);b.disabled=false}
+  });
 }
-
 
 // === V12.0 CONNECTED COACH OPERATING SYSTEM ===
 async function sbRest(path,{method='GET',body=null,prefer='return=representation'}={}){
