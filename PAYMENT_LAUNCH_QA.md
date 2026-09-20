@@ -1,5 +1,7 @@
 # MW Dynasty — Payment Launch QA
 
+Last verified: 2026-09-20
+
 This checklist is the release gate for Athlete, Coach, Apple, Stripe, and sponsored-athlete billing.
 
 ## Backend invariants already enforced
@@ -15,6 +17,39 @@ This checklist is the release gate for Athlete, Coach, Apple, Stripe, and sponso
 - Sponsored invitations consume prepaid seat capacity and retries do not consume a second seat.
 - Sponsored athlete access activates only after both the Coach base membership and paid sponsorship package are valid.
 - Unpaid Coach billing status fails closed as awaiting_activation rather than reporting active.
+
+## Rollback integration QA completed
+
+These tests were executed against the real database functions inside transactions and rolled back. Post-test residue checks passed.
+
+- [x] Stripe incomplete initial payment remains pending and grants no Athlete entitlement.
+- [x] Stripe successful Athlete payment activates billing, entitlement, and profile.
+- [x] Duplicate Stripe provider event is ignored idempotently.
+- [x] Active Stripe base membership cannot be overwritten by Apple.
+- [x] Stripe cancellation closes Athlete entitlement and pauses the profile.
+- [x] Sponsored-seat billing is blocked before Coach base membership is active.
+- [x] Zero-seat Coach membership creates no empty sponsorship package.
+- [x] Sponsorship-only payment creates the exact paid seat quantity.
+- [x] Sponsor quantity reduction removes only unused availability.
+- [x] Duplicate sponsorship webhook is ignored idempotently.
+- [x] Sponsored invitation reserves exactly one prepaid seat.
+- [x] Sponsored invitation acceptance activates seat + Athlete entitlement + profile.
+- [x] Ending the sponsor package closes sponsored Athlete access and pauses the profile.
+- [x] Verified Apple Athlete purchase activates Apple billing + entitlement + profile.
+- [x] Duplicate Apple event is ignored idempotently.
+- [x] Apple revocation/refund removes access immediately even if the old transaction has a future expiration date.
+- [x] All synthetic QA users/invitations were rolled back with zero test-record residue.
+
+## Hardening discovered by QA
+
+- Protected Athlete APIs now require a live entitlement in addition to profile state.
+- Protected Coach APIs now require a live Coach entitlement.
+- Stripe `incomplete` is stored as `pending_payment`, not active.
+- Stripe `incomplete`, `unpaid`, and `incomplete_expired` cannot create a future-dated entitlement that accidentally unlocks access.
+- Apple `revoked` maps to refunded/revoked access instead of a future-dated cancelled entitlement.
+- Combined Stripe Coach + seat billing retires sponsored access when the base subscription ends.
+- Separate Stripe seat add-ons are scheduled to end when the Coach base membership is set to cancel, and are stopped when the base membership terminates.
+- A base-cancellation reversal only restores add-on renewal when MW itself linked that add-on cancellation to the base cancellation.
 
 ## Release scenarios
 
