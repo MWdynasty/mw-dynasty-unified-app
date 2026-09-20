@@ -116,8 +116,9 @@ function attentionRow(x){const sev=x.severity==="high"?"high":x.severity==="low"
 function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
 
 async function renderHome(){
-  const [d,f,h,r]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk")]);
+  const [d,f,h,r,aiData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company")]);
   const m=d.metrics||{},a=d.needs_attention||[],ath=h.athletes||[],co=h.coaches||[],risks=r.items||[];
+  const briefs=(aiData.recent_runs||[]).filter(x=>x.run_type==="briefing").slice(0,3);
   const customerAttention=ath.filter(x=>x.health!=="healthy").length+co.filter(x=>x.health!=="healthy").length;
   const highRisks=risks.filter(x=>["high","critical"].includes(x.severity)&&!["resolved","closed"].includes(x.status));
   $("content").innerHTML='<section class="hero"><div class="brand">EXECUTIVE COMMAND CENTER</div><h2>See the whole company. Act on what matters.</h2><p>MW Dynasty business, customers, website, finance, billing, AI workforce, product health, risk, and Founder decisions in one operating view.</p><div class="heroActions"><button class="btn primary" id="briefBtn">Generate Executive AI Brief</button><button class="btn blue" data-go="attention">Open Needs Attention</button></div></section>'+
@@ -138,13 +139,16 @@ async function renderHome(){
     '<div class="grid2">'+
       '<div>'+sectionHead("Customer Success Watch","Lowest customer-health scores that deserve follow-up.")+'<div class="list">'+ath.concat(co).filter(x=>x.health!=="healthy").sort((a,b)=>Number(a.score)-Number(b.score)).slice(0,8).map(x=>'<div class="row"><div><b>'+esc(x.name||"Member")+'</b><small>'+esc((x.signals||[]).join(" · ")||"Attention signal")+'</small></div><div class="right">'+badge((x.score||0)+" / 100",x.health==="high_risk"?"bad":"warn")+'</div></div>').join("")+'</div></div>'+
       '<div>'+sectionHead("Open High Risks","Launch, security, legal, deployment, and operating exposure.")+'<div class="list">'+(highRisks.length?highRisks.slice(0,8).map(x=>'<div class="row"><div><b>'+esc(x.title)+'</b><small>'+esc((x.category||"Risk")+(x.mitigation?" · "+x.mitigation:""))+'</small></div><div class="right">'+badge(x.severity,x.severity==="critical"?"bad":"warn")+'</div></div>').join(""):'<div class="card empty">No open high or critical risks.</div>')+'</div></div>'+
-    '</div>';
+    '</div>'+
+    sectionHead("Recent Executive AI Briefings","Founder AI briefings are stored so decisions can be reviewed instead of disappearing after generation.")+
+    '<div class="list">'+(briefs.length?briefs.map(x=>'<div class="card"><div class="row" style="border:0;background:transparent;padding:0"><div><b>Executive Brief</b><small>'+date(x.created_at)+'</small><p class="muted">'+esc((x.output_summary||"").slice(0,520))+(String(x.output_summary||"").length>520?"…":"")+'</p></div><div class="heroActions"><button class="btn small" data-brief-view="'+esc(x.id)+'">View</button></div></div></div>').join(""):'<div class="card empty">Generate the first executive briefing to start the decision history.</div>')+'</div>';
   bindGo();$("briefBtn").onclick=generateBrief;$("askAIHome").onclick=openAIModal;
+  document.querySelectorAll("[data-brief-view]").forEach(b=>b.onclick=()=>{const x=briefs.find(v=>String(v.id)===String(b.dataset.briefView));if(x)modal("Executive AI Brief",'<div class="bubble ai">'+esc(x.output_summary||"")+'</div>')});
 }
 
 async function generateBrief(){
   const b=$("briefBtn"),out=$("briefOut");b.disabled=true;b.textContent="Building executive brief…";out.classList.remove("hidden");out.textContent="Founder AI is reviewing live MW data…";
-  try{const d=await ai("brief");out.textContent=d.answer||"No briefing returned."}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
+  try{const d=await ai("brief");out.textContent=d.answer||"No briefing returned.";cache.ai_company=null}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
 }
 async function renderAttention(){
   const [d,r,h,a,t,l]=await Promise.all([api("overview"),api("risk"),api("customer_health"),api("ai_company"),api("support_triage"),api("launch")]);
