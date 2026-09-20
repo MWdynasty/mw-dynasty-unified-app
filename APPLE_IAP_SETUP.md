@@ -14,6 +14,15 @@ Create these exact product identifiers in App Store Connect:
 
 App Store prices must be configured to match the active MW membership catalog. The Supabase membership catalog remains the web billing source of truth.
 
+## Subscription groups and Coach plan changes
+- Put `mw_athlete` in its own Athlete auto-renewable subscription group.
+- Put all three Coach products in one Coach auto-renewable subscription group so Apple owns upgrade/downgrade timing and prevents simultaneous Coach subscriptions.
+- Configure the Coach service levels in this order from highest to lowest: Sprint Performance, Coach Intelligence, Coach Core.
+- Existing Apple-paid Coaches change tiers through Apple's subscription-management UI. MW does not create a second StoreKit purchase flow for a tier change.
+- MW changes the Coach tier only after an App Store Server notification / verified transaction shows the new Apple product as effective.
+- Sponsored-athlete Stripe add-on pricing is then aligned to the newly verified Coach tier.
+
+
 ## Account binding
 StoreKit purchases use the authenticated Supabase user UUID as StoreKit's `appAccountToken`.
 The server refuses to activate a transaction whose Apple `appAccountToken` does not match the authenticated MW user.
