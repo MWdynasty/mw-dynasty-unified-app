@@ -210,7 +210,7 @@ function renderCoachPlanChange(b){
     const button=document.createElement('button');button.type='button';button.className='btn';
     if(code===current){button.textContent=`${name} — Current`;button.disabled=true}
     else if(pending?.type==='plan_change'&&pending?.to_plan_code===code){button.textContent=`${name} — Pending`;button.disabled=true}
-    else{button.textContent=`Change to ${name} — \${price}/mo`;button.onclick=()=>requestCoachPlanChange(tier,code,provider)}
+    else{button.textContent=`Change to ${name} — ${price}/mo`;button.onclick=()=>requestCoachPlanChange(tier,code,provider)}
     box.appendChild(button);
   });
 }
