@@ -509,9 +509,8 @@ function renderLogin(message=''){
 
       <div class="coach-login-content">
         <div class="coach-login-copy">
-          <h1>COACH<br>DEVELOP<br>EMPOWER<br><strong>TRANSFORM</strong></h1>
-          <span class="coach-login-rule"></span>
-          <p>MORE THAN A PLATFORM.<br>A HIGHER STANDARD.</p>
+          <h1>I’M A<br><strong>COACH</strong></h1>
+          <p>LEAD <span>•</span> DEVELOP <span>•</span> BUILD</p>
         </div>
 
         <div class="coach-login-person" role="img" aria-label="Coach standing trackside"></div>
@@ -546,6 +545,8 @@ function renderLogin(message=''){
           </div>
         </div>
       </div>
+
+      <div class="coach-login-standard" aria-hidden="true"><b>MORE THAN SPORTS</b><span>A HIGHER STANDARD</span></div>
 
       <div class="coach-login-features" aria-label="MW Coach capabilities">
         <div><b>♟</b><span>MANAGE<br>ATHLETES</span></div>
