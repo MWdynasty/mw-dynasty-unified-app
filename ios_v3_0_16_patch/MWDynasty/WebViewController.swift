@@ -19,6 +19,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         let content = WKUserContentController()
         content.add(self, name: "mwPermissions")
         content.add(self, name: "mwPurchase")
+        content.add(self, name: "mwRestorePurchase")
 
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -65,6 +66,19 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any] else { return }
+        if message.name == "mwRestorePurchase" {
+            guard let planCode = body["planCode"] as? String,
+                  let accessToken = body["accessToken"] as? String,
+                  !planCode.isEmpty, !accessToken.isEmpty else {
+                sendPurchaseResult(["ok": false, "error": "Your MW session expired. Sign in again."])
+                return
+            }
+            Task { @MainActor [weak self] in
+                await self?.restoreMWPurchase(planCode: planCode, accessToken: accessToken)
+            }
+            return
+        }
+
         if message.name == "mwPurchase" {
             guard let planCode = body["planCode"] as? String,
                   let accessToken = body["accessToken"] as? String,
@@ -187,6 +201,37 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     }
 
     @MainActor
+    private func restoreMWPurchase(planCode: String, accessToken: String) async {
+        let products: [String: String] = [
+            "mw_athlete": "com.mwdynasty.app.athlete.monthly",
+            "coach_core": "com.mwdynasty.app.coach.core.monthly",
+            "coach_intelligence": "com.mwdynasty.app.coach.intelligence.monthly",
+            "mw_sprint_performance": "com.mwdynasty.app.coach.sprintperformance.monthly"
+        ]
+        guard let productID = products[planCode], let accountToken = userIDFromJWT(accessToken) else {
+            sendPurchaseResult(["ok": false, "error": "Your MW account could not be matched to an App Store membership."])
+            return
+        }
+        do {
+            try await AppStore.sync()
+            for await entitlement in Transaction.currentEntitlements {
+                guard case .verified(let transaction) = entitlement,
+                      transaction.productID == productID,
+                      transaction.appAccountToken == accountToken else { continue }
+                let verified = await verifyPurchaseWithMWServer(transactionID: String(transaction.id), planCode: planCode, accessToken: accessToken)
+                if verified {
+                    await transaction.finish()
+                    sendPurchaseResult(["ok": true, "restored": true, "planCode": planCode, "transactionId": String(transaction.id)])
+                    return
+                }
+            }
+            sendPurchaseResult(["ok": false, "error": "No active App Store membership for this MW account was found."])
+        } catch {
+            sendPurchaseResult(["ok": false, "error": "App Store restore could not finish: \(error.localizedDescription)"])
+        }
+    }
+
+    @MainActor
     private func beginMWPurchase(planCode: String, accessToken: String) async {
         let products: [String: String] = [
             "mw_athlete": "com.mwdynasty.app.athlete.monthly",
@@ -294,5 +339,6 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     deinit {
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPermissions")
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPurchase")
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwRestorePurchase")
     }
 }
