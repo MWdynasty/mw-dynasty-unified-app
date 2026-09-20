@@ -106,14 +106,23 @@ Use only agent_code values present in SECURED MW BUSINESS CONTEXT. Break work in
           approval_status:requires?'pending':null,metadata:{objective:objective.slice(0,1000)}
         };
       });
-      const approvals=(Array.isArray(plan.approvals)?plan.approvals:[]).slice(0,12).map(a=>({
+      const storedTasks=await insert(token,'founder_ai_tasks',tasks);
+      const taskApprovals=storedTasks.filter(t=>t.requires_approval).map(t=>({
+        task_id:t.id,
+        category:'ai_task_approval',
+        title:`Approve: ${clean(t.title,140)}`,
+        description:clean(t.description,2000)||'Founder approval is required before this task can proceed.',
+        risk_level:t.priority==='urgent'?'critical':t.priority==='high'?'high':'medium',
+        status:'pending',requested_by_agent_code:t.agent_code||null,
+        requested_action:{objective:objective.slice(0,1000),task_id:t.id,task_title:t.title}
+      }));
+      const generalApprovals=(Array.isArray(plan.approvals)?plan.approvals:[]).slice(0,12).map(a=>({
+        task_id:null,
         category:clean(a.category,80)||'founder_decision',title:clean(a.title,160)||'Founder approval',
         description:clean(a.description,2000)||null,risk_level:['low','medium','high','critical'].includes(a.risk_level)?a.risk_level:'medium',
         status:'pending',requested_by_agent_code:null,requested_action:{objective:objective.slice(0,1000)}
       }));
-      const [storedTasks,storedApprovals]=await Promise.all([
-        insert(token,'founder_ai_tasks',tasks),insert(token,'founder_approvals',approvals)
-      ]);
+      const storedApprovals=await insert(token,'founder_approvals',[...taskApprovals,...generalApprovals]);
       return res.status(200).json({ok:true,mode,summary:clean(plan.summary,3000),tasks:storedTasks,approvals:storedApprovals});
     }
     if(mode==='execute_task'){
