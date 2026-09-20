@@ -100,10 +100,12 @@ module.exports = async function stripeCheckout(req, res) {
     if (!product) return res.status(400).json({ error: 'Choose a valid MW membership.' });
 
     const sponsorQuantity = Number.isInteger(Number(body.sponsorQuantity)) ? Number(body.sponsorQuantity) : 0;
+    const sponsorshipOnly = body.sponsorshipOnly === true;
     const requestedReturnPath = String(body.returnPath || '').trim();
     const returnPath = requestedReturnPath.startsWith('/account') ? '/account/' : '';
     if (sponsorQuantity < 0 || sponsorQuantity > 250) return res.status(400).json({ error: 'Sponsor quantity must be between 0 and 250.' });
     if (product.audience === 'athlete' && sponsorQuantity !== 0) return res.status(400).json({ error: 'Athlete memberships cannot include sponsored-athlete seats.' });
+    if (sponsorshipOnly && (product.audience !== 'coach' || sponsorQuantity < 1)) return res.status(400).json({ error: 'Sponsored-seat checkout requires a Coach plan and at least one athlete seat.' });
 
     // Checkout intentionally permits a verified/invited account that has not paid yet.
     // Product access remains locked until the Stripe webhook creates an active entitlement.
@@ -122,12 +124,25 @@ module.exports = async function stripeCheckout(req, res) {
     if (product.audience === 'athlete' && role !== 'athlete') return res.status(403).json({ error: 'Choose a coach membership for this account.' });
     if (product.audience === 'coach' && !['coach', 'admin', 'founder_owner'].includes(role)) return res.status(403).json({ error: 'Choose an athlete membership for this account.' });
 
-    // Preserve the selected membership before leaving MW Dynasty. If checkout is abandoned,
-    // the same account can resume without losing its verification or onboarding progress.
-    await markCheckoutStarted(token, planCode, sponsorQuantity);
+    if (sponsorshipOnly) {
+      const billingResp = await fetch(
+        `${SUPABASE_URL}/rest/v1/billing_subscriptions?beneficiary_user_id=eq.${encodeURIComponent(user.id)}&audience=eq.coach&select=plan_code,status,current_period_end&limit=1`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
+      );
+      const billingRows = await billingResp.json().catch(() => []);
+      const billing = Array.isArray(billingRows) ? billingRows[0] : null;
+      const stillPaid = billing && ['active','trialing','cancel_at_period_end'].includes(String(billing.status || ''))
+        && (!billing.current_period_end || new Date(billing.current_period_end).getTime() > Date.now());
+      if (!billingResp.ok || !stillPaid) return res.status(403).json({ error: 'Activate your Coach membership before adding sponsored-athlete seats.' });
+      if (String(billing.plan_code || '') !== planCode) return res.status(409).json({ error: 'Sponsored seats must use your current Coach membership tier.' });
+    } else {
+      // Preserve the selected membership before leaving MW Dynasty. If checkout is abandoned,
+      // the same account can resume without losing its verification or onboarding progress.
+      await markCheckoutStarted(token, planCode, sponsorQuantity);
+    }
 
     const [basePrice, sponsorPrice] = await Promise.all([
-      findPrice(product.productName, Number(catalog.monthly_price_cents)),
+      sponsorshipOnly ? Promise.resolve(null) : findPrice(product.productName, Number(catalog.monthly_price_cents)),
       sponsorQuantity ? findPrice(product.sponsorProductName, Number(catalog.sponsored_athlete_price_cents || 0)) : Promise.resolve(null),
     ]);
     const base = appUrl(req);
@@ -141,29 +156,35 @@ module.exports = async function stripeCheckout(req, res) {
       cancel_url: returnPath
         ? `${base}${returnPath}?checkout=cancelled`
         : `${base}/${product.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=cancelled`,
-      'line_items[0][price]': basePrice,
-      'line_items[0][quantity]': '1',
+      'line_items[0][price]': sponsorshipOnly ? sponsorPrice : basePrice,
+      'line_items[0][quantity]': sponsorshipOnly ? String(sponsorQuantity) : '1',
       'metadata[mw_user_id]': user.id,
       'metadata[mw_plan_code]': planCode,
       'metadata[mw_sponsor_quantity]': String(sponsorQuantity),
+      'metadata[mw_checkout_kind]': sponsorshipOnly ? 'sponsorship_only' : 'membership',
       'subscription_data[metadata][mw_user_id]': user.id,
       'subscription_data[metadata][mw_plan_code]': planCode,
       'subscription_data[metadata][mw_sponsor_quantity]': String(sponsorQuantity),
+      'subscription_data[metadata][mw_checkout_kind]': sponsorshipOnly ? 'sponsorship_only' : 'membership',
     };
-    if (sponsorPrice) {
+    if (!sponsorshipOnly && sponsorPrice) {
       form['line_items[1][price]'] = sponsorPrice;
       form['line_items[1][quantity]'] = String(sponsorQuantity);
     }
     const session = await stripe('/checkout/sessions', { method: 'POST', form });
     if (!session.url) throw new Error('Stripe did not return a checkout URL.');
-    // Attach the provider session to the already-preserved checkout state. This is idempotent.
-    await markCheckoutStarted(token, planCode, sponsorQuantity, session.id);
+    // Attach the provider session only to membership onboarding. Sponsorship-only checkout
+    // must never replace the Coach base membership provider.
+    if (!sponsorshipOnly) await markCheckoutStarted(token, planCode, sponsorQuantity, session.id);
     return res.status(200).json({
       ok: true,
       url: session.url,
       planCode,
       sponsorQuantity,
-      monthlyTotalCents: Number(catalog.monthly_price_cents) + sponsorQuantity * Number(catalog.sponsored_athlete_price_cents || 0),
+      sponsorshipOnly,
+      monthlyTotalCents: sponsorshipOnly
+        ? sponsorQuantity * Number(catalog.sponsored_athlete_price_cents || 0)
+        : Number(catalog.monthly_price_cents) + sponsorQuantity * Number(catalog.sponsored_athlete_price_cents || 0),
     });
   } catch (error) {
     console.error('MW Stripe checkout error', error);
