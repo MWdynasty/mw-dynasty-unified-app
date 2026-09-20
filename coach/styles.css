@@ -1602,3 +1602,32 @@ html.mw-native-app .coach-login-bg:after{
     transform:translate(-50%,-50%)!important;
   }
 }
+
+
+/* MW COACH FIT AND CENTER CARD v17 */
+@media(min-width:901px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    position:absolute!important;
+    left:50%!important;
+    right:auto!important;
+    top:50%!important;
+    bottom:auto!important;
+    width:500px!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translate(-50%,-50%) scale(.78)!important;
+    transform-origin:center center!important;
+    z-index:12!important;
+  }
+}
+@media(min-width:901px) and (max-width:1180px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    left:50%!important;
+    top:50%!important;
+    width:500px!important;
+    transform:translate(-50%,-50%) scale(.72)!important;
+    transform-origin:center center!important;
+  }
+}
