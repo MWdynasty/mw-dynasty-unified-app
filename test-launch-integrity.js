@@ -62,6 +62,11 @@ includes('supabase/migrations/20260920_founder_os_v11_notifications.sql','mw_fou
 includes('supabase/migrations/20260920_founder_os_v12_notification_sync.sql','mw_sync_founder_notifications','Founder notification sync missing');
 includes('supabase/migrations/20260920_founder_os_v13_rls_intentionality_review.sql','fail-closed','Founder RLS intentionality review missing');
 includes('supabase/migrations/20260920_founder_os_v14_security_snapshot.sql','mw_founder_security_snapshot','Founder live security snapshot missing');
+includes('supabase/migrations/20260920_founder_os_v15_objectives.sql','mw_founder_ai_objectives_snapshot','Founder objective portfolio migration missing');
+includes('server/api/founder.js',"section==='objectives'",'Founder objective API route missing');
+includes('server/api/founder-ai.js','founder_ai_objectives','Founder AI objective creation missing');
+includes('founder/index.html','COMPANY OBJECTIVES','Founder company objective UI missing');
+includes('founder/index.html','Run Next Safe Task','Founder objective execution control missing');
 includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
 includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
 
