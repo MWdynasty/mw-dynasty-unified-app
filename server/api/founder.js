@@ -54,7 +54,18 @@ module.exports=async function handler(req,res){
       else if(section==='finance') data=await rpc(token,'mw_founder_finance_snapshot',{});
       else if(section==='customer_health') data=await rpc(token,'mw_founder_customer_health',{});
       else if(section==='support_triage') data=await rpc(token,'mw_founder_support_triage_snapshot',{});
-      else if(section==='kpi_history'){
+      else if(section==='launch'){
+        const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
+        const ok=!!site.ok&&!!app.ok;
+        await rest(token,'founder_launch_gates?gate_code=eq.website_live',{method:'PATCH',body:{
+          status:ok?'verified':'blocked',
+          evidence:ok?`Both public domains responded successfully. Website ${site.status} / App ${app.status}.`:`Website health: ${site.status||site.error||'unavailable'}; App health: ${app.status||app.error||'unavailable'}.`,
+          verified_at:ok?new Date().toISOString():null,
+          updated_at:new Date().toISOString()
+        }});
+        data=await rpc(token,'mw_founder_launch_readiness',{});
+        data={...data,health:{website:site,app}};
+      }else if(section==='kpi_history'){
         await rpc(token,'mw_founder_capture_kpi_snapshot',{});
         data=await rpc(token,'mw_founder_kpi_history',{p_days:90});
       }else if(managementSections.has(section)) data=await rpc(token,'mw_founder_management_snapshot',{p_section:section});
@@ -211,6 +222,29 @@ module.exports=async function handler(req,res){
       if(typeof b.requiresFounder==='boolean')patch.requires_founder=b.requiresFounder;
       if(typeof b.ownerAgentCode==='string')patch.owner_agent_code=clean(b.ownerAgentCode,80)||null;
       const row=one(await rest(token,`founder_support_triage?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_launch_gate'){
+      const gateCode=clean(b.gateCode,100);
+      const status=clean(b.status,30);
+      const evidence=clean(b.evidence,3000);
+      if(!gateCode||!['pending','verified','blocked','not_applicable'].includes(status))return res.status(400).json({error:'Valid launch gate and status required.'});
+      const gate=one(await rest(token,`founder_launch_gates?gate_code=eq.${encodeURIComponent(gateCode)}&select=*&limit=1`));
+      if(!gate)return res.status(404).json({error:'Launch gate not found.'});
+      if(gate.verification_source==='automated')return res.status(400).json({error:'Automated launch gates cannot be manually overridden.'});
+      if(status==='verified'&&!evidence)return res.status(400).json({error:'Verification evidence is required before a launch gate can be marked verified.'});
+      if(gateCode==='founder_go_live'&&status==='verified'){
+        const readiness=await rpc(token,'mw_founder_launch_readiness',{});
+        if(!readiness.ready_for_founder_go_live)return res.status(409).json({error:'All other required launch gates must be verified before Founder go-live approval.'});
+      }
+      const auth=await founderAuth(req);
+      const row=one(await rest(token,`founder_launch_gates?gate_code=eq.${encodeURIComponent(gateCode)}`,{method:'PATCH',body:{
+        status,
+        evidence:evidence||gate.evidence||null,
+        verified_by:status==='verified'?auth.user.id:null,
+        verified_at:status==='verified'?new Date().toISOString():null,
+        updated_at:new Date().toISOString()
+      }}));
       return res.status(200).json({ok:true,item:row});
     }
     if(action==='create_risk'){
