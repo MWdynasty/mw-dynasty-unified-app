@@ -40,6 +40,9 @@ Optional:
 
 Never commit the Apple private key to GitHub or client code.
 
+## Billing Grace Period
+Before production launch, enable Billing Grace Period in the App Store Connect sandbox and run the failed-renewal/recovery tests there first. MW already treats Apple's verified `grace_period` status as active access and treats ordinary `billing_retry` outside grace as non-active access. After sandbox validation, enable the chosen grace-period policy in production.
+
 ## App Store Server Notifications V2
 Configure App Store Connect to send Version 2 subscription notifications to the deployed Supabase Edge Function:
 `mw-apple-server-notifications`
