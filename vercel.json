@@ -45,6 +45,14 @@
       "destination": "/api/mw?route=diagnostics"
     },
     {
+      "source": "/api/founder",
+      "destination": "/api/mw?route=founder"
+    },
+    {
+      "source": "/api/founder/ai",
+      "destination": "/api/mw?route=founder/ai"
+    },
+    {
       "source": "/api/stripe/checkout",
       "destination": "/api/mw?route=stripe/checkout"
     },
