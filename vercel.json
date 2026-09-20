@@ -41,6 +41,10 @@
       "destination": "/api/mw?route=billing"
     },
     {
+      "source": "/api/diagnostics",
+      "destination": "/api/mw?route=diagnostics"
+    },
+    {
       "source": "/api/stripe/checkout",
       "destination": "/api/mw?route=stripe/checkout"
     },
