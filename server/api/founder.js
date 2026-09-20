@@ -113,10 +113,20 @@ module.exports=async function handler(req,res){
     if(action==='review_approval'){
       const id=clean(b.id,80),decision=clean(b.decision,20);
       if(!id||!['approved','rejected'].includes(decision))return res.status(400).json({error:'Valid approval decision required.'});
+      const auth=await founderAuth(req);
+      const existing=one(await rest(token,`founder_approvals?id=eq.${encodeURIComponent(id)}&select=id,task_id,status&limit=1`));
+      if(!existing)return res.status(404).json({error:'Founder approval request not found.'});
       const row=one(await rest(token,`founder_approvals?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{
-        status:decision,reviewed_by:(await founderAuth(req)).user.id,review_note:clean(b.note,2000)||null,reviewed_at:new Date().toISOString()
+        status:decision,reviewed_by:auth.user.id,review_note:clean(b.note,2000)||null,reviewed_at:new Date().toISOString()
       }}));
-      return res.status(200).json({ok:true,item:row});
+      if(existing.task_id){
+        await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(existing.task_id)}`,{method:'PATCH',body:{
+          approval_status:decision,
+          status:decision==='approved'?'queued':'cancelled',
+          updated_at:new Date().toISOString()
+        }});
+      }
+      return res.status(200).json({ok:true,item:row,linkedTaskId:existing.task_id||null});
     }
     if(action==='create_lead'){
       const row=one(await rest(token,'founder_crm_leads',{method:'POST',body:{
