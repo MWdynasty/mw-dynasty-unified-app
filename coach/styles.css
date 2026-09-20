@@ -1663,3 +1663,62 @@ html.mw-native-app .coach-login-bg:after{
     transform:translateX(-50%)!important;
   }
 }
+
+
+/* MW COACH CLEAN CENTER REPAIR v13 */
+@media(min-width:901px){
+  /* Keep the slogan exactly at its original bottom-center location. */
+  html:not(.mw-native-app) .coach-login-standard{
+    position:absolute!important;
+    left:50%!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:24px!important;
+    transform:translateX(-50%)!important;
+    z-index:5!important;
+  }
+
+  /* Place only the login card in the open center lane between both figures. */
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    position:absolute!important;
+    left:52%!important;
+    right:auto!important;
+    top:48%!important;
+    bottom:auto!important;
+    width:min(500px,38vw)!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translate(-50%,-50%)!important;
+    z-index:12!important;
+  }
+
+  /* Website button belongs inside the card without covering title/copy. */
+  html:not(.mw-native-app) .coach-login-role-back{
+    position:absolute!important;
+    top:18px!important;
+    right:18px!important;
+    left:auto!important;
+    bottom:auto!important;
+    margin:0!important;
+    z-index:3!important;
+  }
+  html:not(.mw-native-app) .coach-login-card h2{
+    padding-right:132px!important;
+  }
+}
+@media(min-width:901px) and (max-width:1180px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    left:52%!important;
+    right:auto!important;
+    top:48%!important;
+    bottom:auto!important;
+    width:min(470px,44vw)!important;
+    transform:translate(-50%,-50%)!important;
+  }
+  html:not(.mw-native-app) .coach-login-standard{
+    left:50%!important;
+    top:auto!important;
+    bottom:24px!important;
+    transform:translateX(-50%)!important;
+  }
+}
