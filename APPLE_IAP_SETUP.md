@@ -47,7 +47,11 @@ Configure App Store Connect to send Version 2 subscription notifications to the 
 That endpoint re-checks the referenced transaction with Apple's authenticated server API before changing access. Renewals, expiration, billing retry, grace period, revocation/refund, and auto-renew-off state are therefore server controlled.
 
 ## Sponsored athletes
-Flexible per-athlete sponsorship quantity remains a Coach billing add-on and is not included in the native App Store subscription quantity. A Coach may buy the base Coach membership in iOS, then manage sponsored-athlete seats through Coach billing. Sponsored seats continue to use the MW sponsorship package/seat architecture and must never be granted from a client-side quantity value.
+Flexible per-athlete sponsorship quantity remains a Coach billing add-on and is not included in the native App Store subscription quantity. A Coach buys the base Coach membership in iOS, then can add sponsored-athlete seats from MW Account & Billing.
+
+For an Apple-paid Coach, sponsored seats use a separate Stripe sponsorship-only subscription. Its webhook calls `mw_apply_stripe_sponsorship_subscription`, which updates only `coach_sponsorship_packages` and `coach_sponsor_seats`; it never replaces the Apple base Coach subscription. The Coach's base membership and sponsorship package must both be valid before a sponsored invitation can activate athlete access.
+
+Sponsored seats continue to use the MW sponsorship package/seat architecture and must never be granted from a client-side quantity value.
 
 ## Build
 - Marketing version: 3.0.16
