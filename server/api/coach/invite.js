@@ -12,6 +12,11 @@ async function rest(path,token,{method='GET',body=null,prefer='return=representa
   return d;
 }
 
+async function syncSponsorSeat(invitationId,billingType,token){
+  const rpc=billingType==='coach_sponsored'?'mw_coach_assign_sponsor_seat':'mw_coach_release_sponsor_seat';
+  return await rest(`rpc/${rpc}`,token,{method:'POST',body:{p_invitation_id:invitationId}});
+}
+
 async function sendInviteEmail(email,inviteUrl,meta={}){
   const r=await fetch(`${SUPABASE_URL}/auth/v1/otp?redirect_to=${encodeURIComponent(inviteUrl)}`,{
     method:'POST',
@@ -49,8 +54,11 @@ module.exports=async(req,res)=>{
     if(Array.isArray(existing)&&existing[0]){
       const found=existing[0];
       if(found.billing_type!==billingType){
-        const updated=await rest(`coach_invitations?id=eq.${encodeURIComponent(found.id)}`,c.token,{method:'PATCH',body:{billing_type:billingType,expires_at:new Date(Date.now()+7*86400000).toISOString()},prefer:'return=representation'});
-        const inv=Array.isArray(updated)?updated[0]:updated;
+        const updated=await rest(`coach_invitations?id=eq.${encodeURIComponent(found.id)}`,c.token,{method:'PATCH',body:{expires_at:new Date(Date.now()+7*86400000).toISOString()},prefer:'return=representation'});
+        let inv=Array.isArray(updated)?updated[0]:updated;
+        await syncSponsorSeat(inv.id,billingType,c.token);
+        const refreshed=await rest(`coach_invitations?select=id,athlete_email,status,invite_token,expires_at,billing_type,sponsor_access_tier,sponsor_price_cents,sponsorship_ends_at&id=eq.${encodeURIComponent(inv.id)}&limit=1`,c.token);
+        inv=Array.isArray(refreshed)?refreshed[0]:inv;
         const proto=String(req.headers['x-forwarded-proto']||'https').split(',')[0].trim();
         const host=String(req.headers.host||'');
         const inviteUrl=host?`${proto}://${host}/athlete/?invite=${encodeURIComponent(inv.invite_token)}`:null;
@@ -68,9 +76,19 @@ module.exports=async(req,res)=>{
 
     const inviteToken=crypto.randomUUID();
     const expiresAt=new Date(Date.now()+7*86400000).toISOString();
-    const row={coach_user_id:c.user.id,athlete_email:email,invite_type:inviteType,team_id:null,status:'pending',invite_token:inviteToken,expires_at:expiresAt,accepted_at:null,accepted_by:null,billing_type:billingType};
+    const row={coach_user_id:c.user.id,athlete_email:email,invite_type:inviteType,team_id:null,status:'pending',invite_token:inviteToken,expires_at:expiresAt,accepted_at:null,accepted_by:null,billing_type:'self_pay'};
     const created=await rest('coach_invitations',c.token,{method:'POST',body:row});
-    const inv=Array.isArray(created)?created[0]:created;
+    let inv=Array.isArray(created)?created[0]:created;
+    if(billingType==='coach_sponsored'){
+      try{
+        await syncSponsorSeat(inv.id,billingType,c.token);
+        const refreshed=await rest(`coach_invitations?select=id,athlete_email,status,invite_token,expires_at,billing_type,sponsor_access_tier,sponsor_price_cents,sponsorship_ends_at&id=eq.${encodeURIComponent(inv.id)}&limit=1`,c.token);
+        inv=Array.isArray(refreshed)?refreshed[0]:inv;
+      }catch(seatError){
+        try{await rest(`coach_invitations?id=eq.${encodeURIComponent(inv.id)}`,c.token,{method:'DELETE',prefer:'return=minimal'})}catch{}
+        throw seatError;
+      }
+    }
     const proto=String(req.headers['x-forwarded-proto']||'https').split(',')[0].trim();
     const host=String(req.headers.host||'');
     const inviteUrl=host?`${proto}://${host}/athlete/?invite=${encodeURIComponent(inv.invite_token)}`:null;
