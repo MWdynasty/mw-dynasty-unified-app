@@ -1607,3 +1607,40 @@ html.mw-native-app .coach-login-bg:after{
     transform:translateX(-50%)!important;
   }
 }
+
+
+/* MW COACH OPTICAL CENTER FIX v11 */
+@media(min-width:901px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    position:absolute!important;
+    left:55%!important;
+    right:auto!important;
+    top:50%!important;
+    bottom:auto!important;
+    width:min(500px,38vw)!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translate(-50%,-50%)!important;
+    z-index:12!important;
+  }
+  html:not(.mw-native-app) .coach-login-standard{
+    left:55%!important;
+    bottom:auto!important;
+    top:calc(50% - 330px)!important;
+    transform:translateX(-50%)!important;
+    z-index:13!important;
+  }
+}
+@media(min-width:901px) and (max-width:1180px){
+  html:not(.mw-native-app) .coach-login-card-wrap{
+    left:55%!important;
+    right:auto!important;
+    top:50%!important;
+    bottom:auto!important;
+    width:min(470px,44vw)!important;
+    transform:translate(-50%,-50%)!important;
+  }
+  html:not(.mw-native-app) .coach-login-standard{
+    left:55%!important;
+  }
+}
