@@ -4,6 +4,7 @@ import CoreLocation
 import Speech
 import AVFoundation
 import UserNotifications
+import StoreKit
 
 final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, CLLocationManagerDelegate {
     private var webView: WKWebView!
@@ -17,6 +18,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
         let content = WKUserContentController()
         content.add(self, name: "mwPermissions")
+        content.add(self, name: "mwPurchase")
 
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -62,7 +64,26 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard message.name == "mwPermissions", let body = message.body as? [String: Any], let type = body["type"] as? String else { return }
+        guard let body = message.body as? [String: Any] else { return }
+        if message.name == "mwPurchase" {
+            guard let planCode = body["planCode"] as? String,
+                  let accessToken = body["accessToken"] as? String,
+                  !planCode.isEmpty, !accessToken.isEmpty else {
+                sendPurchaseResult(["ok": false, "error": "Your MW session expired. Sign in again."])
+                return
+            }
+            let sponsorQuantity = body["sponsorQuantity"] as? Int ?? 0
+            if sponsorQuantity > 0 {
+                sendPurchaseResult(["ok": false, "error": "Sponsored-athlete seats are managed separately from the App Store subscription. Choose the Coach membership first, then add sponsored seats from Coach billing."])
+                return
+            }
+            Task { @MainActor [weak self] in
+                await self?.beginMWPurchase(planCode: planCode, accessToken: accessToken)
+            }
+            return
+        }
+
+        guard message.name == "mwPermissions", let type = body["type"] as? String else { return }
         permissionType = type
         switch type {
         case "location":
@@ -165,6 +186,106 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         webView.loadHTMLString(html, baseURL: nil)
     }
 
+    @MainActor
+    private func beginMWPurchase(planCode: String, accessToken: String) async {
+        let products: [String: String] = [
+            "mw_athlete": "com.mwdynasty.app.athlete.monthly",
+            "coach_core": "com.mwdynasty.app.coach.core.monthly",
+            "coach_intelligence": "com.mwdynasty.app.coach.intelligence.monthly",
+            "mw_sprint_performance": "com.mwdynasty.app.coach.sprintperformance.monthly"
+        ]
+        guard let productID = products[planCode] else {
+            sendPurchaseResult(["ok": false, "error": "This MW membership is not available for App Store purchase."])
+            return
+        }
+        guard let accountToken = userIDFromJWT(accessToken) else {
+            sendPurchaseResult(["ok": false, "error": "Your MW account could not be attached to the App Store purchase. Sign in again."])
+            return
+        }
+
+        do {
+            guard let product = try await Product.products(for: [productID]).first else {
+                sendPurchaseResult(["ok": false, "error": "This MW App Store product is not available yet."])
+                return
+            }
+            let result = try await product.purchase(options: [.appAccountToken(accountToken)])
+            switch result {
+            case .success(let verification):
+                switch verification {
+                case .verified(let transaction):
+                    let verified = await verifyPurchaseWithMWServer(
+                        transactionID: String(transaction.id),
+                        planCode: planCode,
+                        accessToken: accessToken
+                    )
+                    if verified {
+                        await transaction.finish()
+                        sendPurchaseResult(["ok": true, "planCode": planCode, "transactionId": String(transaction.id)])
+                    }
+                case .unverified(_, _):
+                    sendPurchaseResult(["ok": false, "error": "The App Store could not verify this purchase on this device."])
+                }
+            case .pending:
+                sendPurchaseResult(["ok": false, "pending": true, "error": "Your App Store purchase is pending approval. MW access will stay locked until Apple confirms it."])
+            case .userCancelled:
+                sendPurchaseResult(["ok": false, "cancelled": true, "error": "Purchase cancelled. Your MW membership choice is saved."])
+            @unknown default:
+                sendPurchaseResult(["ok": false, "error": "The App Store returned an unknown purchase state."])
+            }
+        } catch {
+            sendPurchaseResult(["ok": false, "error": error.localizedDescription])
+        }
+    }
+
+    private func userIDFromJWT(_ token: String) -> UUID? {
+        let parts = token.split(separator: ".")
+        guard parts.count > 1 else { return nil }
+        var payload = String(parts[1]).replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        while payload.count % 4 != 0 { payload += "=" }
+        guard let data = Data(base64Encoded: payload),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let sub = json["sub"] as? String else { return nil }
+        return UUID(uuidString: sub)
+    }
+
+    private func verifyPurchaseWithMWServer(transactionID: String, planCode: String, accessToken: String) async -> Bool {
+        guard let url = URL(string: "https://keqgunlfwhjgcsurynef.supabase.co/functions/v1/mw-apple-purchase-verify") else {
+            sendPurchaseResult(["ok": false, "error": "MW purchase verification URL is unavailable."])
+            return false
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm", forHTTPHeaderField: "apikey")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: [
+            "transactionId": transactionID,
+            "planCode": planCode
+        ])
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 500
+            let payload = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
+            if (200..<300).contains(status), payload["ok"] as? Bool == true, payload["accessActive"] as? Bool == true {
+                return true
+            }
+            let message = payload["error"] as? String ?? "MW could not confirm the App Store subscription."
+            sendPurchaseResult(["ok": false, "error": message])
+            return false
+        } catch {
+            sendPurchaseResult(["ok": false, "error": "The purchase completed, but MW could not confirm access yet. Reopen the app and restore your purchase."])
+            return false
+        }
+    }
+
+    private func sendPurchaseResult(_ result: [String: Any]) {
+        guard JSONSerialization.isValidJSONObject(result),
+              let data = try? JSONSerialization.data(withJSONObject: result),
+              let json = String(data: data, encoding: .utf8) else { return }
+        webView.evaluateJavaScript("window.mwNativePurchaseResult && window.mwNativePurchaseResult(\(json));")
+    }
+
     @available(iOS 15.0, *)
     func webView(_ webView: WKWebView, requestMediaCapturePermissionFor origin: WKSecurityOrigin, initiatedByFrame frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: @escaping (WKPermissionDecision) -> Void) {
         decisionHandler(.prompt)
@@ -172,5 +293,6 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     deinit {
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPermissions")
+        webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPurchase")
     }
 }
