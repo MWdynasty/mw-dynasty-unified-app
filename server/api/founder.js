@@ -78,8 +78,16 @@ module.exports=async function handler(req,res){
         return res.status(200).json({ok:true,data:{...data,health:{website:site,app}}});
       }
       if(section==='ai_company'){
-        const runs=await rest(token,'founder_ai_runs?select=id,task_id,agent_code,run_type,status,model,output_summary,metadata,created_at&order=created_at.desc&limit=50');
-        return res.status(200).json({ok:true,data:{...data,recent_runs:runs}});
+        const [runs,playbooks]=await Promise.all([
+          rest(token,'founder_ai_runs?select=id,task_id,agent_code,run_type,status,model,output_summary,metadata,created_at&order=created_at.desc&limit=50'),
+          rpc(token,'mw_founder_ai_playbooks_snapshot',{})
+        ]);
+        return res.status(200).json({ok:true,data:{
+          ...data,
+          agents:Array.isArray(playbooks?.agents)?playbooks.agents:(data.agents||[]),
+          recent_runs:runs,
+          department_briefs:Array.isArray(playbooks?.department_briefs)?playbooks.department_briefs:[]
+        }});
       }
       return res.status(200).json({ok:true,data});
     }
