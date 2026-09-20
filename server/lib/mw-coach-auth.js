@@ -25,9 +25,16 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   const role=String(profile.role||'athlete');
   const privileged=['founder_owner','admin','coach'].includes(role);
   if(role==='coach'){
-    const entitlement=await one(`coach_access_entitlements?select=coach_user_id,status&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=1`,token);
-    if(!entitlement){
-      throw Object.assign(new Error('An active MW Coach membership is required for Coach access.'),{status:403});
+    const [entitlement,billing]=await Promise.all([
+      one(`coach_access_entitlements?select=coach_user_id,status,access_tier&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=1`,token),
+      one(`billing_subscriptions?select=plan_code,status,current_period_end,provider,billing_type&beneficiary_user_id=eq.${encodeURIComponent(user.id)}&audience=eq.coach&limit=1`,token)
+    ]);
+    const paidStatus=['active','trialing','cancel_at_period_end'].includes(String(billing?.status||''));
+    const paidPeriod=!billing?.current_period_end||new Date(billing.current_period_end).getTime()>Date.now();
+    const expectedPlan={core:'coach_core',intelligence:'coach_intelligence',mw_sprint_performance:'mw_sprint_performance'}[String(entitlement?.access_tier||'')];
+    const billingMatches=String(billing?.billing_type||'')==='individual'&&String(billing?.plan_code||'')===String(expectedPlan||'');
+    if(!entitlement||!billing||!paidStatus||!paidPeriod||!billingMatches){
+      throw Object.assign(new Error('An active paid MW Coach membership is required for Coach access.'),{status:403});
     }
   }
   const athlete=await one(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
