@@ -560,32 +560,130 @@ document.addEventListener('click',function(e){const b=e.target.closest&&e.target
 function renderCoachApplication(){
   const existing=document.getElementById('coachApplyModal');if(existing)existing.remove();
   const wrap=document.createElement('div');wrap.id='coachApplyModal';wrap.className='coach-apply-modal';
-  wrap.innerHTML=`<div class="coach-apply-backdrop" data-close="1"></div><section class="coach-apply-card" role="dialog" aria-modal="true" aria-labelledby="coachApplyTitle">
-    <div class="coach-apply-head"><div><div class="coach-apply-kicker">MW DYNASTY</div><h2 id="coachApplyTitle">Create Your Coach Account</h2><p>Start your coach signup here. Coach access is reviewed before it is activated.</p></div><button type="button" class="coach-apply-close" data-close="1" aria-label="Close">×</button></div>
+  wrap.innerHTML=`<div class="coach-apply-backdrop" data-close="1"></div><section class="coach-apply-card coach-signup-wizard" role="dialog" aria-modal="true" aria-labelledby="coachApplyTitle">
+    <div class="coach-apply-head">
+      <div><div class="coach-apply-kicker">MW DYNASTY • COACH ACCESS</div><h2 id="coachApplyTitle">Apply for Coach Access</h2><p>Coach accounts are verified before access is activated. Complete the steps below to build your coach profile and verify your coaching role.</p></div>
+      <button type="button" class="coach-apply-close" data-close="1" aria-label="Close">×</button>
+    </div>
+    <div class="coach-signup-progress" aria-label="Coach application progress">
+      <div class="active" data-progress-step="1"><b>1</b><span>Profile</span></div>
+      <div data-progress-step="2"><b>2</b><span>Verification</span></div>
+      <div data-progress-step="3"><b>3</b><span>Review</span></div>
+    </div>
     <form id="coachApplyForm" class="coach-apply-form">
-      <div class="coach-apply-two"><label>First name<input id="applyFirst" required maxlength="80"></label><label>Last name<input id="applyLast" required maxlength="80"></label></div>
-      <label>Email<input id="applyEmail" type="email" required maxlength="320" autocomplete="email"></label>
-      <label>School / club / organization<input id="applyOrg" maxlength="160" placeholder="Optional"></label>
-      <label>Coach role / title<input id="applyCoachTitle" maxlength="120" placeholder="Head Coach, Sprints Coach, Assistant Coach…"></label>
-      <div class="coach-apply-two"><label>City<input id="applyCity" maxlength="100"></label><label>State<input id="applyState" maxlength="80"></label></div>
-      <div class="coach-apply-two"><label>Coaching level<select id="applyLevel"><option value="">Select</option><option>High School</option><option>College</option><option>Club / AAU</option><option>Private Coach</option><option>Middle School</option><option>Other</option></select></label><label>Years coaching<input id="applyYears" type="number" min="0" max="80" inputmode="numeric"></label></div>
-      <label>Website or social profile<input id="applySocial" maxlength="300" placeholder="Optional"></label>
-      <label>Why are you requesting MW Coach access?<textarea id="applyReason" rows="5" minlength="20" maxlength="2000" required placeholder="Tell us about who you coach and how you plan to use the platform."></textarea></label>
-      <div id="coachApplyMessage" class="login-message" role="status" aria-live="polite"></div>
-      <button id="coachApplySubmit" class="coach-login-submit" type="submit"><span>Continue Coach Signup</span><span>→</span></button>
+      <section class="coach-signup-step active" data-signup-step="1">
+        <div class="coach-signup-step-head"><span>STEP 1 OF 3</span><h3>Coach Profile</h3><p>Tell MW Dynasty who you are and where you coach.</p></div>
+        <div class="coach-apply-two"><label>First name<input id="applyFirst" required maxlength="80" autocomplete="given-name"></label><label>Last name<input id="applyLast" required maxlength="80" autocomplete="family-name"></label></div>
+        <label>Email<input id="applyEmail" type="email" required maxlength="320" autocomplete="email"></label>
+        <label>School / club / organization<input id="applyOrg" required maxlength="160" placeholder="Your current program or organization"></label>
+        <label>Coach role / title<input id="applyCoachTitle" required maxlength="120" placeholder="Head Coach, Sprints Coach, Assistant Coach…"></label>
+        <div class="coach-apply-two"><label>City<input id="applyCity" required maxlength="100" autocomplete="address-level2"></label><label>State<input id="applyState" required maxlength="80" autocomplete="address-level1"></label></div>
+        <button class="coach-login-submit coach-signup-next" type="button" data-next-step="2"><span>Continue to Verification</span><span>→</span></button>
+      </section>
+
+      <section class="coach-signup-step" data-signup-step="2">
+        <div class="coach-signup-step-head"><span>STEP 2 OF 3</span><h3>Verify Your Coaching Role</h3><p>This information helps MW Dynasty confirm that coach access is being requested by a real coach.</p></div>
+        <div class="coach-apply-two">
+          <label>Coaching level<select id="applyLevel" required><option value="">Select</option><option>High School</option><option>College</option><option>Club / AAU</option><option>Private Coach</option><option>Middle School</option><option>Professional</option><option>Other</option></select></label>
+          <label>Years coaching<input id="applyYears" type="number" min="0" max="80" inputmode="numeric" required></label>
+        </div>
+        <label>Approximate athletes coached<input id="applyAthleteCount" type="number" min="1" max="5000" inputmode="numeric" required placeholder="Example: 24"></label>
+        <label>How can we verify your coaching role?
+          <select id="applyVerifyMethod" required>
+            <option value="">Select a verification method</option>
+            <option>School or organization staff directory</option>
+            <option>School or organization website</option>
+            <option>Professional coaching profile</option>
+            <option>Program administrator / reference contact</option>
+            <option>Other verifiable source</option>
+          </select>
+        </label>
+        <label>Verification link or contact<input id="applyVerifyDetail" required maxlength="500" placeholder="Website URL, staff directory, administrator name/email, or other verification detail"></label>
+        <label>Website or social coaching profile<input id="applySocial" maxlength="300" placeholder="Optional additional profile"></label>
+        <div class="coach-signup-actions"><button class="coach-signup-back" type="button" data-prev-step="1">← Back</button><button class="coach-login-submit coach-signup-next" type="button" data-next-step="3"><span>Continue to Review</span><span>→</span></button></div>
+      </section>
+
+      <section class="coach-signup-step" data-signup-step="3">
+        <div class="coach-signup-step-head"><span>STEP 3 OF 3</span><h3>Review & Submit</h3><p>Your application will go to MW Dynasty for review. Submitting this application does not unlock the Coach app.</p></div>
+        <div id="coachApplySummary" class="coach-apply-summary"></div>
+        <label>How do you plan to use MW Coach?<textarea id="applyReason" rows="5" minlength="20" maxlength="1600" required placeholder="Tell us about your athletes, program, and how you plan to use MW Dynasty."></textarea></label>
+        <label class="coach-apply-certify"><input id="applyCertify" type="checkbox" required><span>I certify that the coaching and organization information I provided is accurate and may be verified by MW Dynasty.</span></label>
+        <div id="coachApplyMessage" class="login-message" role="status" aria-live="polite"></div>
+        <div class="coach-signup-actions"><button class="coach-signup-back" type="button" data-prev-step="2">← Back</button><button id="coachApplySubmit" class="coach-login-submit" type="submit"><span>Submit for Coach Verification</span><span>→</span></button></div>
+      </section>
     </form>
-    <p class="coach-apply-foot">After review and approval, MW Dynasty will activate your coach access and send the next account-setup step.</p>
+    <p class="coach-apply-foot"><b>Access stays locked while your application is pending.</b> After Founder/Admin approval and tier assignment, MW Dynasty sends a controlled invitation to finish account setup and create your password.</p>
   </section>`;
   document.body.appendChild(wrap);
   wrap.querySelectorAll('[data-close="1"]').forEach(x=>x.addEventListener('click',()=>wrap.remove()));
+  wrap.querySelectorAll('[data-next-step]').forEach(x=>x.addEventListener('click',()=>goCoachSignupStep(Number(x.dataset.nextStep))));
+  wrap.querySelectorAll('[data-prev-step]').forEach(x=>x.addEventListener('click',()=>showCoachSignupStep(Number(x.dataset.prevStep))));
   document.getElementById('coachApplyForm').addEventListener('submit',submitCoachApplication);
 }
+function showCoachSignupStep(step){
+  document.querySelectorAll('#coachApplyModal [data-signup-step]').forEach(x=>x.classList.toggle('active',Number(x.dataset.signupStep)===step));
+  document.querySelectorAll('#coachApplyModal [data-progress-step]').forEach(x=>{const n=Number(x.dataset.progressStep);x.classList.toggle('active',n===step);x.classList.toggle('done',n<step)});
+  document.querySelector('#coachApplyModal .coach-apply-card')?.scrollTo({top:0,behavior:'smooth'});
+}
+function goCoachSignupStep(step){
+  const current=step-1;
+  const section=document.querySelector(`#coachApplyModal [data-signup-step="${current}"]`);
+  if(section){
+    const fields=[...section.querySelectorAll('input,select,textarea')];
+    for(const field of fields){if(!field.checkValidity()){field.reportValidity();field.focus();return}}
+  }
+  if(step===3)renderCoachApplySummary();
+  showCoachSignupStep(step);
+}
+function renderCoachApplySummary(){
+  const v=id=>escapeHtml((document.getElementById(id)?.value||'').trim());
+  const summary=document.getElementById('coachApplySummary');if(!summary)return;
+  summary.innerHTML=`<div><span>Coach</span><b>${v('applyFirst')} ${v('applyLast')}</b></div>
+    <div><span>Organization</span><b>${v('applyOrg')}</b></div>
+    <div><span>Role</span><b>${v('applyCoachTitle')}</b></div>
+    <div><span>Level</span><b>${v('applyLevel')}</b></div>
+    <div><span>Verification</span><b>${v('applyVerifyMethod')}</b></div>`;
+}
 async function submitCoachApplication(e){
-  e.preventDefault();const b=document.getElementById('coachApplySubmit'),m=document.getElementById('coachApplyMessage');
-  const payload={first_name:document.getElementById('applyFirst').value.trim(),last_name:document.getElementById('applyLast').value.trim(),email:document.getElementById('applyEmail').value.trim(),organization:document.getElementById('applyOrg').value.trim(),coach_title:document.getElementById('applyCoachTitle').value.trim(),city:document.getElementById('applyCity').value.trim(),state:document.getElementById('applyState').value.trim(),coaching_level:document.getElementById('applyLevel').value,years_coaching:document.getElementById('applyYears').value||null,website_or_social:document.getElementById('applySocial').value.trim(),reason:document.getElementById('applyReason').value.trim()};
-  if(payload.reason.length<20){m.textContent='Please tell us a little more about your coaching background and intended use.';m.className='login-message show error';return}
-  b.disabled=true;b.innerHTML='<span class="login-spinner"></span><span>Submitting…</span>';m.textContent='Submitting for review…';m.className='login-message show neutral';
-  try{const r=await fetch(`${SUPABASE_URL}/functions/v1/mw-coach-apply`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Application could not be submitted.');m.textContent=d.message||'Application received. MW Dynasty will review your request.';m.className='login-message show success';b.innerHTML='<span>Application Submitted ✓</span>';window.setTimeout(()=>document.getElementById('coachApplyModal')?.remove(),2400)}catch(err){m.textContent=err.message;m.className='login-message show error';b.disabled=false;b.innerHTML='<span>Continue Coach Signup</span><span>→</span>'}
+  e.preventDefault();
+  const b=document.getElementById('coachApplySubmit'),m=document.getElementById('coachApplyMessage');
+  const form=document.getElementById('coachApplyForm');
+  if(!form.checkValidity()){form.reportValidity();return}
+  const rawReason=document.getElementById('applyReason').value.trim();
+  if(rawReason.length<20){m.textContent='Please tell us a little more about your coaching background and intended use.';m.className='login-message show error';return}
+  const verifyMethod=document.getElementById('applyVerifyMethod').value;
+  const verifyDetail=document.getElementById('applyVerifyDetail').value.trim();
+  const athleteCount=document.getElementById('applyAthleteCount').value;
+  const payload={
+    first_name:document.getElementById('applyFirst').value.trim(),
+    last_name:document.getElementById('applyLast').value.trim(),
+    email:document.getElementById('applyEmail').value.trim(),
+    organization:document.getElementById('applyOrg').value.trim(),
+    coach_title:document.getElementById('applyCoachTitle').value.trim(),
+    city:document.getElementById('applyCity').value.trim(),
+    state:document.getElementById('applyState').value.trim(),
+    coaching_level:document.getElementById('applyLevel').value,
+    years_coaching:document.getElementById('applyYears').value||null,
+    website_or_social:document.getElementById('applySocial').value.trim(),
+    reason:`Verification method: ${verifyMethod}\nVerification detail: ${verifyDetail}\nApproximate athletes coached: ${athleteCount}\n\nIntended use: ${rawReason}`
+  };
+  b.disabled=true;b.innerHTML='<span class="login-spinner"></span><span>Submitting for verification…</span>';m.textContent='Creating your pending coach application…';m.className='login-message show neutral';
+  try{
+    const r=await fetch(`${SUPABASE_URL}/functions/v1/mw-coach-apply`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Application could not be submitted.');
+    const card=document.querySelector('#coachApplyModal .coach-apply-card');
+    if(card)card.innerHTML=`<div class="coach-apply-result">
+      <div class="coach-apply-result-icon">✓</div>
+      <div class="coach-apply-kicker">APPLICATION RECEIVED</div>
+      <h2>Coach Verification Pending</h2>
+      <p>Your MW Dynasty Coach application has been submitted for review. You do <b>not</b> have Coach app access yet.</p>
+      <div class="coach-apply-next-steps"><b>What happens next</b><span>1. MW Dynasty verifies your coaching information.</span><span>2. Founder/Admin reviews the application and assigns the approved Coach tier.</span><span>3. If approved, you receive a secure invitation to finish account setup and create your password.</span><span>4. Only then can the Coach app be activated.</span></div>
+      <button type="button" class="coach-login-submit" data-finish-coach-apply="1"><span>Return to Coach Sign In</span><span>→</span></button>
+    </div>`;
+    card.querySelector('[data-finish-coach-apply]')?.addEventListener('click',()=>document.getElementById('coachApplyModal')?.remove());
+  }catch(err){
+    m.textContent=err.message;m.className='login-message show error';b.disabled=false;b.innerHTML='<span>Submit for Coach Verification</span><span>→</span>';
+  }
 }
 async function verifyCoachAccess(session){
   const r=await fetch('/api/coach/access',{headers:{Authorization:`Bearer ${session.access_token}`}});const d=await r.json().catch(()=>({}));
