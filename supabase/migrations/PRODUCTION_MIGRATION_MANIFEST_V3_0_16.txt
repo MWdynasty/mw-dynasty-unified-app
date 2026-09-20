@@ -120,3 +120,7 @@ Note: v7/v8 numbering is shared with separate Founder security-review and AI-bac
 - Adds daily, weekly, and monthly operating duties, data-domain boundaries, allowed internal capabilities, and escalation rules to the AI workforce.
 - Adds durable department operating briefs so Finance, Technology, Product, Marketing, Sales, Customer Success, Performance, Analytics, Legal/Risk, People/HR, Operations, and Executive leadership can report into the Founder OS.
 
+20260920_founder_os_v17_partnerships.sql
+- Adds a dedicated Founder-controlled school/district/club/team/brand partnership pipeline.
+- Adds AI-assisted internal proposal drafting with mandatory Founder approval before a proposal may be recorded as sent; the AI cannot send proposals or create binding terms.
+
