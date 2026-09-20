@@ -177,6 +177,7 @@ Likely data linked to the user's account:
 - Coach/athlete messages
 - Support requests
 - User-submitted text and images sent to Coach MW
+- Other diagnostic data used for launch reliability, including app/build, route, network/API failure state, sync timing, and entitlement state
 
 Primary purposes:
 - App functionality
@@ -184,6 +185,7 @@ Primary purposes:
 - Personalization of training/coaching features
 - Customer support
 - Security and fraud prevention
+- Diagnostics and product reliability
 
 Precise GPS coordinates used by the Distance Marker are processed for active distance measurement and, according to the production privacy policy, are not stored on MW servers. Do not mark precise location as collected unless production behavior changes.
 
