@@ -872,3 +872,84 @@ html.mw-native-app .coach-login-bg:after{
     min-height:0!important;
   }
 }
+
+
+/* MW NATIVE COACH FLOW FIX v3 */
+@media(max-width:640px){
+  html.mw-native-app .coach-login-screen{
+    min-height:100svh!important;
+    padding:0!important;
+    overflow:auto!important;
+    background:#02070b!important;
+  }
+  html.mw-native-app .coach-login-stage{
+    box-sizing:border-box!important;
+    display:block!important;
+    min-height:100svh!important;
+    padding:max(58px,calc(env(safe-area-inset-top) + 16px)) 0 max(24px,env(safe-area-inset-bottom))!important;
+    overflow:hidden!important;
+  }
+
+  /* Keep the crest/wordmark in normal document flow so it can never overlap the form. */
+  html.mw-native-app .coach-login-header{
+    position:relative!important;
+    inset:auto!important;
+    margin:0 18px!important;
+    padding:0!important;
+    width:auto!important;
+    height:auto!important;
+    display:block!important;
+    z-index:9!important;
+  }
+  html.mw-native-app .coach-login-brand{
+    position:relative!important;
+    inset:auto!important;
+    margin:0!important;
+    transform:none!important;
+  }
+
+  /* Match the Athlete screen: brand first, then a clean gap, then the sign-in card. */
+  html.mw-native-app .coach-login-content{
+    position:relative!important;
+    inset:auto!important;
+    min-height:0!important;
+    height:auto!important;
+    display:block!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  html.mw-native-app .coach-login-card-wrap{
+    position:relative!important;
+    inset:auto!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    width:auto!important;
+    height:auto!important;
+    margin:118px 12px 0!important;
+    padding:0!important;
+    display:block!important;
+    transform:none!important;
+    z-index:7!important;
+  }
+  html.mw-native-app .coach-login-card{
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    max-width:430px!important;
+    margin:0 auto!important;
+    transform:none!important;
+  }
+
+  /* Prevent iOS focus/scroll behavior from pulling the logo into the form. */
+  html.mw-native-app .coach-login-form,
+  html.mw-native-app .coach-field,
+  html.mw-native-app .coach-login-options,
+  html.mw-native-app .coach-login-submit,
+  html.mw-native-app .coach-login-athlete-switch,
+  html.mw-native-app .coach-login-access-note{
+    position:relative!important;
+    z-index:1!important;
+  }
+}
