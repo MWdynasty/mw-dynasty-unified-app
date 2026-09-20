@@ -2409,6 +2409,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       <div class="mwLoginCardHead"><div class="mwAthleteOnboardProgress">ACCOUNT ✓ &nbsp;•&nbsp; <b>MEMBERSHIP</b> &nbsp;•&nbsp; PROFILE &nbsp;•&nbsp; ASSESSMENT</div><h2>One membership. Everything you need.</h2><p>Your account is ready. Complete membership, then we’ll build your athlete profile and place you in the right starting point.</p></div>
       <div class="mwAthleteMembershipPlan"><span>MW ATHLETE</span><b>&#36;19<small>/month</small></b><p>Track + strength programming, Sprint School, performance tools, progress tracking, and Coach MW.</p><em>Cancel anytime.</em></div>
       <button id="mwAthleteMembershipContinue" class="mwLoginButton" type="button">${isNative?'Continue to App Purchase':'Continue to Secure Payment'} <span>→</span></button>
+      ${isNative?'<button id="mwAthleteRestorePurchase" class="mwLoginLink" type="button" style="width:100%;margin-top:10px">Restore App Store Purchase</button>':''}
       <div id="mwAuthStatus" class="mwAuthStatus"></div>
       <div class="mwLoginAccessNote">After payment, you’ll continue directly to your Athlete Profile and Entry Assessment.</div>`;
     document.getElementById('mwAthleteMembershipContinue').onclick=async()=>{
@@ -2424,6 +2425,14 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
         await beginWebsiteCheckout(session.access_token);
       }catch(e){authStatus(e.message||'Membership setup could not continue.',true);btn.disabled=false}
     };
+    if(isNative&&document.getElementById('mwAthleteRestorePurchase')){
+      document.getElementById('mwAthleteRestorePurchase').onclick=()=>{
+        const restore=window.webkit?.messageHandlers?.mwRestorePurchase;
+        if(!restore){authStatus('App Store restore is not available in this build yet.',true);return}
+        authStatus('Checking your App Store membership…');
+        restore.postMessage({planCode:'mw_athlete',accessToken:session.access_token});
+      };
+    }
   }
   window.mwNativePurchaseResult=function(result){
     const btn=document.getElementById('mwAthleteMembershipContinue');
