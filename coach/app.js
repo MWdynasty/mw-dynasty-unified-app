@@ -745,7 +745,7 @@ function renderCoachMembershipSelection(session=authSession){
   let selected='core',sponsorOn=false,sponsorQty=1;
   const planCards=()=>Object.entries(PLANS).map(([key,p])=>`<button type="button" class="coach-member-plan ${key===selected?'selected':''}" data-member-plan="${key}">
     <span class="coach-member-check">✓</span><span class="coach-member-plan-name">${escapeHtml(p.name)}</span>
-    <b>${p.monthly}<small>/mo</small></b><span>${key==='core'?'Team management + core coaching tools':key==='intelligence'?'Core tools + Coach MW intelligence':'Complete MW sprint system + intelligence'}</span>
+    <b>&#36;${p.monthly}<small>/mo</small></b><span>${key==='core'?'Team management + core coaching tools':key==='intelligence'?'Core tools + Coach MW intelligence':'Complete MW sprint system + intelligence'}</span>
   </button>`).join('');
   const draw=()=>{
     const p=PLANS[selected],sponsorTotal=sponsorOn?sponsorQty*p.sponsor:0,total=p.monthly+sponsorTotal;
@@ -757,9 +757,9 @@ function renderCoachMembershipSelection(session=authSession){
         <div class="coach-sponsor-choice">
           <div><b>Sponsor athletes?</b><span>Optional. You can also add sponsored athletes later.</span></div>
           <div class="coach-sponsor-buttons"><button type="button" data-sponsor="no" class="${!sponsorOn?'selected':''}">No thanks</button><button type="button" data-sponsor="yes" class="${sponsorOn?'selected':''}">Yes, add athletes</button></div>
-          ${sponsorOn?`<div class="coach-sponsor-qty"><button type="button" data-qty="-1" aria-label="Remove one athlete">−</button><div><b>${sponsorQty}</b><span>Sponsored athlete${sponsorQty===1?'':'s'} · ${p.sponsor}/athlete/mo</span></div><button type="button" data-qty="1" aria-label="Add one athlete">+</button></div>`:''}
+          ${sponsorOn?`<div class="coach-sponsor-qty"><button type="button" data-qty="-1" aria-label="Remove one athlete">−</button><div><b>${sponsorQty}</b><span>Sponsored athlete${sponsorQty===1?'':'s'} · &#36;${p.sponsor}/athlete/mo</span></div><button type="button" data-qty="1" aria-label="Add one athlete">+</button></div>`:''}
         </div>
-        <div class="coach-membership-total"><div><span>Coach membership</span><b>${p.monthly}/mo</b></div>${sponsorOn?`<div><span>${sponsorQty} sponsored athlete${sponsorQty===1?'':'s'}</span><b>${sponsorTotal}/mo</b></div>`:''}<div class="total"><span>Total today</span><b>${total}/mo</b></div></div>
+        <div class="coach-membership-total"><div><span>Coach membership</span><b>&#36;${p.monthly}/mo</b></div>${sponsorOn?`<div><span>${sponsorQty} sponsored athlete${sponsorQty===1?'':'s'}</span><b>&#36;${sponsorTotal}/mo</b></div>`:''}<div class="total"><span>Total today</span><b>&#36;${total}/mo</b></div></div>
         <button type="button" id="coachMembershipContinue" class="coach-login-submit coach-membership-continue"><span>${isNative?'Continue to App Purchase':'Continue to Secure Payment'}</span><span>→</span></button>
         <p class="coach-membership-note">No setup fee. Sponsorship is optional. Your Coach dashboard unlocks after payment is confirmed.</p>
         <div id="coachMembershipMessage" class="login-message" role="status" aria-live="polite"></div>
