@@ -77,6 +77,12 @@ label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900
           <button id="billingBtn" class="btn" style="display:none">Manage Billing</button>
           <button id="sponsorBillingBtn" class="btn ghost" style="display:none">Manage Sponsored Seats</button>
         </div>
+        <div id="selfPayWrap" class="sponsorBox" style="display:none;margin-top:14px">
+          <div class="eyebrow">Continue With Your Own Membership</div>
+          <div id="selfPayTitle" class="title" style="font-size:18px">Keep your MW access</div>
+          <p id="selfPayCopy" class="muted"></p>
+          <div class="actions"><button id="selfPayBtn" class="btn primary" type="button">Continue</button></div>
+        </div>
         <div id="activationWrap" style="display:none;margin-top:14px">
           <div class="eyebrow">Membership Options</div>
           <div id="coachChooser" style="display:none">
@@ -161,10 +167,55 @@ function render(data){
   el('sponsorSeatsRow').style.display=isCoach?'flex':'none';
   el('sponsorSeatsValue').textContent=isCoach?`${sponsorUsed} used · ${sponsorAvailable} available · ${sponsorTotal} total`:'—';
   el('sponsorBillingBtn').style.display=isCoach&&sponsorTotal>0?'inline-block':'none';
-  // Unpaid members see normal activation. Apple-paid Coaches can create their first
-  // sponsored-seat package here; an existing package is managed instead of duplicated.
-  el('activationWrap').style.display=(!stripe&&!apple)||((apple||stripe)&&isCoach&&sponsorTotal===0)?'block':'none';
+  const sponsoredAthlete=!isCoach&&String(b.billing_type||'')==='coach_sponsored';
+  el('selfPayWrap').style.display=sponsoredAthlete?'block':'none';
+  if(sponsoredAthlete)renderSelfPay(b);
+  // Unpaid members see normal activation. Sponsored athletes use the dedicated handoff
+  // so they are never charged while a Coach-paid period is still active.
+  el('activationWrap').style.display=!sponsoredAthlete&&((!stripe&&!apple)||((apple||stripe)&&isCoach&&sponsorTotal===0))?'block':'none';
   renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:(apple||stripe)&&isCoach,sponsorTotal});
+}
+function renderSelfPay(b){
+  const pending=b.pending_transition||null,btn=el('selfPayBtn'),title=el('selfPayTitle'),copy=el('selfPayCopy');
+  btn.disabled=false;btn.onclick=null;
+  if(!pending){
+    title.textContent='Keep MW Dynasty after Coach sponsorship';
+    copy.textContent='You are currently sponsored by your Coach. You can schedule your own $19/month Athlete membership to begin only after the Coach-paid period ends—no overlapping charge.';
+    btn.textContent='Switch to My Own Membership';
+    btn.onclick=requestSelfPayTransition;
+    return;
+  }
+  const opensAt=pending.checkout_opens_at||pending.effective_at,openMs=opensAt?new Date(opensAt).getTime():NaN,now=Date.now();
+  const grace=pending.grace_ends_at?dateText(pending.grace_ends_at):null;
+  title.textContent='Self-pay transition scheduled';
+  if(Number.isFinite(openMs)&&openMs>now){
+    copy.textContent=`Your Coach sponsorship stays active through ${dateText(opensAt)}. Your own membership checkout opens then, so you are not charged twice.`;
+    btn.textContent=`Checkout opens ${dateText(opensAt)}`;btn.disabled=true;return;
+  }
+  copy.textContent=`Your Coach-paid period has ended. Activate your own Athlete membership now${grace?` during the transition window ending ${grace}`:''} to continue without interruption.`;
+  btn.textContent='Activate My Athlete Membership — $19/mo';
+  btn.onclick=()=>startSelfPayCheckout(pending.id);
+}
+async function requestSelfPayTransition(){
+  const btn=el('selfPayBtn');btn.disabled=true;btn.textContent='Scheduling…';billingMessage('');
+  try{
+    const r=await fetch('/api/billing',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:JSON.stringify({action:'athlete_self_pay',billingCycle:'monthly'})});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Self-pay transition could not be scheduled.');
+    billingMessage('Your own membership is scheduled to begin after Coach sponsorship ends. No overlapping charge.');
+    await load();
+  }catch(e){billingMessage(e.message||'Self-pay transition could not be scheduled.',true);btn.disabled=false;btn.textContent='Switch to My Own Membership'}
+}
+async function startSelfPayCheckout(transitionId){
+  const btn=el('selfPayBtn');btn.disabled=true;
+  if(document.documentElement.classList.contains('mw-native-app')){
+    const native=window.webkit?.messageHandlers?.mwPurchase;
+    if(!native){billingMessage('App Store purchase is not available in this build yet.',true);btn.disabled=false;return}
+    billingMessage('Opening the App Store purchase…');
+    native.postMessage({planCode:'mw_athlete',sponsorQuantity:0,accessToken:session.access_token});
+    return;
+  }
+  await checkout('mw_athlete',0,false,transitionId);
+  btn.disabled=false;
 }
 function renderPlanActions(role,options={}){
   const coach=coachRole(role),appleCoach=!!options.appleCoach;
@@ -243,13 +294,13 @@ function setCoachMembershipTab(tab){
   el('coachMembershipPanel').style.display=sponsorship?'none':'block';
   el('sponsorshipPanel').style.display=sponsorship?'block':'none';
 }
-async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false){
+async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false,transitionId=null){
   billingMessage('Opening secure Stripe checkout…');
   try{
     const response=await fetch('/api/stripe/checkout',{
       method:'POST',
       headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
-      body:JSON.stringify({planCode,sponsorQuantity,returnPath:'/account/',sponsorshipOnly})
+      body:JSON.stringify({planCode,sponsorQuantity,returnPath:'/account/',sponsorshipOnly,transitionId})
     });
     const data=await response.json().catch(()=>({}));
     if(!response.ok||!data.url)throw new Error(data.error||'Checkout is unavailable.');
@@ -299,6 +350,11 @@ async function openBillingPortal(){
     button.disabled=false;
   }
 }
+window.mwNativePurchaseResult=function(result){
+  if(result?.ok){billingMessage('Payment confirmed. MW Dynasty is switching your membership…');setTimeout(()=>location.reload(),700);return}
+  billingMessage(result?.error||'App Store purchase could not be confirmed.',true);
+  if(el('selfPayBtn'))el('selfPayBtn').disabled=false;
+};
 async function load(){
   session=readSession();
   if(!session){el('signedOutView').style.display='block';return}
