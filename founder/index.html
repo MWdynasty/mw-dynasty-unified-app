@@ -60,6 +60,7 @@
     </div>
     <div class="navGroup"><div class="navLabel">INTELLIGENCE</div>
       <button class="navBtn" data-view="ai"><span>AI</span>AI Company</button>
+      <button class="navBtn" data-view="programs"><span>41</span>Program Control</button>
       <button class="navBtn" data-view="knowledge"><span>MW</span>MW Knowledge</button>
       <button class="navBtn" data-view="support"><span>?</span>Customer Support</button>
     </div>
@@ -86,7 +87,7 @@ const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[];
-const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",knowledge:"MW Knowledge System",support:"Customer Success & Support",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const titles={home:"Executive Home",attention:"Needs Attention",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -223,6 +224,20 @@ function openAIModal(){
   modal("Founder AI",'<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask me about MW Dynasty revenue, Coaches, Athletes, website conversion, system health, support, or company priorities.</div>')+'</div><div class="chatRow"><textarea id="aiMessage" placeholder="Ask Founder AI…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>');
   $("aiSend").onclick=async()=>{const q=$("aiMessage").value.trim();if(!q)return;aiHistory.push({role:"user",text:q});$("aiChat").innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';$("aiMessage").value="";$("aiSend").disabled=true;try{const d=await ai("chat",{message:q});aiHistory.push({role:"ai",text:d.answer||""});$("aiChat").innerHTML+='<div class="bubble ai"><b>Founder AI</b><br>'+esc(d.answer||"")+'</div>';$("aiChat").scrollTop=$("aiChat").scrollHeight}catch(e){$("aiChat").innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}finally{$("aiSend").disabled=false}};
 }
+async function renderPrograms(){
+  const d=await api("programs"),releases=d.releases||[],versions=d.athlete_version_distribution||[],weeks=d.week_distribution||[],tiers=d.tier_distribution||{};
+  $("content").innerHTML='<section class="hero"><div class="brand">OFFICIAL MW PROGRAM CONTROL</div><h2>One Founder-controlled source of truth.</h2><p>Track, Strength & Power, Sprint School, and Coach MW knowledge stay versioned and governed. AI can analyze and prepare changes, but official methodology is published only after Founder approval.</p></section>'+
+    '<div class="stats">'+stat("Published Components",releases.filter(x=>x.status==="published").length)+stat("Program Versions in Use",versions.length)+stat("Athletes in Program State",versions.reduce((n,x)=>n+(Number(x.athletes)||0),0))+stat("Current MW Version","mw-41-tiered-v2.9")+'</div>'+
+    sectionHead("Official Program Registry","Founder-owned releases and their authoritative source references.")+
+    '<div class="grid2">'+(releases.length?releases.map(x=>'<div class="card"><div class="brand">'+esc(x.program_code)+'</div><h3>'+esc(x.component)+'</h3><p class="muted">'+esc(x.notes||"")+'</p><div class="row" style="margin-top:10px"><div><small>Version</small><b class="code">'+esc(x.program_version)+'</b></div><div class="right">'+badge(x.status,x.status==="published"?"good":"warn")+'</div></div><small class="code">'+esc(x.source_reference||"")+'</small></div>').join(""):'<div class="card empty">No program releases registered.</div>')+'</div>'+
+    sectionHead("Athlete Version Distribution","Shows exactly which official program version Athlete records are using.")+
+    '<div class="list">'+(versions.length?versions.map(x=>'<div class="row"><div><b class="code">'+esc(x.program_version)+'</b></div><div class="right"><b>'+esc(x.athletes)+'</b><small>Athletes</small></div></div>').join(""):'<div class="card empty">No Athlete program states yet.</div>')+'</div>'+
+    '<div class="grid2">'+
+      '<div>'+sectionHead("Track Tiers","Current Athlete distribution.")+'<div class="list">'+((tiers.track||[]).map(x=>'<div class="row"><div><b>'+esc(x.tier)+'</b></div><div class="right"><b>'+esc(x.athletes)+'</b></div></div>').join("")||'<div class="card empty">No tier data.</div>')+'</div></div>'+
+      '<div>'+sectionHead("Strength Tiers","Current Athlete distribution.")+'<div class="list">'+((tiers.strength||[]).map(x=>'<div class="row"><div><b>'+esc(x.tier)+'</b></div><div class="right"><b>'+esc(x.athletes)+'</b></div></div>').join("")||'<div class="card empty">No tier data.</div>')+'</div></div></div>'+
+    '<div class="card" style="margin-top:14px;border-color:#5d4b27"><b>Founder Guardrails</b><p class="muted">'+esc((d.guardrails||[]).join(" · "))+'</p><button class="btn primary" data-go="knowledge">Propose Methodology Change</button></div>';
+  bindGo();
+}
 async function renderKnowledge(){
   const d=await api("knowledge"),items=d.items||[];
   $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER METHODOLOGY ENGINE</div><h2>Teach MW once. Govern it everywhere.</h2><p>Founder principles become structured, reviewable knowledge proposals. AI can map conflicts and affected areas, but official MW methodology changes only after your approval.</p><div class="heroActions"><button class="btn primary" id="addKnowledge">Add Founder Principle</button></div></section>'+
@@ -289,6 +304,7 @@ async function renderView(v){
     if(v==="website")return await renderWebsite();
     if(v==="marketing")return await renderMarketing();
     if(v==="ai")return await renderAI();
+    if(v==="programs")return await renderPrograms();
     if(v==="knowledge")return await renderKnowledge();
     if(v==="support")return await renderSupport();
     if(v==="product")return await renderProduct();
