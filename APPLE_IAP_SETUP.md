@@ -1,5 +1,43 @@
 # MW Dynasty — Apple In-App Purchase Contract
 
+## App Store Connect setup — Build 13
+
+Create two auto-renewable subscription groups:
+
+**Athlete Membership**
+- Product ID: `com.mwdynasty.app.athlete.monthly`
+- MW plan: `mw_athlete`
+- Monthly price target: $19
+
+**Coach Membership**
+- Level 1 — Sprint Performance: `com.mwdynasty.app.coach.sprintperformance.monthly` — $109/month
+- Level 2 — Coach Intelligence: `com.mwdynasty.app.coach.intelligence.monthly` — $79/month
+- Level 3 — Coach Core: `com.mwdynasty.app.coach.core.monthly` — $49/month
+
+Use App Store-managed upgrade/downgrade behavior for the Coach group. Sprint Performance is the highest service level and Coach Core is the lowest.
+
+### App Store Server Notifications V2
+Configure both Production and Sandbox Server URL as:
+`https://keqgunlfwhjgcsurynef.supabase.co/functions/v1/mw-apple-server-notifications`
+
+Choose **Version 2** for both environments.
+
+### In-App Purchase server key
+In App Store Connect:
+`Users and Access → Integrations → In-App Purchase`
+
+Generate/download an In-App Purchase key and record:
+- Issuer ID → `APPLE_IAP_ISSUER_ID`
+- Key ID → `APPLE_IAP_KEY_ID`
+- Downloaded private key contents → `APPLE_IAP_PRIVATE_KEY`
+- Bundle ID → `APPLE_BUNDLE_ID=com.mwdynasty.app`
+
+The private key must stay in server secrets only and must never be committed to GitHub or shipped in the iOS app.
+
+### Billing Grace Period
+Enable Billing Grace Period in **Sandbox only first**. Validate grace-period entry/recovery before enabling it in Production.
+
+
 This file is the single source of truth for the native iOS payment wiring added for Build 13.
 
 ## Bundle
