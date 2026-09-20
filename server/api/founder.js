@@ -56,6 +56,7 @@ module.exports=async function handler(req,res){
       else if(section==='support_triage') data=await rpc(token,'mw_founder_support_triage_snapshot',{});
       else if(section==='notifications') data=await rpc(token,'mw_founder_notifications_snapshot',{});
       else if(section==='objectives') data=await rpc(token,'mw_founder_ai_objectives_snapshot',{});
+      else if(section==='partnerships') data=await rpc(token,'mw_founder_partnerships_snapshot',{});
       else if(section==='security_review') data=await rpc(token,'mw_founder_security_snapshot',{});
       else if(section==='launch'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
@@ -190,6 +191,52 @@ module.exports=async function handler(req,res){
       if(typeof b.nextAction==='string')patch.next_action=clean(b.nextAction,500)||null;
       if(Number.isFinite(Number(b.estimatedMonthlyValueCents)))patch.estimated_monthly_value_cents=Math.max(0,Number(b.estimatedMonthlyValueCents));
       const row=one(await rest(token,`founder_crm_leads?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='create_partnership'){
+      const organization=clean(b.organizationName,220);
+      if(!organization)return res.status(400).json({error:'Organization name is required.'});
+      const row=one(await rest(token,'founder_partnership_opportunities',{method:'POST',body:{
+        organization_name:organization,
+        opportunity_type:['school','district','club','team','brand','partner','other'].includes(b.opportunityType)?b.opportunityType:'school',
+        stage:['research','qualified','discovery','pilot','proposal','legal','won','lost'].includes(b.stage)?b.stage:'research',
+        contact_name:clean(b.contactName,180)||null,
+        contact_email:clean(b.contactEmail,240)||null,
+        estimated_coaches:Math.max(0,Math.round(Number(b.estimatedCoaches)||0)),
+        estimated_athletes:Math.max(0,Math.round(Number(b.estimatedAthletes)||0)),
+        estimated_monthly_value_cents:Math.max(0,Math.round(Number(b.estimatedMonthlyValueCents)||0)),
+        assigned_agent_code:clean(b.assignedAgentCode,80)||'partnerships',
+        next_action:clean(b.nextAction,1000)||null,
+        notes:clean(b.notes,4000)||null
+      }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_partnership'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Partnership opportunity id required.'});
+      const patch={updated_at:new Date().toISOString()};
+      if(['research','qualified','discovery','pilot','proposal','legal','won','lost'].includes(b.stage))patch.stage=b.stage;
+      if(typeof b.nextAction==='string')patch.next_action=clean(b.nextAction,1000)||null;
+      if(typeof b.notes==='string')patch.notes=clean(b.notes,4000)||null;
+      if(Number.isFinite(Number(b.estimatedCoaches)))patch.estimated_coaches=Math.max(0,Math.round(Number(b.estimatedCoaches)));
+      if(Number.isFinite(Number(b.estimatedAthletes)))patch.estimated_athletes=Math.max(0,Math.round(Number(b.estimatedAthletes)));
+      if(Number.isFinite(Number(b.estimatedMonthlyValueCents)))patch.estimated_monthly_value_cents=Math.max(0,Math.round(Number(b.estimatedMonthlyValueCents)));
+      const row=one(await rest(token,`founder_partnership_opportunities?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='review_partnership_proposal'){
+      const id=clean(b.id,80),decision=clean(b.decision,20);
+      if(!id||!['approved','rejected','retired','review'].includes(decision))return res.status(400).json({error:'Valid proposal decision required.'});
+      const auth=await founderAuth(req);
+      const patch={status:decision,updated_at:new Date().toISOString()};
+      if(decision==='approved'){patch.approved_by=auth.user.id;patch.approved_at=new Date().toISOString()}
+      const row=one(await rest(token,`founder_partnership_proposals?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='record_partnership_proposal_sent'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Proposal id required.'});
+      const current=one(await rest(token,`founder_partnership_proposals?id=eq.${encodeURIComponent(id)}&select=id,status&limit=1`));
+      if(!current||current.status!=='approved')return res.status(409).json({error:'Proposal must be Founder-approved before it can be recorded as sent.'});
+      const row=one(await rest(token,`founder_partnership_proposals?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{status:'sent',sent_at:new Date().toISOString(),updated_at:new Date().toISOString()}}));
       return res.status(200).json({ok:true,item:row});
     }
     if(action==='create_campaign'){
