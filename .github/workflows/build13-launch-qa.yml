@@ -1,0 +1,80 @@
+name: MW Dynasty Build 13 Launch QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ios_v3_0_16_patch/**'
+      - 'codemagic.yaml'
+      - 'test-launch-integrity.js'
+      - 'athlete/**'
+      - 'coach/**'
+      - 'account/**'
+      - 'server/**'
+      - 'supabase/**'
+      - '.github/workflows/build13-launch-qa.yml'
+  workflow_dispatch:
+
+jobs:
+  web-and-billing-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run MW Dynasty launch tests
+        run: npm test
+      - name: Check production JavaScript syntax
+        run: |
+          node --check server/api/billing.js
+          node --check server/api/stripe-checkout.js
+          node --check server/api/stripe-portal.js
+          node --check server/lib/mw-coach-auth.js
+          node --check coach/app.js
+
+  ios-build-13-compile:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Build 13 native source
+        run: |
+          set -euo pipefail
+          rm -rf ios_build
+          mkdir -p ios_build
+          unzip -q MW_Dynasty_iOS_V3_0_13_Codemagic_Source.zip -d ios_build
+          install -m 0644 ios_v3_0_16_patch/Config/Debug.xcconfig ios_build/Config/Debug.xcconfig
+          install -m 0644 ios_v3_0_16_patch/Config/Release.xcconfig ios_build/Config/Release.xcconfig
+          install -m 0644 ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj ios_build/MWDynasty.xcodeproj/project.pbxproj
+          install -m 0644 ios_v3_0_16_patch/MWDynasty/WebViewController.swift ios_build/MWDynasty/WebViewController.swift
+
+      - name: Validate App Store contract
+        run: |
+          set -euo pipefail
+          plutil -lint ios_build/MWDynasty/Info.plist
+          grep -q 'MARKETING_VERSION = 3.0.16' ios_build/Config/Release.xcconfig
+          grep -q 'CURRENT_PROJECT_VERSION = 13' ios_build/Config/Release.xcconfig
+          grep -q 'PRODUCT_BUNDLE_IDENTIFIER = com.mwdynasty.app' ios_build/Config/Release.xcconfig
+          grep -q 'com.mwdynasty.app.athlete.monthly' ios_build/MWDynasty/WebViewController.swift
+          grep -q 'com.mwdynasty.app.coach.core.monthly' ios_build/MWDynasty/WebViewController.swift
+          grep -q 'com.mwdynasty.app.coach.intelligence.monthly' ios_build/MWDynasty/WebViewController.swift
+          grep -q 'com.mwdynasty.app.coach.sprintperformance.monthly' ios_build/MWDynasty/WebViewController.swift
+          /usr/libexec/PlistBuddy -c "Print :NSLocationWhenInUseUsageDescription" ios_build/MWDynasty/Info.plist >/dev/null
+          /usr/libexec/PlistBuddy -c "Print :NSMicrophoneUsageDescription" ios_build/MWDynasty/Info.plist >/dev/null
+          /usr/libexec/PlistBuddy -c "Print :NSSpeechRecognitionUsageDescription" ios_build/MWDynasty/Info.plist >/dev/null
+          /usr/libexec/PlistBuddy -c "Print :NSCameraUsageDescription" ios_build/MWDynasty/Info.plist >/dev/null
+          /usr/libexec/PlistBuddy -c "Print :NSPhotoLibraryUsageDescription" ios_build/MWDynasty/Info.plist >/dev/null
+
+      - name: Compile Build 13 for iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ios_build/MWDynasty.xcodeproj \
+            -scheme MWDynasty \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
