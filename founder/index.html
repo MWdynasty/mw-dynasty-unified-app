@@ -44,6 +44,7 @@
     <div class="navGroup"><div class="navLabel">EXECUTIVE</div>
       <button class="navBtn active" data-view="home"><span>⌂</span>Executive Home</button>
       <button class="navBtn" data-view="attention"><span>!</span>Needs Attention <i class="navCount" data-count="attention"></i></button>
+      <button class="navBtn" data-view="objectives"><span>◎</span>Company Objectives</button>
       <button class="navBtn" data-view="notifications"><span>●</span>Notifications <i class="navCount" data-count="notifications"></i></button>
       <button class="navBtn" data-view="analytics"><span>▥</span>Analytics</button>
     </div>
@@ -95,7 +96,7 @@ const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[];
-const titles={home:"Executive Home",attention:"Needs Attention",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -315,6 +316,55 @@ function openCampaignModal(){
   modal("Add Marketing Campaign",'<div class="formGrid"><label class="field">CAMPAIGN NAME<input id="campName"></label><label class="field">CHANNEL<input id="campChannel" placeholder="Social, email, paid, SEO…"></label><label class="field">AUDIENCE<input id="campAudience"></label><label class="field">BUDGET ($)<input id="campBudget" type="number" min="0"></label></div><label class="field">OBJECTIVE<textarea id="campObjective" rows="3"></textarea></label><button class="btn primary" id="saveCampaign">Save Campaign</button>');
   $("saveCampaign").onclick=async()=>{try{await action("create_campaign",{name:$("campName").value,channel:$("campChannel").value,audience:$("campAudience").value,budgetCents:Number($("campBudget").value||0)*100,objective:$("campObjective").value});closeModal();renderMarketing()}catch(e){alert(e.message)}};
 }
+async function renderObjectives(){
+  const d=await api("objectives",true),items=d.objectives||[],summary=d.summary||{};
+  const active=items.filter(x=>x.status==="active"),completed=items.filter(x=>x.status==="completed");
+  $("content").innerHTML='<section class="hero aiHero"><div class="brand">COMPANY OBJECTIVES</div><h2>Turn Founder direction into coordinated company execution.</h2><p>Each objective becomes a tracked cross-department work plan with owners, ordered tasks, approval gates, stored AI work, and measurable progress.</p><div class="heroActions"><button class="btn primary" id="newCompanyObjective">New Company Objective</button><button class="btn blue" data-go="ai">Open AI Company</button></div></section>'+
+    '<div class="stats">'+
+      stat("Active Objectives",summary.active||active.length)+
+      stat("Waiting Approval",summary.waiting_approval||0)+
+      stat("Completed 30d",summary.completed_30d||0)+
+      stat("Objective Portfolio",items.length)+
+    '</div>'+
+    sectionHead("Objective Portfolio","Founder AI coordinates the work; consequential actions remain blocked behind your approval.")+
+    '<div class="list">'+(items.length?items.map(o=>{
+      const tasks=o.tasks||[],next=tasks.filter(t=>t.status==="queued"&&!t.requires_approval).sort((a,b)=>(Number(a.sequence_no)||999)-(Number(b.sequence_no)||999))[0];
+      const statusType=o.status==="completed"?"good":o.status==="paused"?"warn":o.status==="cancelled"?"bad":"blue";
+      return '<div class="card '+(o.approval_pending>0?"approval":"")+'"><div class="row" style="padding:0;border:0;background:transparent"><div>'+
+        badge(o.status,statusType)+' '+badge(o.priority,o.priority==="urgent"||o.priority==="high"?"warn":"")+
+        '<h3 style="margin:8px 0">'+esc(o.title)+'</h3><p class="muted">'+esc(o.description||"")+'</p>'+
+        (o.success_definition?'<p class="muted"><b>Success:</b> '+esc(o.success_definition)+'</p>':"")+
+        '<small>Owner: '+esc(o.owner_agent_code||"chief_of_staff")+(o.target_date?" · Target "+esc(o.target_date):"")+'</small>'+
+        '</div><div class="right"><b>'+esc(o.progress_percent||0)+'%</b><small>'+esc((o.task_completed||0)+" / "+(o.task_total||0)+" tasks")+'</small></div></div>'+
+        '<div class="bar" style="margin:12px 0"><i style="width:'+Math.min(100,Number(o.progress_percent)||0)+'%"></i></div>'+
+        '<div class="grid3">'+
+          stat("Open Tasks",o.task_open||0)+
+          stat("Awaiting Approval",o.approval_pending||0)+
+          stat("Blocked",o.task_blocked||0)+
+        '</div>'+
+        '<div class="heroActions">'+
+          (next?'<button class="btn small blue" data-objective-run="'+esc(next.id)+'">Run Next Safe Task</button>':"")+
+          (o.status==="active"?'<button class="btn small" data-objective-status="'+esc(o.id)+'" data-next-status="paused">Pause</button>':"")+
+          (o.status==="paused"?'<button class="btn small good" data-objective-status="'+esc(o.id)+'" data-next-status="active">Resume</button>':"")+
+          (o.status!=="completed"&&Number(o.task_total)>0&&Number(o.task_completed)===Number(o.task_total)?'<button class="btn small primary" data-objective-status="'+esc(o.id)+'" data-next-status="completed">Complete Objective</button>':"")+
+          '<button class="btn small" data-objective-detail="'+esc(o.id)+'">View Work Plan</button>'+
+        '</div></div>';
+    }).join(""):'<div class="card empty">No company objectives yet. Give Founder AI a company objective to create the first cross-department work plan.</div>')+'</div>'+
+    (completed.length?sectionHead("Recently Completed","Completed objectives remain visible as company execution history.")+'<div class="list">'+completed.slice(0,8).map(o=>'<div class="row"><div><b>'+esc(o.title)+'</b><small>'+date(o.completed_at||o.updated_at)+'</small></div><div class="right">'+badge("completed","good")+'</div></div>').join("")+'</div>':"");
+  bindGo();
+  $("newCompanyObjective").onclick=openObjectiveModal;
+  document.querySelectorAll("[data-objective-run]").forEach(b=>b.onclick=()=>runAITask(b.dataset.objectiveRun,b,"objectives"));
+  document.querySelectorAll("[data-objective-status]").forEach(b=>b.onclick=async()=>{try{await action("update_objective",{id:b.dataset.objectiveStatus,status:b.dataset.nextStatus});cache={};renderObjectives()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-objective-detail]").forEach(b=>b.onclick=()=>{
+    const o=items.find(x=>String(x.id)===String(b.dataset.objectiveDetail));if(!o)return;
+    const tasks=o.tasks||[];
+    modal("Objective · "+o.title,
+      '<div class="card"><b>Success Definition</b><p class="muted">'+esc(o.success_definition||"Not defined")+'</p></div>'+
+      '<div class="list" style="margin-top:12px">'+(tasks.length?tasks.map(t=>'<div class="row"><div><b>'+esc((t.sequence_no||"—")+". "+t.title)+'</b><small>'+esc((t.agent_code||"AI")+" · "+(t.department||"department"))+'</small>'+(t.output_summary?'<p class="muted">'+esc(String(t.output_summary).slice(0,500))+(String(t.output_summary).length>500?"…":"")+'</p>':"")+'</div><div class="right">'+badge(t.status,t.status==="completed"?"good":t.status==="waiting_approval"?"warn":t.status==="blocked"?"bad":"blue")+'</div></div>').join(""):'<div class="card empty">No tasks generated.</div>')+'</div>'
+    );
+  });
+}
+
 async function renderAI(){
   const d=await api("ai_company"),agents=d.agents||[],tasks=d.tasks||[],approvals=d.approvals||[],runs=d.recent_runs||[];
   const byDept={};agents.forEach(a=>(byDept[a.department]||(byDept[a.department]=[])).push(a));
@@ -347,19 +397,23 @@ async function runSafeAIQueue(tasks){
   if(b){b.disabled=false;b.textContent="Run Safe Queued Work"}
   setTimeout(()=>renderAI(),250);
 }
-async function runAITask(id,button){
+async function runAITask(id,button,returnView){
   if(button){button.disabled=true;button.textContent="Working…"}
   try{
     const d=await ai("execute_task",{taskId:id});
-    cache.ai_company=null;
+    cache={};
     modal("AI Work Complete",'<div class="bubble ai">'+esc(d.answer||"Task completed.")+'</div>'+(d.requiresApproval?'<p class="muted">This task remains in Founder approval status. No consequential action was executed.</p>':'<p class="muted">Analysis/drafting work completed and stored in the Founder OS.</p>'));
   }catch(e){alert(e.message)}
-  finally{if(button){button.disabled=false;button.textContent="Run AI"};cache={};setTimeout(()=>renderAI(),250)}
+  finally{
+    if(button){button.disabled=false;button.textContent="Run AI"}
+    cache={};
+    setTimeout(()=>returnView==="objectives"?renderObjectives():renderAI(),250)
+  }
 }
 async function reviewAIApproval(id,decision){try{await action("review_approval",{id:id,decision:decision});renderAI()}catch(e){alert(e.message)}}
 function openObjectiveModal(){
   modal("Give MW Dynasty a Company Objective",'<p class="muted">Founder AI will break this objective into department tasks and create approval requests for consequential actions. Nothing consequential executes automatically.</p><label class="field">FOUNDER OBJECTIVE<textarea id="objectiveText" rows="7" placeholder="Example: Prepare MW Dynasty for a school district partnership."></textarea></label><button class="btn primary" id="buildPlan">Build AI Work Plan</button><div id="planStatus" class="status"></div>');
-  $("buildPlan").onclick=async()=>{const b=$("buildPlan"),st=$("planStatus"),objective=$("objectiveText").value.trim();if(!objective)return; b.disabled=true;st.textContent="Founder AI is assigning departments…";try{const d=await ai("plan",{objective:objective});st.textContent=(d.summary||"Plan created")+" · "+(d.tasks||[]).length+" tasks · "+(d.approvals||[]).length+" approvals.";setTimeout(()=>{closeModal();setView("ai")},900)}catch(e){st.textContent=e.message;st.className="status error"}finally{b.disabled=false}};
+  $("buildPlan").onclick=async()=>{const b=$("buildPlan"),st=$("planStatus"),objective=$("objectiveText").value.trim();if(!objective)return; b.disabled=true;st.textContent="Founder AI is assigning departments…";try{const d=await ai("plan",{objective:objective});st.textContent=(d.summary||"Plan created")+" · "+(d.tasks||[]).length+" tasks · "+(d.approvals||[]).length+" approvals.";setTimeout(()=>{closeModal();setView("objectives")},900)}catch(e){st.textContent=e.message;st.className="status error"}finally{b.disabled=false}};
 }
 function openAIModal(){
   const hist=aiHistory.map(x=>'<div class="bubble '+(x.role==="user"?"user":"ai")+'"><b>'+(x.role==="user"?"Founder":"Founder AI")+'</b><br>'+esc(x.text)+'</div>').join("");
@@ -634,6 +688,7 @@ async function renderView(v){
   try{
     if(v==="home")return await renderHome();
     if(v==="attention")return await renderAttention();
+    if(v==="objectives")return await renderObjectives();
     if(v==="notifications")return await renderNotifications();
     if(v==="coaches")return await renderCoaches();
     if(v==="athletes")return await renderAthletes();
