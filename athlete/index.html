@@ -945,7 +945,49 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 .mwPracticePace{padding:14px;border:1px solid #253945;border-radius:14px;background:#050c12;display:grid;gap:4px}.mwPracticePace b{font-size:9px;color:#fff}.mwPracticePace span{font-size:8px;color:#8496a2}
 .mwPracticeControls{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:12px}.mwPracticeControls button{min-height:52px;border-radius:13px;border:1px solid #30434f;background:#09141c;color:#fff;font-weight:900;font-size:9px}.mwPracticeControls #mwPracticeStart{grid-column:1/-1;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;border:0}.mwPracticeControls button:disabled{opacity:.35}
 .mwPracticeQuick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:18px}.mwPracticeQuick button{min-height:46px;border:1px solid #263946;border-radius:12px;background:#050c12;color:#b9c6ce;font-size:7px;font-weight:800}
-</style></head>
+</style>
+<style id="mw-app-only-premium-login-v1">
+/* MW APP-ONLY PREMIUM LOGIN BACKGROUND v1 */
+html.mw-native-app .mwAthleteLoginV26,
+html.mw-native-app .mwLoginStage,
+html.mw-native-app .mwLoginMain{
+  background:
+    radial-gradient(ellipse at 50% -8%,rgba(232,187,72,.22) 0%,rgba(232,187,72,.07) 24%,transparent 48%),
+    radial-gradient(circle at 84% 16%,rgba(50,127,184,.16),transparent 30%),
+    linear-gradient(180deg,#0a1822 0%,#061019 42%,#02070b 100%)!important;
+}
+html.mw-native-app .mwLoginRunner{
+  background-image:
+    linear-gradient(180deg,rgba(255,255,255,.025),transparent 24%,rgba(0,0,0,.36) 72%,rgba(0,0,0,.72)),
+    repeating-linear-gradient(104deg,transparent 0 15%,rgba(226,182,67,.075) 15.15% 15.45%,transparent 15.6% 30%),
+    radial-gradient(ellipse at 50% 110%,rgba(226,182,67,.13),transparent 48%)!important;
+  background-size:cover!important;
+  background-position:center!important;
+  filter:none!important;
+}
+html.mw-native-app .mwLoginStory:after{
+  background:
+    linear-gradient(180deg,transparent 0 58%,rgba(0,0,0,.32) 100%),
+    repeating-linear-gradient(90deg,transparent 0 16%,rgba(235,195,88,.12) 16.2% 16.55%,transparent 16.8% 33%)!important;
+  opacity:.7!important;
+}
+@media(max-width:599px){
+  html.mw-native-app .mwLoginCard{
+    top:190px!important;
+    left:14px!important;
+    right:14px!important;
+    width:auto!important;
+    max-width:430px!important;
+    margin:0 auto!important;
+    background:linear-gradient(180deg,rgba(5,18,27,.95),rgba(2,9,14,.985))!important;
+    border-color:rgba(232,187,72,.55)!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.045)!important;
+    backdrop-filter:blur(18px)!important;
+  }
+}
+</style>
+
+</head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
   <div class="mwLoginStage">
