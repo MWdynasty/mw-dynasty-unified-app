@@ -21,6 +21,12 @@
 label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900;letter-spacing:.06em}input{margin-top:7px;width:100%;height:50px;border:1px solid #403a31;border-radius:12px;background:#090806;color:#fff;padding:0 13px;font-size:15px;outline:none}input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(239,189,67,.09)}
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.btn{display:inline-block;border:1px solid #4a4235;background:#11100d;color:#fff;border-radius:12px;padding:13px 16px;font-weight:950;cursor:pointer;text-decoration:none}.btn.primary{background:linear-gradient(100deg,#bb7f15,#f2cb63,#ce9224);color:#090806;border-color:#f5d37a}.btn.ghost{background:transparent}.btn:disabled{opacity:.5}.status{min-height:22px;margin-top:12px;color:#73cfff;font-size:12px}.status.err{color:#ff9cab}
 .membershipTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.membershipTab{border:1px solid #403a31;background:#0a0907;color:#bbb3a7;border-radius:11px;padding:11px 10px;font-weight:900;cursor:pointer}.membershipTab.active{border-color:var(--gold);color:#090806;background:linear-gradient(100deg,#bb7f15,#f2cb63,#ce9224)}.sponsorBox{margin-top:12px;padding:14px;border:1px solid rgba(239,189,67,.22);border-radius:14px;background:#090806}.sponsorRates{display:grid;gap:7px;margin:12px 0;font-size:12px;color:#c9c1b4}.sponsorRates div{display:flex;justify-content:space-between;gap:12px}.sponsorRates b{color:var(--gold2)}.sponsorTotal{margin-top:8px;color:#fff;font-size:12px;font-weight:850}
+.nativeIapDisclosure{display:none;margin-top:16px;padding:14px;border:1px solid rgba(239,189,67,.2);border-radius:14px;background:#080706}
+html.mw-native-app .nativeIapDisclosure{display:block}
+.nativeIapDisclosure p{margin:0 0 10px;color:#bbb3a7;font-size:11px;line-height:1.5}
+.nativeIapDisclosure .iapLinks{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.nativeIapDisclosure .iapLinks a{color:var(--gold2);font-size:11px;font-weight:900}
+
 #accountView,#signedOutView{display:none}.center{width:min(600px,100%);margin:10vh auto 0}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero h1{font-size:36px}}
 </style>
@@ -113,6 +119,14 @@ label{display:block;margin-top:14px;font-size:11px;color:#cfc7ba;font-weight:900
             </div>
           </div>
           <div id="athletePlanActions" class="actions"></div>
+          <div id="nativeIapDisclosure" class="nativeIapDisclosure">
+            <p><b>Auto-renewable monthly membership.</b> The selected membership unlocks the MW Dynasty features shown for that plan. Payment is charged to your Apple Account at confirmation and renews automatically unless cancelled. Manage or cancel through your App Store subscriptions.</p>
+            <div class="iapLinks">
+              <button id="restorePurchasesBtn" class="btn ghost" type="button">Restore Purchases</button>
+              <a href="/terms.html">Terms of Use</a>
+              <a href="/privacy.html">Privacy Policy</a>
+            </div>
+          </div>
         </div>
         <div id="billingStatus" class="status"></div>
       </section>
@@ -165,15 +179,15 @@ function render(data){
   el('firstName').value=u.first_name||'';el('lastName').value=u.last_name||'';
   const isCoach=coachRole(u.role);el('coachFields').style.display=isCoach?'grid':'none';el('orgRow').style.display=isCoach?'flex':'none';el('titleRow').style.display=isCoach?'flex':'none';el('organization').value=u.coach_organization||'';el('coachTitle').value=u.coach_title||'';el('orgValue').textContent=u.coach_organization||'—';el('titleValue').textContent=u.coach_title||'—';
   el('planName').textContent=plan(b.current_plan_code);el('subscriptionStatus').textContent=nice(b.subscription_status);el('billingType').textContent=nice(b.billing_type);el('billingCycle').textContent=nice(b.billing_cycle);el('periodEnd').textContent=dateText(b.current_period_end);el('providerValue').textContent=nice(b.provider);
-  const provider=String(b.provider||'').toLowerCase(),stripe=provider==='stripe',apple=provider==='apple';
+  const provider=String(b.provider||'').toLowerCase(),stripe=provider==='stripe',apple=provider==='apple',nativeApp=document.documentElement.classList.contains('mw-native-app');
   const billingBtn=el('billingBtn');
-  billingBtn.style.display=(stripe||apple)?'inline-block':'none';
+  billingBtn.style.display=(apple||(!nativeApp&&stripe))?'inline-block':'none';
   billingBtn.textContent=apple?'Manage App Store Subscription':'Manage Billing';
   billingBtn.dataset.provider=provider;
   const sponsorTotal=Number(b.sponsored_seats_total||0),sponsorUsed=Number(b.sponsored_seats_used||0),sponsorAvailable=Number(b.sponsored_seats_available||0);
   el('sponsorSeatsRow').style.display=isCoach?'flex':'none';
   el('sponsorSeatsValue').textContent=isCoach?`${sponsorUsed} used · ${sponsorAvailable} available · ${sponsorTotal} total`:'—';
-  el('sponsorBillingBtn').style.display=isCoach&&sponsorTotal>0?'inline-block':'none';
+  el('sponsorBillingBtn').style.display=!nativeApp&&isCoach&&sponsorTotal>0?'inline-block':'none';
   const sponsoredAthlete=!isCoach&&String(b.billing_type||'')==='coach_sponsored';
   el('selfPayWrap').style.display=sponsoredAthlete?'block':'none';
   if(sponsoredAthlete)renderSelfPay(b);
@@ -182,7 +196,7 @@ function render(data){
   if(canChangeCoachPlan)renderCoachPlanChange(b);
   // Unpaid members see normal activation. Sponsored athletes use the dedicated handoff
   // so they are never charged while a Coach-paid period is still active.
-  el('activationWrap').style.display=!sponsoredAthlete&&((!stripe&&!apple)||((apple||stripe)&&isCoach&&sponsorTotal===0))?'block':'none';
+  el('activationWrap').style.display=!sponsoredAthlete&&((!stripe&&!apple)||(!nativeApp&&(apple||stripe)&&isCoach&&sponsorTotal===0))?'block':'none';
   renderPlanActions(u.role,{provider,currentPlanCode:b.current_plan_code,appleCoach:(apple||stripe)&&isCoach,sponsorTotal});
 }
 function renderCoachPlanChange(b){
@@ -313,12 +327,17 @@ async function startSelfPayCheckout(transitionId){
   btn.disabled=false;
 }
 function renderPlanActions(role,options={}){
-  const coach=coachRole(role),appleCoach=!!options.appleCoach;
+  const coach=coachRole(role),appleCoach=!!options.appleCoach,nativeApp=document.documentElement.classList.contains('mw-native-app');
   el('coachChooser').style.display=coach?'block':'none';
   el('athletePlanActions').style.display=coach?'none':'flex';
   if(coach&&appleCoach){
     el('membershipOnlyTab').style.display='none';
     el('sponsorshipTab').style.display='none';
+    if(nativeApp){
+      el('coachMembershipPanel').style.display='none';
+      el('sponsorshipPanel').style.display='none';
+      return;
+    }
     el('coachMembershipPanel').style.display='none';
     el('sponsorshipPanel').style.display='block';
     const current=String(options.currentPlanCode||'');
@@ -327,8 +346,8 @@ function renderPlanActions(role,options={}){
     renderSponsorPlans(chosen?[chosen]:[]);
     return;
   }
-  el('membershipOnlyTab').style.display='';
-  el('sponsorshipTab').style.display='';
+  el('membershipOnlyTab').style.display=nativeApp?'none':'';
+  el('sponsorshipTab').style.display=nativeApp?'none':'';
   el('coachMembershipPanel').style.display='block';
   el('sponsorshipPanel').style.display='none';
   const membershipBox=el('planActions'),athleteBox=el('athletePlanActions');
@@ -390,6 +409,18 @@ function setCoachMembershipTab(tab){
   el('sponsorshipPanel').style.display=sponsorship?'block':'none';
 }
 async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false,transitionId=null){
+  const nativeApp=document.documentElement.classList.contains('mw-native-app');
+  if(nativeApp){
+    if(sponsorshipOnly||Number(sponsorQuantity)>0){
+      billingMessage('Sponsored-athlete seat purchases are not offered inside the iPhone app.',true);
+      return;
+    }
+    const native=window.webkit?.messageHandlers?.mwPurchase;
+    if(!native){billingMessage('App Store purchase is not available in this build yet.',true);return}
+    billingMessage('Opening the App Store purchase…');
+    native.postMessage({planCode,sponsorQuantity:0,accessToken:session.access_token});
+    return;
+  }
   billingMessage('Opening secure Stripe checkout…');
   try{
     const response=await fetch('/api/stripe/checkout',{
@@ -403,7 +434,9 @@ async function checkout(planCode,sponsorQuantity=0,sponsorshipOnly=false,transit
   }catch(e){billingMessage(e.message||'Checkout is unavailable.',true)}
 }
 async function openSponsorBillingPortal(){
-  const button=el('sponsorBillingBtn');button.disabled=true;billingMessage('Opening sponsored-seat billing…');
+  const button=el('sponsorBillingBtn');
+  if(document.documentElement.classList.contains('mw-native-app')){billingMessage('Sponsored-athlete billing is not managed inside the iPhone app.',true);return}
+  button.disabled=true;billingMessage('Opening sponsored-seat billing…');
   try{
     const response=await fetch('/api/stripe/portal',{
       method:'POST',
@@ -419,7 +452,8 @@ async function openSponsorBillingPortal(){
   }
 }
 async function openBillingPortal(){
-  const button=el('billingBtn'),provider=String(button.dataset.provider||'');
+  const button=el('billingBtn'),provider=String(button.dataset.provider||''),nativeApp=document.documentElement.classList.contains('mw-native-app');
+  if(nativeApp&&provider==='stripe'){billingMessage('This membership is managed outside the iPhone app.',true);return}
   button.disabled=true;
   if(provider==='apple'){
     billingMessage('Opening your App Store subscriptions…');
@@ -468,6 +502,12 @@ el('sponsorBillingBtn').onclick=openSponsorBillingPortal;
 el('membershipOnlyTab').onclick=()=>setCoachMembershipTab('membership');
 el('sponsorshipTab').onclick=()=>setCoachMembershipTab('sponsorship');
 el('sponsorQuantity').addEventListener('input',()=>renderSponsorPlans());
+el('restorePurchasesBtn')?.addEventListener('click',()=>{
+  const bridge=window.webkit?.messageHandlers?.mwRestorePurchase;
+  if(!document.documentElement.classList.contains('mw-native-app')||!bridge){billingMessage('Restore Purchases is available in the iPhone app.',true);return}
+  billingMessage('Checking your App Store purchases…');
+  bridge.postMessage({planCode:'auto',accessToken:session.access_token});
+});
 el('signOutBtn').onclick=()=>{clearSession();location.reload()};
 const checkoutState=new URLSearchParams(location.search).get('checkout');
 if(checkoutState==='success') billingMessage('Payment completed. MW Dynasty is syncing your membership now.');
