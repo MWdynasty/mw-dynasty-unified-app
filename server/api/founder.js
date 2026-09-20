@@ -48,9 +48,12 @@ module.exports=async function handler(req,res){
     const {token}=await founderAuth(req);
     if(req.method==='GET'){
       const section=clean(req.query?.section||'overview',40).toLowerCase();
+      const managementSections=new Set(['finance_costs','people','risk','operations']);
       const data=section==='programs'
         ?await rpc(token,'mw_founder_program_control',{})
-        :await rpc(token,'mw_founder_os_snapshot',{p_section:section});
+        :managementSections.has(section)
+          ?await rpc(token,'mw_founder_management_snapshot',{p_section:section})
+          :await rpc(token,'mw_founder_os_snapshot',{p_section:section});
       if(section==='website'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
         return res.status(200).json({ok:true,data:{...data,health:{website:site,app}}});
@@ -139,6 +142,68 @@ module.exports=async function handler(req,res){
         audience:clean(b.audience,160)||null,objective:clean(b.objective,1000)||null,
         budget_cents:Math.max(0,Number(b.budgetCents)||0)
       }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='create_cost'){
+      const category=clean(b.category,100),amount=Math.max(0,Number(b.amountCents)||0);
+      if(!category||!Number.isFinite(amount))return res.status(400).json({error:'Cost category and amount are required.'});
+      const row=one(await rest(token,'founder_cost_entries',{method:'POST',body:{
+        vendor:clean(b.vendor,160)||null,category,description:clean(b.description,1000)||null,
+        amount_cents:Math.round(amount),cadence:['monthly','annual','one_time','usage'].includes(b.cadence)?b.cadence:'monthly',
+        status:['active','inactive','planned'].includes(b.status)?b.status:'active',
+        incurred_on:clean(b.incurredOn,20)||null,source:'manual'
+      }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='create_risk'){
+      const title=clean(b.title,180),category=clean(b.category,100);
+      if(!title||!category)return res.status(400).json({error:'Risk title and category are required.'});
+      const row=one(await rest(token,'founder_risk_register',{method:'POST',body:{
+        category,title,description:clean(b.description,2500)||null,
+        severity:['low','medium','high','critical'].includes(b.severity)?b.severity:'medium',
+        likelihood:['unlikely','possible','likely'].includes(b.likelihood)?b.likelihood:'possible',
+        status:'open',owner_agent_code:clean(b.ownerAgentCode,80)||null,
+        mitigation:clean(b.mitigation,2500)||null
+      }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_risk'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Risk id required.'});
+      const patch={updated_at:new Date().toISOString()};
+      if(['open','mitigating','accepted','resolved','closed'].includes(b.status))patch.status=b.status;
+      if(typeof b.mitigation==='string')patch.mitigation=clean(b.mitigation,2500)||null;
+      const row=one(await rest(token,`founder_risk_register?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='create_people_role'){
+      const title=clean(b.title,180),department=clean(b.department,120);
+      if(!title||!department)return res.status(400).json({error:'Role title and department are required.'});
+      const row=one(await rest(token,'founder_people_roles',{method:'POST',body:{
+        title,department,role_type:['founder','human','ai','future_hire','contractor'].includes(b.roleType)?b.roleType:'future_hire',
+        status:['active','planned','hiring','filled','paused','closed'].includes(b.status)?b.status:'planned',
+        reports_to:clean(b.reportsTo,160)||null,mission:clean(b.mission,2000)||null,
+        responsibilities:Array.isArray(b.responsibilities)?b.responsibilities.slice(0,30):[],
+        scorecard:Array.isArray(b.scorecard)?b.scorecard.slice(0,30):[],
+        priority:['low','normal','high','urgent'].includes(b.priority)?b.priority:'normal'
+      }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='create_sop'){
+      const title=clean(b.title,180),department=clean(b.department,120);
+      if(!title||!department)return res.status(400).json({error:'SOP title and department are required.'});
+      const row=one(await rest(token,'founder_sops',{method:'POST',body:{
+        title,department,status:'review',purpose:clean(b.purpose,2000)||null,
+        procedure:clean(b.procedure,12000)||null,owner_agent_code:clean(b.ownerAgentCode,80)||null
+      }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='review_sop'){
+      const id=clean(b.id,80),decision=clean(b.decision,20);
+      if(!id||!['approved','active','retired','review'].includes(decision))return res.status(400).json({error:'Valid SOP decision required.'});
+      const auth=await founderAuth(req);
+      const patch={status:decision,updated_at:new Date().toISOString()};
+      if(['approved','active'].includes(decision)){patch.approved_by=auth.user.id;patch.approved_at=new Date().toISOString()}
+      const row=one(await rest(token,`founder_sops?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
       return res.status(200).json({ok:true,item:row});
     }
     return res.status(400).json({error:'Unsupported Founder OS action'});
