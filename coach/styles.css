@@ -1623,3 +1623,19 @@ html.mw-native-app .coach-login-bg:after{
     opacity:1!important;
   }
 }
+
+/* MW COACH SINGLE FIELD OUTLINE v21 */
+@media(min-width:901px){
+  html:not(.mw-native-app) .coach-field input,
+  html:not(.mw-native-app) .coach-field input:hover,
+  html:not(.mw-native-app) .coach-field input:focus,
+  html:not(.mw-native-app) .coach-field input:active{
+    border:0!important;
+    outline:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+    -webkit-appearance:none!important;
+    appearance:none!important;
+  }
+}
