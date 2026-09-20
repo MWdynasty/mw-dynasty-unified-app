@@ -537,3 +537,24 @@ linear-gradient(145deg,#0d1a22,#030709 68%);border-right:1px solid rgba(144,169,
   }
   .mw-page-signout{margin-left:auto}
 }
+
+
+/* Native iPhone sign-in is an app screen, not the website sign-in layout. */
+html.mw-native-app .coach-login-role-back{display:none!important}
+@media(max-width:640px){
+  html.mw-native-app .coach-login-header{
+    padding:max(56px,calc(env(safe-area-inset-top) + 14px)) 22px 0!important;
+  }
+  html.mw-native-app .coach-login-copy,
+  html.mw-native-app .coach-login-features{display:none!important}
+  html.mw-native-app .coach-login-person{
+    height:345px!important;
+    min-height:345px!important;
+    background-position:center 8%!important;
+  }
+  html.mw-native-app .coach-login-card-wrap{
+    margin-top:-76px!important;
+    padding:0 18px max(22px,calc(env(safe-area-inset-bottom) + 12px))!important;
+  }
+  html.mw-native-app .coach-login-stage{min-height:100svh!important}
+}
