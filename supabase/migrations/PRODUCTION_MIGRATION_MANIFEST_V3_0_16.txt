@@ -116,3 +116,7 @@ Note: v7/v8 numbering is shared with separate Founder security-review and AI-bac
 - Adds Founder-tracked company objectives, objective-linked AI tasks/approvals, ordered execution plans, progress reporting, and Founder-only objective status controls.
 - Founder AI plans now become durable cross-department company objectives instead of disconnected task batches.
 
+20260920_founder_os_v16_ai_playbooks.sql
+- Adds daily, weekly, and monthly operating duties, data-domain boundaries, allowed internal capabilities, and escalation rules to the AI workforce.
+- Adds durable department operating briefs so Finance, Technology, Product, Marketing, Sales, Customer Success, Performance, Analytics, Legal/Risk, People/HR, Operations, and Executive leadership can report into the Founder OS.
+
