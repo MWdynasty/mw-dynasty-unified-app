@@ -136,6 +136,15 @@ module.exports = async function stripeCheckout(req, res) {
     if (sponsorshipOnly) {
       if (!billingResp.ok || !stillPaid) return res.status(403).json({ error: 'Activate your Coach membership before adding sponsored-athlete seats.' });
       if (String(billing.plan_code || '') !== planCode) return res.status(409).json({ error: 'Sponsored seats must use your current Coach membership tier.' });
+      const sponsorResp = await fetch(
+        `${SUPABASE_URL}/rest/v1/coach_sponsorship_packages?coach_user_id=eq.${encodeURIComponent(user.id)}&status=in.(active,cancel_at_period_end,past_due)&select=id,status,provider_subscription_id&limit=1`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
+      );
+      const sponsorRows = await sponsorResp.json().catch(() => []);
+      if (!sponsorResp.ok) return res.status(502).json({ error: 'Sponsored-seat billing could not be checked safely.' });
+      if (Array.isArray(sponsorRows) && sponsorRows[0]) {
+        return res.status(409).json({ error: 'Sponsored-seat billing is already active. Use Manage Sponsored Seats instead of starting a second subscription.' });
+      }
     } else {
       if (billingResp.ok && stillPaid && String(billing.billing_type || '') === 'individual' && String(billing.provider || '') !== 'stripe') {
         return res.status(409).json({ error: 'Your active membership is managed by the App Store. Manage that membership with Apple; MW will not replace it with a second web subscription.' });
