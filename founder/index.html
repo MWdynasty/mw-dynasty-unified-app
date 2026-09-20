@@ -147,12 +147,15 @@ async function generateBrief(){
   try{const d=await ai("brief");out.textContent=d.answer||"No briefing returned."}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
 }
 async function renderAttention(){
-  const [d,r,h,a,t]=await Promise.all([api("overview"),api("risk"),api("customer_health"),api("ai_company"),api("support_triage")]);
+  const [d,r,h,a,t,l]=await Promise.all([api("overview"),api("risk"),api("customer_health"),api("ai_company"),api("support_triage"),api("launch")]);
   const base=d.needs_attention||[],risks=(r.items||[]).filter(x=>["high","critical"].includes(x.severity)&&!["resolved","closed"].includes(x.status));
   const customers=[...(h.athletes||[]).map(x=>({...x,kind:"Athlete"})),...(h.coaches||[]).map(x=>({...x,kind:"Coach"}))].filter(x=>x.health!=="healthy").sort((x,y)=>Number(x.score)-Number(y.score));
   const approvals=a.approvals||[],support=(t.items||[]).filter(x=>["high","urgent"].includes(x.priority));
-  $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER ACTION CENTER</div><h2>Only what needs you.</h2><p>Business exceptions, customer-retention signals, AI approvals, support escalation, billing, launch health, and high risks roll into one Founder queue.</p></section>'+
-    '<div class="stats">'+stat("System / Billing",base.length)+stat("High Risks",risks.length)+stat("Customer Watch",customers.length)+stat("AI Approvals",approvals.length)+stat("Support Escalations",support.length)+'</div>'+
+  const launch=(l.gates||[]).filter(x=>x.required&&x.status!=="verified");
+  $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER ACTION CENTER</div><h2>Only what needs you.</h2><p>Business exceptions, launch gates, customer-retention signals, AI approvals, support escalation, billing, system health, and high risks roll into one Founder queue.</p></section>'+
+    '<div class="stats">'+stat("System / Billing",base.length)+stat("Launch Gates",launch.length)+stat("High Risks",risks.length)+stat("Customer Watch",customers.length)+stat("AI Approvals",approvals.length)+stat("Support Escalations",support.length)+'</div>'+
+    sectionHead("Full Launch Blockers","Required launch gates that are not verified yet.",'<button class="btn small primary" data-go="launch">Open Launch Readiness</button>')+
+    '<div class="list">'+(launch.length?launch.slice(0,20).map(x=>'<div class="row attention '+(["critical","high"].includes(x.severity)?"high":"")+'"><div><b>'+esc(x.title)+'</b><small>'+esc((x.category||"Launch")+(x.evidence?" · "+x.evidence:""))+'</small></div><div class="right">'+badge(x.status,x.status==="blocked"?"bad":"warn")+'<small>'+esc(x.verification_source||"manual")+'</small></div></div>').join(""):'<div class="card empty">All required launch gates are verified.</div>')+'</div>'+
     sectionHead("System & Business Exceptions","Deterministic MW checks for applications, billing, support, diagnostics, account requests, and sponsorship capacity.")+
     '<div class="list">'+(base.length?base.map(attentionRow).join(""):'<div class="card empty">No system/business exceptions.</div>')+'</div>'+
     sectionHead("Founder Decisions","AI requests never bypass this approval queue.")+
@@ -163,9 +166,11 @@ async function renderAttention(){
     '</div>'+
     sectionHead("Support Escalations","Urgent/high support items stay human-controlled.")+
     '<div class="list">'+(support.length?support.map(x=>'<div class="row"><div><b>'+esc(String(x.category||"support").replaceAll("_"," "))+'</b><small>'+esc(x.issue_summary||x.message_excerpt||"Support request")+'</small></div><div class="right">'+badge(x.priority,x.priority==="urgent"?"bad":"warn")+'</div></div>').join(""):'<div class="card empty">No high-priority support escalations.</div>')+'</div>';
+  bindGo();
   document.querySelectorAll("[data-att-approve]").forEach(b=>b.onclick=async()=>{try{await action("review_approval",{id:b.dataset.attApprove,decision:"approved"});cache={};renderAttention()}catch(e){alert(e.message)}});
   document.querySelectorAll("[data-att-reject]").forEach(b=>b.onclick=async()=>{try{await action("review_approval",{id:b.dataset.attReject,decision:"rejected"});cache={};renderAttention()}catch(e){alert(e.message)}});
 }
+
 async function renderCoaches(){
   const d=await api("coaches"),items=d.items||[];
   $("content").innerHTML='<section class="hero"><div class="brand">COACH OPERATIONS</div><h2>Every Coach. One operating view.</h2><p>Membership tier, billing provider, sponsored seats, Athlete load, organization, and verification state.</p></section>'+
