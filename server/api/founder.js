@@ -49,11 +49,16 @@ module.exports=async function handler(req,res){
     if(req.method==='GET'){
       const section=clean(req.query?.section||'overview',40).toLowerCase();
       const managementSections=new Set(['finance_costs','people','risk','operations']);
-      const data=section==='programs'
-        ?await rpc(token,'mw_founder_program_control',{})
-        :managementSections.has(section)
-          ?await rpc(token,'mw_founder_management_snapshot',{p_section:section})
-          :await rpc(token,'mw_founder_os_snapshot',{p_section:section});
+      let data;
+      if(section==='programs') data=await rpc(token,'mw_founder_program_control',{});
+      else if(section==='finance') data=await rpc(token,'mw_founder_finance_snapshot',{});
+      else if(section==='customer_health') data=await rpc(token,'mw_founder_customer_health',{});
+      else if(section==='support_triage') data=await rpc(token,'mw_founder_support_triage_snapshot',{});
+      else if(section==='kpi_history'){
+        await rpc(token,'mw_founder_capture_kpi_snapshot',{});
+        data=await rpc(token,'mw_founder_kpi_history',{p_days:90});
+      }else if(managementSections.has(section)) data=await rpc(token,'mw_founder_management_snapshot',{p_section:section});
+      else data=await rpc(token,'mw_founder_os_snapshot',{p_section:section});
       if(section==='website'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
         return res.status(200).json({ok:true,data:{...data,health:{website:site,app}}});
@@ -167,6 +172,32 @@ module.exports=async function handler(req,res){
         status:['active','inactive','planned'].includes(b.status)?b.status:'active',
         incurred_on:clean(b.incurredOn,20)||null,source:'manual'
       }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_cost'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Cost id required.'});
+      const patch={updated_at:new Date().toISOString()};
+      if(typeof b.vendor==='string')patch.vendor=clean(b.vendor,160)||null;
+      if(typeof b.category==='string')patch.category=clean(b.category,100)||'other';
+      if(typeof b.description==='string')patch.description=clean(b.description,1000)||null;
+      if(Number.isFinite(Number(b.amountCents)))patch.amount_cents=Math.max(0,Math.round(Number(b.amountCents)));
+      if(['monthly','annual','one_time','usage'].includes(b.cadence))patch.cadence=b.cadence;
+      if(['active','inactive','planned'].includes(b.status))patch.status=b.status;
+      if(typeof b.incurredOn==='string')patch.incurred_on=clean(b.incurredOn,20)||null;
+      const row=one(await rest(token,`founder_cost_entries?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_support_triage'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Support triage id required.'});
+      const patch={updated_at:new Date().toISOString()};
+      if(['low','normal','high','urgent'].includes(b.priority))patch.priority=b.priority;
+      if(['new','reviewed','draft_ready','waiting_founder','resolved'].includes(b.triageStatus))patch.triage_status=b.triageStatus;
+      if(typeof b.issueSummary==='string')patch.issue_summary=clean(b.issueSummary,2000)||null;
+      if(typeof b.suggestedNextAction==='string')patch.suggested_next_action=clean(b.suggestedNextAction,2000)||null;
+      if(typeof b.responseDraft==='string')patch.response_draft=clean(b.responseDraft,5000)||null;
+      if(typeof b.requiresFounder==='boolean')patch.requires_founder=b.requiresFounder;
+      if(typeof b.ownerAgentCode==='string')patch.owner_agent_code=clean(b.ownerAgentCode,80)||null;
+      const row=one(await rest(token,`founder_support_triage?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
       return res.status(200).json({ok:true,item:row});
     }
     if(action==='create_risk'){
