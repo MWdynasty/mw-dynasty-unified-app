@@ -6,6 +6,7 @@ const handlers = {
   'pace-chat': require('../server/api/pace-chat'),
   'pricing': require('../server/api/pricing'),
   'billing': require('../server/api/billing'),
+  'diagnostics': require('../server/api/diagnostics'),
   'stripe/checkout': require('../server/api/stripe-checkout'),
   'stripe/portal': require('../server/api/stripe-portal'),
   'profile': require('../server/api/profile'),
