@@ -21,6 +21,13 @@ includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.ap
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.coach.sprintperformance.monthly','Sprint Performance App Store product ID missing');
 includes('codemagic.yaml','submit_to_testflight: true','Codemagic signed build must submit to TestFlight');
 includes('codemagic.yaml','bundle_identifier: com.mwdynasty.app','Codemagic bundle identifier mismatch');
+includes('account/index.html',"document.documentElement.classList.contains('mw-native-app')",'Native billing mode detection missing');
+includes('account/index.html','window.webkit?.messageHandlers?.mwPurchase','Native StoreKit purchase bridge missing from Account Billing');
+includes('account/index.html','restorePurchasesBtn','Restore Purchases control missing');
+includes('account/index.html','/terms.html','Terms of Use link missing from native subscription flow');
+includes('account/index.html','/privacy.html','Privacy Policy link missing from native subscription flow');
+includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','let planCode = (body["planCode"] as? String) ?? "auto"','Automatic App Store restore discovery missing');
+
 
 
 const signup=read('athlete/signup.html');
