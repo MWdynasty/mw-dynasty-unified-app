@@ -97,3 +97,10 @@ Note: v7/v8 numbering is shared with separate Founder security-review and AI-bac
 20260920_founder_os_v10_human_org_plan.sql
 - Seeds the Founder/CEO plus 23 planned future human roles across operations, finance, technology, product, marketing, sales, customer success, performance, analytics, legal/compliance, and people operations.
 - Planned roles are organizational design records only; they do not claim that employees have been hired.
+
+
+20260920_founder_os_v11_notifications.sql
+- Adds persistent Founder notifications for Coach application review, membership activation/cancellation/billing attention, support, account deletion, and launch diagnostic errors.
+
+20260920_founder_os_v12_notification_sync.sql
+- Synchronizes current unresolved Founder events into the notification center so important states are visible even if they occurred before the notification triggers existed.
