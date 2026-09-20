@@ -778,12 +778,13 @@ function renderCoachMembershipSelection(session=authSession){
       try{
         const token=authSession?.access_token||session?.access_token;if(!token)throw new Error('Your secure setup session expired. Sign in again.');
         if(isNative){
-          const save=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_mark_membership_checkout_started`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({p_plan_code:plan.planCode,p_sponsor_quantity:qty,p_provider:'apple',p_provider_reference:null})});
+          if(qty>0)throw new Error('Sponsored-athlete seats are added through Coach billing after your App Store Coach membership is active. Choose “No thanks” here, then add seats from your Coach account.');
+          const save=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_mark_membership_checkout_started`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({p_plan_code:plan.planCode,p_sponsor_quantity:0,p_provider:'apple',p_provider_reference:null})});
           const saved=await save.json().catch(()=>({}));if(!save.ok)throw new Error(saved.message||saved.hint||'Membership choice could not be saved.');
           const nativePurchase=window.webkit?.messageHandlers?.mwPurchase;
-          if(!nativePurchase)throw new Error('App purchase setup is not available in this build yet. Your membership choice is saved for the next step.');
-          nativePurchase.postMessage({planCode:plan.planCode,sponsorQuantity:qty});
-          msg.textContent='Opening secure in-app purchase…';return;
+          if(!nativePurchase)throw new Error('App Store purchase is not available in this build yet. Your membership choice is saved.');
+          nativePurchase.postMessage({planCode:plan.planCode,sponsorQuantity:0,accessToken:token});
+          msg.textContent='Opening the App Store purchase…';return;
         }
         const r=await fetch('/api/stripe/checkout',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({planCode:plan.planCode,sponsorQuantity:qty})});
         const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Secure checkout could not start.');
@@ -809,6 +810,16 @@ function renderCoachMembershipSelection(session=authSession){
     }catch{}
   })();
 }
+
+window.mwNativePurchaseResult=function(result){
+  const msg=document.getElementById('coachMembershipMessage'),btn=document.getElementById('coachMembershipContinue');
+  if(result?.ok){
+    if(msg){msg.textContent='Payment confirmed. Activating your Coach account…';msg.className='login-message show neutral'}
+    setTimeout(()=>location.reload(),700);return;
+  }
+  if(msg){msg.textContent=result?.error||'App Store purchase could not be confirmed.';msg.className='login-message show error'}
+  if(btn)btn.disabled=false;
+};
 
 function bindLogin(){
   const form=document.getElementById('loginForm'),pass=document.getElementById('loginPassword'),toggle=document.getElementById('togglePassword'),forgot=document.getElementById('forgotPassword');
