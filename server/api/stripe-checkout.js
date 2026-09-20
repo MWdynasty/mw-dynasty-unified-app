@@ -1,4 +1,4 @@
-const { getAccountContext } = require('../lib/mw-coach-auth');
+const { authenticate, SUPABASE_URL, SUPABASE_KEY } = require('../lib/mw-coach-auth');
 
 const PLANS = {
   mw_athlete: {
@@ -97,8 +97,18 @@ module.exports = async function stripeCheckout(req, res) {
     if (sponsorQuantity < 0 || sponsorQuantity > 250) return res.status(400).json({ error: 'Sponsor quantity must be between 0 and 250.' });
     if (plan.audience === 'athlete' && sponsorQuantity !== 0) return res.status(400).json({ error: 'Athlete memberships cannot include sponsored-athlete seats.' });
 
-    const account = await getAccountContext(req);
-    const role = String(account.profile?.role || 'athlete');
+    // Checkout intentionally permits a verified/invited account that has not paid yet.
+    // Product access remains locked until the Stripe webhook creates an active entitlement.
+    const { token, user } = await authenticate(req);
+    const profileResp = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?select=role,account_status&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } }
+    );
+    const profileRows = await profileResp.json().catch(() => []);
+    const profile = Array.isArray(profileRows) ? profileRows[0] : null;
+    if (!profileResp.ok || !profile) return res.status(403).json({ error: 'MW profile not found for this account.' });
+    const role = String(profile.role || 'athlete');
+    if (!['invited','active'].includes(String(profile.account_status || ''))) return res.status(403).json({ error: 'This MW account is not eligible for checkout.' });
     if (plan.audience === 'athlete' && role !== 'athlete') return res.status(403).json({ error: 'Choose a coach membership for this account.' });
     if (plan.audience === 'coach' && !['coach', 'admin', 'founder_owner'].includes(role)) return res.status(403).json({ error: 'Choose an athlete membership for this account.' });
 
@@ -109,8 +119,8 @@ module.exports = async function stripeCheckout(req, res) {
     const base = appUrl(req);
     const form = {
       mode: 'subscription',
-      customer_email: account.user.email || '',
-      client_reference_id: account.user.id,
+      customer_email: user.email || '',
+      client_reference_id: user.id,
       success_url: returnPath
         ? `${base}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`
         : `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
@@ -119,10 +129,10 @@ module.exports = async function stripeCheckout(req, res) {
         : `${base}/${plan.audience === 'coach' ? 'coach' : 'athlete'}/?checkout=cancelled`,
       'line_items[0][price]': basePrice,
       'line_items[0][quantity]': '1',
-      'metadata[mw_user_id]': account.user.id,
+      'metadata[mw_user_id]': user.id,
       'metadata[mw_plan_code]': planCode,
       'metadata[mw_sponsor_quantity]': String(sponsorQuantity),
-      'subscription_data[metadata][mw_user_id]': account.user.id,
+      'subscription_data[metadata][mw_user_id]': user.id,
       'subscription_data[metadata][mw_plan_code]': planCode,
       'subscription_data[metadata][mw_sponsor_quantity]': String(sponsorQuantity),
     };
