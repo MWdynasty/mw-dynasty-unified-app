@@ -2937,4 +2937,24 @@ document.addEventListener('click',e=>{
   }
 }
 </style>
+<style id="mw-athlete-card-containment-fix-v3">
+/* Athlete WEBSITE only — force enough outer-card height for Sign In, Coach Sign In,
+   Sign Up, and support text. Do not alter the approved background or its brightness. */
+@media(min-width:821px){
+  html:not(.mw-native-app) #mwAuth .mwLoginCard{
+    min-height:540px!important;
+    height:auto!important;
+    overflow:visible!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+  }
+  html:not(.mw-native-app) #mwAuth .mwLoginActions{
+    position:static!important;
+    display:flex!important;
+    flex-direction:column!important;
+    flex:0 0 auto!important;
+  }
+}
+</style>
 </body></html>
