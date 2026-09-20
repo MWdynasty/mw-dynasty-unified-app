@@ -78,10 +78,10 @@ function enter(role,path){
   try{ localStorage.setItem('mwDynastyRoleChoice',role); }catch(e){}
   window.location.assign(path);
 }
-document.getElementById('athleteChoice').addEventListener('click',()=>enter('athlete','/athlete/signup.html?plan=mw_athlete'));
-document.getElementById('coachChoice').addEventListener('click',()=>enter('coach','/coach'));
-document.getElementById('athleteDesktop').addEventListener('click',()=>enter('athlete','/athlete/signup.html?plan=mw_athlete'));
-document.getElementById('coachDesktop').addEventListener('click',()=>enter('coach','/coach'));
+document.getElementById('athleteChoice').addEventListener('click',()=>enter('athlete','/athlete/start.html'));
+document.getElementById('coachChoice').addEventListener('click',()=>enter('coach','/coach/start.html'));
+document.getElementById('athleteDesktop').addEventListener('click',()=>enter('athlete','/athlete/start.html'));
+document.getElementById('coachDesktop').addEventListener('click',()=>enter('coach','/coach/start.html'));
 document.getElementById('memberDesktop').addEventListener('click',()=>enter('athlete','/athlete/'));
 const stage=document.querySelector('.role-stage');
 if(stage&&window.matchMedia('(hover:hover) and (pointer:fine)').matches&&!window.matchMedia('(prefers-reduced-motion:reduce)').matches){
