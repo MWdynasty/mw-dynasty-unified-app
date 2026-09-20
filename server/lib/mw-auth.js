@@ -43,6 +43,12 @@ async function getAccountContext(req,{requireAthlete=false}={}){
 
   const role=String(profile.role||'athlete');
   const privileged=['founder_owner','admin','coach'].includes(role);
+  if(role==='athlete'){
+    const membershipAccess=await athleteFeatureAccess(token);
+    if(!membershipAccess?.has_access){
+      throw Object.assign(new Error('An active MW Athlete membership is required for training access.'),{status:403});
+    }
+  }
   const athlete=await one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
 
   if(!athlete){
