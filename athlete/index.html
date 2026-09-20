@@ -1049,7 +1049,7 @@ html.mw-native-app .mwLoginStory:after{
         </div>
 
         <div id="mwAthleteSignup" class="mwAuthReset mwLoginReset">
-          <div class="mwLoginCardHead"><h3>Create Athlete Account</h3><p>Sign up inside the MW Dynasty Athlete app.</p></div>
+          <div class="mwLoginCardHead"><h3>Create Athlete Account</h3><p>Create your MW Dynasty Athlete account. We’ll guide you one step at a time.</p></div>
           <div class="mwLoginField"><span aria-hidden="true">✉</span><input id="mwSignupEmail" type="email" autocomplete="email" placeholder="Enter your email" aria-label="Signup email"></div>
           <div class="mwLoginField"><span aria-hidden="true">▣</span><input id="mwSignupPassword" type="password" autocomplete="new-password" placeholder="Create a password" aria-label="Create password"></div>
           <div class="mwLoginField"><span aria-hidden="true">▣</span><input id="mwSignupConfirm" type="password" autocomplete="new-password" placeholder="Confirm password" aria-label="Confirm password"></div>
@@ -2390,12 +2390,44 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   window.mwReloadAccount=loadMe;
   const websiteCheckoutPlan=new URLSearchParams(location.search).get('plan')==='mw_athlete'?'mw_athlete':'';
   async function beginWebsiteCheckout(accessToken){
-    authStatus('Taking you to secure Stripe checkout…');
-    const r=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify({planCode:websiteCheckoutPlan,sponsorQuantity:0})});
+    authStatus('Taking you to secure payment…');
+    const r=await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify({planCode:websiteCheckoutPlan||'mw_athlete',sponsorQuantity:0})});
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.error||'Checkout could not start.');
-    if(!d.url)throw new Error('Stripe did not return a checkout link.');
+    if(!d.url)throw new Error('Secure checkout link was not returned.');
     location.assign(d.url);
+  }
+  function renderAthleteMembership(session){
+    const card=document.querySelector('.mwLoginCard');if(!card)return;
+    const isNative=document.documentElement.classList.contains('mw-native-app');
+    card.innerHTML=`<a class="mwLoginBack" href="https://mwdynasty.com/" aria-label="Open MW Dynasty website">← MW WEBSITE</a>
+      <div class="mwLoginCardHead"><div class="mwAthleteOnboardProgress">ACCOUNT ✓ &nbsp;•&nbsp; <b>MEMBERSHIP</b> &nbsp;•&nbsp; PROFILE &nbsp;•&nbsp; ASSESSMENT</div><h2>One membership. Everything you need.</h2><p>Your account is ready. Complete membership, then we’ll build your athlete profile and place you in the right starting point.</p></div>
+      <div class="mwAthleteMembershipPlan"><span>MW ATHLETE</span><b>&#36;19<small>/month</small></b><p>Track + strength programming, Sprint School, performance tools, progress tracking, and Coach MW.</p><em>Cancel anytime.</em></div>
+      <button id="mwAthleteMembershipContinue" class="mwLoginButton" type="button">${isNative?'Continue to App Purchase':'Continue to Secure Payment'} <span>→</span></button>
+      <div id="mwAuthStatus" class="mwAuthStatus"></div>
+      <div class="mwLoginAccessNote">After payment, you’ll continue directly to your Athlete Profile and Entry Assessment.</div>`;
+    document.getElementById('mwAthleteMembershipContinue').onclick=async()=>{
+      const btn=document.getElementById('mwAthleteMembershipContinue');btn.disabled=true;authStatus('Preparing your membership…');
+      try{
+        if(isNative){
+          const nativePurchase=window.webkit?.messageHandlers?.mwPurchase;
+          if(!nativePurchase)throw new Error('App purchase setup is not available in this build yet.');
+          nativePurchase.postMessage({planCode:'mw_athlete',sponsorQuantity:0});return;
+        }
+        await beginWebsiteCheckout(session.access_token);
+      }catch(e){authStatus(e.message||'Membership setup could not continue.',true);btn.disabled=false}
+    };
+  }
+  async function waitForAthleteActivation(session){
+    if(new URLSearchParams(location.search).get('checkout')!=='success')return false;
+    renderAthleteMembership(session);authStatus('Payment received. Setting up your training access…');
+    const btn=document.getElementById('mwAthleteMembershipContinue');if(btn)btn.style.display='none';
+    for(let i=0;i<10;i++){
+      try{await loadMe();history.replaceState({},document.title,location.pathname);document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');return true}catch{}
+      await new Promise(r=>setTimeout(r,1200));
+    }
+    authStatus('Payment was received and your access is still syncing. Give it a moment, then sign in again.');
+    return true;
   }
   async function login(){
     const email=document.querySelector('#mwAuthEmail').value.trim(),password=document.querySelector('#mwAuthPassword').value;
@@ -2406,11 +2438,15 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-in failed');
       saveSession(d,document.querySelector('#mwRememberMe')?.checked===true);
       if(websiteCheckoutPlan){await beginWebsiteCheckout(d.access_token);return}
-      await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('');
+      try{await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('')}
+      catch(accessErr){
+        const msg=String(accessErr?.message||'');
+        if(msg.toLowerCase().includes('not active')){renderAthleteMembership(d);return}
+        throw accessErr;
+      }
     }catch(e){
       clearSession();
-      const msg=String(e?.message||'');
-      authStatus(msg.includes('not active')?'This MW Dynasty account is not active. Check that you are using your authorized account email or contact MW support.':(msg||'Sign-in failed'),true)
+      authStatus(String(e?.message||'Sign-in failed'),true)
     }
   }
 
@@ -2495,10 +2531,16 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }
 
     saveSession(refreshed);
-    await loadMe();
-
-    document.body.classList.remove('mw-auth-pending');
-    document.body.classList.add('mw-auth-ready');
+    if(await waitForAthleteActivation(refreshed))return;
+    try{
+      await loadMe();
+      document.body.classList.remove('mw-auth-pending');
+      document.body.classList.add('mw-auth-ready');
+    }catch(accessErr){
+      const msg=String(accessErr?.message||'');
+      if(msg.toLowerCase().includes('not active')){renderAthleteMembership(refreshed);return}
+      throw accessErr;
+    }
   }catch(e){
     console.warn('MW session restore failed:',e);
     clearSession();
@@ -2549,10 +2591,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       if(!r.ok)throw new Error(d.msg||d.error_description||d.error||'Could not create athlete account');
       if(d.access_token){
         saveSession(d,true);
-        await loadMe();
-        document.body.classList.remove('mw-auth-pending');
-        document.body.classList.add('mw-auth-ready');
-        authStatus('');
+        renderAthleteMembership(d);
       }else{
         showAthleteSignup(false);
         document.querySelector('#mwAuthEmail').value=email;
