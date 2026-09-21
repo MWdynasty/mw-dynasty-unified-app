@@ -58,5 +58,17 @@
     if(!el)return;
     track(el.getAttribute('data-mw-event'),{audience:el.getAttribute('data-mw-audience')||audience(),metadata:{label:el.getAttribute('data-mw-label')||''}});
   },true);
+  window.addEventListener('error',function(){
+    track('client_error',{metadata:{code:'window_error'}});
+  });
+  window.addEventListener('unhandledrejection',function(){
+    track('client_error',{metadata:{code:'unhandled_rejection'}});
+  });
+  window.addEventListener('offline',function(){
+    track('availability_degraded',{metadata:{code:'offline'}});
+  });
+  window.addEventListener('online',function(){
+    track('availability_recovered',{metadata:{code:'online'}});
+  });
   setTimeout(function(){track('page_view')},50);
 })();
