@@ -57,6 +57,23 @@ async function insertEvents(token,events){
     const d=await r.json().catch(()=>({}));
     throw Object.assign(new Error(d?.message||'Diagnostics could not be recorded.'),{status:r.status});
   }
+  for(const e of events){
+    if(!['warn','error'].includes(e.severity)&&e.event_type!=='sync_ok'&&!(e.event_type==='network_state'&&e.code==='online'))continue;
+    try{
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_security_event_from_diagnostic`,{
+        method:'POST',
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          p_surface:e.surface,
+          p_event_type:e.event_type,
+          p_severity:e.severity,
+          p_code:e.code,
+          p_route:e.route,
+          p_context:e.context||{}
+        })
+      });
+    }catch{}
+  }
 }
 async function recent(token,userId,limit){
   const url=`${SUPABASE_URL}/rest/v1/launch_diagnostics?user_id=eq.${encodeURIComponent(userId)}&select=id,surface,event_type,severity,code,route,app_version,ios_build,platform,online,context,created_at&order=created_at.desc&limit=${limit}`;
