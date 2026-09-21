@@ -30,7 +30,7 @@ module.exports=async function handler(req,res){
   }
 
   const repTrackingEnabled=coachTier==='mw_sprint_performance';
-  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions,calendarEvents]=await Promise.all([
+  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions,calendarEvents,athleteAvailability]=await Promise.all([
     sb(`coach_assignments?select=*&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=200`,token),
     sb(`athletes?select=*&limit=200`,token),
     sb(`attendance_records?select=*&order=attendance_date.desc&limit=250`,token),
@@ -41,9 +41,10 @@ module.exports=async function handler(req,res){
     sb(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=500`,token),
     sb(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&order=recorded_at.desc&limit=500`,token),
     sb(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&order=completed_at.desc&limit=500`,token),
-    sb(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact,location,notes&coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_at.asc&limit=150`,token)
+    sb(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact,location,notes&coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_at.asc&limit=150`,token),
+    sb(`athlete_schedule_constraints?select=id,athlete_id,constraint_type,title,starts_on,ends_on,training_impact,notes,review_status,coach_note,created_at&linked_coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_on.asc&limit=150`,token)
   ]);
-  const context={coach:me,coachTier,repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
+  const context={coach:me,coachTier,repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],athleteAvailability:athleteAvailability||[],performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
 
   const messages=Array.isArray(req.body?.messages)?req.body.messages.slice(-40):[];
   const input=messages.map(m=>{
@@ -70,6 +71,11 @@ SMART SCHEDULING TIER RULE:
 ${coachTier==='mw_sprint_performance'
   ? '- MW Sprint Performance: integrate saved constraints with the synchronized 41-week MW sprint + strength system. Preserve the current phase intent, key high-intensity exposures, recovery logic, and track/weight-room synchronization when recommending how to work around a constraint.'
   : '- Coach Intelligence: use saved constraints to help organize the coach’s own program. Do not convert it into the MW 41-week prescription or claim MW authored the coach’s program.'}
+ATHLETE AVAILABILITY AUTHORITY:
+- ATHLETE AVAILABILITY entries are reports from athletes this coach manages. They are context, not automatic permission to change training.
+- Pending reports should be surfaced for coach review when relevant. Needs-discussion reports remain unresolved. Declined reports must not be treated as approved schedule changes.
+- Approved reports may inform scheduling recommendations, but the human coach still approves any consequential training or calendar change.
+- For MW Sprint Performance, use approved availability to protect the synchronized 41-week track + strength progression. For Coach Intelligence, use it only around the coach’s own program.
 COACH TIER CAPABILITY RULES:
 - Current coach tier: ${coachTier}.
 - Coach Intelligence may use roster details, events, experience, attendance, PRs, flags, recent activity, program position, workout completion, quick pace check-ins, strength check-ins/logs, and progression trends.
