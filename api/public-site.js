@@ -26,6 +26,21 @@ function enhancementScript() {
 (() => {
   const APP = 'https://app.mwdynasty.com';
   const STYLE_ID = 'mw-system-detail-style';
+  const MEMBERSHIPS = '/memberships';
+
+  function wireMembershipLinks() {
+    const links = [...document.querySelectorAll('a')];
+    for (const a of links) {
+      const label = (a.textContent || '').replace(/\\s+/g,' ').trim().toUpperCase();
+      if (label === 'ATHLETES' || label.includes("I'M AN ATHLETE") || label.includes('I’M AN ATHLETE')) {
+        a.href = MEMBERSHIPS + '#athletes';
+      } else if (label === 'COACHES' || label.includes("I'M A COACH") || label.includes('I’M A COACH')) {
+        a.href = MEMBERSHIPS + '#coaches';
+      } else if (label.includes('MEMBERSHIP UPDATES')) {
+        a.href = MEMBERSHIPS;
+      }
+    }
+  }
 
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -94,8 +109,8 @@ function enhancementScript() {
             <p>The athlete should know what to do, why it matters, how fast to do it, what is happening around the training, and what comes next.</p>
           </div>
           <div class="mw-detail-actions">
-            <a class="mw-detail-btn primary" href="\${APP}/athlete/start.html">START AS AN ATHLETE</a>
-            <a class="mw-detail-btn secondary" href="\${APP}/coach/start.html">COACH ACCESS</a>
+            <a class="mw-detail-btn primary" href="/memberships#athletes">VIEW ATHLETE MEMBERSHIP</a>
+            <a class="mw-detail-btn secondary" href="/memberships#coaches">VIEW COACH MEMBERSHIPS</a>
           </div>
         </div>
       </div>
@@ -104,8 +119,11 @@ function enhancementScript() {
     return true;
   }
 
+  wireMembershipLinks();
+
   if (!enhance()) {
     const observer = new MutationObserver(() => {
+      wireMembershipLinks();
       if (enhance()) observer.disconnect();
     });
     observer.observe(document.documentElement,{subtree:true,childList:true});
@@ -116,7 +134,7 @@ function enhancementScript() {
     const a = e.target.closest?.('a');
     if (!a) return;
     const label = (a.textContent || '').toLowerCase();
-    if (label.includes('enter the app') || label.includes('choose your path')) {
+    if (label.includes('enter the app')) {
       if (!a.href || a.href.includes('chatgpt.site')) a.href = APP;
     }
   }, true);
