@@ -24,6 +24,7 @@ async function restRows(path,token){
   const d=await r.json().catch(()=>[]);if(!r.ok)return [];return Array.isArray(d)?d:[];
 }
 async function assignedCoachPrograms(token){try{const d=await rpc('mw_my_coach_assigned_programs',token);return Array.isArray(d)?d:[]}catch{return []}}
+async function athleteScheduleContext(token){try{const d=await rpc('mw_athlete_schedule_snapshot',token);return d&&typeof d==='object'?d:{}}catch{return {}}}
 async function performanceContext(c){
   const aid=c.athlete?.id;if(!aid)return {};
   const [workouts,pace,strength]=await Promise.all([
@@ -50,6 +51,13 @@ module.exports=async function handler(req,res){
     const fullMW=access.mw_training_system===true;
     const intelligence=access.ai_intelligence===true;
     const assigned=await assignedCoachPrograms(c.token);
+    const schedule=await athleteScheduleContext(c.token);
+    const scheduleMode=String(schedule?.mode||'limited');
+    const scheduleAuthority=scheduleMode==='coach_managed'
+      ? 'This athlete has an active human coach. The coach/team calendar is authoritative. The athlete may report personal availability or conflicts, but must not be told they can independently move, cancel, replace, or approve official coach-controlled training. Use pending/approved/declined/needs-discussion availability reports as context, and direct actual program changes through the coach.'
+      : scheduleMode==='independent_full'
+        ? 'This athlete has full MW Sprint Performance access and no active coach assignment, so they own their personal availability calendar. Use saved availability to recommend how to protect the 41-week sprint + synchronized strength sequence. The athlete may approve MW schedule recommendations in My Schedule, but approval is not the same as silently rewriting official program state.'
+        : 'Schedule-management authority is limited for this account. Do not claim the athlete can independently change an official training calendar.';
     let instructions='';
 
     if(fullMW){
@@ -70,6 +78,8 @@ module.exports=async function handler(req,res){
     }else{
       instructions=`You are Coach MW AI inside MW Dynasty for an athlete sponsored by a COACH CORE plan. This is BASIC Coach MW assistance. The athlete's human coach owns the program.\n\nATHLETE\nName: ${athleteName}\nPRs: ${prText(c.prs)}\n\nAUTHORIZED CAPABILITIES\n- Explain the athlete's coach-assigned program content shown in ASSIGNED_COACH_PROGRAMS.\n- Explain exercise/training terminology, general sprint mechanics, warm-up concepts, recovery basics, app navigation, and safe execution.\n- Answer normal conversational questions and help the athlete understand what the human coach assigned.\n\nCORE LIMITS\n- Do not analyze historical performance trends or generate AI performance flags/recommendations from stored training history. That belongs to Coach Intelligence.\n- Do not reveal, reconstruct, quote, or prescribe the MW 41-week Sprint Performance System, synchronized MW Strength & Power plan, Sprint School curriculum, Smart Entry placement, or advanced MW performance methodology.\n- Do not recommend changing the coach's program. When a program change is being considered, tell the athlete to discuss it with the coach.\n- If the athlete asks for a locked Intelligence or Sprint Performance feature, explain the current access level without being salesy.\n${sharedSafety()}\n\nASSIGNED_COACH_PROGRAMS:\n${JSON.stringify(assigned)}`;
     }
+
+    instructions+=`\n\nSCHEDULE AUTHORITY\n- ${scheduleAuthority}\n- Treat unavailable dates as real constraints, reduced-load dates as pressure/load-management context, and awareness-only dates as planning context rather than automatic cancellations.\n- Never skip ahead in the MW sequence just because a conflict exists. Preserve training order, recovery logic, and coach authority where applicable.\n\nSCHEDULE_CONTEXT:\n${JSON.stringify(schedule)}`;
 
     const input=messages.map(m=>{const assistant=m.role==='assistant';const content=[{type:assistant?'output_text':'input_text',text:String(m.content||'').slice(0,12000)}];if(!assistant&&typeof m.imageDataUrl==='string'&&/^data:image\/(png|jpeg|jpg|webp);base64,/i.test(m.imageDataUrl)&&m.imageDataUrl.length<8000000)content.push({type:'input_image',image_url:m.imageDataUrl});return {role:assistant?'assistant':'user',content}});
     const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:process.env.OPENAI_MODEL||'gpt-5.6-sol',instructions,input,tools:[{type:'web_search'}],reasoning:{effort:process.env.OPENAI_REASONING_EFFORT||'medium'},max_output_tokens:2200})});
