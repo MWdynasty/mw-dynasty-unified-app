@@ -30,7 +30,7 @@ module.exports=async function handler(req,res){
   }
 
   const repTrackingEnabled=coachTier==='mw_sprint_performance';
-  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions]=await Promise.all([
+  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions,calendarEvents]=await Promise.all([
     sb(`coach_assignments?select=*&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=200`,token),
     sb(`athletes?select=*&limit=200`,token),
     sb(`attendance_records?select=*&order=attendance_date.desc&limit=250`,token),
@@ -40,9 +40,10 @@ module.exports=async function handler(req,res){
     repTrackingEnabled?sb(`athlete_pace_logs?select=athlete_id,program_week,program_day,workout_key,rep_number,distance_m,target_seconds,actual_seconds,intensity_percent,recorded_at&actual_seconds=not.is.null&order=recorded_at.desc&limit=500`,token):Promise.resolve([]),
     sb(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=500`,token),
     sb(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&order=recorded_at.desc&limit=500`,token),
-    sb(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&order=completed_at.desc&limit=500`,token)
+    sb(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&order=completed_at.desc&limit=500`,token),
+    sb(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact,location,notes&coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_at.asc&limit=150`,token)
   ]);
-  const context={coach:me,coachTier,repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
+  const context={coach:me,coachTier,repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
 
   const messages=Array.isArray(req.body?.messages)?req.body.messages.slice(-40):[];
   const input=messages.map(m=>{
@@ -63,7 +64,8 @@ When recommending a tier or week change, explain the evidence and require coach 
 The following knowledge was distilled from 85 founder-supplied screenshots of Track & Field Coaching Essentials. Apply it to biomechanics, periodization, warm-up, sprint sequencing, strength, plyometrics, recovery, youth safeguards, and event-specific reasoning. It is supporting science, not replacement prescriptions, and must not be presented as original MW authorship or reproduced at length:
 ${JSON.stringify(SUPPORTING_KNOWLEDGE)}
 For Coach Core / Coach Intelligence own-program customers, the coach's uploaded program is the source of truth; never pretend MW authored it.
-Use secured coach/team context when answering roster, attendance, PR, progression, flag, athlete, strength-log, workout-completion, or pace-check-in questions. If the required data is absent, say so.
+Use secured coach/team context when answering roster, attendance, PR, progression, flag, athlete, strength-log, workout-completion, pace-check-in, or scheduling questions. If the required data is absent, say so.
+Respect the coach's saved calendar constraints when discussing or recommending schedules. Treat event_type school_break, holiday, or facility_closure with training_impact no_practice as unavailable training dates. Treat exam_week or any event marked reduced_load as a signal to reduce scheduling pressure, complexity, or total load while preserving the program's phase intent. Awareness-only events should be mentioned when relevant but not treated as automatic cancellations. Never silently move official training; recommend an adjustment and keep the coach in control.
 COACH TIER CAPABILITY RULES:
 - Current coach tier: ${coachTier}.
 - Coach Intelligence may use roster details, events, experience, attendance, PRs, flags, recent activity, program position, workout completion, quick pace check-ins, strength check-ins/logs, and progression trends.
