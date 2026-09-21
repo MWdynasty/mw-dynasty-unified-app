@@ -82,6 +82,8 @@ includes('founder/index.html','Proactive AI Operating Queue','Founder proactive 
 includes('supabase/migrations/20260920_founder_os_v20_ai_work_to_sop.sql','source_ai_task_id','Founder AI-to-SOP migration missing');
 includes('server/api/founder.js',"action==='promote_ai_task_to_sop'",'Founder AI-to-SOP API action missing');
 includes('founder/index.html','data-task-to-sop','Founder AI-to-SOP review control missing');
+includes('founder/index.html','data-launch-ai','Founder launch AI prep control missing');
+includes('founder/index.html','Launch AI Prep','Founder launch AI prep review missing');
 includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
 includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
 
