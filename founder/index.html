@@ -1060,6 +1060,23 @@ const FOUNDER_TOUR_VIEW_COPY={
   security:"Your CIA-triad and control-system command center: Confidentiality, Integrity, Availability, preventive, detective, corrective, compensating controls, incidents, RLS, privileged functions, and audit history.",
   settings:"Founder preferences and orientation. Replay or reset this full tour here whenever you need it."
 };
+const FOUNDER_TOUR_REFERENCE_CONTROLS=[
+  ["Save Opportunity","partnerships"],["Create Internal Draft","partnerships"],["Draft AI Proposal","partnerships"],["Record as Sent","partnerships"],["Mark Lost","partnerships"],["Advance Partnership Stage","partnerships"],
+  ["Save Lead","marketing"],["Save Campaign","marketing"],["Save Performance","marketing"],["Update Performance","marketing"],
+  ["Give MW a Company Objective","objectives"],["New Company Objective","objectives"],["Run Next Safe Task","objectives"],["Complete Objective","objectives"],["View Work Plan","objectives"],
+  ["Run Safe Queued Work","ai"],["Run AI","ai"],["To SOP","ai"],["Run Department Brief","ai"],["View Playbook","ai"],["Build AI Work Plan","ai"],
+  ["Create Proposal","knowledge"],["Propose Methodology Change","knowledge"],["Add Founder Principle","knowledge"],["Publish","knowledge"],
+  ["Run AI Triage","support"],["Reviewed","support"],
+  ["Save Cost","costs"],["Add Cost","costs"],["Pause / Activate Cost","costs"],
+  ["Create SOP","operations"],["Create for Review","operations"],["Approve & Activate","operations"],
+  ["Plan Human Role","people"],["Save Role Plan","people"],["View AI Workforce","people"],
+  ["Add Risk","risk"],["Save Risk","risk"],["Resolve Risk","risk"],
+  ["Run AI Prep","launch"],["View AI Prep","launch"],["Record Verification","launch"],["Mark Verified","launch"],["Approve Go-Live","launch"],["Reopen Gate","launch"],
+  ["Approve Coach","applications"],["Deny Coach","applications"],
+  ["Mark All Read","notifications"],["Dismiss Notification","notifications"],
+  ["Open Risk Register","security"],["System Health","security"],["Launch Security Gates","security"],
+  ["Try Again","system"]
+];
 let founderTourState=null;
 
 function founderTourLabel(el){return String(el?.innerText||el?.textContent||"").replace(/\s+/g," ").trim()||"Unnamed control"}
@@ -1127,13 +1144,19 @@ async function buildFounderTourPlan(){
       plan.push({kind:"control",view,buttonIndex:index,label,occurrence,title:label,body:copy.body,context:copy.context});
     });
   }
-  plan.push({kind:"finish",title:"Founder OS tour complete",body:"You have now walked the live Founder Hub and the controls that were available during this tour. If MW Dynasty adds new controls later, replay the tour from Settings & Tour and it will scan the current interface again."});
+  const seenLabels=new Set(plan.filter(x=>x.kind==="control").map(x=>String(x.label||"").toLowerCase()));
+  FOUNDER_TOUR_REFERENCE_CONTROLS.forEach(([label,view])=>{
+    if(seenLabels.has(String(label).toLowerCase()))return;
+    const copy=founderTourControlCopy(label,view,"This control appears only when the related record, form, workflow, or confirmation state is available.");
+    plan.push({kind:"reference",view,title:label+" · Reference",body:copy.body,context:copy.context});
+  });
+  plan.push({kind:"finish",title:"Founder OS tour complete",body:"You have now walked the live Founder Hub, every visible control found during this tour, and reference steps for protected form/dialog controls that were not currently on screen. If MW Dynasty adds new controls later, replay the tour from Settings & Tour and it will scan the current interface again."});
   closeModal();
   await setView("home");
   return plan
 }
 function founderTourLocate(step){
-  if(step.kind==="intro"||step.kind==="finish")return null;
+  if(step.kind==="intro"||step.kind==="finish"||step.kind==="reference")return null;
   if(step.kind==="global"||step.kind==="aiModal")return document.querySelector(step.selector);
   if(step.kind==="nav")return document.querySelector('.navBtn[data-view="'+step.view+'"]');
   if(step.kind==="section")return document.querySelector("#content .hero")||$("content");
@@ -1149,8 +1172,8 @@ async function founderTourPrepareStep(step){
     if(!$("modal"))openAIModal();
     await wait(40);
   }else if($("modal"))closeModal();
-  if(step.view&&currentView!==step.view){await setView(step.view);await wait(40)}
-  if(step.kind==="nav"&&innerWidth<=860)$("sidebar").classList.add("open");
+  if(step.kind!=="reference"&&step.view&&currentView!==step.view){await setView(step.view);await wait(40)}
+  if(innerWidth<=860&&(step.kind==="nav"||(step.kind==="global"&&["#founderName","#signOut",".sideBrand"].includes(step.selector))))$("sidebar").classList.add("open");
   else if(step.kind!=="global")$("sidebar").classList.remove("open");
 }
 function founderTourRenderCard(step,target){
