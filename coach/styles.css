@@ -1928,3 +1928,16 @@ html.mw-native-app .coach-login-bg:after{
   .school-calendar-locked{align-items:stretch;flex-direction:column;padding:18px}
   .school-calendar-locked .back{width:100%}
 }
+
+
+/* Athlete availability review inside Coach Calendar */
+.athlete-availability-row{align-items:center}
+.athlete-availability-row small{line-height:1.45;color:#aebdc7}
+.athlete-availability-review{min-width:145px}
+.availability-review-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.availability-review-actions button{min-height:46px}
+@media(max-width:700px){
+  .athlete-availability-row{align-items:stretch;flex-direction:column}
+  .athlete-availability-review{width:100%}
+  .availability-review-actions{grid-template-columns:1fr}
+}
