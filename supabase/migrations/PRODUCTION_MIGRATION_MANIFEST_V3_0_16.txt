@@ -131,3 +131,6 @@ Note: v7/v8 numbering is shared with separate Founder security-review and AI-bac
 20260920_founder_os_v19_queue_reconciliation.sql
 - Automatically closes proactive AI tasks when their launch gate or risk source condition is resolved, and cancels tasks when the source notification is dismissed.
 
+20260920_founder_os_v20_ai_work_to_sop.sql
+- Links each completed Founder AI task to at most one Founder-review SOP draft.
+- Preserves AI operating work as reusable company process documentation without activating it automatically.
