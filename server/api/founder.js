@@ -372,6 +372,26 @@ module.exports=async function handler(req,res){
       }}));
       return res.status(200).json({ok:true,item:row});
     }
+    if(action==='promote_ai_task_to_sop'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'AI task id required.'});
+      const task=one(await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(id)}&select=id,title,description,department,agent_code,status,output_summary&limit=1`));
+      if(!task)return res.status(404).json({error:'AI task not found.'});
+      if(task.status!=='completed'||!clean(task.output_summary,12000)){
+        return res.status(409).json({error:'AI work must be completed before it can become an SOP draft.'});
+      }
+      const existing=one(await rest(token,`founder_sops?source_ai_task_id=eq.${encodeURIComponent(id)}&select=*&limit=1`));
+      if(existing)return res.status(200).json({ok:true,item:existing,alreadyPromoted:true});
+      const row=one(await rest(token,'founder_sops',{method:'POST',body:{
+        title:clean(b.title,180)||clean(task.title,180)||'AI operating procedure draft',
+        department:clean(task.department,120)||'Operations',
+        status:'review',
+        purpose:clean(task.description,2000)||`Promoted from completed AI work by ${clean(task.agent_code,80)||'MW AI'}.`,
+        procedure:clean(task.output_summary,12000),
+        owner_agent_code:clean(task.agent_code,80)||null,
+        source_ai_task_id:task.id
+      }}));
+      return res.status(200).json({ok:true,item:row,alreadyPromoted:false});
+    }
     if(action==='create_sop'){
       const title=clean(b.title,180),department=clean(b.department,120);
       if(!title||!department)return res.status(400).json({error:'SOP title and department are required.'});
