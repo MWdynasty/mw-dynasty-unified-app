@@ -1197,6 +1197,27 @@ html.mw-native-app .mwLoginStory:after{
   html:not(.mw-native-app) body.mw-auth-ready #home .mwHomeShortcuts button b{
     font-size:11px!important;
   }
+
+  /* Balance the Coach MW shortcut inside the larger desktop card. */
+  html:not(.mw-native-app) body.mw-auth-ready #home .mwHomeShortcuts button[data-open="coach"]{
+    align-content:center!important;
+    gap:12px!important;
+    padding-top:22px!important;
+    padding-bottom:20px!important;
+  }
+
+  html:not(.mw-native-app) body.mw-auth-ready #home .mwHomeShortcuts button[data-open="coach"] .mwCoachCrestMark{
+    width:48px!important;
+    height:48px!important;
+    margin:0 auto 2px!important;
+    border-radius:14px!important;
+    font-size:14px!important;
+  }
+
+  html:not(.mw-native-app) body.mw-auth-ready #home .mwHomeShortcuts button[data-open="coach"] b{
+    margin:0!important;
+    line-height:1.2!important;
+  }
 }
 
 @media (min-width:1280px){
