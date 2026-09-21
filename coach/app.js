@@ -297,7 +297,7 @@ function bindPageNavigation(root=document){
 }
 async function coachSearchResults(query){
   const q=String(query||'').trim().toLowerCase();if(!q)return [];
-  const navItems=[['athletes','Athletes','People you coach'],['teams','Teams','Groups and squads'],['calendar','Calendar','Practices and events'],['meets','Meets','Competition schedule'],['attendance','Attendance','Training attendance'],['messages','Messages','Coach communication'],['programs','Programs','Your training programs'],['activity','Activity Log','Recent coach activity'],['account','Account','Settings and training year'],['support','Help','Support and privacy']];
+  const navItems=[['athletes','Athletes','People you coach'],['teams','Teams','Groups and squads'],['calendar','Calendar',experience==='core'?'Practices, meets and team events':'School constraints, practices and events'],['meets','Meets','Competition schedule'],['attendance','Attendance','Training attendance'],['messages','Messages','Coach communication'],['programs','Programs','Your training programs'],['activity','Activity Log','Recent coach activity'],['account','Account','Settings and training year'],['support','Help','Support and privacy']];
   if(experience!=='core')navItems.push(['insights','Performance Intelligence','Coach intelligence'],['coachmw','Coach MW AI','AI coaching assistant'],['taskboard','Task Board','Athlete priorities']);
   if(experience==='performance')navItems.push(['mwtrack','MW Training','41-week MW system'],['strength','Strength & Power','MW strength system'],['school','Sprint School','Education library'],['race','Race Strategy','Race planning'],['pacing','Pacing Tools','Training targets']);
   const results=navItems.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q)).map(x=>({kind:'page',page:x[0],title:x[1],sub:x[2]}));
@@ -1274,10 +1274,16 @@ function coachConstraintLabel(type){return ({school_break:'School Break',exam_we
 function coachConstraintImpactLabel(impact){return ({no_practice:'No Practice',reduced_load:'Reduced Load',awareness_only:'Awareness Only',normal:'Normal Schedule'})[impact]||'Awareness Only'}
 function localDateValue(value){if(!value)return'';const d=new Date(value);if(Number.isNaN(d.getTime()))return'';return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 function coachDateRange(e){const start=new Date(e.starts_at),end=e.ends_at?new Date(e.ends_at):null,s=start.toLocaleDateString();return end&&end.toDateString()!==start.toDateString()?`${s} – ${end.toLocaleDateString()}`:s}
+function smartScheduleUnlocked(){return experience==='intelligence'||experience==='performance'}
+function smartScheduleTierCopy(){
+  if(experience==='performance')return {kicker:'MW SMART SCHEDULING · 41-WEEK INTEGRATION',title:'Protect the program. Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. MW uses those constraints alongside the 41-week Sprint Performance + Strength system so recommendations preserve phase intent and training quality.',badge:'MW 41-WEEK INTEGRATION ACTIVE'};
+  return {kicker:'MW SMART SCHEDULING',title:'Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. Coach MW and the Season Planner use those constraints when helping you organize your own program.',badge:'COACH INTELLIGENCE ACTIVE'};
+}
 async function calendarPage(){
-  pageBase('Calendar','Build the season around your school calendar, practices, meets, exams, breaks, travel, and facility availability.',`
-    <section class="school-calendar-hero">
-      <div><span class="status-kicker">SCHOOL CALENDAR</span><h2>Plan around real life.</h2><p>Add breaks, exam weeks, holidays, travel, and facility closures so MW can account for them when helping you plan training.</p></div>
+  const smart=smartScheduleUnlocked(),tier=smartScheduleTierCopy();
+  pageBase('Calendar',smart?'School constraints, practices, meets, and team events in one coaching calendar.':'Practice, meet, testing, and team-event scheduling for Coach Core.',`
+    ${smart?`<section class="school-calendar-hero">
+      <div><span class="status-kicker">${tier.kicker}</span><h2>${tier.title}</h2><p>${tier.body}</p><span class="smart-schedule-badge">${tier.badge}</span></div>
       <button class="action" id="addSchoolConstraint">+ Add School Constraint</button>
     </section>
     <div class="panel-grid school-calendar-summary" style="margin-top:14px">
@@ -1285,35 +1291,54 @@ async function calendarPage(){
       <div class="tile"><h3>Reduced Load</h3><b id="reducedLoadCount">—</b><p>Exam or high-stress periods.</p></div>
     </div>
     <section class="section" style="margin-top:14px">
-      <div class="section-head"><div><span class="status-kicker">SCHOOL & AVAILABILITY</span><h2>Schedule Constraints</h2></div><button class="link-btn" id="addSchoolConstraint2">+ Add</button></div>
+      <div class="section-head"><div><span class="status-kicker">SCHOOL & AVAILABILITY</span><h2>Smart Schedule Constraints</h2></div><button class="link-btn" id="addSchoolConstraint2">+ Add</button></div>
       <div class="list" id="schoolConstraintList" style="padding:14px"><div class="tile">Loading school calendar…</div></div>
-    </section>
+    </section>`:`<section class="school-calendar-locked">
+      <div><span class="status-kicker">COACH CORE CALENDAR</span><h2>Your team schedule stays simple.</h2><p>Add practices, meets, testing, and other team events below. School breaks, exam-week load awareness, and smart schedule intelligence unlock with Coach Intelligence and MW Sprint Performance.</p></div>
+      <button class="back" data-page="account">View Membership</button>
+    </section>`}
     <section class="section" style="margin-top:14px">
       <div class="section-head"><div><span class="status-kicker">TEAM SCHEDULE</span><h2>Practices, Meets & Testing</h2></div><button class="link-btn" id="addCalendar">+ Add Event</button></div>
       <div class="list" id="calLive" style="padding:14px"><div class="tile">Loading team events…</div></div>
     </section>`);
-  const openConstraint=()=>schoolConstraintModal();document.getElementById('addSchoolConstraint').onclick=openConstraint;document.getElementById('addSchoolConstraint2').onclick=openConstraint;document.getElementById('addCalendar').onclick=()=>calendarEventModal();
+  if(smart){
+    const openConstraint=()=>schoolConstraintModal();
+    document.getElementById('addSchoolConstraint').onclick=openConstraint;
+    document.getElementById('addSchoolConstraint2').onclick=openConstraint;
+  }
+  document.getElementById('addCalendar').onclick=()=>calendarEventModal();
+  bindPageNavigation(app);
   try{
     const rows=await sbRest('coach_calendar_events?select=id,title,event_type,starts_at,ends_at,location,notes,registration_status,training_impact&order=starts_at.asc')||[];
     const constraints=rows.filter(e=>MW_SCHOOL_CONSTRAINT_TYPES.has(e.event_type)),events=rows.filter(e=>!MW_SCHOOL_CONSTRAINT_TYPES.has(e.event_type));
-    document.getElementById('noPracticeCount').textContent=constraints.filter(e=>e.training_impact==='no_practice').length;
-    document.getElementById('reducedLoadCount').textContent=constraints.filter(e=>e.training_impact==='reduced_load').length;
-    schoolConstraintList.innerHTML=constraints.map(e=>`<div class="row school-constraint-row"><span><b>${escapeHtml(e.title)}</b><br><small>${escapeHtml(coachConstraintLabel(e.event_type))} · ${escapeHtml(coachDateRange(e))} · <strong>${escapeHtml(coachConstraintImpactLabel(e.training_impact))}</strong></small>${e.notes?`<br><small>${escapeHtml(e.notes)}</small>`:''}</span><button class="action constraint-live" data-id="${e.id}">Edit</button></div>`).join('')||'<div class="tile"><h3>No school constraints yet</h3><p>Add exam weeks, school breaks, holidays, travel, or facility closures here.</p></div>';
-    schoolConstraintList.querySelectorAll('.constraint-live').forEach(b=>b.onclick=()=>schoolConstraintModal(b.dataset.id));
+    if(smart){
+      document.getElementById('noPracticeCount').textContent=constraints.filter(e=>e.training_impact==='no_practice').length;
+      document.getElementById('reducedLoadCount').textContent=constraints.filter(e=>e.training_impact==='reduced_load').length;
+      const list=document.getElementById('schoolConstraintList');
+      list.innerHTML=constraints.map(e=>`<div class="row school-constraint-row"><span><b>${escapeHtml(e.title)}</b><br><small>${escapeHtml(coachConstraintLabel(e.event_type))} · ${escapeHtml(coachDateRange(e))} · <strong>${escapeHtml(coachConstraintImpactLabel(e.training_impact))}</strong></small>${e.notes?`<br><small>${escapeHtml(e.notes)}</small>`:''}</span><button class="action constraint-live" data-id="${e.id}">Edit</button></div>`).join('')||'<div class="tile"><h3>No school constraints yet</h3><p>Add exam weeks, school breaks, holidays, travel, or facility closures here.</p></div>';
+      list.querySelectorAll('.constraint-live').forEach(b=>b.onclick=()=>schoolConstraintModal(b.dataset.id));
+    }
     calLive.innerHTML=events.map(e=>`<div class="row"><span><b>${escapeHtml(e.title)}</b><br><small>${escapeHtml(e.event_type||'event')} · ${new Date(e.starts_at).toLocaleString()}${e.location?' · '+escapeHtml(e.location):''}</small></span><button class="action cal-live" data-id="${e.id}">Open</button></div>`).join('')||'<div class="tile">No practices, meets, or testing events scheduled yet.</div>';
     calLive.querySelectorAll('.cal-live').forEach(b=>b.onclick=()=>calendarEventModal(b.dataset.id));
-  }catch(e){schoolConstraintList.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`;calLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}
+  }catch(e){
+    const list=document.getElementById('schoolConstraintList');if(list)list.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`;
+    calLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`;
+  }
 }
 async function schoolConstraintModal(id=null){
+  if(!smartScheduleUnlocked()){
+    toast('Smart Schedule Constraints require Coach Intelligence or MW Sprint Performance.');
+    return;
+  }
   let row=null;if(id)row=(await sbRest(`coach_calendar_events?select=*&id=eq.${encodeURIComponent(id)}&limit=1`))?.[0];
-  const start=localDateValue(row?.starts_at),end=localDateValue(row?.ends_at||row?.starts_at);
+  const start=localDateValue(row?.starts_at),end=localDateValue(row?.ends_at||row?.starts_at),performance=experience==='performance';
   const modal=mwModal(row?'Edit School Constraint':'Add School Constraint',`<div class="form">
     <label>What is happening?<select id="scType"><option value="school_break">School Break</option><option value="exam_week">Exam Week</option><option value="holiday">Holiday</option><option value="facility_closure">Facility Closure</option><option value="travel">Travel / School Trip</option></select></label>
     <label>Name<input id="scTitle" maxlength="120" placeholder="Example: Fall Break" value="${escapeHtml(row?.title||'')}"></label>
     <div class="form-grid"><label>Start Date<input id="scStart" type="date" value="${start}"></label><label>End Date<input id="scEnd" type="date" value="${end}"></label></div>
     <label>Training Impact<select id="scImpact"><option value="no_practice">No Practice — keep these dates clear</option><option value="reduced_load">Reduced Load — lighter / simplified schedule</option><option value="awareness_only">Awareness Only — coach decides day by day</option></select></label>
     <label>Coach Notes<textarea id="scNotes" rows="3" placeholder="Optional details for Coach MW and season planning">${escapeHtml(row?.notes||'')}</textarea></label>
-    <div class="tile"><b>How MW uses this</b><p>No Practice dates are treated as unavailable. Reduced Load periods are surfaced to Coach MW and season planning so recommendations can protect recovery and school demands. The coach remains in control of official program changes.</p></div>
+    <div class="tile"><b>${performance?'MW Sprint Performance Integration':'Coach Intelligence Integration'}</b><p>${performance?'MW considers this constraint alongside the synchronized 41-week sprint + strength progression. Recommendations protect the current phase and training quality without silently changing the official program.':'Coach MW and the Season Planner consider this constraint when helping organize your program. MW recommends around the conflict without silently changing your official schedule.'}</p></div>
     <button class="action" id="saveSC">Save School Calendar</button>
     ${row?'<button class="back" id="deleteSC" type="button">Delete Constraint</button>':''}
   </div>`);
@@ -1323,7 +1348,7 @@ async function schoolConstraintModal(id=null){
     const title=modal.querySelector('#scTitle').value.trim(),startDate=modal.querySelector('#scStart').value,endDate=modal.querySelector('#scEnd').value||startDate;
     if(!title||!startDate)return toast('Name and start date are required');if(endDate<startDate)return toast('End date cannot be before start date');
     const u=await mwCurrentUser(),body={coach_user_id:u.id,title,event_type:modal.querySelector('#scType').value,starts_at:new Date(startDate+'T00:00:00').toISOString(),ends_at:new Date(endDate+'T23:59:59').toISOString(),location:null,notes:modal.querySelector('#scNotes').value.trim()||null,registration_status:null,training_impact:modal.querySelector('#scImpact').value};
-    try{const d=id?await sbRest(`coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body}):await sbRest('coach_calendar_events',{method:'POST',body});await logCoachAction(id?'school_calendar_updated':'school_calendar_created','calendar_event',d?.[0]?.id||id,{title:body.title,type:body.event_type,impact:body.training_impact,start:startDate,end:endDate});modal.remove();calendarPage();toast('School calendar saved')}catch(e){toast(e.message)}
+    try{const d=id?await sbRest(`coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body}):await sbRest('coach_calendar_events',{method:'POST',body});await logCoachAction(id?'school_calendar_updated':'school_calendar_created','calendar_event',d?.[0]?.id||id,{title:body.title,type:body.event_type,impact:body.training_impact,start:startDate,end:endDate,tier:experience});modal.remove();calendarPage();toast('School calendar saved')}catch(e){toast(e.message)}
   };
   const del=modal.querySelector('#deleteSC');if(del)del.onclick=async()=>{if(!confirm('Delete this school calendar constraint?'))return;try{await sbRest(`coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method:'DELETE'});modal.remove();calendarPage();toast('Constraint deleted')}catch(e){toast(e.message)}};
 }
