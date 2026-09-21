@@ -2131,10 +2131,12 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   let mwRemoteProfile={userId:'',name:'Athlete',coachType:'male',p60:'',p100:'',p200:'',p300:'',p400:'',week:'1',currentDay:'1',currentPhase:'1',programStatus:'not_started',startDate:'',startWeek:'1'};window.mwAssessmentComplete=false;window.mwAssessmentRequired=false;window.mwDobRequired=false;window.mwFeatureAccess={};
 
   function authStatus(msg,bad=false){const el=document.querySelector('#mwAuthStatus');if(el){el.textContent=msg||'';el.style.color=bad?'#ff9caa':'#55c9ff'}}
+  function transientProblem(error,status=0){return !navigator.onLine||error?.mwTransient===true||window.MWResilience?.isTransientStatus?.(status)===true||window.MWResilience?.isTransientError?.(error)===true}
+  function mwAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
   function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
   function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
-  async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW connection failed');return d}
+  async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status);return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
   function applyAthleteAccessUI(){
     const a=window.mwFeatureAccess||{};
@@ -2486,6 +2488,10 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
         throw accessErr;
       }
     }catch(e){
+      if(transientProblem(e)&&mwSession?.access_token){
+        authStatus('Connection interrupted after sign-in. Your MW session is safe and will reconnect automatically.',true);
+        return
+      }
       clearSession();
       authStatus(String(e?.message||'Sign-in failed'),true)
     }
@@ -2569,12 +2575,14 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const refreshed=await r.json().catch(()=>({}));
 
     if(!r.ok || !refreshed.access_token){
-      throw new Error(
+      const err=mwAccessError(
         refreshed.error_description ||
         refreshed.msg ||
         refreshed.error ||
-        'Session refresh failed'
+        'Session refresh failed',
+        r.status
       );
+      throw err;
     }
 
     saveSession(refreshed);
@@ -2590,6 +2598,10 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }
   }catch(e){
     console.warn('MW session restore failed:',e);
+    if(transientProblem(e)){
+      authStatus('MW is having a temporary connection issue. Your saved session is safe; we’ll reconnect automatically.',true);
+      return
+    }
     clearSession();
   }
 }
@@ -2615,6 +2627,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='block';authStatus('');
   document.querySelector('#mwSavePassword').onclick=saveRecoveredPassword;
   const out=document.querySelector('#mwSignOut');if(out)out.onclick=async()=>{out.disabled=true;out.textContent='SIGNING OUT…';try{const t=token();if(t)await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+t}})}catch(e){console.warn('MW remote sign-out unavailable',e)}finally{clearSession();location.replace('/athlete/')}};
+  window.addEventListener('mw:session-refreshed',e=>{if(e?.detail?.key===SESSION_KEY&&e.detail.session)mwSession=e.detail.session});
+  window.addEventListener('online',()=>{const raw=localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY);if(raw&&!document.body.classList.contains('mw-auth-ready'))setTimeout(()=>resume(),220)});
   if(!initRecoveryMode()){
     const confirmed=confirmedSignupSessionFromUrl();
     if(confirmed){saveSession(confirmed,true);history.replaceState({},document.title,location.pathname);renderAthleteMembership(confirmed)}
