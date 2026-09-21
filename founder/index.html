@@ -481,7 +481,7 @@ async function runAITask(id,button,returnView){
   finally{
     if(button){button.disabled=false;button.textContent="Run AI"}
     cache={};
-    setTimeout(()=>returnView==="objectives"?renderObjectives():renderAI(),250)
+    setTimeout(()=>returnView==="objectives"?renderObjectives():returnView==="launch"?renderLaunch():renderAI(),250)
   }
 }
 async function promoteTaskToSop(id,button){
@@ -652,7 +652,8 @@ function openRiskModal(){
 }
 
 async function renderLaunch(){
-  const d=await api("launch",true),gates=d.gates||[],health=d.health||{},website=health.website||{},app=health.app||{};
+  const [d,a]=await Promise.all([api("launch",true),api("ai_company",true)]),gates=d.gates||[],health=d.health||{},website=health.website||{},app=health.app||{};
+  const launchTasks=(a.tasks||[]).filter(x=>String(x.source_key||"").startsWith("launch_gate:"));
   const required=gates.filter(x=>x.required),blocked=required.filter(x=>x.status==="blocked"),pending=required.filter(x=>x.status==="pending");
   const pct=d.required_total?Math.round((Number(d.required_verified||0)/Number(d.required_total))*100):0;
   const byCategory={};gates.forEach(g=>(byCategory[g.category]||(byCategory[g.category]=[])).push(g));
@@ -674,17 +675,23 @@ async function renderLaunch(){
         const canEdit=g.verification_source!=="automated";
         const isFinal=g.gate_code==="founder_go_live";
         const verifyDisabled=isFinal&&!d.ready_for_founder_go_live;
+        const prep=launchTasks.find(t=>t.source_key==="launch_gate:"+g.gate_code);
         return '<div class="card '+(g.required&&g.status!=="verified"?"approval":"")+'"><div class="row" style="padding:0;border:0;background:transparent"><div>'+
           badge(g.status,type)+' '+(g.required?badge("required","purple"):badge("optional","blue"))+
           '<h3 style="margin:8px 0">'+esc(g.title)+'</h3><p class="muted">'+esc(g.description||"")+'</p>'+
           '<small>Owner: '+esc(g.owner_agent_code||"Founder")+' · Verification: '+esc(g.verification_source)+'</small>'+
+          (prep?'<p class="muted"><b>AI prep:</b> '+esc(prep.status)+(prep.output_summary?' · work ready to review':'')+'</p>':"")+
           (g.evidence?'<p class="muted"><b>Evidence:</b> '+esc(g.evidence)+'</p>':"")+
           (g.verified_at?'<small>Verified '+date(g.verified_at)+'</small>':"")+
           '</div><div class="heroActions">'+
+          (prep&&["queued","in_progress","blocked"].includes(prep.status)&&!prep.requires_approval?'<button class="btn small blue" data-launch-ai="'+esc(prep.id)+'">Run AI Prep</button>':"")+
+          (prep&&prep.output_summary?'<button class="btn small" data-launch-ai-view="'+esc(prep.id)+'">View AI Prep</button>':"")+
           (canEdit&&g.status!=="verified"?'<button class="btn small '+(isFinal?'primary':'good')+'" data-launch-verify="'+esc(g.gate_code)+'" '+(verifyDisabled?'disabled':'')+'>'+(isFinal?'Approve Go-Live':'Record Verification')+'</button>':"")+
           (canEdit&&g.status==="verified"&&g.gate_code!=="founder_go_live"?'<button class="btn small" data-launch-reopen="'+esc(g.gate_code)+'">Reopen</button>':"")+
           '</div></div></div>';
       }).join("")+'</div>').join("");
+  document.querySelectorAll("[data-launch-ai]").forEach(b=>b.onclick=()=>runAITask(b.dataset.launchAi,b,"launch"));
+  document.querySelectorAll("[data-launch-ai-view]").forEach(b=>b.onclick=()=>{const t=launchTasks.find(x=>String(x.id)===String(b.dataset.launchAiView));if(t)modal("Launch AI Prep · "+t.title,'<div class="bubble ai">'+esc(t.output_summary||"No AI prep output stored.")+'</div>')});
   document.querySelectorAll("[data-launch-verify]").forEach(b=>b.onclick=()=>openLaunchVerification(b.dataset.launchVerify,gates.find(x=>x.gate_code===b.dataset.launchVerify)));
   document.querySelectorAll("[data-launch-reopen]").forEach(b=>b.onclick=async()=>{try{await action("update_launch_gate",{gateCode:b.dataset.launchReopen,status:"pending",evidence:"Reopened by Founder for re-verification."});cache={};renderLaunch()}catch(e){alert(e.message)}});
 }
