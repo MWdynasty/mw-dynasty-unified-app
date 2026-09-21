@@ -1825,6 +1825,7 @@ function mwOpenScheduleEditor(item=null){
   if(!body)return;body.querySelector('#mwScType').value=item?.type||'school_break';body.querySelector('#mwScImpact').value=item?.impact||'unavailable';
   body.querySelector('#mwScSave').onclick=async()=>{const btn=body.querySelector('#mwScSave'),st=body.querySelector('#mwScState'),title=body.querySelector('#mwScTitle').value.trim(),startDate=body.querySelector('#mwScStart').value,endDate=body.querySelector('#mwScEnd').value||startDate;if(!title||!startDate){st.style.display='block';st.textContent='Add a name and start date.';return}if(endDate<startDate){st.style.display='block';st.textContent='End date cannot be before the start date.';return}btn.disabled=true;btn.textContent='SAVING…';try{await mwScheduleRpc('mw_athlete_save_schedule_constraint',{p_id:item?.id||null,p_type:body.querySelector('#mwScType').value,p_title:title,p_start:startDate,p_end:endDate,p_impact:body.querySelector('#mwScImpact').value,p_notes:body.querySelector('#mwScNotes').value.trim()});mwCloseScheduleModal();await mwRenderAthleteSchedule();window.mwReloadAthleteNotifications?.()}catch(e){st.style.display='block';st.textContent=e.message;btn.disabled=false;btn.textContent=managed?'SEND TO MY COACH':'SAVE & GET MW RECOMMENDATION'}};
 }
+function mwEditScheduleById(id){const items=Array.isArray(mwAthleteScheduleSnapshot?.constraints)?mwAthleteScheduleSnapshot.constraints:[],item=items.find(x=>String(x.id)===String(id));if(item)mwOpenScheduleEditor(item)}
 async function mwDeleteScheduleItem(id){if(!confirm('Remove this schedule item?'))return;try{await mwScheduleRpc('mw_athlete_delete_schedule_constraint',{p_id:id});await mwRenderAthleteSchedule()}catch(e){alert(e.message)}}
 async function mwApproveScheduleRecommendation(id,btn){if(btn){btn.disabled=true;btn.textContent='APPROVING…'}try{const d=await mwScheduleRpc('mw_athlete_approve_schedule_recommendation',{p_id:id});await mwRenderAthleteSchedule();if(d?.note)alert(d.note)}catch(e){alert(e.message);if(btn){btn.disabled=false;btn.textContent='APPROVE MW RECOMMENDATION'}}}
 function mwScheduleConstraintCard(x,mode){
@@ -1836,7 +1837,7 @@ function mwScheduleConstraintCard(x,mode){
     ${x.coachNote?`<div class="mwScheduleCoachNote"><b>COACH NOTE</b><br>${mwEsc(x.coachNote)}</div>`:''}
     <div class="mwScheduleActions">
       ${independent&&!approved?`<button class="mwSchedulePrimary" onclick="mwApproveScheduleRecommendation('${mwEsc(x.id)}',this)">APPROVE MW RECOMMENDATION</button>`:''}
-      <button class="mwScheduleGhost" onclick='mwOpenScheduleEditor(${JSON.stringify(x).replaceAll("'","&#39;")})'>EDIT</button>
+      <button class="mwScheduleGhost" onclick="mwEditScheduleById('${mwEsc(x.id)}')">EDIT</button>
       <button class="mwScheduleDanger" onclick="mwDeleteScheduleItem('${mwEsc(x.id)}')">${mode==='coach_managed'?'WITHDRAW':'DELETE'}</button>
     </div>
   </article>`;
