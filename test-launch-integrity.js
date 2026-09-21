@@ -39,8 +39,11 @@ includes('founder/index.html','FOUNDER OPERATING SYSTEM','Founder OS shell missi
 includes('founder/index.html','Website & Growth','Founder OS website center missing');
 includes('founder/index.html','AI Company','Founder OS AI company missing');
 includes('founder/index.html','MW Knowledge','Founder OS methodology center missing');
-includes('server/api/founder.js','Founder / Owner access required','Founder API authorization gate missing');
-includes('server/api/founder-ai.js','Founder / Owner access required','Founder AI authorization gate missing');
+includes('server/api/founder.js',"require('../lib/founder-auth')",'Founder API must use centralized Founder authorization');
+includes('server/api/founder-ai.js',"require('../lib/founder-auth')",'Founder AI must use centralized Founder authorization');
+includes('server/lib/founder-auth.js','Founder / Owner access required','Centralized Founder authorization gate missing');
+includes('server/lib/founder-auth.js',"profile.role!=='founder_owner'",'Founder role enforcement missing');
+includes('server/lib/founder-auth.js',"profile.account_status!=='active'",'Founder active-account enforcement missing');
 includes('server/api/founder-ai.js','Consequential actions must be prepared as approval requests','Founder AI human-approval guard missing');
 includes('api/mw.js',"'founder': require('../server/api/founder')",'Founder API route missing');
 includes('api/mw.js',"'founder/ai': require('../server/api/founder-ai')",'Founder AI route missing');
