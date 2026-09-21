@@ -1250,6 +1250,68 @@ html.mw-native-app .mwLoginStory:after{
   }
 }
 </style>
+
+<style id="mw-athlete-schedule-v1">
+/* Athlete schedule authority: independent athletes manage; coach-managed athletes report. */
+#home .mwHomeShortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+#mwScheduleHomeShortcut{border-color:rgba(85,201,255,.38)!important;background:linear-gradient(145deg,#0b2435,#050c12)!important}
+#schedule{padding-bottom:10px}
+.mwScheduleHero{border:1px solid rgba(245,185,46,.42);border-radius:18px;padding:18px;background:radial-gradient(circle at 92% 10%,rgba(245,185,46,.12),transparent 34%),linear-gradient(145deg,#0a1722,#05090e);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.mwScheduleHero.coachManaged{border-color:rgba(85,201,255,.40);background:radial-gradient(circle at 92% 10%,rgba(85,201,255,.12),transparent 34%),linear-gradient(145deg,#091a27,#05090e)}
+.mwScheduleKicker{display:block;color:var(--gold);font-size:9px;font-weight:950;letter-spacing:.13em}
+.mwScheduleHero.coachManaged .mwScheduleKicker{color:var(--blue2)}
+.mwScheduleHero h2{margin:7px 0 7px;font-size:25px;line-height:1.05}
+.mwScheduleHero p{margin:0;color:#b5c2cc;font-size:11px;line-height:1.5}
+.mwScheduleAuthority{display:inline-flex;margin-top:12px;padding:6px 9px;border:1px solid rgba(245,185,46,.35);border-radius:999px;color:#f0ca61;font-size:8px;font-weight:900;letter-spacing:.08em}
+.mwScheduleHero.coachManaged .mwScheduleAuthority{border-color:rgba(85,201,255,.34);color:#78d5ff}
+.mwScheduleHero .save{margin-top:14px}
+.mwScheduleSection{margin-top:12px;border:1px solid #293946;border-radius:16px;background:#050c12;overflow:hidden}
+.mwScheduleSectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;border-bottom:1px solid #263641}
+.mwScheduleSectionHead span{font-size:9px;color:#8395a2;letter-spacing:.09em}
+.mwScheduleSectionHead b{font-size:13px}
+.mwScheduleList{display:grid;gap:9px;padding:12px}
+.mwScheduleItem{border:1px solid #2d3d49;border-radius:13px;background:linear-gradient(145deg,#08151e,#050b10);padding:12px}
+.mwScheduleItem.pending{border-color:rgba(245,185,46,.45)}
+.mwScheduleItem.approved{border-color:rgba(53,232,120,.40)}
+.mwScheduleItem.needs_discussion{border-color:rgba(85,201,255,.45)}
+.mwScheduleItemTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.mwScheduleItem h3{margin:0;font-size:13px}
+.mwScheduleMeta{display:block;margin-top:5px;color:#91a2ae;font-size:9px;line-height:1.45}
+.mwSchedulePill{flex:0 0 auto;padding:5px 7px;border:1px solid #334754;border-radius:999px;color:#b7c5cf;font-size:7px;font-weight:950;letter-spacing:.06em}
+.mwSchedulePill.pending{color:#f4ce69;border-color:rgba(245,185,46,.45)}
+.mwSchedulePill.approved{color:#6ceca9;border-color:rgba(53,232,120,.40)}
+.mwSchedulePill.needs_discussion{color:#78d5ff;border-color:rgba(85,201,255,.42)}
+.mwSchedulePill.declined{color:#ff9ca8;border-color:rgba(255,120,135,.35)}
+.mwScheduleRecommendation{margin-top:10px;padding:10px;border-left:3px solid var(--gold);background:#121008;color:#e7d8aa;font-size:10px;line-height:1.5}
+.mwScheduleCoachNote{margin-top:9px;padding:9px;border:1px solid rgba(85,201,255,.30);border-radius:10px;background:#071725;color:#cfeeff;font-size:10px;line-height:1.45}
+.mwScheduleActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.mwScheduleActions button{flex:1;min-width:110px;border-radius:10px;padding:9px;font-size:9px;font-weight:900}
+.mwSchedulePrimary{border:1px solid var(--gold);background:#171207;color:var(--gold)}
+.mwScheduleGhost{border:1px solid #354550;background:#071019;color:#dce6ed}
+.mwScheduleDanger{border:1px solid #71313b;background:#1a0a0d;color:#ff9aa7}
+.mwScheduleEmpty{padding:14px;color:#9eb0bd;font-size:10px;line-height:1.5}
+.mwScheduleEvent{display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:center}
+.mwScheduleDate{display:grid;place-items:center;min-height:54px;border-radius:11px;border:1px solid #30434f;background:#07131d;color:#f3c85f;font-size:9px;font-weight:900;text-align:center}
+.mwScheduleEvent b{display:block;font-size:11px}.mwScheduleEvent small{display:block;margin-top:4px;color:#91a2ad;font-size:9px;line-height:1.35}
+.mwScheduleLocked{border:1px solid #2d3a46;border-radius:16px;padding:18px;background:#06101a}.mwScheduleLocked h2{margin:0 0 7px}
+#mwUtilityBody .mwScheduleForm{display:grid;gap:11px}
+#mwUtilityBody .mwScheduleForm label{display:grid;gap:5px;color:#dce6ed;font-size:10px;font-weight:850}
+#mwUtilityBody .mwScheduleForm input,#mwUtilityBody .mwScheduleForm select,#mwUtilityBody .mwScheduleForm textarea{width:100%;box-sizing:border-box;border:1px solid #334754;border-radius:10px;background:#061019;color:#fff;padding:11px;font-size:16px}
+#mwUtilityBody .mwScheduleDates{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(min-width:700px){
+  #home .mwHomeShortcuts{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:430px){
+  #mwUtilityBody .mwScheduleDates{grid-template-columns:1fr}
+}
+@media(min-width:1024px){
+  html:not(.mw-native-app) body.mw-auth-ready #home .mwHomeShortcuts{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  html:not(.mw-native-app) body.mw-auth-ready #schedule.view.active{max-width:1180px!important;margin:0 auto!important}
+  html:not(.mw-native-app) body.mw-auth-ready #schedule .mwScheduleHero{padding:28px!important}
+  html:not(.mw-native-app) body.mw-auth-ready #schedule .mwScheduleHero h2{font-size:36px!important}
+  html:not(.mw-native-app) body.mw-auth-ready #schedule .mwScheduleList{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
+}
+</style>
 </head>
 <body class="mw-auth-pending">
 <div id="mwAuth" class="mwAthleteLoginV26">
@@ -1351,6 +1413,7 @@ html.mw-native-app .mwLoginStory:after{
 <div class="mwHomeShortcuts">
   <button data-open="coach"><span class="mwCoachCrestMark" aria-hidden="true">MW</span><b>COACH MW</b></button>
   <button data-open="messages"><span>💬</span><b>MESSAGES</b><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button>
+  <button data-open="schedule" id="mwScheduleHomeShortcut"><span>📅</span><b>MY SCHEDULE</b></button>
   <button data-open="pacer"><span>⚡</span><b>TOOLS</b></button>
 </div>
 </section>
@@ -1358,6 +1421,13 @@ html.mw-native-app .mwLoginStory:after{
 <div class="top"><div><div class="logo"><b>MW</b> MESSAGES</div><div class="sub">COACH COMMUNICATION</div></div><div class="topActions"><div class="online"><span class="dot">●</span> CONNECTED</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
 <div id="mwAthleteInboxCard" class="card mwMessageCard"><div class="cardHead"><span>MESSAGES</span><span id="mwMessageUnreadLabel" class="smalllink">0 UNREAD</span></div><div class="mwAthleteMessageSearch"><span>⌕</span><input id="mwAthleteMessageSearch" autocomplete="off" placeholder="Search coach conversations"></div><div id="mwAthleteInbox" class="mwConversationList"><div class="lockNote">Loading conversations…</div></div></div>
 <div id="mwAthleteThreadCard" class="card mwAthleteThreadCard" style="display:none"><div class="mwAthleteThreadHead"><button id="mwAthleteThreadBack" class="entryGhost" type="button">← MESSAGES</button><div><b id="mwAthleteThreadCoach">MW Coach</b><small>Coach conversation</small></div></div><div id="mwAthleteThreadList" class="mwAthleteThreadList"></div><textarea id="mwReplyText" rows="3" placeholder="Message your coach…"></textarea><button id="mwSendReply" class="save" style="margin-top:10px">SEND</button><div id="mwReplyStatus" class="lockNote" style="display:none;margin-top:10px"></div></div>
+</section>
+
+<section class="view" id="schedule">
+<div class="top"><div><div class="logo"><b>MW</b> SCHEDULE</div><div class="sub" id="mwScheduleSubtitle">AVAILABILITY & TRAINING CALENDAR</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" type="button" onclick="openView('notifications',true)" aria-label="Notifications">🔔</button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+<div id="mwScheduleRoot">
+  <div class="card"><h2>Loading your schedule…</h2><p class="muted">MW is checking who controls your training calendar.</p></div>
+</div>
 </section>
 
 <section class="view" id="notifications">
@@ -1721,6 +1791,74 @@ async function mwRenderCoachAssignedTraining(){
 async function mwRenderSponsoredProgress(){
   const view=document.querySelector('#progress');if(!view)return;view.innerHTML=`<div class="top"><div><div class="logo"><b>MW</b> ACTIVITY</div><div class="sub">COACH-CONNECTED CHECK-INS</div></div><button class="gearBtn" data-open-settings>⚙</button></div><div id="mwActivityState" class="card"><h2>Loading your activity…</h2></div>`;
   const state=document.querySelector('#mwActivityState');try{const r=await fetch('/api/assigned-program',{headers:{Authorization:`Bearer ${window.mwGetSessionToken?.()||''}`},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Activity could not be loaded.');const c=Array.isArray(d.checkins)?d.checkins:[];state.innerHTML=`<div class="cardHead"><span>TRAINING CHECK-INS</span><span class="smalllink">${c.length} RECORDED</span></div>${c.length?`<div class="checkList">${c.slice(0,30).map(x=>`<div class="checkItem"><b>${mwEsc(String(x.status||'completed').replaceAll('_',' ').toUpperCase())}</b><span class="muted">${mwEsc(new Date(x.completed_at).toLocaleDateString())}${x.session_rpe?` · RPE ${x.session_rpe}/10`:''}${x.pace_check_status?` · ${mwEsc(String(x.pace_check_status).replaceAll('_',' '))}`:''}${x.pace_reps_total!=null?` · ${Number(x.pace_reps_hit||0)}/${Number(x.pace_reps_total)} reps`:''}</span>${x.athlete_note?`<small>${mwEsc(x.athlete_note)}</small>`:''}</div>`).join('')}</div>`:'<p class="muted">No check-ins yet. Open Training after your coach assigns a program.</p>'}`;}catch(e){state.innerHTML=`<h2>Activity unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p>`}}
+let mwAthleteScheduleSnapshot=null;
+function mwScheduleStatusLabel(x){return ({pending:'PENDING COACH',approved:'APPROVED',declined:'DECLINED',needs_discussion:'DISCUSS',not_required:'ATHLETE CONTROLLED'})[x]||String(x||'').replaceAll('_',' ').toUpperCase()}
+function mwScheduleTypeLabel(x){return ({school_break:'School Break',exam_week:'Exam Week',work:'Work',travel:'Travel',holiday:'Holiday',appointment:'Appointment',unavailable:'Unavailable',other:'Other'})[x]||'Schedule Item'}
+function mwScheduleImpactLabel(x){return ({unavailable:'Unavailable',reduced_load:'Reduced Load',awareness_only:'Awareness Only'})[x]||'Awareness Only'}
+function mwScheduleDateLabel(a,b){try{const s=new Date(a+'T00:00:00'),e=new Date((b||a)+'T00:00:00'),fmt={month:'short',day:'numeric'};return s.toDateString()===e.toDateString()?s.toLocaleDateString([],fmt):s.toLocaleDateString([],fmt)+' – '+e.toLocaleDateString([],fmt)}catch{return a||''}}
+function mwScheduleEventDate(value){try{const d=new Date(value);return d.toLocaleDateString([], {month:'short',day:'numeric'}).toUpperCase()}catch{return''}}
+async function mwScheduleRpc(name,args={}){
+  const t=window.mwGetSessionToken?.()||'';
+  if(!t)throw new Error('Sign in again to manage your schedule.');
+  const r=await fetch(MW_SB_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:MW_SB_KEY,Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify(args||{}),cache:'no-store'});
+  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d?.message||d?.hint||d?.error||'Schedule request failed.');return d;
+}
+function mwScheduleModal(title,html){
+  const m=document.getElementById('mwUtilityModal'),t=document.getElementById('mwUtilityTitle'),b=document.getElementById('mwUtilityBody');
+  if(!m||!t||!b)return null;t.textContent=title;b.innerHTML=html;m.classList.add('open');return b;
+}
+function mwCloseScheduleModal(){document.getElementById('mwUtilityModal')?.classList.remove('open')}
+function mwOpenScheduleEditor(item=null){
+  const snap=mwAthleteScheduleSnapshot||{},managed=snap.mode==='coach_managed',today=new Date().toISOString().slice(0,10),start=item?.startsOn||today,end=item?.endsOn||start;
+  const body=mwScheduleModal(managed?(item?'Edit Conflict':'Report a Conflict'):(item?'Edit My Schedule':'Add to My Schedule'),`<div class="mwScheduleForm">
+    <div class="lockNote">${managed?'Your coach controls the official training calendar. This report sends your availability to the coach for review.':'You control this schedule because no active coach is assigned to your MW Sprint Performance account. MW will give you a training recommendation to approve.'}</div>
+    <label>WHAT IS HAPPENING?<select id="mwScType">
+      <option value="school_break">School Break</option><option value="exam_week">Exam Week</option><option value="work">Work</option><option value="travel">Travel</option><option value="holiday">Holiday</option><option value="appointment">Appointment</option><option value="unavailable">Unavailable</option><option value="other">Other</option>
+    </select></label>
+    <label>NAME<input id="mwScTitle" maxlength="120" placeholder="Example: Finals Week" value="${mwEsc(item?.title||'')}"></label>
+    <div class="mwScheduleDates"><label>START DATE<input id="mwScStart" type="date" value="${start}"></label><label>END DATE<input id="mwScEnd" type="date" value="${end}"></label></div>
+    <label>TRAINING IMPACT<select id="mwScImpact"><option value="unavailable">Unavailable</option><option value="reduced_load">Reduced Load</option><option value="awareness_only">Awareness Only</option></select></label>
+    <label>DETAILS (OPTIONAL)<textarea id="mwScNotes" rows="3" maxlength="2000" placeholder="${managed?'Tell your coach what they need to know.':'Anything Coach MW should consider?'}">${mwEsc(item?.notes||'')}</textarea></label>
+    <button class="save" id="mwScSave">${managed?'SEND TO MY COACH':'SAVE & GET MW RECOMMENDATION'}</button>
+    <div id="mwScState" class="lockNote" style="display:none"></div>
+  </div>`);
+  if(!body)return;body.querySelector('#mwScType').value=item?.type||'school_break';body.querySelector('#mwScImpact').value=item?.impact||'unavailable';
+  body.querySelector('#mwScSave').onclick=async()=>{const btn=body.querySelector('#mwScSave'),st=body.querySelector('#mwScState'),title=body.querySelector('#mwScTitle').value.trim(),startDate=body.querySelector('#mwScStart').value,endDate=body.querySelector('#mwScEnd').value||startDate;if(!title||!startDate){st.style.display='block';st.textContent='Add a name and start date.';return}if(endDate<startDate){st.style.display='block';st.textContent='End date cannot be before the start date.';return}btn.disabled=true;btn.textContent='SAVING…';try{await mwScheduleRpc('mw_athlete_save_schedule_constraint',{p_id:item?.id||null,p_type:body.querySelector('#mwScType').value,p_title:title,p_start:startDate,p_end:endDate,p_impact:body.querySelector('#mwScImpact').value,p_notes:body.querySelector('#mwScNotes').value.trim()});mwCloseScheduleModal();await mwRenderAthleteSchedule();window.mwReloadAthleteNotifications?.()}catch(e){st.style.display='block';st.textContent=e.message;btn.disabled=false;btn.textContent=managed?'SEND TO MY COACH':'SAVE & GET MW RECOMMENDATION'}};
+}
+async function mwDeleteScheduleItem(id){if(!confirm('Remove this schedule item?'))return;try{await mwScheduleRpc('mw_athlete_delete_schedule_constraint',{p_id:id});await mwRenderAthleteSchedule()}catch(e){alert(e.message)}}
+async function mwApproveScheduleRecommendation(id,btn){if(btn){btn.disabled=true;btn.textContent='APPROVING…'}try{const d=await mwScheduleRpc('mw_athlete_approve_schedule_recommendation',{p_id:id});await mwRenderAthleteSchedule();if(d?.note)alert(d.note)}catch(e){alert(e.message);if(btn){btn.disabled=false;btn.textContent='APPROVE MW RECOMMENDATION'}}}
+function mwScheduleConstraintCard(x,mode){
+  const status=String(x.reviewStatus||'not_required'),independent=mode==='independent_full',approved=!!x.athleteApprovedAt;
+  return `<article class="mwScheduleItem ${mwEsc(status)}">
+    <div class="mwScheduleItemTop"><div><h3>${mwEsc(x.title)}</h3><span class="mwScheduleMeta">${mwEsc(mwScheduleTypeLabel(x.type))} · ${mwEsc(mwScheduleDateLabel(x.startsOn,x.endsOn))} · ${mwEsc(mwScheduleImpactLabel(x.impact))}</span></div><span class="mwSchedulePill ${mwEsc(status)}">${independent?(approved?'MW PLAN APPROVED':'AWAITING YOU'):mwEsc(mwScheduleStatusLabel(status))}</span></div>
+    ${x.notes?`<div class="mwScheduleMeta" style="margin-top:9px">${mwEsc(x.notes)}</div>`:''}
+    ${x.recommendation?`<div class="mwScheduleRecommendation"><b>MW RECOMMENDATION</b><br>${mwEsc(x.recommendation)}</div>`:''}
+    ${x.coachNote?`<div class="mwScheduleCoachNote"><b>COACH NOTE</b><br>${mwEsc(x.coachNote)}</div>`:''}
+    <div class="mwScheduleActions">
+      ${independent&&!approved?`<button class="mwSchedulePrimary" onclick="mwApproveScheduleRecommendation('${mwEsc(x.id)}',this)">APPROVE MW RECOMMENDATION</button>`:''}
+      <button class="mwScheduleGhost" onclick='mwOpenScheduleEditor(${JSON.stringify(x).replaceAll("'","&#39;")})'>EDIT</button>
+      <button class="mwScheduleDanger" onclick="mwDeleteScheduleItem('${mwEsc(x.id)}')">${mode==='coach_managed'?'WITHDRAW':'DELETE'}</button>
+    </div>
+  </article>`;
+}
+async function mwRenderAthleteSchedule(){
+  const root=document.getElementById('mwScheduleRoot');if(!root)return;root.innerHTML='<div class="card"><h2>Loading your schedule…</h2><p class="muted">MW is checking calendar authority and availability.</p></div>';
+  try{
+    const snap=await mwScheduleRpc('mw_athlete_schedule_snapshot',{});mwAthleteScheduleSnapshot=snap||{};const mode=snap.mode||'limited',constraints=Array.isArray(snap.constraints)?snap.constraints:[],team=Array.isArray(snap.teamCalendar)?snap.teamCalendar:[],coach=snap.coach||null;
+    const shortcut=document.querySelector('#mwScheduleHomeShortcut b');if(shortcut)shortcut.textContent=mode==='coach_managed'?'REPORT CONFLICT':'MY SCHEDULE';
+    if(mode==='coach_managed'){
+      const coachName=coach?.name||'your coach';
+      root.innerHTML=`<section class="mwScheduleHero coachManaged"><span class="mwScheduleKicker">COACH-MANAGED ATHLETE</span><h2>Report availability. Your coach controls the schedule.</h2><p>You can see the calendar you’re training under and report exams, school breaks, work, travel, appointments, or other conflicts. MW sends your report to ${mwEsc(coachName)} before any training change is made.</p><span class="mwScheduleAuthority">COACH CALENDAR = PRIMARY</span><button class="save" onclick="mwOpenScheduleEditor()">REPORT A CONFLICT</button></section>
+      <section class="mwScheduleSection"><div class="mwScheduleSectionHead"><div><span>READ-ONLY</span><br><b>${mwEsc((coach?.organization||'COACH')+' CALENDAR')}</b></div></div><div class="mwScheduleList">${team.length?team.map(e=>`<div class="mwScheduleItem mwScheduleEvent"><div class="mwScheduleDate">${mwEsc(mwScheduleEventDate(e.startsAt))}</div><div><b>${mwEsc(e.title)}</b><small>${mwEsc(String(e.type||'event').replaceAll('_',' '))}${e.location?' · '+mwEsc(e.location):''}${e.trainingImpact&&e.trainingImpact!=='normal'?' · '+mwEsc(String(e.trainingImpact).replaceAll('_',' ')):''}</small></div></div>`).join(''):'<div class="mwScheduleEmpty">Your coach has not added any upcoming team calendar items yet.</div>'}</div></section>
+      <section class="mwScheduleSection"><div class="mwScheduleSectionHead"><div><span>PERSONAL AVAILABILITY</span><br><b>MY REPORTS</b></div><button class="mwScheduleGhost" onclick="mwOpenScheduleEditor()">+ REPORT</button></div><div class="mwScheduleList">${constraints.length?constraints.map(x=>mwScheduleConstraintCard(x,mode)).join(''):'<div class="mwScheduleEmpty">No personal conflicts reported yet. If something affects practice or competition availability, send it here instead of changing the coach’s schedule yourself.</div>'}</div></section>`;
+    }else if(mode==='independent_full'){
+      root.innerHTML=`<section class="mwScheduleHero"><span class="mwScheduleKicker">INDEPENDENT MW SPRINT PERFORMANCE</span><h2>My Schedule</h2><p>Add school, exams, work, travel, holidays, or unavailable dates. MW will protect the 41-week sprint + strength sequence and give you a recommendation to approve instead of silently skipping ahead.</p><span class="mwScheduleAuthority">YOU OWN THIS CALENDAR</span><button class="save" onclick="mwOpenScheduleEditor()">+ ADD AVAILABILITY</button></section>
+      <section class="mwScheduleSection"><div class="mwScheduleSectionHead"><div><span>MW 41-WEEK INTEGRATION</span><br><b>MY AVAILABILITY</b></div><button class="mwScheduleGhost" onclick="mwOpenScheduleEditor()">+ ADD</button></div><div class="mwScheduleList">${constraints.length?constraints.map(x=>mwScheduleConstraintCard(x,mode)).join(''):'<div class="mwScheduleEmpty">No schedule constraints yet. Your normal MW Sprint Performance calendar remains active.</div>'}</div></section>`;
+    }else{
+      root.innerHTML='<div class="mwScheduleLocked"><h2>Schedule tools unavailable</h2><p class="muted">Personal schedule management is available to independent MW Sprint Performance athletes. Athletes with an active coach use Report a Conflict so the coach remains in control.</p></div>';
+    }
+  }catch(e){root.innerHTML=`<div class="card"><h2>Schedule unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p><button class="save" onclick="mwRenderAthleteSchedule()">TRY AGAIN</button></div>`}
+}
 function openView(id,pushHistory=false){
   const access=window.mwFeatureAccess||{};
   if(window.mwDobRequired){mwPromptDobVerification();return}
@@ -1735,6 +1873,7 @@ function openView(id,pushHistory=false){
   else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
   if(id==='progress'&&access.mw_training_system!==true&&access.coach_assigned_training===true)mwRenderSponsoredProgress();else if(id==='home'||id==='progress')renderProgressUI();
   if(id==='messages')window.mwLoadCoachMessages?.(true);
+  if(id==='schedule')mwRenderAthleteSchedule();
   if(pushHistory&&history.state?.mwView!==id)history.pushState({...history.state,mwView:id},'',location.href);
 }
 if(!history.state?.mwView)history.replaceState({...history.state,mwView:'home'},'',location.href);
@@ -2390,6 +2529,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     if(trainingYear)trainingYear.style.display=a.smart_entry===true?'':'none';
     if(entryBtn)entryBtn.style.display=a.smart_entry===true?'':'none';
     if(toolsCard)toolsCard.style.display=a.advanced_performance_tools===true?'':'none';
+    const scheduleLabel=document.querySelector('#mwScheduleHomeShortcut b');if(scheduleLabel)scheduleLabel.textContent=a.coach_assigned_training===true?'REPORT CONFLICT':'MY SCHEDULE';
     if(progressBtn&&!full&&sponsored){progressBtn.innerHTML='<b>◫</b>ACTIVITY'}
     if(!full&&sponsored){
       const hero=home?.querySelector('.heroCard');
