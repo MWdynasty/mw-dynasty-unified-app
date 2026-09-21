@@ -54,7 +54,7 @@
           "value": "mwdynasty.com"
         }
       ],
-      "destination": "https://mw-dynasty.irisblue2016.chatgpt.site/:path*"
+      "destination": "/api/public-site?path=:path*"
     },
     {
       "source": "/:path*",
@@ -64,7 +64,7 @@
           "value": "www.mwdynasty.com"
         }
       ],
-      "destination": "https://mw-dynasty.irisblue2016.chatgpt.site/:path*"
+      "destination": "/api/public-site?path=:path*"
     },
     {
       "source": "/api/chat",
