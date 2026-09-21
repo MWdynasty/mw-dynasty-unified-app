@@ -41,6 +41,15 @@ jobs:
           node --check server/api/stripe-portal.js
           node --check server/lib/mw-coach-auth.js
           node --check coach/app.js
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('founder/index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',html,flags=re.S|re.I)
+          inline='\n'.join(s for s in scripts if s.strip())
+          Path('/tmp/mw-founder-inline.js').write_text(inline,encoding='utf-8')
+          PY
+          node --check /tmp/mw-founder-inline.js
 
   ios-build-13-compile:
     runs-on: macos-latest
