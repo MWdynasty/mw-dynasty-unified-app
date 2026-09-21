@@ -1279,6 +1279,25 @@ async function programEditor(id=null,openUploader=false){
 const MW_SCHOOL_CONSTRAINT_TYPES=new Set(['school_break','exam_week','holiday','facility_closure','travel']);
 function coachConstraintLabel(type){return ({school_break:'School Break',exam_week:'Exam Week',holiday:'Holiday',facility_closure:'Facility Closure',travel:'Travel / School Trip'})[type]||'Schedule Constraint'}
 function coachConstraintImpactLabel(impact){return ({no_practice:'No Practice',reduced_load:'Reduced Load',awareness_only:'Awareness Only',normal:'Normal Schedule'})[impact]||'Awareness Only'}
+function coachAthleteAvailabilityType(type){return ({school_break:'School Break',exam_week:'Exam Week',work:'Work',travel:'Travel',holiday:'Holiday',appointment:'Appointment',unavailable:'Unavailable',other:'Other'})[type]||'Availability'}
+function coachAthleteAvailabilityImpact(impact){return ({unavailable:'Unavailable',reduced_load:'Reduced Load',awareness_only:'Awareness Only'})[impact]||'Awareness Only'}
+function coachAthleteAvailabilityStatus(status){return ({pending:'Pending Review',approved:'Approved',declined:'Declined',needs_discussion:'Needs Discussion'})[status]||String(status||'pending').replaceAll('_',' ')}
+async function coachScheduleRpc(name,args={}){return await sbRest('rpc/'+name,{method:'POST',body:args||{}})}
+async function hydrateCoachAthleteAvailability(){
+  const wrap=document.getElementById('athleteAvailabilityReports');if(!wrap)return;
+  try{
+    const rows=await coachScheduleRpc('mw_coach_athlete_schedule_reports',{}),items=Array.isArray(rows)?rows:[];
+    wrap.innerHTML=items.length?items.map(r=>`<div class="row athlete-availability-row">
+      <span><b>${escapeHtml(r.athleteName||'Athlete')} · ${escapeHtml(r.title)}</b><br><small>${escapeHtml(coachAthleteAvailabilityType(r.type))} · ${escapeHtml(String(r.startsOn||''))}${r.endsOn&&r.endsOn!==r.startsOn?' → '+escapeHtml(String(r.endsOn)):''} · ${escapeHtml(coachAthleteAvailabilityImpact(r.impact))}</small>${r.notes?`<br><small>${escapeHtml(r.notes)}</small>`:''}${r.coachNote?`<br><small><b>Coach note:</b> ${escapeHtml(r.coachNote)}</small>`:''}</span>
+      <button class="${r.reviewStatus==='pending'||r.reviewStatus==='needs_discussion'?'action':'back'} athlete-availability-review" data-id="${escapeHtml(r.id)}">${escapeHtml(coachAthleteAvailabilityStatus(r.reviewStatus))}</button>
+    </div>`).join(''):'<div class="tile"><h3>No athlete conflicts waiting</h3><p>When a coach-managed athlete reports exams, travel, work, appointments, or unavailable dates, they will appear here.</p></div>';
+    wrap.querySelectorAll('.athlete-availability-review').forEach(b=>b.onclick=()=>{const r=items.find(x=>String(x.id)===String(b.dataset.id));if(r)coachAvailabilityReviewModal(r)});
+  }catch(e){wrap.innerHTML=`<div class="tile"><h3>Availability reports unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}
+}
+function coachAvailabilityReviewModal(report){
+  const modal=mwModal('Athlete Availability Review',`<div class="tile"><span class="status-kicker">${experience==='core'?'MANUAL AVAILABILITY REVIEW':'SMART SCHEDULING INPUT'}</span><h3>${escapeHtml(report.athleteName||'Athlete')} · ${escapeHtml(report.title)}</h3><p>${escapeHtml(coachAthleteAvailabilityType(report.type))} · ${escapeHtml(String(report.startsOn||''))}${report.endsOn&&report.endsOn!==report.startsOn?' → '+escapeHtml(String(report.endsOn)):''}</p><p><b>Training impact:</b> ${escapeHtml(coachAthleteAvailabilityImpact(report.impact))}</p>${report.notes?`<p>${escapeHtml(report.notes)}</p>`:''}</div><div class="form" style="margin-top:12px"><label>Coach Note<textarea id="availabilityCoachNote" rows="3" placeholder="Optional note to the athlete">${escapeHtml(report.coachNote||'')}</textarea></label><div class="availability-review-actions"><button class="action" data-availability-decision="approved">Approve</button><button class="back" data-availability-decision="needs_discussion">Needs Discussion</button><button class="back" data-availability-decision="declined">Keep Current Schedule</button></div><div id="availabilityReviewState"></div></div>`);
+  modal.querySelectorAll('[data-availability-decision]').forEach(btn=>btn.onclick=async()=>{const state=modal.querySelector('#availabilityReviewState'),decision=btn.dataset.availabilityDecision;modal.querySelectorAll('[data-availability-decision]').forEach(x=>x.disabled=true);if(state)state.textContent='Saving review…';try{await coachScheduleRpc('mw_coach_review_schedule_report',{p_constraint_id:report.id,p_decision:decision,p_note:modal.querySelector('#availabilityCoachNote').value.trim()});modal.remove();toast('Athlete availability reviewed');await hydrateNotificationBadge();calendarPage()}catch(e){if(state)state.textContent=e.message;modal.querySelectorAll('[data-availability-decision]').forEach(x=>x.disabled=false)}});
+}
 function localDateValue(value){if(!value)return'';const d=new Date(value);if(Number.isNaN(d.getTime()))return'';return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 function coachDateRange(e){const start=new Date(e.starts_at),end=e.ends_at?new Date(e.ends_at):null,s=start.toLocaleDateString();return end&&end.toDateString()!==start.toDateString()?`${s} – ${end.toLocaleDateString()}`:s}
 function smartScheduleUnlocked(){return experience==='intelligence'||experience==='performance'}
@@ -1304,6 +1323,10 @@ async function calendarPage(){
       <div><span class="status-kicker">COACH CORE CALENDAR</span><h2>Your team schedule stays simple.</h2><p>Add practices, meets, testing, and other team events below. School breaks, exam-week load awareness, and smart schedule intelligence unlock with Coach Intelligence and MW Sprint Performance.</p></div>
       <button class="back" data-page="account">View Membership</button>
     </section>`}
+    <section class="section athlete-availability-section" style="margin-top:14px">
+      <div class="section-head"><div><span class="status-kicker">${experience==='core'?'ATHLETE AVAILABILITY':'SMART SCHEDULING INPUT'}</span><h2>Athlete Availability Reports</h2><p class="status-subcopy">${experience==='core'?'Review athlete conflicts manually. Coach Core does not apply AI schedule adaptation.':'Athlete conflicts feed your scheduling context; you still approve every official change.'}</p></div></div>
+      <div class="list" id="athleteAvailabilityReports" style="padding:14px"><div class="tile">Loading athlete availability…</div></div>
+    </section>
     <section class="section" style="margin-top:14px">
       <div class="section-head"><div><span class="status-kicker">TEAM SCHEDULE</span><h2>Practices, Meets & Testing</h2></div><button class="link-btn" id="addCalendar">+ Add Event</button></div>
       <div class="list" id="calLive" style="padding:14px"><div class="tile">Loading team events…</div></div>
@@ -1315,6 +1338,7 @@ async function calendarPage(){
   }
   document.getElementById('addCalendar').onclick=()=>calendarEventModal();
   bindPageNavigation(app);
+  hydrateCoachAthleteAvailability();
   try{
     const rows=await sbRest('coach_calendar_events?select=id,title,event_type,starts_at,ends_at,location,notes,registration_status,training_impact&order=starts_at.asc')||[];
     const constraints=rows.filter(e=>MW_SCHOOL_CONSTRAINT_TYPES.has(e.event_type)),events=rows.filter(e=>!MW_SCHOOL_CONSTRAINT_TYPES.has(e.event_type));
