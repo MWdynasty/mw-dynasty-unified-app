@@ -1,6 +1,6 @@
 const {authenticate,SUPABASE_URL,SUPABASE_KEY}=require('../lib/mw-auth');
 
-const SURFACES=new Set(['athlete','coach','account','native','unknown']);
+const SURFACES=new Set(['athlete','coach','account','native','founder','website','unknown']);
 const SEVERITIES=new Set(['info','warn','error']);
 
 function cleanString(value,max=180){
