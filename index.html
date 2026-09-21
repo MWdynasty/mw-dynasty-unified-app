@@ -11,6 +11,11 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.png" type="image/png">
 <title>MW Dynasty</title>
+<script>
+if (window.location.hostname === 'founder.mwdynasty.com' && window.location.pathname === '/') {
+  window.location.replace('/founder/' + window.location.search + window.location.hash);
+}
+</script>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
