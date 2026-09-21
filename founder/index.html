@@ -96,7 +96,7 @@
 const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
-let session=null,currentView="home",cache={},aiHistory=[];
+let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null;
 const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -502,10 +502,48 @@ function openObjectiveModal(){
   modal("Give MW Dynasty a Company Objective",'<p class="muted">Founder AI will break this objective into department tasks and create approval requests for consequential actions. Nothing consequential executes automatically.</p><label class="field">FOUNDER OBJECTIVE<textarea id="objectiveText" rows="7" placeholder="Example: Prepare MW Dynasty for a school district partnership."></textarea></label><button class="btn primary" id="buildPlan">Build AI Work Plan</button><div id="planStatus" class="status"></div>');
   $("buildPlan").onclick=async()=>{const b=$("buildPlan"),st=$("planStatus"),objective=$("objectiveText").value.trim();if(!objective)return; b.disabled=true;st.textContent="Founder AI is assigning departments…";try{const d=await ai("plan",{objective:objective});st.textContent=(d.summary||"Plan created")+" · "+(d.tasks||[]).length+" tasks · "+(d.approvals||[]).length+" approvals.";setTimeout(()=>{closeModal();setView("objectives")},900)}catch(e){st.textContent=e.message;st.className="status error"}finally{b.disabled=false}};
 }
+function latestFounderAIText(){
+  for(let i=aiHistory.length-1;i>=0;i--)if(aiHistory[i]?.role==="ai"&&String(aiHistory[i]?.text||"").trim())return String(aiHistory[i].text).trim();
+  return "";
+}
+function updateFounderAIVoiceButton(state){
+  const b=$("aiReadAloud");if(!b)return;
+  const hasText=!!latestFounderAIText();
+  if(state==="loading"){b.disabled=false;b.textContent="Cancel";b.className="btn small";}
+  else if(state==="playing"){b.disabled=false;b.textContent="■ Stop";b.className="btn small danger";}
+  else{b.disabled=!hasText;b.textContent="🔊 Read Aloud";b.className="btn small blue";}
+}
+function stopFounderAIReadAloud(){
+  if(founderAIVoiceRequest){try{founderAIVoiceRequest.abort()}catch{}founderAIVoiceRequest=null}
+  if(founderAIAudio){try{founderAIAudio.pause();founderAIAudio.currentTime=0}catch{}founderAIAudio=null}
+  if(founderAIAudioUrl){try{URL.revokeObjectURL(founderAIAudioUrl)}catch{}founderAIAudioUrl=null}
+  updateFounderAIVoiceButton("idle");
+}
+async function readFounderAIAloud(){
+  if(founderAIAudio||founderAIVoiceRequest){stopFounderAIReadAloud();return}
+  const text=latestFounderAIText();if(!text)return;
+  const ctl=new AbortController();founderAIVoiceRequest=ctl;updateFounderAIVoiceButton("loading");
+  try{
+    const r=await fetch("/api/speak",{method:"POST",signal:ctl.signal,headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({text,coachType:"founder"})});
+    if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||"Founder AI voice is unavailable.")}
+    const blob=await r.blob();if(ctl.signal.aborted)return;
+    founderAIVoiceRequest=null;founderAIAudioUrl=URL.createObjectURL(blob);founderAIAudio=new Audio(founderAIAudioUrl);
+    founderAIAudio.onended=stopFounderAIReadAloud;
+    founderAIAudio.onerror=()=>{stopFounderAIReadAloud();alert("Founder AI voice could not play.")};
+    updateFounderAIVoiceButton("playing");
+    await founderAIAudio.play();
+  }catch(e){
+    if(e?.name!=="AbortError")alert(e.message||"Founder AI voice is unavailable.");
+    stopFounderAIReadAloud();
+  }
+}
 function openAIModal(){
+  stopFounderAIReadAloud();
   const hist=aiHistory.map(x=>'<div class="bubble '+(x.role==="user"?"user":"ai")+'"><b>'+(x.role==="user"?"Founder":"Founder AI")+'</b><br>'+esc(x.text)+'</div>').join("");
-  modal("Founder AI",'<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask me about MW Dynasty revenue, Coaches, Athletes, website conversion, system health, support, or company priorities.</div>')+'</div><div class="chatRow"><textarea id="aiMessage" placeholder="Ask Founder AI…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>');
-  $("aiSend").onclick=async()=>{const q=$("aiMessage").value.trim();if(!q)return;aiHistory.push({role:"user",text:q});$("aiChat").innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';$("aiMessage").value="";$("aiSend").disabled=true;try{const d=await ai("chat",{message:q});aiHistory.push({role:"ai",text:d.answer||""});$("aiChat").innerHTML+='<div class="bubble ai"><b>Founder AI</b><br>'+esc(d.answer||"")+'</div>';$("aiChat").scrollTop=$("aiChat").scrollHeight}catch(e){$("aiChat").innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}finally{$("aiSend").disabled=false}};
+  modal("Founder AI",'<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask me about MW Dynasty revenue, Coaches, Athletes, website conversion, system health, support, or company priorities.</div>')+'</div><div class="heroActions" style="margin:0 0 10px"><button class="btn small blue" id="aiReadAloud" type="button">🔊 Read Aloud</button><small class="muted" style="align-self:center">Reads the latest Founder AI response.</small></div><div class="chatRow"><textarea id="aiMessage" placeholder="Ask Founder AI…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>');
+  updateFounderAIVoiceButton("idle");
+  $("aiReadAloud").onclick=readFounderAIAloud;
+  $("aiSend").onclick=async()=>{const q=$("aiMessage").value.trim();if(!q)return;stopFounderAIReadAloud();aiHistory.push({role:"user",text:q});$("aiChat").innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';$("aiMessage").value="";$("aiSend").disabled=true;try{const d=await ai("chat",{message:q});aiHistory.push({role:"ai",text:d.answer||""});$("aiChat").innerHTML+='<div class="bubble ai"><b>Founder AI</b><br>'+esc(d.answer||"")+'</div>';$("aiChat").scrollTop=$("aiChat").scrollHeight;updateFounderAIVoiceButton("idle")}catch(e){$("aiChat").innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}finally{$("aiSend").disabled=false}};
 }
 async function renderPrograms(){
   const d=await api("programs"),releases=d.releases||[],versions=d.athlete_version_distribution||[],weeks=d.week_distribution||[],tiers=d.tier_distribution||{};
@@ -810,7 +848,7 @@ async function renderView(v){
 }
 function bindGo(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>setView(b.dataset.go))}
 function modal(title,body){$("modalRoot").innerHTML='<div class="modal" id="modal"><div class="modalCard"><div class="modalTop"><h2>'+esc(title)+'</h2><button class="btn small" id="modalClose">Close</button></div><div style="margin-top:12px">'+body+'</div></div></div>';$("modalClose").onclick=closeModal;$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()})}
-function closeModal(){$("modalRoot").innerHTML=""}
+function closeModal(){stopFounderAIReadAloud();$("modalRoot").innerHTML=""}
 function setNavCount(name,value){
   const el=document.querySelector('[data-count="'+name+'"]');if(!el)return;
   const n=Math.max(0,Number(value)||0);el.textContent=n>99?"99+":String(n);el.classList.toggle("show",n>0);
