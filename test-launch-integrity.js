@@ -89,6 +89,12 @@ includes('founder/index.html','data-launch-ai','Founder launch AI prep control m
 includes('founder/index.html','Launch AI Prep','Founder launch AI prep review missing');
 includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
 includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
+includes('founder/index.html','Settings & Tour','Founder Settings & Tour navigation missing');
+includes('founder/index.html','Replay Full Founder Tour','Founder replayable tour missing');
+includes('founder/index.html','FOUNDER_TOUR_VIEWS','Founder full-section tour plan missing');
+includes('founder/index.html','querySelectorAll("#content button")','Founder live-button tour scan missing');
+includes('founder/index.html','FOUNDER_TOUR_REFERENCE_CONTROLS','Founder hidden-control tour references missing');
+includes('founder/index.html','maybeStartFounderTour','Founder first-access tour trigger missing');
 
 includes('server/api/founder.js',"action==='update_notification'",'Founder notification action missing');
 includes('founder/index.html','FOUNDER NOTIFICATIONS','Founder notifications UI missing');
