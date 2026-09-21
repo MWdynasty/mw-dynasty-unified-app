@@ -38,10 +38,143 @@ html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;fon
 #coachChoice{box-shadow:inset 0 1px 0 rgba(255,255,255,.055),inset 0 -10px 22px rgba(0,0,0,.10),0 8px 18px rgba(0,0,0,.15),0 0 22px rgba(85,201,255,.035)}
 @media (hover:hover) and (pointer:fine){.hotspot:hover{transform:translateZ(34px) translateY(-2px);border-color:rgba(245,199,96,.27);filter:brightness(1.035);box-shadow:inset 0 1px 0 rgba(255,255,255,.075),inset 0 -10px 22px rgba(0,0,0,.11),0 14px 28px rgba(0,0,0,.24),0 0 24px rgba(245,185,46,.055)}}
 @media (min-width:700px){.role-stage{box-shadow:0 28px 90px rgba(0,0,0,.78),inset 0 1px 0 rgba(255,255,255,.04)}}
-/* One role chooser everywhere: no separate desktop marketing/entry page. */
-@media (min-width:700px){
-  .role-wrap{background:radial-gradient(circle at 50% 20%,rgba(29,54,72,.28),transparent 44%),#02070d}
-  .role-stage{height:min(100dvh,980px);width:min(550px,56.25dvh,100vw);align-self:center;border-radius:22px}
+/* Desktop role entry: use the full laptop/desktop canvas. Mobile keeps the approved portrait selector. */
+.desktop-entry{display:none}
+@media (min-width:900px){
+  .role-wrap{
+    align-items:center;
+    padding:32px;
+    background:
+      radial-gradient(circle at 18% 18%,rgba(239,189,67,.11),transparent 28%),
+      radial-gradient(circle at 82% 78%,rgba(40,123,176,.14),transparent 34%),
+      linear-gradient(135deg,#020507,#071019 58%,#020507);
+  }
+  .role-stage{
+    width:min(1500px,calc(100vw - 64px));
+    height:min(900px,calc(100dvh - 64px));
+    max-width:none;
+    align-self:center;
+    border-radius:30px;
+    border:1px solid rgba(239,189,67,.25);
+    background:
+      radial-gradient(circle at 76% 18%,rgba(239,189,67,.10),transparent 24%),
+      linear-gradient(135deg,rgba(8,16,22,.98),rgba(2,6,10,.99));
+    box-shadow:0 34px 110px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.045);
+  }
+  .role-stage:after{
+    background:
+      linear-gradient(90deg,rgba(255,255,255,.018),transparent 40%),
+      radial-gradient(circle at 75% 28%,rgba(239,189,67,.08),transparent 30%);
+  }
+  .role-image,.hotspot{display:none}
+  .desktop-entry{
+    position:relative;
+    z-index:6;
+    display:grid;
+    grid-template-columns:minmax(0,1.08fr) minmax(420px,.92fr);
+    gap:clamp(42px,6vw,100px);
+    align-items:center;
+    width:100%;
+    height:100%;
+    padding:clamp(52px,7vw,104px);
+    color:#fff;
+  }
+  .desktop-copy{max-width:690px}
+  .desktop-kicker{
+    color:#efbd43;
+    font-size:clamp(12px,.85vw,15px);
+    font-weight:900;
+    letter-spacing:.24em;
+  }
+  .desktop-entry h1{
+    margin:18px 0 20px;
+    max-width:760px;
+    font-size:clamp(50px,5.2vw,86px);
+    line-height:.94;
+    letter-spacing:-.05em;
+    font-weight:1000;
+  }
+  .desktop-entry h1 span{color:#efbd43}
+  .desktop-entry p{
+    margin:0;
+    max-width:630px;
+    color:#cbd3d9;
+    font-size:clamp(17px,1.35vw,22px);
+    line-height:1.55;
+  }
+  .desktop-accent{
+    width:86px;
+    height:5px;
+    margin:28px 0 24px;
+    border-radius:999px;
+    background:linear-gradient(90deg,#b77a16,#f4cf6a);
+    box-shadow:0 0 26px rgba(239,189,67,.22);
+  }
+  .desktop-choices{
+    display:grid;
+    gap:18px;
+    width:100%;
+    max-width:520px;
+    justify-self:end;
+  }
+  .desktop-choice{
+    position:relative;
+    width:100%;
+    min-height:168px;
+    padding:30px 32px;
+    text-align:left;
+    border:1px solid rgba(239,189,67,.38);
+    border-radius:22px;
+    background:linear-gradient(155deg,rgba(20,31,39,.96),rgba(5,10,14,.98));
+    color:#fff;
+    cursor:pointer;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 20px 44px rgba(0,0,0,.28);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease;
+  }
+  .desktop-choice strong{
+    display:block;
+    font-size:clamp(26px,2vw,34px);
+    line-height:1;
+    letter-spacing:-.025em;
+  }
+  .desktop-choice span{
+    display:block;
+    margin-top:12px;
+    color:#e6c56f;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+  .desktop-choice small{
+    display:block;
+    margin-top:14px;
+    color:#aeb8bf;
+    font-size:14px;
+    line-height:1.45;
+  }
+  .desktop-choice:after{
+    content:"→";
+    position:absolute;
+    right:30px;
+    top:28px;
+    color:#efbd43;
+    font-size:30px;
+    font-weight:900;
+  }
+  .desktop-choice:focus-visible{outline:3px solid rgba(247,199,104,.95);outline-offset:4px}
+  @media (hover:hover) and (pointer:fine){
+    .desktop-choice:hover{
+      transform:translateY(-5px);
+      border-color:rgba(247,207,105,.78);
+      filter:brightness(1.07);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 28px 54px rgba(0,0,0,.38),0 0 30px rgba(239,189,67,.07);
+    }
+  }
+}
+@media (min-width:900px) and (max-width:1100px){
+  .desktop-entry{grid-template-columns:1fr 420px;gap:38px;padding:46px}
+  .desktop-entry h1{font-size:clamp(44px,5vw,62px)}
 }
 @media (prefers-reduced-motion:reduce){.role-stage,.hotspot{transition:none!important}}
 </style>
@@ -55,6 +188,26 @@ html,body{margin:0;width:100%;height:100%;background:#050403;overflow:hidden;fon
     <img class="role-image" src="/assets/mw-role-entry-v21.jpg" alt="MW Dynasty role selection">
     <button id="athleteChoice" class="hotspot" aria-label="I'm an Athlete">I'm an Athlete</button>
     <button id="coachChoice" class="hotspot" aria-label="I'm a Coach">I'm a Coach</button>
+    <section class="desktop-entry" aria-label="Choose your MW Dynasty experience">
+      <div class="desktop-copy">
+        <div class="desktop-kicker">MW DYNASTY · SPRINT PERFORMANCE SYSTEM</div>
+        <h1>CHOOSE YOUR <span>MW DYNASTY</span> EXPERIENCE.</h1>
+        <div class="desktop-accent"></div>
+        <p>Train, coach, and manage your MW Dynasty experience from a layout built for a full computer screen.</p>
+      </div>
+      <div class="desktop-choices">
+        <button id="athleteDesktop" class="desktop-choice" type="button">
+          <strong>I'M AN ATHLETE</strong>
+          <span>Enter Athlete Experience</span>
+          <small>Create or access your athlete profile, training, program, performance tools, and Coach MW.</small>
+        </button>
+        <button id="coachDesktop" class="desktop-choice" type="button">
+          <strong>I'M A COACH</strong>
+          <span>Enter Coach Experience</span>
+          <small>Sign in to your coach dashboard, teams, athlete oversight, practice tools, messaging, and Coach MW.</small>
+        </button>
+      </div>
+    </section>
   </main>
 </div>
 <script>
@@ -67,8 +220,10 @@ function enter(role,path){
 }
 document.getElementById('athleteChoice').addEventListener('click',()=>enter('athlete','/athlete/start.html'));
 document.getElementById('coachChoice').addEventListener('click',()=>enter('coach','/coach/start.html'));
+document.getElementById('athleteDesktop')?.addEventListener('click',()=>enter('athlete','/athlete/start.html'));
+document.getElementById('coachDesktop')?.addEventListener('click',()=>enter('coach','/coach/start.html'));
 const stage=document.querySelector('.role-stage');
-if(stage&&window.matchMedia('(hover:hover) and (pointer:fine)').matches&&!window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+if(stage&&!window.matchMedia('(min-width:900px)').matches&&window.matchMedia('(hover:hover) and (pointer:fine)').matches&&!window.matchMedia('(prefers-reduced-motion:reduce)').matches){
   stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;stage.style.transform=`rotateY(${(x*2.4).toFixed(2)}deg) rotateX(${(-y*1.8).toFixed(2)}deg) translateZ(0)`});
   stage.addEventListener('pointerleave',()=>{stage.style.transform='rotateY(0deg) rotateX(0deg) translateZ(0)'});
 }
