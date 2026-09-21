@@ -1,5 +1,6 @@
 // MW Dynasty unified Vercel Function gateway.
 // Keeps the public API paths stable while deploying one Node.js Function.
+const {randomUUID}=require('crypto');
 const handlers = {
   'chat': require('../server/api/chat'),
   'me': require('../server/api/me'),
@@ -32,18 +33,34 @@ const handlers = {
 };
 
 module.exports = async function mwGateway(req, res) {
+  const requestId=String(req.headers?.['x-mw-request-id']||'').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80)||randomUUID();
+  res.setHeader('X-MW-Request-ID',requestId);
+  res.setHeader('Cache-Control','no-store, max-age=0');
+  res.setHeader('Pragma','no-cache');
+  res.setHeader('Vary','Authorization');
+  res.setHeader('X-Robots-Tag','noindex, nofollow');
+
+  const length=Number(req.headers?.['content-length']||0);
+  if(Number.isFinite(length)&&length>2_000_000){
+    return res.status(413).json({error:'Request is too large.',requestId});
+  }
+
   const route = String(req.query && req.query.route || '').replace(/^\/+|\/+$/g, '');
   const handler = handlers[route];
   if (!handler) {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(404).json({ error: 'MW API route not found' });
+    return res.status(404).json({ error: 'MW API route not found',requestId });
   }
   try {
     return await handler(req, res);
   } catch (error) {
-    console.error('MW API gateway error:', route, error);
+    const status=Number(error && error.status)||500;
+    console.error('MW API gateway error:',{requestId,route,status,error});
     if (!res.headersSent) {
-      return res.status(error && error.status || 500).json({ error: error && error.message || 'MW server error' });
+      if(status>=500){
+        res.setHeader('Retry-After','2');
+        return res.status(status).json({error:'MW service temporarily unavailable.',requestId});
+      }
+      return res.status(status).json({error:error && error.message || 'MW request failed',requestId});
     }
   }
 };
