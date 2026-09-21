@@ -20,6 +20,8 @@
 .aiHero{border-color:#493d68;background:radial-gradient(circle at 90% 0,rgba(119,76,195,.22),transparent 36%),linear-gradient(145deg,#111324,#090b14)}.aiChat{min-height:180px;max-height:520px;overflow:auto;display:grid;gap:9px;margin:12px 0}.bubble{border:1px solid #2a3540;border-radius:14px;padding:13px;line-height:1.5;font-size:12px;white-space:pre-wrap}.bubble.user{margin-left:12%;background:#12243a}.bubble.ai{margin-right:5%;background:#10121d;border-color:#433b62}.chatRow{display:grid;grid-template-columns:1fr auto;gap:9px}.chatRow textarea{min-height:72px;resize:vertical;border:1px solid #35414d;background:#071019;color:#fff;border-radius:13px;padding:12px}
 .agentGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.agent{border:1px solid #263541;border-radius:14px;padding:14px;background:#071019}.agent .dept{color:var(--gold);font-size:9px;font-weight:950;letter-spacing:.09em}.agent h3{font-size:15px;margin:6px 0 5px}.agent p{color:#9aa9b5;font-size:11px;line-height:1.4}.agent small{color:#6f8090}.approval{border-color:#6b5328}.knowledgeCard{border-color:#4c4160}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.inlineForm{display:flex;gap:9px;align-items:end;flex-wrap:wrap}.inlineForm .field{flex:1;min-width:170px;margin-top:0}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tab{border:1px solid #2c3945;background:#081019;color:#9facb6;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:900}.tab.active{color:#101214;background:var(--gold);border-color:var(--gold)}
 .modal{position:fixed;inset:0;z-index:90;background:#000b;display:grid;place-items:center;padding:20px}.modalCard{width:min(760px,100%);max-height:90vh;overflow:auto;border:1px solid #3c4853;border-radius:22px;background:#081019;padding:20px;box-shadow:0 30px 100px #000}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:center}.modalTop h2{margin:0}
+.tourShield{position:fixed;inset:0;z-index:129;background:transparent;pointer-events:auto}.tourSpotlight{position:fixed;z-index:130;border:2px solid var(--gold2);border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.76),0 0 28px rgba(239,189,67,.55);pointer-events:none;transition:all .2s ease}.tourSpotlight.hidden{display:none}.tourCard{position:fixed;z-index:131;left:50%;bottom:18px;transform:translateX(-50%);width:min(620px,calc(100vw - 28px));border:1px solid #8a6b2a;border-radius:20px;background:linear-gradient(155deg,#101923,#06090d);padding:18px;box-shadow:0 26px 90px #000;pointer-events:auto}.tourCard.top{top:18px;bottom:auto}.tourCard h2{margin:5px 0 7px;font-size:23px}.tourCard p{margin:0;color:#b2bdc6;line-height:1.55;font-size:13px}.tourMeta{display:flex;justify-content:space-between;gap:10px;align-items:center;color:#7f8d99;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.tourProgress{height:5px;background:#1a252f;border-radius:999px;overflow:hidden;margin:13px 0}.tourProgress i{display:block;height:100%;background:linear-gradient(90deg,#c78d20,#f5d77d);transition:width .2s ease}.tourActions{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:15px;flex-wrap:wrap}.tourActions .tourRight{display:flex;gap:8px;margin-left:auto}.tourContext{margin-top:10px;border:1px solid #293641;border-radius:11px;padding:10px;background:#081017;color:#93a3af;font-size:11px;line-height:1.45}.tourPreparing{position:fixed;inset:0;z-index:140;display:grid;place-items:center;background:rgba(1,3,5,.91);padding:24px}.tourPreparingCard{width:min(520px,100%);border:1px solid #5e4b25;border-radius:22px;background:#091019;padding:24px;text-align:center;box-shadow:0 30px 100px #000}.tourPreparingCard h2{margin:8px 0}.tourPreparingCard p{color:var(--muted);line-height:1.5}.tourPulse{width:44px;height:44px;margin:0 auto;border:3px solid #3c4650;border-top-color:var(--gold);border-radius:50%;animation:tourSpin .8s linear infinite}@keyframes tourSpin{to{transform:rotate(360deg)}}
+@media(max-width:620px){.tourCard{bottom:10px;padding:15px}.tourCard.top{top:10px}.tourCard h2{font-size:20px}.tourActions{display:block}.tourActions .tourRight{margin:9px 0 0;display:grid;grid-template-columns:1fr 1fr}.tourActions>.btn{width:100%}}
 @media(max-width:1150px){.stats{grid-template-columns:repeat(2,1fr)}.grid3,.agentGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:860px){.layout{display:block}.sidebar{display:none;position:fixed;z-index:80;left:0;top:0;width:min(300px,88vw);box-shadow:30px 0 80px #000}.sidebar.open{display:block}.main{padding:15px 14px 50px}.mobileNav{display:inline-flex}.grid2,.grid3,.agentGrid,.formGrid{grid-template-columns:1fr}.topTitle h1{font-size:22px}.identityHide{display:none}}
 @media(max-width:520px){.stats{grid-template-columns:1fr 1fr}.stat b{font-size:23px}.hero{padding:18px}.topActions .btn:not(.mobileNav){padding:9px 10px;font-size:10px}.row{display:block}.row .right{text-align:left;margin-top:9px}}
@@ -79,6 +81,7 @@
       <button class="navBtn" data-view="product"><span>⚙</span>Product & Technology</button>
       <button class="navBtn" data-view="system"><span>◉</span>System Health</button>
       <button class="navBtn" data-view="security"><span>◇</span>Security & Audit</button>
+      <button class="navBtn" data-view="settings"><span>⚙</span>Settings & Tour</button>
     </div>
     <div class="sideFoot"><b id="founderName">Founder</b><small>Founder / Owner</small><button id="signOut" class="btn small" style="margin-top:10px;width:100%">Sign Out</button></div>
   </aside>
@@ -92,13 +95,14 @@
   </main>
 </div>
 <div id="modalRoot"></div>
+<div id="tourRoot"></div>
 
 <script>
 const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderRefreshPromise=null,founderSessionTimer=null;
-const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
+const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -238,7 +242,7 @@ async function admin(method,body){
 function loading(){ $("content").innerHTML='<div class="card empty">Loading Founder OS…</div>'}
 function stat(label,value,note){return '<div class="stat"><small>'+esc(label)+'</small><b>'+esc(value)+'</b>'+(note?'<em>'+esc(note)+'</em>':"")+'</div>'}
 function sectionHead(title,copy,actionHtml){return '<div class="sectionHead"><div><h2>'+esc(title)+'</h2><p>'+esc(copy||"")+'</p></div>'+(actionHtml||"")+'</div>'}
-function setView(v){currentView=v;document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("pageTitle").textContent=titles[v]||"Founder OS";$("sidebar").classList.remove("open");renderView(v)}
+function setView(v){currentView=v;document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("pageTitle").textContent=titles[v]||"Founder OS";$("sidebar").classList.remove("open");return renderView(v)}
 function attentionRow(x){const sev=x.severity==="high"?"high":x.severity==="low"?"low":"";return '<div class="row attention '+sev+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.detail||"")+'</small></div><div class="right">'+badge(x.severity||"review",x.severity==="high"?"bad":x.severity==="low"?"blue":"warn")+'</div></div>'}
 function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
 
@@ -942,6 +946,26 @@ async function renderSecurity(){
   bindGo();
 }
 
+
+function renderSettings(){
+  const complete=localStorage.getItem(FOUNDER_TOUR_COMPLETE_KEY)===FOUNDER_TOUR_VERSION;
+  const progress=Number(localStorage.getItem(FOUNDER_TOUR_PROGRESS_KEY)||0);
+  const paused=localStorage.getItem(FOUNDER_TOUR_PAUSED_KEY)==="1";
+  $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER SETTINGS · ORIENTATION</div><h2>Your Founder Hub should always explain itself.</h2><p>This is where you can replay the complete Founder OS orientation whenever you get lost. The tour walks the real interface, opens each section, and explains the controls that are actually present at that moment.</p><div class="heroActions"><button class="btn primary" id="replayFounderTour">Replay Full Founder Tour</button>'+(paused||progress?'<button class="btn blue" id="resumeFounderTour">Resume Tour</button>':'')+'</div></section>'+
+    '<div class="grid2">'+
+      '<div class="card"><div class="brand">TOUR STATUS</div><h3>'+(complete?'Full orientation completed':'Orientation available')+'</h3><p class="muted">'+(complete?'You can replay it at any time. Replaying does not change company data.':'The full tour will automatically run on first access unless you exit it for later.')+'</p>'+badge(complete?"COMPLETED":"AVAILABLE",complete?"good":"blue")+'</div>'+
+      '<div class="card"><div class="brand">SAFE WALKTHROUGH</div><h3>The tour never presses company-action buttons.</h3><p class="muted">It may open Founder sections and the Founder AI window so it can explain the controls, but it will not approve, deny, publish, bill, release, resolve, send, or save anything on your behalf.</p>'+badge("READ / EXPLAIN ONLY","good")+'</div>'+
+    '</div>'+
+    sectionHead("Tour Controls","Restart from the beginning or clear the saved tour state.")+
+    '<div class="list"><div class="row"><div><b>Replay Full Founder Tour</b><small>Rebuilds the walkthrough from the live Founder Hub, including every visible button in every Founder section.</small></div><button class="btn primary" id="replayFounderTour2">Start</button></div>'+
+    '<div class="row"><div><b>Reset Tour Progress</b><small>Clears completion and paused progress so the Founder orientation will behave like a first-time tour again.</small></div><button class="btn" id="resetFounderTour">Reset</button></div></div>'+
+    '<div class="card" style="margin-top:14px"><div class="brand">WHAT THE TOUR COVERS</div><p class="muted">Executive Home, Needs Attention, Company Objectives, Notifications, Analytics, Coaches, Athletes, Applications, Organizations, Revenue & Billing, Costs & Finance, Sponsorships, Partnerships, Website & Growth, Marketing & Sales, AI Company, Program Control, MW Knowledge, Customer Support, Operations & SOPs, People & HR, Legal & Risk, Launch Readiness, Product & Technology, System Health, Security & Audit, Founder AI, global navigation, Refresh, mobile Menu, Sign Out, and the live action controls inside each section.</p></div>';
+  const start=()=>startFounderTour({resume:false});
+  $("replayFounderTour").onclick=start;$("replayFounderTour2").onclick=start;
+  const resumeBtn=$("resumeFounderTour");if(resumeBtn)resumeBtn.onclick=()=>startFounderTour({resume:true});
+  $("resetFounderTour").onclick=()=>{localStorage.removeItem(FOUNDER_TOUR_COMPLETE_KEY);localStorage.removeItem(FOUNDER_TOUR_PROGRESS_KEY);localStorage.removeItem(FOUNDER_TOUR_PAUSED_KEY);renderSettings()};
+}
+
 async function renderAnalytics(){
   const [o,f,w,h,k]=await Promise.all([api("overview"),api("finance"),api("website"),api("customer_health"),api("kpi_history")]);
   const m=o.metrics||{},hist=k.items||[],ath=h.athletes||[],co=h.coaches||[];
@@ -994,12 +1018,215 @@ async function renderView(v){
     if(v==="product")return await renderProduct();
     if(v==="system")return await renderSystem();
     if(v==="security")return await renderSecurity();
+    if(v==="settings")return renderSettings();
     if(v==="analytics")return await renderAnalytics();
   }catch(e){$("content").innerHTML='<div class="card"><h2>Founder OS could not load this section.</h2><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="renderView(currentView)">Try Again</button></div>'}
 }
 function bindGo(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>setView(b.dataset.go))}
 function modal(title,body){$("modalRoot").innerHTML='<div class="modal" id="modal"><div class="modalCard"><div class="modalTop"><h2>'+esc(title)+'</h2><button class="btn small" id="modalClose">Close</button></div><div style="margin-top:12px">'+body+'</div></div></div>';$("modalClose").onclick=closeModal;$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()})}
 function closeModal(){stopFounderAIReadAloud();$("modalRoot").innerHTML=""}
+
+const FOUNDER_TOUR_VERSION="2026.09.21.1";
+const FOUNDER_TOUR_COMPLETE_KEY="mwFounderTourComplete";
+const FOUNDER_TOUR_PROGRESS_KEY="mwFounderTourProgress";
+const FOUNDER_TOUR_PAUSED_KEY="mwFounderTourPaused";
+const FOUNDER_TOUR_VIEWS=["home","attention","objectives","notifications","analytics","coaches","athletes","applications","organizations","revenue","costs","sponsorships","partnerships","website","marketing","ai","programs","knowledge","support","operations","people","risk","launch","product","system","security","settings"];
+const FOUNDER_TOUR_VIEW_COPY={
+  home:"Your executive command center. This is the first place to look for company-wide health, revenue, customers, risks, support, website activity, and items needing your attention.",
+  attention:"A prioritized queue of matters that need Founder review. Use this to avoid hunting through every department for problems.",
+  objectives:"Where you define company objectives, monitor progress, pause or resume work, and direct the AI company toward safe, reviewable execution.",
+  notifications:"Your Founder notification center. It surfaces company events and lets you mark, read, open, or dismiss notices.",
+  analytics:"Business intelligence across revenue, customers, website conversion, support, growth, and product reliability.",
+  coaches:"Founder-level visibility into coaches, their access, tiers, organizations, and account status.",
+  athletes:"Founder-level visibility into athlete membership, access, program state, and customer-health signals.",
+  applications:"Coach application review. Approval or denial here can change who receives Coach access, so these are consequential controls.",
+  organizations:"Your view of schools, teams, clubs, and organizations connected to MW Dynasty.",
+  revenue:"Revenue, subscriptions, entitlements, billing transitions, and the money-side health of the platform.",
+  costs:"Company cost tracking and finance inputs used to understand operating contribution and recurring expense.",
+  sponsorships:"Coach-sponsored athlete seats, sponsorship utilization, and related membership responsibility.",
+  partnerships:"Business-development opportunities and proposals. Drafting and pipeline status live here; external sending remains a human action.",
+  website:"Traffic, conversion, signup, and public-site growth signals for MW Dynasty.",
+  marketing:"Lead and campaign management for company growth, including campaign performance and sales pipeline information.",
+  ai:"The AI Company. This is where you see the AI workforce, queued work, approvals, objectives, playbooks, and AI operating activity.",
+  programs:"Official MW program governance. Use this to control program releases and protect the training system from unauthorized methodology changes.",
+  knowledge:"The official MW methodology and knowledge-governance area. Proposed changes should be reviewed before becoming official.",
+  support:"Customer-success and support triage, including AI-assisted review and human resolution controls.",
+  operations:"Company SOPs and operating procedures. This is where repeatable business processes become documented systems.",
+  people:"Human organization planning, roles, responsibilities, and the relationship between future staff and the AI workforce.",
+  risk:"Legal and business risk register. Risks stay visible until resolved or deliberately accepted.",
+  launch:"Go-live gates and launch-readiness verification. These controls should be treated as consequential because they can certify production readiness.",
+  product:"Product and technology oversight for the MW Dynasty platform and release posture.",
+  system:"Technical health, diagnostics, billing integrity, and recent platform reliability signals.",
+  security:"Your CIA-triad and control-system command center: Confidentiality, Integrity, Availability, preventive, detective, corrective, compensating controls, incidents, RLS, privileged functions, and audit history.",
+  settings:"Founder preferences and orientation. Replay or reset this full tour here whenever you need it."
+};
+let founderTourState=null;
+
+function founderTourLabel(el){return String(el?.innerText||el?.textContent||"").replace(/\s+/g," ").trim()||"Unnamed control"}
+function founderTourContext(el){
+  const p=el?.closest?.("tr,.row,.card,.hero");
+  if(!p)return "";
+  return String(p.innerText||p.textContent||"").replace(/\s+/g," ").trim().slice(0,220)
+}
+function founderTourControlCopy(label,view,context){
+  const l=label.toLowerCase();
+  let body='This is the “'+label+'” control inside '+(titles[view]||"Founder OS")+'. ';
+  if(l.includes("approve")||l.includes("go-live")||l.includes("publish"))body+="This is a consequential control: it can approve access, activate something, publish official material, or certify a release. The tour will never press it.";
+  else if(l.includes("deny")||l.includes("reject")||l.includes("resolve")||l.includes("reopen")||l.includes("dismiss")||l.includes("mark lost"))body+="This changes the status of a real company record. Review the surrounding record before using it.";
+  else if(l.includes("save")||l.includes("update")||l.includes("record as sent")||l.includes("record verification")||l.includes("mark verified")||l.includes("reviewed"))body+="This writes or records a change. Use it only after the information on screen is correct.";
+  else if(l.includes("run ai")||l.includes("ai prep")||l.includes("ai brief")||l.includes("ai triage")||l.includes("work plan")||l.includes("department brief")||l.includes("safe queued")||l.includes("safe task"))body+="This invokes an MW AI workflow. AI may prepare analysis or safe queued work, while consequential company actions remain behind Founder/human approval controls.";
+  else if(l.includes("add ")||l.includes("new ")||l.includes("create ")||l.includes("propose ")||l.includes("plan human"))body+="This starts a new record, draft, proposal, role, cost, risk, SOP, campaign, or objective depending on the section. Nothing is created by the tour itself.";
+  else if(l.includes("open ")||l==="open"||l.includes("view")||l==="read")body+="This opens another Founder view or a more detailed record so you can inspect it.";
+  else if(l.includes("pause")||l.includes("resume")||l.includes("complete objective")||l.includes("activate"))body+="This changes an operating state. Use it when you intentionally want to pause, resume, complete, or activate that item.";
+  else if(l.includes("read aloud"))body+="This reads the latest Founder AI response aloud. Press it again while speaking to stop playback.";
+  else if(l==="ask"||l.includes("ask founder ai"))body+="This sends your written question to Founder AI. Founder AI can analyze company context, but it does not receive authority to bypass protected approvals.";
+  else if(l.includes("mark all read"))body+="This clears the unread state across the current notification set; it does not delete the underlying records.";
+  else if(l.includes("refresh"))body+="This reloads Founder data from the live company systems without signing you out.";
+  else if(l.includes("menu"))body+="On smaller screens, this opens the Founder navigation sidebar.";
+  else if(l.includes("sign out"))body+="This ends the local Founder session on this device and returns you to the private Founder sign-in screen.";
+  else body+="Use the surrounding section and record as context for what the control changes or opens. The tour only highlights it; it never activates it.";
+  return {body,context}
+}
+function founderTourProgress(index,total){return total?Math.max(2,Math.min(100,Math.round(((index+1)/total)*100))):2}
+function founderTourPreparing(textValue){
+  $("tourRoot").innerHTML='<div class="tourPreparing"><div class="tourPreparingCard"><div class="tourPulse"></div><div class="brand" style="margin-top:15px">MW DYNASTY · FOUNDER ORIENTATION</div><h2>Preparing your live Founder tour…</h2><p id="tourPreparingText">'+esc(textValue||"Reading the Founder Hub controls.")+'</p></div></div>'
+}
+function founderTourCleanup(){
+  $("tourRoot").innerHTML="";
+  founderTourState=null;
+  $("sidebar").classList.remove("open");
+}
+async function buildFounderTourPlan(){
+  const plan=[
+    {kind:"intro",title:"Welcome to MW Dynasty Founder OS",body:"This is your private company command center. This tour will walk the real Founder Hub, section by section, and explain every visible action button it finds. It will not press company-action buttons or change company data."},
+    {kind:"global",selector:".sideBrand",title:"MW Dynasty Founder Operating System",body:"The left side of the Hub is your permanent company navigation. The sections are grouped by executive oversight, people and access, money and growth, intelligence, operations, and platform health."},
+    {kind:"global",selector:"#founderAIQuick",title:"Founder AI",body:"Founder AI is your company-level AI assistant. It can brief you on MW Dynasty, explain business conditions, help prepare work, and surface priorities while protected actions remain behind approval controls."},
+    {kind:"global",selector:"#refreshBtn",title:"Refresh",body:"Refresh clears the current Founder data cache and pulls a fresh view of the company. Use this when you want the newest dashboard information without signing out."},
+    {kind:"global",selector:"#menuBtn",title:"Menu",body:"On iPhone and other smaller screens, Menu opens the Founder navigation sidebar. On desktop the sidebar stays visible, so this button may be hidden."},
+    {kind:"global",selector:"#founderName",title:"Founder Identity",body:"This confirms which Founder profile is signed into the private Founder OS."},
+    {kind:"global",selector:"#signOut",title:"Sign Out",body:"Sign Out ends the local Founder session on this device. Use it whenever you finish on a shared or untrusted device."},
+    {kind:"aiModal",selector:".modalCard",title:"Founder AI Window",body:"The Founder AI conversation opens in a protected modal so you can ask company questions without leaving the section you were viewing."},
+    {kind:"aiModal",selector:"#aiReadAloud",title:"Read Aloud / Stop",body:"Read Aloud speaks the latest Founder AI answer. While audio is playing, the same control becomes Stop."},
+    {kind:"aiModal",selector:"#aiSend",title:"Ask Founder AI",body:"Ask sends the text in the Founder AI message box. The AI can analyze and prepare work, but it cannot bypass Founder approvals for consequential actions."},
+    {kind:"aiModal",selector:"#modalClose",title:"Close Founder AI",body:"Close returns you to the Founder Hub section you were viewing and stops any Founder AI audio that is currently playing."}
+  ];
+
+  for(let i=0;i<FOUNDER_TOUR_VIEWS.length;i++){
+    const view=FOUNDER_TOUR_VIEWS[i];
+    founderTourPreparing("Reading "+(titles[view]||view)+"… "+(i+1)+" of "+FOUNDER_TOUR_VIEWS.length+" sections");
+    await setView(view);
+    await wait(40);
+    plan.push({kind:"nav",view,title:titles[view]||view,body:FOUNDER_TOUR_VIEW_COPY[view]||"This is a Founder OS section."});
+    plan.push({kind:"section",view,title:(titles[view]||view)+" · What you’re looking at",body:FOUNDER_TOUR_VIEW_COPY[view]||"This section organizes company information and controls for the Founder."});
+    const buttons=[...document.querySelectorAll("#content button")].filter(b=>!b.closest("#tourRoot"));
+    const labelCounts={};
+    buttons.forEach((b,index)=>{
+      const label=founderTourLabel(b);
+      const occurrence=labelCounts[label]||0;labelCounts[label]=occurrence+1;
+      const copy=founderTourControlCopy(label,view,founderTourContext(b));
+      plan.push({kind:"control",view,buttonIndex:index,label,occurrence,title:label,body:copy.body,context:copy.context});
+    });
+  }
+  plan.push({kind:"finish",title:"Founder OS tour complete",body:"You have now walked the live Founder Hub and the controls that were available during this tour. If MW Dynasty adds new controls later, replay the tour from Settings & Tour and it will scan the current interface again."});
+  closeModal();
+  await setView("home");
+  return plan
+}
+function founderTourLocate(step){
+  if(step.kind==="intro"||step.kind==="finish")return null;
+  if(step.kind==="global"||step.kind==="aiModal")return document.querySelector(step.selector);
+  if(step.kind==="nav")return document.querySelector('.navBtn[data-view="'+step.view+'"]');
+  if(step.kind==="section")return document.querySelector("#content .hero")||$("content");
+  if(step.kind==="control"){
+    const buttons=[...document.querySelectorAll("#content button")];
+    const same=buttons.filter(b=>founderTourLabel(b)===step.label);
+    return same[step.occurrence]||buttons[step.buttonIndex]||$("content")
+  }
+  return null
+}
+async function founderTourPrepareStep(step){
+  if(step.kind==="aiModal"){
+    if(!$("modal"))openAIModal();
+    await wait(40);
+  }else if($("modal"))closeModal();
+  if(step.view&&currentView!==step.view){await setView(step.view);await wait(40)}
+  if(step.kind==="nav"&&innerWidth<=860)$("sidebar").classList.add("open");
+  else if(step.kind!=="global")$("sidebar").classList.remove("open");
+}
+function founderTourRenderCard(step,target){
+  const s=founderTourState,index=s.index,total=s.plan.length;
+  const root=$("tourRoot");
+  root.innerHTML='<div class="tourShield" id="tourShield"></div><div class="tourSpotlight hidden" id="tourSpotlight"></div><div class="tourCard" id="tourCard">'+
+    '<div class="tourMeta"><span>FOUNDER OS TOUR · STEP '+(index+1)+'</span><span>'+esc(step.view?(titles[step.view]||step.view):"FOUNDATION")+'</span></div>'+
+    '<div class="tourProgress"><i style="width:'+founderTourProgress(index,total)+'%"></i></div>'+
+    '<h2>'+esc(step.title)+'</h2><p>'+esc(step.body)+'</p>'+
+    (step.context?'<div class="tourContext"><b>On-screen context:</b><br>'+esc(step.context)+'</div>':'')+
+    '<div class="tourActions"><button class="btn small" id="tourExit">Exit for now</button><div class="tourRight">'+
+      '<button class="btn small" id="tourBack" '+(index===0?'disabled':'')+'>Back</button>'+
+      '<button class="btn small primary" id="tourNext">'+(step.kind==="finish"?"Finish Tour":"Next")+'</button>'+
+    '</div></div></div>';
+  const spot=$("tourSpotlight"),card=$("tourCard");
+  if(target){
+    try{target.scrollIntoView({behavior:"instant",block:"center",inline:"nearest"})}catch{target.scrollIntoView({block:"center"})}
+    setTimeout(()=>{
+      const r=target.getBoundingClientRect(),pad=7;
+      if(r.width>0&&r.height>0){
+        spot.classList.remove("hidden");
+        spot.style.left=Math.max(4,r.left-pad)+"px";spot.style.top=Math.max(4,r.top-pad)+"px";
+        spot.style.width=Math.min(innerWidth-8,r.width+pad*2)+"px";spot.style.height=Math.min(innerHeight-8,r.height+pad*2)+"px";
+        card.classList.toggle("top",r.top>innerHeight*.52)
+      }else spot.classList.add("hidden")
+    },80)
+  }
+  $("tourExit").onclick=()=>pauseFounderTour();
+  $("tourBack").onclick=()=>founderTourMove(-1);
+  $("tourNext").onclick=()=>step.kind==="finish"?finishFounderTour():founderTourMove(1)
+}
+async function founderTourShow(){
+  const s=founderTourState;if(!s?.active)return;
+  s.index=Math.max(0,Math.min(s.index,s.plan.length-1));
+  const step=s.plan[s.index];
+  localStorage.setItem(FOUNDER_TOUR_PROGRESS_KEY,String(s.index));
+  await founderTourPrepareStep(step);
+  founderTourRenderCard(step,founderTourLocate(step))
+}
+async function founderTourMove(delta){
+  if(!founderTourState?.active)return;
+  founderTourState.index+=delta;
+  await founderTourShow()
+}
+function pauseFounderTour(){
+  if(!founderTourState)return;
+  localStorage.setItem(FOUNDER_TOUR_PROGRESS_KEY,String(founderTourState.index));
+  localStorage.setItem(FOUNDER_TOUR_PAUSED_KEY,"1");
+  closeModal();founderTourCleanup()
+}
+async function finishFounderTour(){
+  localStorage.setItem(FOUNDER_TOUR_COMPLETE_KEY,FOUNDER_TOUR_VERSION);
+  localStorage.removeItem(FOUNDER_TOUR_PROGRESS_KEY);
+  localStorage.removeItem(FOUNDER_TOUR_PAUSED_KEY);
+  closeModal();founderTourCleanup();await setView("home")
+}
+async function startFounderTour({resume=false}={}){
+  if(founderTourState?.active)return;
+  localStorage.removeItem(FOUNDER_TOUR_PAUSED_KEY);
+  founderTourPreparing("Reading the live Founder Hub so every current control can be included.");
+  try{
+    const plan=await buildFounderTourPlan();
+    const saved=resume?Number(localStorage.getItem(FOUNDER_TOUR_PROGRESS_KEY)||0):0;
+    founderTourState={active:true,plan,index:Number.isFinite(saved)?Math.max(0,Math.min(saved,plan.length-1)):0};
+    await founderTourShow()
+  }catch(e){
+    founderTourCleanup();
+    modal("Founder Tour",'<p class="muted">The tour could not be prepared right now: '+esc(e.message||"Unknown error")+'</p><button class="btn" data-go="settings">Open Settings & Tour</button>');
+    bindGo()
+  }
+}
+function maybeStartFounderTour(){
+  const done=localStorage.getItem(FOUNDER_TOUR_COMPLETE_KEY)===FOUNDER_TOUR_VERSION;
+  const paused=localStorage.getItem(FOUNDER_TOUR_PAUSED_KEY)==="1";
+  if(!done&&!paused)setTimeout(()=>startFounderTour({resume:true}),650)
+}
 function setNavCount(name,value){
   const el=document.querySelector('[data-count="'+name+'"]');if(!el)return;
   const n=Math.max(0,Number(value)||0);el.textContent=n>99?"99+":String(n);el.classList.toggle("show",n>0);
@@ -1028,7 +1255,7 @@ async function enter(s){
   save(Object.assign({},session,{user:user}));
   scheduleFounderSessionRefresh();
   $("founderName").textContent=[profile.first_name,profile.last_name].filter(Boolean).join(" ")||"Founder";
-  $("login").classList.add("hidden");$("appShell").classList.remove("hidden");await setView("home");refreshFounderNavCounts();
+  $("login").classList.add("hidden");$("appShell").classList.remove("hidden");await setView("home");refreshFounderNavCounts();maybeStartFounderTour();
 }
 $("loginForm").onsubmit=async e=>{e.preventDefault();const b=$("loginBtn"),st=$("loginStatus");b.disabled=true;st.textContent="Verifying Founder access…";st.className="status";try{const r=await resilientFetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})},3);const d=await r.json().catch(()=>({}));if(!r.ok){if(isTransientStatus(r.status))throw accessErr("Founder authentication is temporarily unavailable. Nothing was changed; try again shortly.",503,true);throw accessErr(d.error_description||d.msg||"Sign in failed.",401,false)}await enter(d)}catch(err){if(!err?.transient)clear();st.textContent=err.message;st.className="status error"}finally{b.disabled=false}};
 document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
