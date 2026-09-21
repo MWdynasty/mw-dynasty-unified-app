@@ -9,6 +9,22 @@
   },
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "mwdynasty.com"
+        },
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*MWDynasty-iOS.*"
+        }
+      ],
+      "destination": "https://app.mwdynasty.com/:path*",
+      "permanent": false
+    },
+    {
       "source": "/signin",
       "destination": "/account/",
       "permanent": false
@@ -29,6 +45,26 @@
         }
       ],
       "destination": "/founder/"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "mwdynasty.com"
+        }
+      ],
+      "destination": "https://mw-dynasty.irisblue2016.chatgpt.site/:path*"
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.mwdynasty.com"
+        }
+      ],
+      "destination": "https://mw-dynasty.irisblue2016.chatgpt.site/:path*"
     },
     {
       "source": "/api/chat",
