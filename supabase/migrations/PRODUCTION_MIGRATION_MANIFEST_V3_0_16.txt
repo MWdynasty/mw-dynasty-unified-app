@@ -134,3 +134,7 @@ Note: v7/v8 numbering is shared with separate Founder security-review and AI-bac
 20260920_founder_os_v20_ai_work_to_sop.sql
 - Links each completed Founder AI task to at most one Founder-review SOP draft.
 - Preserves AI operating work as reusable company process documentation without activating it automatically.
+
+20260920_founder_os_v21_ai_sop_fk_index.sql
+- Replaces the partial AI-task link index with a full unique index so the foreign key has complete index coverage.
+- Retains the one-SOP-draft-per-source-AI-task invariant.
