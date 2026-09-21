@@ -1,12 +1,13 @@
 const {authenticate}=require('../lib/mw-auth');
+const {founderAuth}=require('../lib/founder-auth');
 module.exports=async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'POST only'});
   if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'Coach MW voice is temporarily unavailable.'});
   try{
-    await authenticate(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const input=String(body.text||'').trim().slice(0,7000);if(!input)return res.status(400).json({error:'Missing text'});
     const coachType=String(body.coachType||'neutral').toLowerCase();
+    if(coachType==='founder')await founderAuth(req);else await authenticate(req);
+    const input=String(body.text||'').trim().slice(0,7000);if(!input)return res.status(400).json({error:'Missing text'});
     const isFounder=coachType==='founder';
     const voice=isFounder?(process.env.OPENAI_FOUNDER_VOICE||process.env.OPENAI_MALE_VOICE||'onyx'):(coachType==='female'?(process.env.OPENAI_FEMALE_VOICE||'coral'):(process.env.OPENAI_MALE_VOICE||'onyx'));
     const instructions=isFounder?'Speak as MW Dynasty Founder AI: confident, calm, polished, executive, natural, and conversational. Use clear pacing, realistic pauses, and measured emphasis. Sound like a trusted chief-of-staff briefing the Founder, never like an announcer or a robot.':(coachType==='female'?'Speak like a confident elite female sprint coach: warm, grounded, natural, conversational, athletic, and human. Use realistic pauses and emphasis. Never sound like an announcer or robot. Keep the energy controlled unless celebrating.':'Speak like a confident elite male sprint coach: calm, grounded, natural, conversational, athletic, and human. Use realistic pauses and emphasis. Never sound like an announcer or robot. Keep the energy controlled unless celebrating.');
