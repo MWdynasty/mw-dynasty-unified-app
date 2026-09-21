@@ -113,11 +113,34 @@ function normalizeSession(s){
   if(!out.expires_at&&out.expires_in)out.expires_at=Math.floor(Date.now()/1000)+Number(out.expires_in||0);
   return out;
 }
+function readStoredFounderSession(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(KEY)||"null");
+    return raw?normalizeSession(raw):null
+  }catch{return null}
+}
 function save(s){session=normalizeSession(s);localStorage.setItem(KEY,JSON.stringify(session))}
 function clear(){
   session=null;founderRefreshPromise=null;
   if(founderSessionTimer){clearInterval(founderSessionTimer);founderSessionTimer=null}
   localStorage.removeItem(KEY)
+}
+function adoptRotatedFounderSession(previousRefreshToken){
+  const stored=readStoredFounderSession();
+  if(!stored?.access_token)return false;
+  const changedToken=!!stored.refresh_token&&stored.refresh_token!==previousRefreshToken;
+  const newerExpiry=Number(stored.expires_at||0)>Number(session?.expires_at||0);
+  if(!changedToken&&!newerExpiry)return false;
+  session=stored;
+  return true
+}
+async function recoverRotatedFounderSession(previousRefreshToken){
+  if(adoptRotatedFounderSession(previousRefreshToken))return session;
+  for(const delay of [180,420]){
+    await wait(delay);
+    if(adoptRotatedFounderSession(previousRefreshToken))return session
+  }
+  return null
 }
 function accessErr(message,status,transient){
   const e=new Error(message);e.status=status||500;e.transient=!!transient;return e
@@ -144,19 +167,26 @@ async function refreshFounderSession(force){
   if(!session?.refresh_token)throw accessErr("Founder session expired. Sign in again.",401,false);
   const expiresAt=Number(session.expires_at||0)*1000;
   if(!force&&expiresAt&&expiresAt>Date.now()+5*60*1000)return session;
+  const refreshToken=session.refresh_token;
   founderRefreshPromise=(async()=>{
     let r;
     try{
       r=await resilientFetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{
         method:"POST",
         headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
-        body:JSON.stringify({refresh_token:session.refresh_token})
+        body:JSON.stringify({refresh_token:refreshToken})
       },3);
     }catch(e){throw accessErr("Founder authentication is temporarily unavailable. Your saved session was kept.",503,true)}
     const d=await r.json().catch(()=>({}));
     if(!r.ok){
       if(isTransientStatus(r.status))throw accessErr("Founder authentication is temporarily unavailable. Your saved session was kept.",503,true);
-      throw accessErr(d.error_description||d.msg||"Founder session expired. Sign in again.",401,false)
+      const authMessage=String(d.error_description||d.msg||d.message||"").toLowerCase();
+      const refreshRejected=[400,401].includes(Number(r.status))&&(authMessage.includes("refresh token")||authMessage.includes("refresh_token"));
+      if(refreshRejected){
+        const recovered=await recoverRotatedFounderSession(refreshToken);
+        if(recovered)return recovered
+      }
+      throw accessErr("Founder session expired. Sign in again.",401,false)
     }
     save(Object.assign({},session,d));
     return session;
@@ -1020,7 +1050,16 @@ async function renderView(v){
     if(v==="security")return await renderSecurity();
     if(v==="settings")return renderSettings();
     if(v==="analytics")return await renderAnalytics();
-  }catch(e){$("content").innerHTML='<div class="card"><h2>Founder OS could not load this section.</h2><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="renderView(currentView)">Try Again</button></div>'}
+  }catch(e){
+    if(e?.status===401){
+      clear();
+      $("appShell").classList.add("hidden");
+      $("login").classList.remove("hidden");
+      const st=$("loginStatus");st.textContent="Founder session expired. Please sign in again.";st.className="status error";
+      return
+    }
+    $("content").innerHTML='<div class="card"><h2>Founder OS could not load this section.</h2><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="renderView(currentView)">Try Again</button></div>'
+  }
 }
 function bindGo(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>setView(b.dataset.go))}
 function modal(title,body){$("modalRoot").innerHTML='<div class="modal" id="modal"><div class="modalCard"><div class="modalTop"><h2>'+esc(title)+'</h2><button class="btn small" id="modalClose">Close</button></div><div style="margin-top:12px">'+body+'</div></div></div>';$("modalClose").onclick=closeModal;$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()})}
@@ -1287,8 +1326,25 @@ $("refreshBtn").onclick=()=>{cache={};renderView(currentView);refreshFounderNavC
 $("founderAIQuick").onclick=openAIModal;
 $("signOut").onclick=()=>{clear();location.reload()};
 window.addEventListener("online",()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")){cache={};renderView(currentView);refreshFounderNavCounts()}});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&session?.refresh_token)refreshFounderSession(false).catch(()=>{})});
-(async()=>{try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s?.access_token||s?.refresh_token)await enter(s)}catch(err){const st=$("loginStatus");if(err?.status===401||err?.status===403)clear();st.textContent=err?.transient?"Founder access services are temporarily unavailable. Your saved session was kept; reload or try again shortly.":(err?.message||"Founder sign-in required.");st.className="status error"}})();
+window.addEventListener("storage",e=>{
+  if(e.key!==KEY)return;
+  if(!e.newValue){
+    session=null;founderRefreshPromise=null;
+    $("appShell").classList.add("hidden");$("login").classList.remove("hidden");
+    return
+  }
+  try{
+    const incoming=normalizeSession(JSON.parse(e.newValue));
+    if(incoming?.access_token)session=incoming
+  }catch{}
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState!=="visible")return;
+  const stored=readStoredFounderSession();
+  if(stored?.access_token&&(!session?.access_token||stored.refresh_token!==session.refresh_token||Number(stored.expires_at||0)>Number(session.expires_at||0)))session=stored;
+  if(session?.refresh_token)refreshFounderSession(false).catch(()=>{})
+});
+(async()=>{try{const s=readStoredFounderSession();if(s?.access_token||s?.refresh_token)await enter(s)}catch(err){const st=$("loginStatus");if(err?.status===401||err?.status===403)clear();st.textContent=err?.transient?"Founder access services are temporarily unavailable. Your saved session was kept; reload or try again shortly.":(err?.message||"Founder sign-in required.");st.className="status error"}})();
 </script>
 </body>
 </html>
