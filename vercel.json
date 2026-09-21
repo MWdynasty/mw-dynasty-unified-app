@@ -37,6 +37,18 @@
   ],
   "rewrites": [
     {
+      "source": "/memberships",
+      "destination": "/api/membership"
+    },
+    {
+      "source": "/membership-experience",
+      "destination": "/api/membership"
+    },
+    {
+      "source": "/membership-experience.html",
+      "destination": "/api/membership"
+    },
+    {
       "source": "/",
       "has": [
         {
@@ -45,46 +57,6 @@
         }
       ],
       "destination": "/founder/"
-    },
-    {
-      "source": "/memberships",
-      "has": [
-        {
-          "type": "host",
-          "value": "mwdynasty.com"
-        }
-      ],
-      "destination": "/membership-experience.html"
-    },
-    {
-      "source": "/memberships",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.mwdynasty.com"
-        }
-      ],
-      "destination": "/membership-experience.html"
-    },
-    {
-      "source": "/membership-experience",
-      "has": [
-        {
-          "type": "host",
-          "value": "mwdynasty.com"
-        }
-      ],
-      "destination": "/membership-experience.html"
-    },
-    {
-      "source": "/membership-experience",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.mwdynasty.com"
-        }
-      ],
-      "destination": "/membership-experience.html"
     },
     {
       "source": "/:path*",
