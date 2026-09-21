@@ -79,6 +79,9 @@ includes('founder/index.html','Record as Sent','Founder proposal human-send reco
 includes('supabase/migrations/20260920_founder_os_v18_ai_operating_queue.sql','mw_founder_ai_operating_queue_snapshot','Founder proactive AI operating queue missing');
 includes('supabase/migrations/20260920_founder_os_v19_queue_reconciliation.sql','System signal resolved','Founder AI signal reconciliation missing');
 includes('founder/index.html','Proactive AI Operating Queue','Founder proactive AI queue UI missing');
+includes('supabase/migrations/20260920_founder_os_v20_ai_work_to_sop.sql','source_ai_task_id','Founder AI-to-SOP migration missing');
+includes('server/api/founder.js',"action==='promote_ai_task_to_sop'",'Founder AI-to-SOP API action missing');
+includes('founder/index.html','data-task-to-sop','Founder AI-to-SOP review control missing');
 includes('server/api/founder.js',"section==='security_review'",'Founder security review API route missing');
 includes('founder/index.html','SECURITY DEFINER Inventory','Founder security inventory UI missing');
 
