@@ -96,21 +96,144 @@
 const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
-let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null;
+let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderRefreshPromise=null,founderSessionTimer=null;
 const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
 const date=v=>v?new Date(v).toLocaleString():"—";
 const badge=(text,type)=>'<span class="badge '+(type||"")+'">'+esc(text||"—")+'</span>';
-function save(s){session=s;localStorage.setItem(KEY,JSON.stringify(s))}
-function clear(){session=null;localStorage.removeItem(KEY)}
-async function authUser(token){const r=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error("Founder session expired.");return d}
-async function founderProfile(user,token){const r=await fetch(SUPABASE_URL+"/rest/v1/profiles?user_id=eq."+encodeURIComponent(user.id)+"&select=first_name,last_name,role,account_status&limit=1",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token}});const d=await r.json().catch(()=>[]),p=Array.isArray(d)?d[0]:null;if(!r.ok||!p||p.role!=="founder_owner"||p.account_status!=="active")throw new Error("Founder / Owner access required.");return p}
-async function api(section,force){if(!force&&cache[section])return cache[section];const r=await fetch("/api/founder?section="+encodeURIComponent(section),{headers:{Authorization:"Bearer "+session.access_token},cache:"no-store"});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Founder data unavailable.");cache[section]=d.data;return d.data}
-async function action(name,payload){const r=await fetch("/api/founder",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify(Object.assign({action:name},payload||{}))});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Founder action failed.");cache={};return d}
-async function ai(mode,payload){const r=await fetch("/api/founder/ai",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify(Object.assign({mode:mode},payload||{}))});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Founder AI request failed.");cache.ai_company=null;return d}
-async function admin(method,body){const r=await fetch(SUPABASE_URL+"/functions/v1/mw-coach-applications-admin",{method:method||"GET",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Application request failed.");return d}
+function normalizeSession(s){
+  const out=Object.assign({},s||{});
+  if(!out.expires_at&&out.expires_in)out.expires_at=Math.floor(Date.now()/1000)+Number(out.expires_in||0);
+  return out;
+}
+function save(s){session=normalizeSession(s);localStorage.setItem(KEY,JSON.stringify(session))}
+function clear(){
+  session=null;founderRefreshPromise=null;
+  if(founderSessionTimer){clearInterval(founderSessionTimer);founderSessionTimer=null}
+  localStorage.removeItem(KEY)
+}
+function accessErr(message,status,transient){
+  const e=new Error(message);e.status=status||500;e.transient=!!transient;return e
+}
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function isTransientStatus(status){return [408,425,429,500,502,503,504].includes(Number(status))}
+async function resilientFetch(url,options={},attempts=3){
+  let last=null;
+  for(let i=0;i<attempts;i++){
+    try{
+      const r=await fetch(url,options);
+      if(!isTransientStatus(r.status)||i===attempts-1)return r;
+      last=accessErr("Founder services are temporarily unavailable.",503,true);
+    }catch(e){
+      last=accessErr("Founder services are temporarily unavailable.",503,true);
+      if(i===attempts-1)throw last;
+    }
+    await wait(160*(2**i));
+  }
+  throw last||accessErr("Founder services are temporarily unavailable.",503,true)
+}
+async function refreshFounderSession(force){
+  if(founderRefreshPromise)return founderRefreshPromise;
+  if(!session?.refresh_token)throw accessErr("Founder session expired. Sign in again.",401,false);
+  const expiresAt=Number(session.expires_at||0)*1000;
+  if(!force&&expiresAt&&expiresAt>Date.now()+5*60*1000)return session;
+  founderRefreshPromise=(async()=>{
+    let r;
+    try{
+      r=await resilientFetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{
+        method:"POST",
+        headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({refresh_token:session.refresh_token})
+      },3);
+    }catch(e){throw accessErr("Founder authentication is temporarily unavailable. Your saved session was kept.",503,true)}
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){
+      if(isTransientStatus(r.status))throw accessErr("Founder authentication is temporarily unavailable. Your saved session was kept.",503,true);
+      throw accessErr(d.error_description||d.msg||"Founder session expired. Sign in again.",401,false)
+    }
+    save(Object.assign({},session,d));
+    return session;
+  })().finally(()=>{founderRefreshPromise=null});
+  return founderRefreshPromise;
+}
+async function ensureFounderSession(){
+  if(!session?.access_token)throw accessErr("Authentication required.",401,false);
+  const expiresAt=Number(session.expires_at||0)*1000;
+  if(expiresAt&&expiresAt<=Date.now()+2*60*1000)await refreshFounderSession(true);
+  return session
+}
+function scheduleFounderSessionRefresh(){
+  if(founderSessionTimer)clearInterval(founderSessionTimer);
+  founderSessionTimer=setInterval(()=>{if(session?.refresh_token)refreshFounderSession(false).catch(()=>{})},60000)
+}
+async function founderFetch(url,options={},retryTransient){
+  await ensureFounderSession();
+  const baseHeaders=Object.assign({},options.headers||{});
+  const run=()=>resilientFetch(url,Object.assign({},options,{headers:Object.assign({},baseHeaders,{Authorization:"Bearer "+session.access_token})}),retryTransient?3:1);
+  let r=await run();
+  if(r.status===401&&session?.refresh_token){
+    await refreshFounderSession(true);
+    r=await run()
+  }
+  return r
+}
+async function authUser(token){
+  const r=await resilientFetch(SUPABASE_URL+"/auth/v1/user",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token}},3);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){
+    if(isTransientStatus(r.status))throw accessErr("Founder authentication is temporarily unavailable. Access remains locked.",503,true);
+    throw accessErr("Founder session expired.",401,false)
+  }
+  return d
+}
+async function founderProfile(user,token){
+  const r=await resilientFetch(SUPABASE_URL+"/rest/v1/profiles?user_id=eq."+encodeURIComponent(user.id)+"&select=first_name,last_name,role,account_status&limit=1",{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+token}},3);
+  const d=await r.json().catch(()=>[]),p=Array.isArray(d)?d[0]:null;
+  if(!r.ok){
+    if(isTransientStatus(r.status))throw accessErr("Founder authorization is temporarily unavailable. Access remains locked.",503,true);
+    if(r.status===401)throw accessErr("Founder session expired.",401,false);
+    throw accessErr("Founder / Owner access required.",403,false)
+  }
+  if(!p||p.role!=="founder_owner"||p.account_status!=="active")throw accessErr("Founder / Owner access required.",403,false);
+  return p
+}
+async function api(section,force){
+  const stale=cache[section];
+  if(!force&&stale)return stale;
+  try{
+    const r=await founderFetch("/api/founder?section="+encodeURIComponent(section),{cache:"no-store"},true);
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){
+      if(isTransientStatus(r.status)&&stale)return stale;
+      throw accessErr(d.error||"Founder data unavailable.",r.status,isTransientStatus(r.status))
+    }
+    cache[section]=d.data;return d.data
+  }catch(e){
+    if(e?.transient&&stale)return stale;
+    throw e
+  }
+}
+async function action(name,payload){
+  const r=await founderFetch("/api/founder",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({action:name},payload||{}))},false);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw accessErr(d.error||"Founder action failed.",r.status,isTransientStatus(r.status));
+  cache={};return d
+}
+async function ai(mode,payload){
+  const r=await founderFetch("/api/founder/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({mode:mode},payload||{}))},false);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw accessErr(d.error||"Founder AI request failed.",r.status,isTransientStatus(r.status));
+  cache.ai_company=null;return d
+}
+async function admin(method,body){
+  const isRead=(method||"GET")==="GET";
+  const r=await founderFetch(SUPABASE_URL+"/functions/v1/mw-coach-applications-admin",{method:method||"GET",headers:{apikey:SUPABASE_KEY,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined},isRead);
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw accessErr(d.error||"Application request failed.",r.status,isTransientStatus(r.status));
+  return d
+}
 function loading(){ $("content").innerHTML='<div class="card empty">Loading Founder OS…</div>'}
 function stat(label,value,note){return '<div class="stat"><small>'+esc(label)+'</small><b>'+esc(value)+'</b>'+(note?'<em>'+esc(note)+'</em>':"")+'</div>'}
 function sectionHead(title,copy,actionHtml){return '<div class="sectionHead"><div><h2>'+esc(title)+'</h2><p>'+esc(copy||"")+'</p></div>'+(actionHtml||"")+'</div>'}
@@ -871,17 +994,23 @@ async function refreshFounderNavCounts(){
   }catch{}
 }
 async function enter(s){
-  const user=await authUser(s.access_token),profile=await founderProfile(user,s.access_token);save(Object.assign({},s,{user:user}));
+  save(s);
+  await ensureFounderSession();
+  const user=await authUser(session.access_token),profile=await founderProfile(user,session.access_token);
+  save(Object.assign({},session,{user:user}));
+  scheduleFounderSessionRefresh();
   $("founderName").textContent=[profile.first_name,profile.last_name].filter(Boolean).join(" ")||"Founder";
   $("login").classList.add("hidden");$("appShell").classList.remove("hidden");await setView("home");refreshFounderNavCounts();
 }
-$("loginForm").onsubmit=async e=>{e.preventDefault();const b=$("loginBtn"),st=$("loginStatus");b.disabled=true;st.textContent="Verifying Founder access…";st.className="status";try{const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||"Sign in failed.");await enter(d)}catch(err){clear();st.textContent=err.message;st.className="status error"}finally{b.disabled=false}};
+$("loginForm").onsubmit=async e=>{e.preventDefault();const b=$("loginBtn"),st=$("loginStatus");b.disabled=true;st.textContent="Verifying Founder access…";st.className="status";try{const r=await resilientFetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})},3);const d=await r.json().catch(()=>({}));if(!r.ok){if(isTransientStatus(r.status))throw accessErr("Founder authentication is temporarily unavailable. Nothing was changed; try again shortly.",503,true);throw accessErr(d.error_description||d.msg||"Sign in failed.",401,false)}await enter(d)}catch(err){if(!err?.transient)clear();st.textContent=err.message;st.className="status error"}finally{b.disabled=false}};
 document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
 $("menuBtn").onclick=()=>$("sidebar").classList.toggle("open");
 $("refreshBtn").onclick=()=>{cache={};renderView(currentView);refreshFounderNavCounts()};
 $("founderAIQuick").onclick=openAIModal;
 $("signOut").onclick=()=>{clear();location.reload()};
-(async()=>{try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s?.access_token)await enter(s)}catch{clear()}})();
+window.addEventListener("online",()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")){cache={};renderView(currentView);refreshFounderNavCounts()}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&session?.refresh_token)refreshFounderSession(false).catch(()=>{})});
+(async()=>{try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s?.access_token||s?.refresh_token)await enter(s)}catch(err){const st=$("loginStatus");if(err?.status===401||err?.status===403)clear();st.textContent=err?.transient?"Founder access services are temporarily unavailable. Your saved session was kept; reload or try again shortly.":(err?.message||"Founder sign-in required.");st.className="status error"}})();
 </script>
 </body>
 </html>
