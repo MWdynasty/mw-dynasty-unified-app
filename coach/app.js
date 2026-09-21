@@ -6,6 +6,8 @@ const MW_APP_VERSION='3.0.16';
 const MW_IOS_BUILD='13';
 let authSession=null;
 let accountAccess={role:null,tier:null,isFounder:false,firstName:'',lastName:'',organization:'',coachTitle:'',email:''};
+function coachTransient(error,status=0){return !navigator.onLine||error?.mwTransient===true||window.MWResilience?.isTransientStatus?.(status)===true||window.MWResilience?.isTransientError?.(error)===true}
+function coachAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
 
 const PLANS={
  core:{name:'MW Coach Core',theme:'',title:'MW COACH CORE',tag:'MANAGE. ORGANIZE. COACH.',sub:'Bring Your Own Program — Built for Coaches.',side:'COACH\nCORE',footer:'BUILD\nDEVELOP\nCOMPETE',planCode:'coach_core',monthly:49,sponsor:5},
@@ -725,8 +727,14 @@ async function submitCoachApplication(e){
   }
 }
 async function verifyCoachAccess(session){
-  const r=await fetch('/api/coach/access',{headers:{Authorization:`Bearer ${session.access_token}`}});const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(r.status===403?'This login is not an approved, active MW Coach account.':(d.error||'Coach access could not be verified.'));
+  let r;
+  try{r=await fetch('/api/coach/access',{headers:{Authorization:`Bearer ${session.access_token}`}})}
+  catch(e){const err=coachAccessError('Coach access is temporarily unavailable.',503);err.mwTransient=true;throw err}
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){
+    if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError(d.error||'Coach access is temporarily unavailable.',r.status);
+    throw coachAccessError(r.status===403?'This login is not an approved, active MW Coach account.':(d.error||'Coach access could not be verified.'),r.status)
+  }
   accountAccess={role:d.role||null,tier:d.tier||null,isFounder:!!d.isFounder,firstName:d.firstName||'',lastName:d.lastName||'',organization:d.organization||'',coachTitle:d.coachTitle||'',email:d.email||''};
   window.MWDiag?.snapshot({audience:'coach',role:String(d.role||''),tier:String(d.tier||''),founder:!!d.isFounder,native:document.documentElement.classList.contains('mw-native-app')});
   if(accountAccess.isFounder){experience='performance';return d;}
@@ -749,14 +757,23 @@ async function supabasePasswordLogin(email,password){
 }
 async function validateSession(session){
   if(!session?.access_token)return false;
-  const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`}});
+  let r;
+  try{r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`}})}
+  catch(e){const err=coachAccessError('Coach authentication is temporarily unavailable.',503);err.mwTransient=true;throw err}
+  if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError('Coach authentication is temporarily unavailable.',r.status);
   return r.ok;
 }
 function storedSessionIsPersistent(){return !!localStorage.getItem(SESSION_KEY)}
 async function refreshCoachSession(session){
   if(!session?.refresh_token)return null;
-  const r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});
-  const d=await r.json().catch(()=>null);if(!r.ok||!d?.access_token)return null;
+  let r;
+  try{r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})})}
+  catch(e){const err=coachAccessError('Coach session refresh is temporarily unavailable.',503);err.mwTransient=true;throw err}
+  const d=await r.json().catch(()=>null);
+  if(!r.ok||!d?.access_token){
+    if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError(d?.error_description||d?.msg||'Coach session refresh is temporarily unavailable.',r.status);
+    return null
+  }
   persistSession(d,storedSessionIsPersistent());return d;
 }
 function persistSession(session,remember=true){
@@ -883,8 +900,14 @@ function bindLogin(){
       const session=await supabasePasswordLogin(email,password);
       persistSession(session,remember);
       try{await verifyCoachAccess(session);dashboard()}
-      catch(accessErr){renderCoachMembershipSelection(session)}
-    }catch(err){clearSession();setLoginMessage(err.message)}finally{setLoginBusy(false)}
+      catch(accessErr){
+        if(coachTransient(accessErr)){setLoginMessage('Signed in, but MW is having a temporary connection issue. Your Coach session is safe and will reconnect automatically.','neutral');return}
+        renderCoachMembershipSelection(session)
+      }
+    }catch(err){
+      if(coachTransient(err)&&authSession?.access_token){setLoginMessage('Connection interrupted after sign-in. Your Coach session is safe and will reconnect automatically.','neutral')}
+      else{clearSession();setLoginMessage(err.message)}
+    }finally{setLoginBusy(false)}
   });
 }
 function recoverySessionFromUrl(){
@@ -931,9 +954,17 @@ async function initAuth(){
       if(active&&await validateSession(active)){
         if(await waitForCoachActivation(active))return;
         try{await verifyCoachAccess(active);dashboard();return}
-        catch{renderCoachMembershipSelection(active);return}
+        catch(accessErr){
+          if(coachTransient(accessErr))throw accessErr;
+          renderCoachMembershipSelection(active);return
+        }
       }
-    }catch{}
+    }catch(err){
+      if(coachTransient(err)){
+        renderLogin('MW is having a temporary connection issue. Your saved Coach session is safe; we’ll reconnect automatically.');
+        return
+      }
+    }
     clearSession();
   }
   renderLogin();
@@ -1419,4 +1450,6 @@ async function mwProgramWeek(week,kind='track'){
 function mwTrackPage(){pageBase('MW Track Program','Protected 41-week MW training system — every session opens with the full prescription, recovery, cues and circuit order.',`<div class="panel-grid">${Array.from({length:41},(_,i)=>i+1).map(w=>`<div class="tile"><h3>Week ${w}</h3><p>MW progressive sprint development</p><button class="action mw-week" data-week="${w}">Open Week</button></div>`).join('')}</div>`);document.querySelectorAll('.mw-week').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'track'))}
 function strengthPage(){pageBase('Strength & Power','The complete MW weight-room plan — organized by training day, lift, prescription, circuits and Coach MW notes.',`<div class="panel-grid">${Array.from({length:41},(_,i)=>i+1).map(w=>`<div class="tile"><h3>Week ${w}</h3><p>MW Strength & Power</p><button class="action mw-strength" data-week="${w}">Open Week</button></div>`).join('')}</div>`);document.querySelectorAll('.mw-strength').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'strength'))}
 
+window.addEventListener('mw:session-refreshed',e=>{if(e?.detail?.key===SESSION_KEY&&e.detail.session)authSession=e.detail.session});
+window.addEventListener('online',()=>{if(readStoredSession()&&!document.querySelector('.app'))setTimeout(()=>initAuth(),220)});
 initAuth();
