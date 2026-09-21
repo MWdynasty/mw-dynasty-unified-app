@@ -891,23 +891,50 @@ async function renderSecurity(){
   const items=audit.items||[],funcs=sec.security_definer_functions||[],open=sec.open_security_risks||[],resolved=sec.resolved_security_risks||[],rls=sec.rls_no_policy_tables||[];
   const manual=funcs.filter(x=>x.review_signal==="manual_review_required");
   const founderGated=funcs.filter(x=>x.review_signal==="founder_gated");
-  $("content").innerHTML='<section class="hero"><div class="brand">SECURITY & AUDIT</div><h2>Founder authority stays explicit, least-privilege, and auditable.</h2><p>Live database access posture, Founder-only controls, RLS behavior, SECURITY DEFINER review signals, known security risks, and the platform audit trail.</p><div class="heroActions"><button class="btn primary" data-go="risk">Open Risk Register</button><button class="btn" data-go="launch">Open Launch Security Gates</button></div></section>'+
+  const fw=sec.controls_framework||{},cia=fw.cia_coverage||{},families=fw.family_coverage||{},platforms=fw.platforms||[],incidents=fw.incidents||[],controls=fw.controls||[];
+  const platformName=v=>String(v||"").replaceAll("_"," ").replace(/\b\w/g,m=>m.toUpperCase());
+  const cover=n=>badge(Number(n)>0?"ACTIVE":"GAP",Number(n)>0?"good":"bad");
+  const familyRows=[
+    ["Preventive",families.preventive||0,"Stops or reduces incidents before they happen."],
+    ["Detective",families.detective||0,"Finds failures, abuse, anomalies, and control drift."],
+    ["Corrective",families.corrective||0,"Restores safe operation after a failure or incident."],
+    ["Compensating",families.compensating||0,"Provides a safe fallback when the primary control is unavailable."]
+  ];
+  $("content").innerHTML='<section class="hero"><div class="brand">SECURITY · CIA TRIAD · CONTROL SYSTEM</div><h2>MW Dynasty is governed as one security system across every platform.</h2><p>Confidentiality, Integrity, and Availability are enforced through preventive, detective, corrective, and compensating controls across the website, Athlete app, Coach app, Founder OS, APIs, database, billing, AI, messaging, native app, and company operations.</p><div class="heroActions"><button class="btn primary" data-go="risk">Open Risk Register</button><button class="btn" data-go="system">System Health</button><button class="btn" data-go="launch">Launch Security Gates</button></div></section>'+
     '<div class="stats">'+
-      stat("Authenticated SECURITY DEFINER",sec.authenticated_security_definer_count||0,"Requires intentional scoped access")+
-      stat("Anonymous SECURITY DEFINER",sec.anon_security_definer_count||0,"Public analytics is intentional")+
-      stat("RLS / No Direct Policy",sec.rls_no_policy_count||0,"Fail-closed review complete")+
-      stat("Direct Client Grants on Those Tables",sec.rls_no_policy_direct_client_grants||0,"Zero is expected")+
-      stat("Founder-Gated RPCs",founderGated.length)+
-      stat("Manual Review Signals",manual.length)+
-      stat("Open Security Risks",open.length)+
-      stat("Resolved Security Risks",resolved.length)+
+      stat("Active Controls",fw.active_controls||0,(fw.control_count||0)+" registered")+
+      stat("Degraded Controls",fw.degraded_controls||0,"Should stay at zero")+
+      stat("Open Incidents",fw.open_incidents||0,"Detective + corrective queue")+
+      stat("High / Critical",fw.critical_high_incidents||0,"Immediate attention")+
+      stat("Confidentiality",cia.confidentiality||0,"Active controls")+
+      stat("Integrity",cia.integrity||0,"Active controls")+
+      stat("Availability",cia.availability||0,"Active controls")+
+      stat("Compensating",families.compensating||0,"Fallback controls")+
     '</div>'+
+    sectionHead("CIA Triad Coverage","Every MW platform must protect data confidentiality, preserve integrity, and remain safely available.")+
+    '<div class="grid3">'+
+      '<div class="card"><div class="brand">CONFIDENTIALITY</div><h3>Right people. Right data.</h3><p class="muted">Authentication, RLS, role/entitlement checks, Founder-only authority, sanitized telemetry, protected secrets, and fail-closed authorization.</p>'+badge((cia.confidentiality||0)+" ACTIVE","good")+'</div>'+
+      '<div class="card"><div class="brand">INTEGRITY</div><h3>Right data. Right state.</h3><p class="muted">Server-authoritative billing and training state, guarded writes, audit trails, approval gates, transactional workflows, and no blind write replay.</p>'+badge((cia.integrity||0)+" ACTIVE","good")+'</div>'+
+      '<div class="card"><div class="brand">AVAILABILITY</div><h3>Recover without becoming unsafe.</h3><p class="muted">Session refresh, safe read retries, cached shell fallback, degraded mode, incident recovery, and provider-failure isolation.</p>'+badge((cia.availability||0)+" ACTIVE","good")+'</div>'+
+    '</div>'+
+    sectionHead("Control Families","Defense is layered: prevention first, detection always, correction when needed, and a compensating path when the primary control is unavailable.")+
+    '<div class="list">'+familyRows.map(x=>'<div class="row"><div><b>'+esc(x[0])+'</b><small>'+esc(x[2])+'</small></div><div class="right">'+badge(String(x[1])+" ACTIVE",Number(x[1])>0?"good":"bad")+'</div></div>').join("")+'</div>'+
+    sectionHead("Platform Coverage","Every company surface must have all four control families. A GAP here is a governance failure, not a cosmetic warning.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Platform</th><th>Preventive</th><th>Detective</th><th>Corrective</th><th>Compensating</th><th>Status</th></tr></thead><tbody>'+
+      platforms.map(x=>{const healthy=[x.preventive,x.detective,x.corrective,x.compensating].every(v=>Number(v)>0);return '<tr><td><b>'+esc(platformName(x.platform))+'</b></td><td>'+cover(x.preventive)+'</td><td>'+cover(x.detective)+'</td><td>'+cover(x.corrective)+'</td><td>'+cover(x.compensating)+'</td><td>'+badge(healthy?"FULL COVERAGE":"CONTROL GAP",healthy?"good":"bad")+'</td></tr>'}).join("")+
+    '</tbody></table></div>'+
+    sectionHead("Open Security Incidents","Detected incidents remain visible until recovery, resolution, or explicit risk acceptance.")+
+    '<div class="list">'+(incidents.length?incidents.map(x=>'<div class="row attention '+(["critical","high"].includes(x.severity)?"high":"")+'"><div><b>'+esc(platformName(x.platform)+" · "+(x.summary||x.event_code))+'</b><small>'+esc(String(x.cia_dimension||"").toUpperCase()+" · "+(x.route||x.event_code||"")+" · "+(x.occurrence_count||1)+" occurrence(s)")+'</small></div><div class="right">'+badge(x.severity,["critical","high"].includes(x.severity)?"bad":"warn")+'<small>'+date(x.last_seen_at)+'</small></div></div>').join(""):'<div class="card empty">No open security incidents.</div>')+'</div>'+
     '<div class="card" style="margin-top:14px"><b>Authority model</b><p class="muted">Founder / Owner has platform-wide executive visibility. Admin, Coach, Athlete, and AI workforce roles do not inherit Founder authority. AI recommendations never override pricing, payments, contracts, production deployment, destructive security/data actions, or official MW methodology.</p></div>'+
+    sectionHead("Control Registry","The live implementation record for every preventive, detective, corrective, and compensating control.")+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Control</th><th>Platform</th><th>CIA</th><th>Family</th><th>Status</th><th>Criticality</th></tr></thead><tbody>'+
+      controls.map(x=>'<tr><td><b>'+esc(x.control_code)+'</b><br><small>'+esc(x.name||"")+'</small></td><td>'+esc(platformName(x.platform))+'</td><td>'+esc((x.cia_dimensions||[]).map(v=>String(v).charAt(0).toUpperCase()).join(" / "))+'</td><td>'+esc(x.control_family||"")+'</td><td>'+badge(x.status,x.status==="active"?"good":x.status==="degraded"?"warn":"blue")+'</td><td>'+badge(x.criticality,["critical","high"].includes(x.criticality)?"warn":"blue")+'</td></tr>').join("")+
+    '</tbody></table></div>'+
     sectionHead("Open Security Risks","These remain visible until the underlying control is verified or the Founder explicitly accepts the risk.")+
     '<div class="list">'+(open.length?open.map(x=>'<div class="row attention '+(["critical","high"].includes(x.severity)?"high":"")+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.mitigation||"No mitigation recorded.")+'</small></div><div class="right">'+badge(x.severity,["critical","high"].includes(x.severity)?"bad":"warn")+'</div></div>').join(""):'<div class="card empty">No open security risks.</div>')+'</div>'+
-    sectionHead("RLS Fail-Closed Review","These tables have RLS enabled with no direct policies. The live review verifies whether anon/authenticated roles have direct table privileges.")+
+    sectionHead("RLS Fail-Closed Review","Protected tables are checked for direct client privileges even when they intentionally expose no row policies.")+
     '<div class="tableWrap"><table class="table"><thead><tr><th>Table</th><th>Anon Grants</th><th>Authenticated Grants</th><th>Assessment</th></tr></thead><tbody>'+rls.map(x=>'<tr><td class="code">'+esc(x.table)+'</td><td>'+esc((x.anon_grants||[]).join(", ")||"none")+'</td><td>'+esc((x.authenticated_grants||[]).join(", ")||"none")+'</td><td>'+badge(x.assessment,x.assessment==="fail_closed_no_direct_client_grants"?"good":"bad")+'</td></tr>').join("")+'</tbody></table></div>'+
-    sectionHead("SECURITY DEFINER Inventory","The Supabase linter flags callable SECURITY DEFINER functions generically. Founder OS adds live signals showing whether each function contains identity/private/founder guard patterns; this does not replace function-by-function review.")+
+    sectionHead("SECURITY DEFINER Inventory","Callable privileged functions are inventoried and checked for explicit identity/private/Founder guard patterns.")+
     '<div class="tableWrap"><table class="table"><thead><tr><th>Function</th><th>Authenticated</th><th>Anon</th><th>auth.uid</th><th>Private Guard</th><th>Review Signal</th></tr></thead><tbody>'+funcs.map(x=>'<tr><td class="code">'+esc(x.name)+'<br><small>'+esc(x.args||"")+'</small></td><td>'+esc(x.authenticated?"yes":"no")+'</td><td>'+esc(x.anon?"yes":"no")+'</td><td>'+esc(x.has_auth_uid?"yes":"no")+'</td><td>'+esc(x.has_private_guard?"yes":"no")+'</td><td>'+badge(x.review_signal,x.review_signal==="manual_review_required"?"bad":x.review_signal==="founder_gated"?"good":"blue")+'</td></tr>').join("")+'</tbody></table></div>'+
     sectionHead("Platform Audit Trail","Recent consequential actions recorded by MW Dynasty.")+
     '<div class="tableWrap"><table class="table"><thead><tr><th>When</th><th>Actor Role</th><th>Action</th><th>Target</th><th>Reason</th></tr></thead><tbody>'+items.map(x=>'<tr><td>'+esc(date(x.created_at))+'</td><td>'+esc(x.actor_role||"—")+'</td><td>'+esc(x.action||"—")+'</td><td>'+esc((x.target_type||"—")+" · "+(x.target_id||""))+'</td><td>'+esc(x.reason||"—")+'</td></tr>').join("")+'</tbody></table></div>';
