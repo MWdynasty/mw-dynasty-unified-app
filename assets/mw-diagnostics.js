@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   if(window.MWDiag)return;
-  var VERSION='1.0.0',QUEUE_KEY='mwLaunchDiagnosticsQueueV1',SYNC_KEY='mwLaunchDiagnosticsLastSyncV1';
+  var VERSION='1.1.0',QUEUE_KEY='mwLaunchDiagnosticsQueueV1',SYNC_KEY='mwLaunchDiagnosticsLastSyncV1';
   var native=/MWDynasty-iOS\//i.test(navigator.userAgent||'')||document.documentElement.classList.contains('mw-native-app');
   var explicitlyEnabled=localStorage.getItem('mwLaunchDiagnostics')==='on';
   var enabled=native||explicitlyEnabled;
@@ -12,6 +12,7 @@
     if(p.indexOf('/coach')===0)return 'coach';
     if(p.indexOf('/athlete')===0)return 'athlete';
     if(p.indexOf('/account')===0)return 'account';
+    if(p.indexOf('/founder')===0)return 'founder';
     return native?'native':'unknown';
   }
   function cleanString(value,max){
@@ -45,7 +46,7 @@
   function readQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]')}catch{return []}}
   function writeQueue(q){try{localStorage.setItem(QUEUE_KEY,JSON.stringify(q.slice(-100)))}catch{}}
   function accessToken(){
-    var keys=['mwCoachSupabaseSession','mwSupabaseSession'];
+    var keys=['mwFounderSupabaseSession','mwCoachSupabaseSession','mwSupabaseSession'];
     for(var i=0;i<keys.length;i++){
       try{
         var raw=localStorage.getItem(keys[i])||sessionStorage.getItem(keys[i]);
