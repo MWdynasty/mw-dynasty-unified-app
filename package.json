@@ -12,6 +12,6 @@
     "xlsx": "0.18.5"
   },
   "scripts": {
-    "test": "node test-tiered-program.js && node test-launch-integrity.js"
+    "test": "node test-tiered-program.js && node test-launch-integrity.js && node test-security-controls.js"
   }
 }
