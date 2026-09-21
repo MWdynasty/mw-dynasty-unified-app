@@ -1,17 +1,6 @@
-const {authenticate,SUPABASE_URL,SUPABASE_KEY}=require('../lib/mw-auth');
+const {SUPABASE_URL,SUPABASE_KEY}=require('../lib/mw-auth');
+const {founderAuth}=require('../lib/founder-auth');
 
-async function founderAuth(req){
-  const {token,user}=await authenticate(req);
-  const r=await fetch(`${SUPABASE_URL}/rest/v1/profiles?user_id=eq.${encodeURIComponent(user.id)}&select=user_id,first_name,last_name,role,account_status&limit=1`,{
-    headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}
-  });
-  const rows=await r.json().catch(()=>[]);
-  const p=Array.isArray(rows)?rows[0]:null;
-  if(!r.ok||!p||p.role!=='founder_owner'||p.account_status!=='active'){
-    throw Object.assign(new Error('Founder / Owner access required'),{status:403});
-  }
-  return {token,user,profile:p};
-}
 async function rpc(token,name,args={}){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
     method:'POST',
