@@ -47,6 +47,46 @@
       "destination": "/founder/"
     },
     {
+      "source": "/memberships",
+      "has": [
+        {
+          "type": "host",
+          "value": "mwdynasty.com"
+        }
+      ],
+      "destination": "/membership-experience.html"
+    },
+    {
+      "source": "/memberships",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.mwdynasty.com"
+        }
+      ],
+      "destination": "/membership-experience.html"
+    },
+    {
+      "source": "/membership-experience",
+      "has": [
+        {
+          "type": "host",
+          "value": "mwdynasty.com"
+        }
+      ],
+      "destination": "/membership-experience.html"
+    },
+    {
+      "source": "/membership-experience",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.mwdynasty.com"
+        }
+      ],
+      "destination": "/membership-experience.html"
+    },
+    {
       "source": "/:path*",
       "has": [
         {
