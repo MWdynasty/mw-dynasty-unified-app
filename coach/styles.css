@@ -1708,3 +1708,147 @@ html.mw-native-app .coach-login-bg:after{
 .coach-membership-total{margin:18px 0 14px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px}.coach-membership-total>div{display:flex;justify-content:space-between;gap:20px;padding:6px 2px;color:rgba(255,255,255,.68);font-size:13px}.coach-membership-total>div b{color:#fff}.coach-membership-total .total{margin-top:8px;padding-top:13px;border-top:1px solid rgba(255,255,255,.1);font-size:17px;color:#fff}.coach-membership-total .total b{font-size:22px;color:#f2cf7a}
 .coach-membership-continue{width:100%;min-height:54px}.coach-membership-note{text-align:center;color:rgba(255,255,255,.48);font-size:11px;margin:11px 0 0}.coach-apply-optional{font-weight:500;color:rgba(255,255,255,.45);font-size:.85em}
 @media(max-width:760px){.coach-membership-screen{padding:14px 10px 30px}.coach-membership-shell{padding:20px 14px;border-radius:18px}.coach-membership-progress{gap:5px;font-size:9px;margin-bottom:22px}.coach-membership-progress i{width:14px}.coach-membership-plans{grid-template-columns:1fr}.coach-member-plan{min-height:0;padding:16px}.coach-member-plan>b{margin:12px 0 6px;font-size:28px}.coach-membership-head{margin-bottom:20px}.coach-membership-head h1{font-size:32px}.coach-sponsor-buttons{display:grid;grid-template-columns:1fr 1fr}}
+
+
+/* MW COACH DESKTOP SHELL v2 */
+@media (min-width:1024px){
+  html:not(.mw-native-app) body{
+    background:
+      radial-gradient(circle at 16% 10%,rgba(22,148,255,.07),transparent 28%),
+      radial-gradient(circle at 84% 16%,rgba(233,197,59,.07),transparent 30%),
+      #010304;
+  }
+
+  html:not(.mw-native-app) .app{
+    padding:22px 26px 30px!important;
+  }
+
+  html:not(.mw-native-app) .frame{
+    width:calc(100vw - 52px)!important;
+    max-width:1580px!important;
+    margin:0 auto!important;
+    border-radius:22px!important;
+  }
+
+  html:not(.mw-native-app) .workspace{
+    grid-template-columns:220px minmax(0,1fr)!important;
+  }
+
+  html:not(.mw-native-app) .sidebar{
+    padding:24px 14px 20px!important;
+  }
+
+  html:not(.mw-native-app) .side-logo{
+    padding:7px 8px 22px!important;
+    font-size:19px!important;
+  }
+
+  html:not(.mw-native-app) .mw-mark{
+    font-size:28px!important;
+  }
+
+  html:not(.mw-native-app) .nav-btn{
+    min-height:62px!important;
+    padding:8px 10px!important;
+    gap:11px!important;
+    border-radius:12px!important;
+    font-size:14px!important;
+  }
+
+  html:not(.mw-native-app) .side-nav .mwNavArt{
+    width:46px!important;
+    height:46px!important;
+    flex-basis:46px!important;
+  }
+
+  html:not(.mw-native-app) .side-account{
+    margin-top:18px!important;
+  }
+
+  html:not(.mw-native-app) .main{
+    padding:30px 32px 40px!important;
+  }
+
+  html:not(.mw-native-app) .topbar{
+    margin-bottom:22px!important;
+  }
+
+  html:not(.mw-native-app) .coach-command-head{
+    min-height:190px!important;
+    padding:30px 32px!important;
+    align-items:center!important;
+  }
+
+  html:not(.mw-native-app) .coach-command-head h1{
+    font-size:clamp(38px,3.5vw,56px)!important;
+    max-width:720px!important;
+  }
+
+  html:not(.mw-native-app) .coach-command-head p{
+    max-width:760px!important;
+    font-size:16px!important;
+  }
+
+  html:not(.mw-native-app) .coach-command-head .action{
+    min-width:170px!important;
+    min-height:58px!important;
+    padding:14px 22px!important;
+  }
+
+  html:not(.mw-native-app) .stats{
+    grid-template-columns:repeat(4,minmax(150px,1fr))!important;
+  }
+
+  html:not(.mw-native-app) .athlete-status-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:14px!important;
+  }
+
+  html:not(.mw-native-app) .simple-actions{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:14px!important;
+  }
+
+  html:not(.mw-native-app) .coach-home-actions .simple-actions button{
+    min-height:132px!important;
+  }
+
+  html:not(.mw-native-app) .footer{
+    padding-left:26px!important;
+    padding-right:26px!important;
+  }
+
+  html:not(.mw-native-app) .page{
+    padding:28px 32px 46px!important;
+  }
+
+  html:not(.mw-native-app) .page-wrap{
+    max-width:1480px!important;
+  }
+
+  html:not(.mw-native-app) .panel{
+    padding:24px!important;
+  }
+
+  html:not(.mw-native-app) .mw-coach-thread-shell{
+    max-width:1100px!important;
+  }
+}
+
+@media (min-width:1400px){
+  html:not(.mw-native-app) .frame{
+    max-width:1720px!important;
+  }
+
+  html:not(.mw-native-app) .workspace{
+    grid-template-columns:230px minmax(0,1fr)!important;
+  }
+
+  html:not(.mw-native-app) .main{
+    padding:34px 40px 46px!important;
+  }
+
+  html:not(.mw-native-app) .athlete-status-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+}
