@@ -46,7 +46,13 @@ module.exports=async function handler(req,res){
       else if(section==='notifications') data=await rpc(token,'mw_founder_notifications_snapshot',{});
       else if(section==='objectives') data=await rpc(token,'mw_founder_ai_objectives_snapshot',{});
       else if(section==='partnerships') data=await rpc(token,'mw_founder_partnerships_snapshot',{});
-      else if(section==='security_review') data=await rpc(token,'mw_founder_security_snapshot',{});
+      else if(section==='security_review'){
+        const [posture,controls]=await Promise.all([
+          rpc(token,'mw_founder_security_snapshot',{}),
+          rpc(token,'mw_founder_security_controls_snapshot',{})
+        ]);
+        data={...(posture||{}),controls_framework:controls||{}};
+      }
       else if(section==='launch'){
         const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
         const ok=!!site.ok&&!!app.ok;
