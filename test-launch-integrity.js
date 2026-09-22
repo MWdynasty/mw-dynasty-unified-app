@@ -115,6 +115,14 @@ includes('founder/index.html','AI Support Triage','Founder support triage UI mis
 
 includes('server/api/founder-ai.js',"mode==='execute_task'",'Founder AI task execution mode missing');
 includes('founder/index.html','Run AI','Founder AI task execution control missing');
+includes('founder/index.html','AI AUTONOMOUS','Founder AI oversight badge missing');
+includes('founder/index.html','AI + FOUNDER APPROVAL','Founder approval oversight badge missing');
+includes('founder/index.html','AI + HUMAN SPECIALIST','Human specialist oversight badge missing');
+includes('supabase/migrations/20260921_founder_os_v22_expanded_ai_workforce.sql','strategy_officer','Chief Strategy Officer AI role missing');
+includes('supabase/migrations/20260921_founder_os_v22_expanded_ai_workforce.sql','qa_automation','QA Automation AI role missing');
+includes('supabase/migrations/20260921_founder_os_v22_expanded_ai_workforce.sql','trust_safety','Trust & Safety AI role missing');
+includes('supabase/migrations/20260921_founder_os_v22_expanded_ai_workforce.sql','athlete_safety_medical','Athlete Safety AI role missing');
+includes('supabase/migrations/20260921_founder_os_v22_expanded_ai_workforce.sql','human_specialist_required','AI oversight-mode governance missing');
 includes('founder/index.html','OFFICIAL MW PROGRAM CONTROL','Founder Program Control UI missing');
 includes('supabase/migrations/20260920_founder_os_v4_management_intelligence.sql','mw_founder_customer_health','Founder customer-health intelligence missing');
 includes('supabase/migrations/20260920_founder_os_v4_management_intelligence.sql','mw_founder_support_triage_snapshot','Founder support triage migration missing');
