@@ -102,8 +102,9 @@
 const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
-let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderRefreshPromise=null,founderSessionTimer=null,founderHealPromise=null,founderViewHealAttempts={};
+let session=null,currentView="home",cache={},aiHistory=[],employeeAIHistories={},founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderVoiceActiveButtonId=null,founderMicRecorder=null,founderMicStream=null,founderMicTimer=null,founderRefreshPromise=null,founderSessionTimer=null,founderHealPromise=null,founderViewHealAttempts={};
 const FOUNDER_RESUME_VIEW_KEY="mwFounderResumeView";
+const FOUNDER_AUTO_VOICE_KEY="mwFounderAutoVoice";
 const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",skool:"Skool Content Center",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -852,52 +853,265 @@ async function promoteTaskToSop(id,button){
 }
 async function reviewAIApproval(id,decision){try{await action("review_approval",{id:id,decision:decision});renderAI()}catch(e){alert(e.message)}}
 function openObjectiveModal(){
-  modal("Give MW Dynasty a Company Objective",'<p class="muted">Founder AI will break this objective into department tasks and create approval requests for consequential actions. Nothing consequential executes automatically.</p><label class="field">FOUNDER OBJECTIVE<textarea id="objectiveText" rows="7" placeholder="Example: Prepare MW Dynasty for a school district partnership."></textarea></label><button class="btn primary" id="buildPlan">Build AI Work Plan</button><div id="planStatus" class="status"></div>');
-  $("buildPlan").onclick=async()=>{const b=$("buildPlan"),st=$("planStatus"),objective=$("objectiveText").value.trim();if(!objective)return; b.disabled=true;st.textContent="Founder AI is assigning departments…";try{const d=await ai("plan",{objective:objective});st.textContent=(d.summary||"Plan created")+" · "+(d.tasks||[]).length+" tasks · "+(d.approvals||[]).length+" approvals.";setTimeout(()=>{closeModal();setView("objectives")},900)}catch(e){st.textContent=e.message;st.className="status error"}finally{b.disabled=false}};
+  modal("Give MW Dynasty a Company Objective",
+    '<p class="muted">Founder AI will break this objective into department tasks and create approval requests for consequential actions. Nothing consequential executes automatically.</p>'+
+    '<label class="field">FOUNDER OBJECTIVE<textarea id="objectiveText" rows="7" placeholder="Example: Prepare MW Dynasty for a school district partnership."></textarea></label>'+
+    '<div class="heroActions"><button class="btn small blue" id="objectiveSpeak" type="button">🎙 Speak Objective</button><small class="muted" id="objectiveMicStatus" style="align-self:center">You can speak instead of typing.</small></div>'+
+    '<button class="btn primary" id="buildPlan">Build AI Work Plan</button><div id="planStatus" class="status"></div>');
+  $("objectiveSpeak").dataset.voiceInputLabel="🎙 Speak Objective";
+  $("objectiveSpeak").onclick=()=>toggleFounderVoiceInput("objectiveText","objectiveSpeak","objectiveMicStatus");
+  $("buildPlan").onclick=async()=>{
+    const b=$("buildPlan"),st=$("planStatus"),objective=$("objectiveText").value.trim();if(!objective)return;
+    b.disabled=true;st.textContent="Founder AI is assigning departments…";
+    try{
+      const d=await ai("plan",{objective:objective});
+      const spoken=(d.summary||"Your AI work plan is ready.")+" "+(d.tasks||[]).length+" tasks and "+(d.approvals||[]).length+" approvals.";
+      st.textContent=(d.summary||"Plan created")+" · "+(d.tasks||[]).length+" tasks · "+(d.approvals||[]).length+" approvals.";
+      if(founderAutoVoiceEnabled())playFounderVoiceText(spoken,null,"founder","Founder AI");
+      setTimeout(()=>{closeModal();setView("objectives")},1800)
+    }catch(e){st.textContent=e.message;st.className="status error"}
+    finally{b.disabled=false}
+  };
+}
+function founderAutoVoiceEnabled(){return localStorage.getItem(FOUNDER_AUTO_VOICE_KEY)!=="off"}
+function setFounderAutoVoice(enabled){localStorage.setItem(FOUNDER_AUTO_VOICE_KEY,enabled?"on":"off")}
+function updateAutoVoiceButton(id){
+  const b=$(id);if(!b)return;
+  b.textContent=founderAutoVoiceEnabled()?"🔊 Auto Voice: On":"🔇 Auto Voice: Off";
+  b.className="btn small "+(founderAutoVoiceEnabled()?"good":"");
+}
+function toggleFounderAutoVoice(id){
+  setFounderAutoVoice(!founderAutoVoiceEnabled());
+  updateAutoVoiceButton(id);
 }
 function latestFounderAIText(){
   for(let i=aiHistory.length-1;i>=0;i--)if(aiHistory[i]?.role==="ai"&&String(aiHistory[i]?.text||"").trim())return String(aiHistory[i].text).trim();
   return "";
 }
+function latestEmployeeAIText(agentCode){
+  const h=employeeAIHistories[agentCode]||[];
+  for(let i=h.length-1;i>=0;i--)if(h[i]?.role==="assistant"&&String(h[i]?.text||"").trim())return String(h[i].text).trim();
+  return "";
+}
+function updateVoiceButton(buttonId,state,label){
+  const b=buttonId?$(buttonId):null;if(!b)return;
+  const base=label||b.dataset.voiceLabel||"🔊 Read Aloud";
+  b.dataset.voiceLabel=base;
+  if(state==="loading"){b.disabled=false;b.textContent="Cancel Voice";b.className="btn small";}
+  else if(state==="playing"){b.disabled=false;b.textContent="■ Stop Voice";b.className="btn small danger";}
+  else{b.disabled=false;b.textContent=base;b.className="btn small blue";}
+}
 function updateFounderAIVoiceButton(state){
   const b=$("aiReadAloud");if(!b)return;
   const hasText=!!latestFounderAIText();
-  if(state==="loading"){b.disabled=false;b.textContent="Cancel";b.className="btn small";}
-  else if(state==="playing"){b.disabled=false;b.textContent="■ Stop";b.className="btn small danger";}
+  if(state==="loading"){b.disabled=false;b.textContent="Cancel Voice";b.className="btn small";}
+  else if(state==="playing"){b.disabled=false;b.textContent="■ Stop Voice";b.className="btn small danger";}
   else{b.disabled=!hasText;b.textContent="🔊 Read Aloud";b.className="btn small blue";}
 }
 function stopFounderAIReadAloud(){
+  const activeId=founderVoiceActiveButtonId;
   if(founderAIVoiceRequest){try{founderAIVoiceRequest.abort()}catch{}founderAIVoiceRequest=null}
   if(founderAIAudio){try{founderAIAudio.pause();founderAIAudio.currentTime=0}catch{}founderAIAudio=null}
   if(founderAIAudioUrl){try{URL.revokeObjectURL(founderAIAudioUrl)}catch{}founderAIAudioUrl=null}
+  founderVoiceActiveButtonId=null;
+  if(activeId)updateVoiceButton(activeId,"idle");
   updateFounderAIVoiceButton("idle");
 }
-async function readFounderAIAloud(){
-  if(founderAIAudio||founderAIVoiceRequest){stopFounderAIReadAloud();return}
-  const text=latestFounderAIText();if(!text)return;
-  const ctl=new AbortController();founderAIVoiceRequest=ctl;updateFounderAIVoiceButton("loading");
+async function playFounderVoiceText(text,buttonId,coachType,roleLabel){
+  const spoken=String(text||"").trim();if(!spoken)return;
+  if((founderAIAudio||founderAIVoiceRequest)&&founderVoiceActiveButtonId===buttonId){stopFounderAIReadAloud();return}
+  stopFounderAIReadAloud();
+  founderVoiceActiveButtonId=buttonId||null;
+  if(buttonId)updateVoiceButton(buttonId,"loading");
+  if(buttonId==="aiReadAloud")updateFounderAIVoiceButton("loading");
+  const ctl=new AbortController();founderAIVoiceRequest=ctl;
   try{
-    const r=await fetch("/api/speak",{method:"POST",signal:ctl.signal,headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({text,coachType:"founder"})});
-    if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||"Founder AI voice is unavailable.")}
+    const r=await founderFetch("/api/speak",{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json"},body:JSON.stringify({text:spoken,coachType:coachType||"founder",roleLabel:roleLabel||""})},false);
+    if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||"MW voice is unavailable.")}
     const blob=await r.blob();if(ctl.signal.aborted)return;
     founderAIVoiceRequest=null;founderAIAudioUrl=URL.createObjectURL(blob);founderAIAudio=new Audio(founderAIAudioUrl);
     founderAIAudio.onended=stopFounderAIReadAloud;
-    founderAIAudio.onerror=()=>{stopFounderAIReadAloud();alert("Founder AI voice could not play.")};
-    updateFounderAIVoiceButton("playing");
-    await founderAIAudio.play();
+    founderAIAudio.onerror=()=>{stopFounderAIReadAloud();alert("MW voice could not play.")};
+    if(buttonId)updateVoiceButton(buttonId,"playing");
+    if(buttonId==="aiReadAloud")updateFounderAIVoiceButton("playing");
+    try{await founderAIAudio.play()}catch(e){
+      stopFounderAIReadAloud();
+      if(e?.name!=="NotAllowedError")throw e;
+    }
   }catch(e){
-    if(e?.name!=="AbortError")alert(e.message||"Founder AI voice is unavailable.");
+    if(e?.name!=="AbortError")alert(e.message||"MW voice is unavailable.");
     stopFounderAIReadAloud();
   }
 }
-function openAIModal(){
-  stopFounderAIReadAloud();
-  const hist=aiHistory.map(x=>'<div class="bubble '+(x.role==="user"?"user":"ai")+'"><b>'+(x.role==="user"?"Founder":"Founder AI")+'</b><br>'+esc(x.text)+'</div>').join("");
-  modal("Founder AI",'<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask me about MW Dynasty revenue, Coaches, Athletes, website conversion, system health, support, or company priorities.</div>')+'</div><div class="heroActions" style="margin:0 0 10px"><button class="btn small blue" id="aiReadAloud" type="button">🔊 Read Aloud</button><small class="muted" style="align-self:center">Reads the latest Founder AI response.</small></div><div class="chatRow"><textarea id="aiMessage" placeholder="Ask Founder AI…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>');
-  updateFounderAIVoiceButton("idle");
-  $("aiReadAloud").onclick=readFounderAIAloud;
-  $("aiSend").onclick=async()=>{const q=$("aiMessage").value.trim();if(!q)return;stopFounderAIReadAloud();aiHistory.push({role:"user",text:q});$("aiChat").innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';$("aiMessage").value="";$("aiSend").disabled=true;try{const d=await ai("chat",{message:q});aiHistory.push({role:"ai",text:d.answer||""});$("aiChat").innerHTML+='<div class="bubble ai"><b>Founder AI</b><br>'+esc(d.answer||"")+'</div>';$("aiChat").scrollTop=$("aiChat").scrollHeight;updateFounderAIVoiceButton("idle")}catch(e){$("aiChat").innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}finally{$("aiSend").disabled=false}};
+async function readFounderAIAloud(){
+  const text=latestFounderAIText();if(!text)return;
+  return playFounderVoiceText(text,"aiReadAloud","founder","Founder AI");
 }
+function autoSpeakFounderText(text,buttonId,coachType,roleLabel){
+  if(!founderAutoVoiceEnabled()||!String(text||"").trim())return;
+  setTimeout(()=>playFounderVoiceText(text,buttonId||null,coachType||"founder",roleLabel||"Founder AI"),80);
+}
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||"").split(",")[1]||"");
+    reader.onerror=()=>reject(new Error("Voice recording could not be prepared."));
+    reader.readAsDataURL(blob)
+  })
+}
+function updateMicButton(buttonId,state){
+  const b=$(buttonId);if(!b)return;
+  const label=b.dataset.voiceInputLabel||"🎙 Speak";
+  if(state==="recording"){b.disabled=false;b.textContent="■ Stop & Send";b.className="btn small danger"}
+  else if(state==="processing"){b.disabled=true;b.textContent="Transcribing…";b.className="btn small"}
+  else{b.disabled=false;b.textContent=label;b.className="btn small blue"}
+}
+function stopFounderVoiceInput(cancel){
+  const rec=founderMicRecorder;if(!rec)return;
+  rec._mwCancelled=!!cancel;
+  try{if(rec.state!=="inactive")rec.stop()}catch{}
+}
+async function toggleFounderVoiceInput(targetId,buttonId,statusId,onTranscript){
+  if(founderMicRecorder&&founderMicRecorder.state!=="inactive"){stopFounderVoiceInput(false);return}
+  const target=$(targetId),button=$(buttonId),status=$(statusId);
+  if(!target||!button)return;
+  if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined"){
+    if(status)status.textContent="Voice input is not supported by this browser.";
+    return
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    founderMicStream=stream;
+    const candidates=["audio/webm;codecs=opus","audio/mp4","audio/webm"];
+    const mime=candidates.find(x=>MediaRecorder.isTypeSupported?.(x))||"";
+    const rec=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+    founderMicRecorder=rec;founderMicChunks=[];
+    rec._mwCancelled=false;
+    updateMicButton(buttonId,"recording");
+    if(status)status.textContent="Listening… tap Stop & Send when you finish.";
+    rec.ondataavailable=e=>{if(e.data&&e.data.size)founderMicChunks.push(e.data)};
+    rec.onerror=()=>{if(status){status.textContent="Microphone recording failed.";status.className="muted"}};
+    rec.onstop=async()=>{
+      if(founderMicTimer){clearTimeout(founderMicTimer);founderMicTimer=null}
+      const chunks=founderMicChunks.slice();founderMicChunks=[];
+      const cancelled=!!rec._mwCancelled;
+      try{stream.getTracks().forEach(t=>t.stop())}catch{}
+      if(founderMicStream===stream)founderMicStream=null;
+      if(founderMicRecorder===rec)founderMicRecorder=null;
+      if(cancelled){updateMicButton(buttonId,"idle");if(status)status.textContent="Voice input cancelled.";return}
+      const blob=new Blob(chunks,{type:rec.mimeType||mime||"audio/webm"});
+      if(!blob.size){updateMicButton(buttonId,"idle");if(status)status.textContent="No audio was captured.";return}
+      updateMicButton(buttonId,"processing");if(status)status.textContent="Turning your voice into text…";
+      try{
+        const audioBase64=await blobToBase64(blob);
+        const r=await founderFetch("/api/transcribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({audioBase64:audioBase64,mimeType:blob.type||"audio/webm"})},false);
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(d.error||"Voice transcription failed.");
+        const text=String(d.text||"").trim();if(!text)throw new Error("I could not hear enough speech to transcribe that.");
+        target.value=(target.value.trim()?target.value.trim()+" ":"")+text;
+        target.focus();
+        if(status)status.textContent="Voice captured.";
+        updateMicButton(buttonId,"idle");
+        if(typeof onTranscript==="function")await onTranscript(text)
+      }catch(e){
+        updateMicButton(buttonId,"idle");
+        if(status){status.textContent=e.message||"Voice transcription failed.";status.className="muted"}
+      }
+    };
+    rec.start(250);
+    founderMicTimer=setTimeout(()=>{if(founderMicRecorder===rec&&rec.state!=="inactive")rec.stop()},60000)
+  }catch(e){
+    updateMicButton(buttonId,"idle");
+    if(status)status.textContent=e?.name==="NotAllowedError"?"Microphone access is blocked. Allow microphone access for Founder OS and try again.":"Microphone could not start.";
+  }
+}
+function openVoiceResponseModal(title,text,roleLabel,coachType,extraHtml){
+  const answer=String(text||"").trim()||"No response returned.";
+  modal(title,
+    '<div class="bubble ai">'+esc(answer)+'</div>'+
+    '<div class="heroActions"><button class="btn small blue" id="voiceResponseRead" type="button">🔊 Read Aloud</button><button class="btn small" id="voiceResponseAuto" type="button"></button></div>'+
+    (extraHtml||"")
+  );
+  $("voiceResponseRead").dataset.voiceLabel="🔊 Read Aloud";
+  $("voiceResponseRead").onclick=()=>playFounderVoiceText(answer,"voiceResponseRead",coachType||"employee",roleLabel||title);
+  updateAutoVoiceButton("voiceResponseAuto");
+  $("voiceResponseAuto").onclick=()=>toggleFounderAutoVoice("voiceResponseAuto");
+  autoSpeakFounderText(answer,"voiceResponseRead",coachType||"employee",roleLabel||title);
+}
+async function sendFounderAIMessage(){
+  const box=$("aiMessage"),send=$("aiSend"),chat=$("aiChat");if(!box||!send||!chat)return;
+  const q=box.value.trim();if(!q)return;
+  stopFounderAIReadAloud();
+  aiHistory.push({role:"user",text:q});
+  chat.innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';
+  box.value="";send.disabled=true;
+  try{
+    const d=await ai("chat",{message:q});
+    const answer=d.answer||"";
+    aiHistory.push({role:"ai",text:answer});
+    chat.innerHTML+='<div class="bubble ai"><b>Founder AI</b><br>'+esc(answer)+'</div>';
+    chat.scrollTop=chat.scrollHeight;updateFounderAIVoiceButton("idle");
+    autoSpeakFounderText(answer,"aiReadAloud","founder","Founder AI")
+  }catch(e){chat.innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}
+  finally{send.disabled=false}
+}
+function openAIModal(){
+  stopFounderAIReadAloud();stopFounderVoiceInput(true);
+  const hist=aiHistory.map(x=>'<div class="bubble '+(x.role==="user"?"user":"ai")+'"><b>'+(x.role==="user"?"Founder":"Founder AI")+'</b><br>'+esc(x.text)+'</div>').join("");
+  modal("Founder AI",
+    '<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask me about MW Dynasty revenue, Coaches, Athletes, website conversion, system health, support, or company priorities.</div>')+'</div>'+
+    '<div class="heroActions" style="margin:0 0 10px"><button class="btn small blue" id="aiSpeak" type="button">🎙 Speak to Founder AI</button><button class="btn small blue" id="aiReadAloud" type="button">🔊 Read Aloud</button><button class="btn small" id="aiAutoVoice" type="button"></button><small class="muted" id="aiMicStatus" style="align-self:center">Speak or type. AI responses can play aloud automatically.</small></div>'+
+    '<div class="chatRow"><textarea id="aiMessage" placeholder="Ask Founder AI…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>'
+  );
+  $("aiSpeak").dataset.voiceInputLabel="🎙 Speak to Founder AI";
+  updateFounderAIVoiceButton("idle");updateAutoVoiceButton("aiAutoVoice");
+  $("aiReadAloud").onclick=readFounderAIAloud;
+  $("aiAutoVoice").onclick=()=>toggleFounderAutoVoice("aiAutoVoice");
+  $("aiSpeak").onclick=()=>toggleFounderVoiceInput("aiMessage","aiSpeak","aiMicStatus",()=>sendFounderAIMessage());
+  $("aiSend").onclick=sendFounderAIMessage;
+}
+async function sendEmployeeMessage(agent){
+  const box=$("employeeMessage"),send=$("employeeSend"),chat=$("employeeChat");if(!box||!send||!chat||!agent)return;
+  const q=box.value.trim();if(!q)return;
+  stopFounderAIReadAloud();
+  const history=employeeAIHistories[agent.code]||(employeeAIHistories[agent.code]=[]);
+  const prior=history.slice(-10);
+  history.push({role:"founder",text:q});
+  chat.innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';
+  box.value="";send.disabled=true;
+  try{
+    const d=await ai("employee_chat",{agentCode:agent.code,message:q,history:prior});
+    const answer=d.answer||"";
+    history.push({role:"assistant",text:answer});
+    chat.innerHTML+='<div class="bubble ai"><b>'+esc(agent.title)+'</b><br>'+esc(answer)+'</div>';
+    chat.scrollTop=chat.scrollHeight;
+    const read=$("employeeReadAloud");if(read)read.disabled=!answer;
+    autoSpeakFounderText(answer,"employeeReadAloud","employee",agent.title)
+  }catch(e){chat.innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}
+  finally{send.disabled=false}
+}
+function openEmployeeConversation(agent){
+  if(!agent)return;
+  stopFounderAIReadAloud();stopFounderVoiceInput(true);
+  const history=employeeAIHistories[agent.code]||(employeeAIHistories[agent.code]=[]);
+  const hist=history.map(x=>'<div class="bubble '+(x.role==="founder"?"user":"ai")+'"><b>'+(x.role==="founder"?"Founder":esc(agent.title))+'</b><br>'+esc(x.text)+'</div>').join("");
+  modal("Talk to "+agent.title,
+    '<div style="margin-bottom:10px">'+badge(String(agent.oversight_mode||"founder_approval").replaceAll("_"," "),agent.oversight_mode==="ai_autonomous"?"good":agent.oversight_mode==="human_specialist_required"?"warn":"blue")+'</div>'+
+    '<p class="muted">'+esc(agent.mission||"Speak directly with this MW Dynasty AI employee.")+'</p>'+
+    '<div class="aiChat" id="employeeChat">'+(hist||'<div class="bubble ai"><b>'+esc(agent.title)+'</b><br>I am ready. Speak to me or type what you need.</div>')+'</div>'+
+    '<div class="heroActions" style="margin:0 0 10px"><button class="btn small blue" id="employeeSpeak" type="button">🎙 Speak</button><button class="btn small blue" id="employeeReadAloud" type="button">🔊 Read Aloud</button><button class="btn small" id="employeeAutoVoice" type="button"></button><small class="muted" id="employeeMicStatus" style="align-self:center">Voice input sends your message after transcription.</small></div>'+
+    '<div class="chatRow"><textarea id="employeeMessage" placeholder="Talk to '+esc(agent.title)+'…"></textarea><button class="btn blue" id="employeeSend">Ask</button></div>'
+  );
+  $("employeeSpeak").dataset.voiceInputLabel="🎙 Speak";
+  $("employeeReadAloud").dataset.voiceLabel="🔊 Read Aloud";
+  $("employeeReadAloud").disabled=!latestEmployeeAIText(agent.code);
+  $("employeeReadAloud").onclick=()=>playFounderVoiceText(latestEmployeeAIText(agent.code),"employeeReadAloud","employee",agent.title);
+  updateAutoVoiceButton("employeeAutoVoice");
+  $("employeeAutoVoice").onclick=()=>toggleFounderAutoVoice("employeeAutoVoice");
+  $("employeeSpeak").onclick=()=>toggleFounderVoiceInput("employeeMessage","employeeSpeak","employeeMicStatus",()=>sendEmployeeMessage(agent));
+  $("employeeSend").onclick=()=>sendEmployeeMessage(agent);
+}
+
 async function renderPrograms(){
   const d=await api("programs"),releases=d.releases||[],versions=d.athlete_version_distribution||[],weeks=d.week_distribution||[],tiers=d.tier_distribution||{};
   $("content").innerHTML='<section class="hero"><div class="brand">OFFICIAL MW PROGRAM CONTROL</div><h2>One Founder-controlled source of truth.</h2><p>Track, Strength & Power, Sprint School, and Coach MW knowledge stay versioned and governed. AI can analyze and prepare changes, but official methodology is published only after Founder approval.</p></section>'+
@@ -1280,7 +1494,7 @@ async function renderView(v){
 }
 function bindGo(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>setView(b.dataset.go))}
 function modal(title,body){$("modalRoot").innerHTML='<div class="modal" id="modal"><div class="modalCard"><div class="modalTop"><h2>'+esc(title)+'</h2><button class="btn small" id="modalClose">Close</button></div><div style="margin-top:12px">'+body+'</div></div></div>';$("modalClose").onclick=closeModal;$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()})}
-function closeModal(){stopFounderAIReadAloud();$("modalRoot").innerHTML=""}
+function closeModal(){stopFounderAIReadAloud();stopFounderVoiceInput(true);$("modalRoot").innerHTML=""}
 
 const FOUNDER_TOUR_VERSION="2026.09.21.1";
 const FOUNDER_TOUR_COMPLETE_KEY="mwFounderTourComplete";
