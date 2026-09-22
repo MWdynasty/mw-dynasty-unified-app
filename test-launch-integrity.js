@@ -145,6 +145,14 @@ includes('server/api/founder-ai.js',"mode==='website_redesign'",'Founder AI webs
 includes('server/api/founder.js',"action==='review_website_project'",'Founder website project review action missing');
 includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','founder_website_projects','Founder website project schema missing');
 includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','approved_for_publish','Founder website publish gate missing');
+includes('founder/index.html','SKOOL CONTENT CENTER','Founder Skool Content Center missing');
+includes('founder/index.html','Generate 7-Day Plan','Founder Skool weekly generation control missing');
+includes('founder/index.html','Copy for Skool','Founder Skool copy workflow missing');
+includes('server/api/founder-ai.js',"mode==='generate_skool_week'",'Skool Content AI weekly generation mode missing');
+includes('server/api/founder.js',"section==='skool'",'Founder Skool content API route missing');
+includes('server/api/founder.js',"action==='update_skool_post'",'Founder Skool post update action missing');
+includes('supabase/migrations/20260921_founder_os_v23_skool_content_center.sql','founder_skool_posts','Founder Skool content schema missing');
+includes('supabase/migrations/20260921_founder_os_v23_skool_content_center.sql',"status in ('draft','approved','posted','skipped')",'Founder Skool review workflow missing');
 includes('assets/mw-web-analytics.js','if(NATIVE)return false','Website analytics must exclude native app sessions');
 includes('account/index.html',"MWWebAnalytics?.track('checkout_start'",'Web checkout-start tracking missing');
 includes('coach/app.js',"MWWebAnalytics?.track('signup_complete'",'Coach web application completion tracking missing');
