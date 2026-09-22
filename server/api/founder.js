@@ -46,6 +46,18 @@ module.exports=async function handler(req,res){
       else if(section==='notifications') data=await rpc(token,'mw_founder_notifications_snapshot',{});
       else if(section==='objectives') data=await rpc(token,'mw_founder_ai_objectives_snapshot',{});
       else if(section==='partnerships') data=await rpc(token,'mw_founder_partnerships_snapshot',{});
+      else if(section==='skool'){
+        const posts=await rest(token,'founder_skool_posts?select=id,scheduled_for,title,body,category,post_type,audience,objective,cta,asset_brief,status,source,ai_agent_code,approved_at,posted_at,generation_metadata,created_at,updated_at&order=scheduled_for.asc,created_at.asc&limit=200');
+        data={
+          posts:Array.isArray(posts)?posts:[],
+          summary:{
+            draft:(posts||[]).filter(x=>x.status==='draft').length,
+            approved:(posts||[]).filter(x=>x.status==='approved').length,
+            posted:(posts||[]).filter(x=>x.status==='posted').length,
+            upcoming:(posts||[]).filter(x=>['draft','approved'].includes(x.status)&&String(x.scheduled_for||'')>=new Date().toISOString().slice(0,10)).length
+          }
+        };
+      }
       else if(section==='security_review'){
         const [posture,controls]=await Promise.all([
           rpc(token,'mw_founder_security_snapshot',{}),
@@ -97,6 +109,48 @@ module.exports=async function handler(req,res){
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
     const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const action=clean(b.action,60);
+    if(action==='create_skool_post'){
+      const scheduledFor=clean(b.scheduledFor,20),title=clean(b.title,180),body=clean(b.body,12000);
+      if(!scheduledFor||!/^\d{4}-\d{2}-\d{2}$/.test(scheduledFor))return res.status(400).json({error:'Valid Skool schedule date required.'});
+      if(!title||!body)return res.status(400).json({error:'Skool post title and body are required.'});
+      const row=one(await rest(token,'founder_skool_posts',{method:'POST',body:{
+        scheduled_for:scheduledFor,
+        title,
+        body,
+        category:clean(b.category,120)||'Community',
+        post_type:['discussion','education','challenge','announcement','poll','spotlight','recap'].includes(b.postType)?b.postType:'discussion',
+        audience:['athletes','coaches','parents','athletes_and_coaches','everyone'].includes(b.audience)?b.audience:'athletes_and_coaches',
+        objective:clean(b.objective,1000)||null,
+        cta:clean(b.cta,1000)||null,
+        asset_brief:clean(b.assetBrief,2000)||null,
+        source:'founder',
+        ai_agent_code:null,
+        status:'draft',
+        generation_metadata:{created_from:'founder_os'}
+      }}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_skool_post'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Skool post id required.'});
+      const auth=await founderAuth(req);
+      const patch={updated_at:new Date().toISOString()};
+      if(typeof b.scheduledFor==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(b.scheduledFor))patch.scheduled_for=b.scheduledFor;
+      if(typeof b.title==='string')patch.title=clean(b.title,180)||'MW Dynasty Community Post';
+      if(typeof b.body==='string')patch.body=clean(b.body,12000);
+      if(typeof b.category==='string')patch.category=clean(b.category,120)||'Community';
+      if(['discussion','education','challenge','announcement','poll','spotlight','recap'].includes(b.postType))patch.post_type=b.postType;
+      if(['athletes','coaches','parents','athletes_and_coaches','everyone'].includes(b.audience))patch.audience=b.audience;
+      if(typeof b.objective==='string')patch.objective=clean(b.objective,1000)||null;
+      if(typeof b.cta==='string')patch.cta=clean(b.cta,1000)||null;
+      if(typeof b.assetBrief==='string')patch.asset_brief=clean(b.assetBrief,2000)||null;
+      if(['draft','approved','posted','skipped'].includes(b.status)){
+        patch.status=b.status;
+        if(b.status==='approved'){patch.approved_by=auth.user.id;patch.approved_at=new Date().toISOString()}
+        if(b.status==='posted')patch.posted_at=new Date().toISOString();
+      }
+      const row=one(await rest(token,`founder_skool_posts?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
     if(action==='update_objective'){
       const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Objective id required.'});
       const patch={updated_at:new Date().toISOString()};
