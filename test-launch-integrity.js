@@ -138,6 +138,13 @@ includes('server/api/founder.js',"section==='kpi_history'",'Founder KPI history 
 includes('founder/index.html','Run AI Triage','Founder support AI triage control missing');
 includes('founder/index.html','Operating Contribution','Founder finance contribution view missing');
 includes('founder/index.html','Visit → Signup','Founder website conversion funnel missing');
+includes('founder/index.html','WEBSITE & GROWTH CENTER','Founder Website & Growth Center missing');
+includes('founder/index.html','MW Website Design Team','Founder Website Design Studio request flow missing');
+includes('founder/index.html','Approve & Publish','Founder website publish approval control missing');
+includes('server/api/founder-ai.js',"mode==='website_redesign'",'Founder AI website redesign mode missing');
+includes('server/api/founder.js',"action==='review_website_project'",'Founder website project review action missing');
+includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','founder_website_projects','Founder website project schema missing');
+includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','approved_for_publish','Founder website publish gate missing');
 includes('assets/mw-web-analytics.js','if(NATIVE)return false','Website analytics must exclude native app sessions');
 includes('account/index.html',"MWWebAnalytics?.track('checkout_start'",'Web checkout-start tracking missing');
 includes('coach/app.js',"MWWebAnalytics?.track('signup_complete'",'Coach web application completion tracking missing');
