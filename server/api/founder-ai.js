@@ -70,7 +70,7 @@ module.exports=async function handler(req,res){
   try{
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const mode=['brief','chat','plan','execute_task','triage_support','department_brief','partnership_proposal'].includes(body.mode)?body.mode:'chat';
+    const mode=['brief','chat','plan','execute_task','triage_support','department_brief','partnership_proposal','website_redesign'].includes(body.mode)?body.mode:'chat';
     const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk,launch]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company'),
       rpcNamed(token,'mw_founder_finance_snapshot',{}),
@@ -115,6 +115,51 @@ Human authority is mandatory:
 SECURED MW BUSINESS CONTEXT:
 ${JSON.stringify(context).slice(0,90000)}`;
 
+    if(mode==='website_redesign'){
+      const request=clean(body.request,8000);
+      const targetScope=clean(body.targetScope,120)||'public website';
+      if(!request)return res.status(400).json({error:'Describe what you want changed on the website.'});
+      const designInstructions=guard+`
+You are coordinating the MW Dynasty website redesign team: UX/UI Product Designer, UX Research, Website & Growth, Creative, Accessibility, and QA Automation.
+Create an internal redesign proposal for Founder approval. Do not claim code was changed or published.
+Return JSON only with this exact shape:
+{"title":"...","proposal_summary":"...","proposed_changes":[{"area":"...","change":"...","reason":"..."}],"acceptance_criteria":["..."],"design_notes":"..."}
+Rules:
+- Preserve anything the Founder explicitly says must remain unchanged.
+- Make the experience premium, clear, mobile-first, and easy for parents, athletes, and coaches to understand.
+- Distinguish content/copy changes from layout/interaction changes.
+- Include accessibility and responsive behavior in acceptance criteria.
+- Do not invent product capabilities, pricing, testimonials, guarantees, or customer claims.
+- A proposal is not a deployment. Production publication always requires explicit Founder approval.
+- If the request is ambiguous, choose a conservative implementation direction that preserves the current brand and structure rather than removing working features.
+TARGET SCOPE: ${targetScope}`;
+
+      const raw=await openai(designInstructions,`Founder redesign request:\n${request}`,3200);
+      let result;try{result=parseJson(raw)}catch{return res.status(502).json({error:'Website Design AI returned an unreadable proposal. Try again.'})}
+      const proposedChanges=Array.isArray(result.proposed_changes)?result.proposed_changes.slice(0,40):[];
+      const acceptance=Array.isArray(result.acceptance_criteria)?result.acceptance_criteria.slice(0,40).map(x=>clean(x,600)).filter(Boolean):[];
+      const stored=await insert(token,'founder_website_projects',[{
+        title:clean(result.title,220)||'MW Dynasty Website Redesign',
+        request_text:request,
+        target_scope:targetScope,
+        source_system:'auto',
+        status:'proposal_ready',
+        proposal_summary:clean(result.proposal_summary,6000)||null,
+        proposed_changes:proposedChanges,
+        acceptance_criteria:acceptance,
+        design_notes:clean(result.design_notes,6000)||null,
+        requires_founder_publish_approval:true
+      }]);
+      const project=stored[0]||null;
+      if(!project)return res.status(500).json({error:'Website redesign proposal could not be stored.'});
+      await insert(token,'founder_ai_runs',[{
+        task_id:null,agent_code:'ux_ui_designer',run_type:'draft',status:'completed',
+        model:process.env.OPENAI_MODEL||'gpt-5.6-sol',
+        output_summary:(project.proposal_summary||'Website redesign proposal prepared.').slice(0,12000),
+        metadata:{kind:'website_redesign_proposal',website_project_id:project.id,target_scope:targetScope}
+      }]).catch(()=>[]);
+      return res.status(200).json({ok:true,mode,project});
+    }
     if(mode==='partnership_proposal'){
       const opportunityId=clean(body.opportunityId,80);
       if(!opportunityId)return res.status(400).json({error:'Partnership opportunity id required.'});
