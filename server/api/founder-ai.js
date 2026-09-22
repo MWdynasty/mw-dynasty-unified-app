@@ -195,6 +195,7 @@ Title: ${lead.title}
 Department: ${department}
 Mission: ${lead.mission}
 Authority: ${lead.authority_level}
+Oversight mode: ${lead.oversight_mode||'founder_approval'}
 Daily duties: ${JSON.stringify(lead.daily_duties||[])}
 Weekly duties: ${JSON.stringify(lead.weekly_duties||[])}
 Monthly duties: ${JSON.stringify(lead.monthly_duties||[])}
@@ -234,7 +235,7 @@ ${JSON.stringify(departmentData).slice(0,70000)}`;
       const planInstructions=guard+`
 For PLAN mode return JSON only, no markdown, with this exact shape:
 {"summary":"...","objective":{"title":"...","priority":"low|normal|high|urgent","owner_agent_code":"existing agent code","success_definition":"..."},"tasks":[{"agent_code":"existing agent code","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":true|false,"sequence_no":1}],"approvals":[{"category":"...","title":"...","description":"...","risk_level":"low|medium|high|critical"}]}
-Use only agent_code values present in SECURED MW BUSINESS CONTEXT. Break work into a practical maximum of 12 tasks and give them a sensible execution order. The objective should describe what success looks like, not just repeat the Founder request. Mark pricing, contracts, payments, production deployment, destructive data/security changes, official methodology changes, and important external communications as requiring Founder approval.`;
+Use only agent_code values present in SECURED MW BUSINESS CONTEXT. Break work into a practical maximum of 12 tasks and give them a sensible execution order. The objective should describe what success looks like, not just repeat the Founder request. Respect each employee's oversight_mode: ai_autonomous may perform internal low-risk analysis/drafting; founder_approval may analyze/draft but consequential action requires the Founder; human_specialist_required may analyze/organize/draft only and must route authoritative legal, tax, medical, safeguarding, or insurance decisions to an appropriate qualified human specialist. Mark pricing, contracts, payments, production deployment, destructive data/security changes, official methodology changes, and important external communications as requiring Founder approval.`;
       const text=await openai(planInstructions,`Founder objective: ${objective}`,3200);
       let plan;try{plan=parseJson(text)}catch{return res.status(502).json({error:'Founder AI produced a plan that could not be safely parsed. Try again.'})}
       const agents=new Map((aiCompany.agents||[]).map(a=>[a.code,a]));
@@ -354,11 +355,14 @@ Title: ${agent.title}
 Department: ${agent.department}
 Mission: ${agent.mission}
 Authority: ${agent.authority_level}
+Oversight mode: ${agent.oversight_mode||'founder_approval'}
 Responsibilities: ${JSON.stringify(agent.responsibilities||[])}
 KPIs: ${JSON.stringify(agent.kpis||[])}
 
 Complete the assigned task as analysis/drafting work only. Do not claim that external actions, deployments, payments, contracts, emails, customer changes, security changes, or methodology changes were executed.
-If execution outside the Founder OS would be needed, end with a short "Founder action required" section that states exactly what needs approval or a human/tool action.
+If oversight_mode is founder_approval, clearly separate safe internal work from any consequential action that requires Founder approval.
+If oversight_mode is human_specialist_required, do not make an authoritative legal, tax, medical, safeguarding, insurance, or other professional determination; prepare the analysis and explicitly state what qualified human specialist must review it.
+If execution outside the Founder OS would be needed, end with a short "Founder action required" or "Qualified specialist review required" section, as appropriate.
 Use current secured MW data when relevant and flag missing evidence instead of guessing.`;
 
       const answer=await openai(taskInstructions,`Assigned task: ${task.title}\n\nDescription: ${task.description||'No additional description.'}`,3200);
@@ -385,7 +389,7 @@ Use current secured MW data when relevant and flag missing evidence instead of g
           run_type:agent.authority_level==='draft'?'draft':'analysis',
           status:'completed',model:process.env.OPENAI_MODEL||'gpt-5.6-sol',
           output_summary:answer.slice(0,12000),
-          metadata:{requires_approval:requiresApproval,department:agent.department}
+          metadata:{requires_approval:requiresApproval,department:agent.department,oversight_mode:agent.oversight_mode||'founder_approval'}
         })
       }).catch(()=>null);
 
