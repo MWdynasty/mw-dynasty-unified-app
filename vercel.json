@@ -139,6 +139,10 @@
       "destination": "/api/mw?route=speak"
     },
     {
+      "source": "/api/transcribe",
+      "destination": "/api/mw?route=transcribe"
+    },
+    {
       "source": "/api/status",
       "destination": "/api/mw?route=status"
     },
