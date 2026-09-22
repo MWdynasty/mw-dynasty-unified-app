@@ -1201,20 +1201,23 @@ async function renderSupport(){
 }
 
 async function renderCosts(){
-  const d=await api("finance"),items=d.costs||[];
+  const d=await api("finance"),items=d.costs||[],sources=d.financial_sources||[],sourceSummary=d.financial_source_summary||{};
   const margin=d.tracked_operating_margin_percent==null?"—":d.tracked_operating_margin_percent+"%";
-  $("content").innerHTML='<section class="hero"><div class="brand">CFO OFFICE</div><h2>Revenue, costs, and operating contribution.</h2><p>Track recurring tools, infrastructure, AI, Apple/Stripe-related costs, contractors, and variable usage so MW sees more than gross subscription revenue.</p><div class="heroActions"><button class="btn primary" id="addCost">Add Cost</button></div></section>'+
+  const sourceType=s=>s==="connected"?"good":s==="manual"?"blue":s==="planned"?"warn":s==="needs_connection"?"bad":"";
+  $("content").innerHTML='<section class="hero"><div class="brand">CFO OFFICE</div><h2>Revenue, costs, cash visibility, and operating contribution.</h2><p>The CFO tracks what MW earns, what it spends, which financial systems are connected, and which costs still need real billing data. Unknown costs stay visible instead of being guessed.</p><div class="heroActions"><button class="btn primary" id="addCost">Add Cost</button></div></section>'+
     '<div class="stats">'+
       stat("Estimated MRR",money(d.estimated_mrr_cents))+
       stat("ARR Run Rate",money(d.estimated_arr_cents))+
       stat("Tracked Monthly Cost",money(d.tracked_monthly_operating_cost_proxy_cents),"Fixed + recent usage proxy")+
       stat("Operating Contribution",money(d.tracked_operating_contribution_cents),"Before taxes and untracked costs")+
       stat("Tracked Margin",margin)+
-      stat("New Subscriptions",d.new_subscriptions_30d||0,"30 days")+
-      stat("Cancellations",d.cancelled_subscriptions_30d||0,"30 days")+
-      stat("Active Paid Subs",d.active_paying_subscriptions||0)+
+      stat("Financial Sources",sourceSummary.total||sources.length,(sourceSummary.connected||0)+" connected")+
+      stat("Need Connection",sourceSummary.needs_connection||0,(sourceSummary.critical_missing||0)+" critical missing")+
+      stat("Manual Cost Sources",sourceSummary.manual||0,"Actual invoices/usage still required")+
     '</div>'+
-    (items.length?"" : '<div class="card" style="margin-top:14px;border-color:#715b2e"><b>Cost tracking is not populated yet.</b><p class="muted">Operating contribution will look artificially high until recurring and usage costs are entered. Add Vercel, Supabase, OpenAI, email, Apple Developer, contractors, and other real MW costs as they occur.</p></div>')+
+    sectionHead("Financial Source Coverage","The CFO should know where every revenue, banking, infrastructure, App Store, AI, tax, labor, and operating-cost number comes from.")+
+    '<div class="grid2">'+(sources.length?sources.map(s=>'<div class="card"><div class="row" style="padding:0;border:0;background:transparent"><div><div class="brand">'+esc((s.category||s.source_type||"FINANCE").toUpperCase())+'</div><h3 style="margin:6px 0">'+esc(s.source_name||s.source_code)+'</h3><p class="muted">'+esc(s.notes||"")+'</p><small>'+esc(String(s.tracking_mode||"manual").replaceAll("_"," "))+(s.last_synced_at?" · synced "+date(s.last_synced_at):"")+'</small></div><div class="right">'+badge(String(s.connection_status||"unknown").replaceAll("_"," "),sourceType(s.connection_status))+(s.critical?'<small>critical</small>':"")+'</div></div></div>').join(""):'<div class="card empty">No financial sources are registered yet.</div>')+'</div>'+
+    (items.length?"" : '<div class="card" style="margin-top:14px;border-color:#715b2e"><b>Actual operating costs are not populated yet.</b><p class="muted">The CFO now knows which systems must be tracked, but operating contribution will still look artificially high until actual invoices, usage, fees, and bank activity are connected or entered. No costs are being invented.</p></div>')+
     sectionHead("Operating Cost Register","Monthly and annual costs feed the run-rate. Usage entries from the last 30 days are treated as a current monthly proxy.")+
     '<div class="tableWrap"><table class="table"><thead><tr><th>Vendor</th><th>Category</th><th>Description</th><th>Amount</th><th>Cadence</th><th>Monthly Eq.</th><th>Status</th><th>Action</th></tr></thead><tbody>'+items.map(x=>'<tr><td>'+esc(x.vendor||"—")+'</td><td>'+esc(x.category||"—")+'</td><td>'+esc(x.description||"—")+'</td><td>'+money(x.amount_cents)+'</td><td>'+esc(x.cadence||"—")+'</td><td>'+money(x.monthly_equivalent_cents||0)+'</td><td>'+esc(x.status||"—")+'</td><td><button class="btn small" data-cost-toggle="'+esc(x.id)+'" data-cost-status="'+esc(x.status||"active")+'">'+(x.status==="active"?"Pause":"Activate")+'</button></td></tr>').join("")+'</tbody></table></div>';
   $("addCost").onclick=openCostModal;
