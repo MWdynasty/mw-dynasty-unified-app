@@ -101,7 +101,8 @@
 const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
-let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderRefreshPromise=null,founderSessionTimer=null;
+let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderRefreshPromise=null,founderSessionTimer=null,founderHealPromise=null,founderViewHealAttempts={};
+const FOUNDER_RESUME_VIEW_KEY="mwFounderResumeView";
 const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -199,9 +200,77 @@ async function ensureFounderSession(){
   if(expiresAt&&expiresAt<=Date.now()+2*60*1000)await refreshFounderSession(true);
   return session
 }
+function rememberFounderResumeView(view){
+  if(view&&titles[view])localStorage.setItem(FOUNDER_RESUME_VIEW_KEY,view)
+}
+function consumeFounderResumeView(){
+  const v=localStorage.getItem(FOUNDER_RESUME_VIEW_KEY);
+  localStorage.removeItem(FOUNDER_RESUME_VIEW_KEY);
+  return v&&titles[v]?v:"home"
+}
+function showFounderRecoveryState(title,copy){
+  $("content").innerHTML='<div class="card"><div class="brand">FOUNDER OS · SELF-HEALING</div><h2>'+esc(title)+'</h2><p class="muted">'+esc(copy)+'</p></div>'
+}
+function requireFounderReauth(message){
+  rememberFounderResumeView(currentView);
+  clear();
+  $("appShell").classList.add("hidden");
+  $("login").classList.remove("hidden");
+  const st=$("loginStatus");
+  st.textContent=message||"Founder session expired. Sign in once and Founder OS will return you to where you were.";
+  st.className="status error"
+}
+async function healFounderAuth(){
+  if(founderHealPromise)return founderHealPromise;
+  founderHealPromise=(async()=>{
+    const previousAccess=session?.access_token||"";
+    const previousRefresh=session?.refresh_token||"";
+    const stored=readStoredFounderSession();
+    if(stored?.access_token&&(stored.access_token!==previousAccess||stored.refresh_token!==previousRefresh||Number(stored.expires_at||0)>Number(session?.expires_at||0))){
+      session=stored;
+      try{
+        await authUser(session.access_token);
+        return true
+      }catch{}
+    }
+    if(session?.refresh_token){
+      try{
+        await refreshFounderSession(true);
+        await authUser(session.access_token);
+        return true
+      }catch(e){
+        if(e?.transient)throw e
+      }
+    }
+    const recovered=readStoredFounderSession();
+    if(recovered?.access_token&&(recovered.access_token!==previousAccess||recovered.refresh_token!==previousRefresh)){
+      session=recovered;
+      try{
+        await authUser(session.access_token);
+        return true
+      }catch{}
+    }
+    return false
+  })().finally(()=>{founderHealPromise=null});
+  return founderHealPromise
+}
+async function founderWatchdog(){
+  if(!session?.access_token||document.visibilityState!=="visible"||!navigator.onLine)return;
+  const stored=readStoredFounderSession();
+  if(stored?.access_token&&(stored.refresh_token!==session.refresh_token||Number(stored.expires_at||0)>Number(session.expires_at||0)))session=stored;
+  try{
+    await refreshFounderSession(false)
+  }catch(e){
+    if(e?.transient)return;
+    if(e?.status===401){
+      const healed=await healFounderAuth().catch(()=>false);
+      if(!healed)requireFounderReauth("Founder OS could not repair the expired session automatically. Sign in once and you will return to your last section.")
+    }
+  }
+}
 function scheduleFounderSessionRefresh(){
   if(founderSessionTimer)clearInterval(founderSessionTimer);
-  founderSessionTimer=setInterval(()=>{if(session?.refresh_token)refreshFounderSession(false).catch(()=>{})},60000)
+  founderSessionTimer=setInterval(founderWatchdog,60000)
 }
 async function founderFetch(url,options={},retryTransient){
   await ensureFounderSession();
@@ -1052,13 +1121,34 @@ async function renderView(v){
     if(v==="analytics")return await renderAnalytics();
   }catch(e){
     if(e?.status===401){
-      clear();
-      $("appShell").classList.add("hidden");
-      $("login").classList.remove("hidden");
-      const st=$("loginStatus");st.textContent="Founder session expired. Please sign in again.";st.className="status error";
+      showFounderRecoveryState("Repairing Founder session…","Founder OS detected an authentication problem and is attempting automatic recovery.");
+      const healed=await healFounderAuth().catch(()=>false);
+      if(healed){
+        founderViewHealAttempts[v]=0;
+        cache={};
+        return renderView(v)
+      }
+      requireFounderReauth("Founder OS could not repair the expired session automatically. Sign in once and you will return to "+(titles[v]||"your last section")+".");
       return
     }
-    $("content").innerHTML='<div class="card"><h2>Founder OS could not load this section.</h2><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="renderView(currentView)">Try Again</button></div>'
+    if(e?.transient||!navigator.onLine){
+      if(!navigator.onLine){
+        rememberFounderResumeView(v);
+        showFounderRecoveryState("Connection interrupted","Founder OS will retry this section automatically when your connection returns.");
+        return
+      }
+      const attempt=(founderViewHealAttempts[v]||0)+1;
+      founderViewHealAttempts[v]=attempt;
+      if(attempt<=3){
+        const delays=[450,1000,2200];
+        showFounderRecoveryState("Recovering "+(titles[v]||"Founder OS")+"…","Temporary service issue detected. Automatic repair attempt "+attempt+" of 3.");
+        await wait(delays[attempt-1]);
+        cache={};
+        return renderView(v)
+      }
+    }
+    founderViewHealAttempts[v]=0;
+    $("content").innerHTML='<div class="card"><h2>Founder OS could not load this section.</h2><p class="muted">'+esc(e.message)+'</p><p class="muted">Automatic recovery was attempted before showing this message.</p><button class="btn" onclick="renderView(currentView)">Try Again</button></div>'
   }
 }
 function bindGo(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>setView(b.dataset.go))}
@@ -1317,15 +1407,17 @@ async function enter(s){
   save(Object.assign({},session,{user:user}));
   scheduleFounderSessionRefresh();
   $("founderName").textContent=[profile.first_name,profile.last_name].filter(Boolean).join(" ")||"Founder";
-  $("login").classList.add("hidden");$("appShell").classList.remove("hidden");await setView("home");refreshFounderNavCounts();maybeStartFounderTour();
+  const resumeView=consumeFounderResumeView();
+  $("login").classList.add("hidden");$("appShell").classList.remove("hidden");await setView(resumeView);refreshFounderNavCounts();maybeStartFounderTour();
 }
 $("loginForm").onsubmit=async e=>{e.preventDefault();const b=$("loginBtn"),st=$("loginStatus");b.disabled=true;st.textContent="Verifying Founder access…";st.className="status";try{const r=await resilientFetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})},3);const d=await r.json().catch(()=>({}));if(!r.ok){if(isTransientStatus(r.status))throw accessErr("Founder authentication is temporarily unavailable. Nothing was changed; try again shortly.",503,true);throw accessErr(d.error_description||d.msg||"Sign in failed.",401,false)}await enter(d)}catch(err){if(!err?.transient)clear();st.textContent=err.message;st.className="status error"}finally{b.disabled=false}};
 document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
 $("menuBtn").onclick=()=>$("sidebar").classList.toggle("open");
 $("refreshBtn").onclick=()=>{cache={};renderView(currentView);refreshFounderNavCounts()};
 $("founderAIQuick").onclick=openAIModal;
-$("signOut").onclick=()=>{clear();location.reload()};
-window.addEventListener("online",()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")){cache={};renderView(currentView);refreshFounderNavCounts()}});
+$("signOut").onclick=()=>{localStorage.removeItem(FOUNDER_RESUME_VIEW_KEY);clear();location.reload()};
+window.addEventListener("online",()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")){founderViewHealAttempts[currentView]=0;cache={};renderView(currentView);refreshFounderNavCounts()}});
+window.addEventListener("offline",()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")){rememberFounderResumeView(currentView);showFounderRecoveryState("Connection interrupted","Founder OS is protecting your current place and will reconnect automatically when the internet returns.")}});
 window.addEventListener("storage",e=>{
   if(e.key!==KEY)return;
   if(!e.newValue){
@@ -1342,7 +1434,7 @@ document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible")return;
   const stored=readStoredFounderSession();
   if(stored?.access_token&&(!session?.access_token||stored.refresh_token!==session.refresh_token||Number(stored.expires_at||0)>Number(session.expires_at||0)))session=stored;
-  if(session?.refresh_token)refreshFounderSession(false).catch(()=>{})
+  founderWatchdog().then(()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")&&localStorage.getItem(FOUNDER_RESUME_VIEW_KEY)){const v=consumeFounderResumeView();setView(v)}}).catch(()=>{})
 });
 (async()=>{try{const s=readStoredFounderSession();if(s?.access_token||s?.refresh_token)await enter(s)}catch(err){const st=$("loginStatus");if(err?.status===401||err?.status===403)clear();st.textContent=err?.transient?"Founder access services are temporarily unavailable. Your saved session was kept; reload or try again shortly.":(err?.message||"Founder sign-in required.");st.className="status error"}})();
 </script>
