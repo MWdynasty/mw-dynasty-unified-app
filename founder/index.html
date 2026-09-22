@@ -516,7 +516,7 @@ function openPartnershipProposalModal(id,opportunity){
 }
 
 async function renderWebsite(){
-  const d=await api("website"),h=d.health||{},pages=d.top_pages||[],events=d.events||[];
+  const d=await api("website"),h=d.health||{},pages=d.top_pages||[],events=d.events||[],projects=d.website_projects||[];
   const web=h.website||{},app=h.app||{};
   const count=type=>Number((events.find(x=>x.event===type)||{}).count||0);
   const signupStarts=Number(d.signup_starts_30d||count("signup_start")||0);
@@ -525,7 +525,8 @@ async function renderWebsite(){
   const visitToSignup=metricPercent(signupStarts,sessions);
   const signupToCheckout=metricPercent(checkoutStarts,signupStarts);
   const accountToPaid=metricPercent(paid,accounts);
-  $("content").innerHTML='<section class="hero"><div class="brand">WEBSITE & GROWTH CENTER</div><h2>The website is part of the company OS.</h2><p>Public website health, app entry health, acquisition funnel, conversion, signup starts, checkout starts, and page-level behavior roll into Founder intelligence.</p></section>'+
+  const websiteStatusType=status=>status==="published"?"good":status==="failed"||status==="blocked_external_editor"?"bad":status==="preview_ready"||status==="proposal_ready"?"blue":"warn";
+  $("content").innerHTML='<section class="hero"><div class="brand">WEBSITE & GROWTH CENTER</div><h2>The website is part of the company OS.</h2><p>Public website health, app entry health, acquisition funnel, conversion, redesign projects, preview builds, and Founder-controlled publishing roll into one operating center.</p><div class="heroActions"><button class="btn primary" id="requestWebsiteRedesign">Ask Website Design Team</button></div></section>'+
     '<div class="grid2"><div class="card"><div class="health"><i class="healthDot '+(web.ok?"ok":"")+'"></i><div><b>mwdynasty.com</b><small>'+esc(web.ok?"Online · "+web.latency_ms+" ms":"Needs attention · "+(web.error||web.status||"unknown"))+'</small></div></div></div><div class="card"><div class="health"><i class="healthDot '+(app.ok?"ok":"")+'"></i><div><b>app.mwdynasty.com</b><small>'+esc(app.ok?"Online · "+app.latency_ms+" ms":"Needs attention · "+(app.error||app.status||"unknown"))+'</small></div></div></div></div>'+
     '<div class="stats" style="margin-top:12px">'+
       stat("Website Sessions",sessions,"30 days")+
@@ -533,12 +534,62 @@ async function renderWebsite(){
       stat("Signup → Checkout",signupToCheckout+"%",checkoutStarts+" checkout starts")+
       stat("Account → Paid",accountToPaid+"%",paid+" paid journeys")+
       stat("Page Views",d.page_views_30d||0,"30 days")+
-      stat("Website Accounts",accounts,"30 days")+
+      stat("Website Projects",projects.filter(x=>!["published","cancelled"].includes(x.status)).length,"Active redesign/build work")+
     '</div>'+
-    '<div class="grid2">'+
+    sectionHead("Website Design Studio","Tell the AI website team what you want. They prepare the redesign, you approve the build, QA verifies a preview, and production publishing stays behind your approval.")+
+    '<div class="list">'+(projects.length?projects.map(x=>{
+      const changes=Array.isArray(x.proposed_changes)?x.proposed_changes:[];
+      const criteria=Array.isArray(x.acceptance_criteria)?x.acceptance_criteria:[];
+      let actions='';
+      if(x.status==="proposal_ready")actions+='<button class="btn small good" data-website-decision="approve_build" data-website-id="'+esc(x.id)+'">Approve Build</button>';
+      if(["failed","blocked_external_editor"].includes(x.status))actions+='<button class="btn small blue" data-website-decision="retry_build" data-website-id="'+esc(x.id)+'">Retry Build</button>';
+      if(x.status==="preview_ready"&&x.preview_url)actions+='<a class="btn small blue" href="'+esc(x.preview_url)+'" target="_blank" rel="noopener">Open Preview</a><button class="btn small good" data-website-decision="approve_publish" data-website-id="'+esc(x.id)+'">Approve & Publish</button>';
+      if(x.status==="published"&&x.production_url)actions+='<a class="btn small blue" href="'+esc(x.production_url)+'" target="_blank" rel="noopener">Open Live Site</a>';
+      if(!["published","cancelled","publishing"].includes(x.status))actions+='<button class="btn small danger" data-website-decision="cancel" data-website-id="'+esc(x.id)+'">Cancel</button>';
+      return '<div class="card"><div class="row" style="padding:0;border:0;background:transparent"><div><div class="brand">'+esc((x.target_scope||"Website").toUpperCase())+'</div><h3 style="margin:6px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.proposal_summary||x.request_text||"")+'</p></div><div class="right">'+badge(String(x.status||"requested").replaceAll("_"," "),websiteStatusType(x.status))+'<small>'+date(x.updated_at)+'</small></div></div>'+
+        (changes.length?'<div class="card" style="margin-top:10px"><b>Proposed changes</b><p class="muted">'+esc(changes.slice(0,6).map(v=>(v.area?v.area+": ":"")+(v.change||v.reason||"")).join(" · "))+(changes.length>6?" …":"")+'</p></div>':"")+
+        (criteria.length?'<small>Acceptance criteria: '+esc(criteria.slice(0,4).join(" · "))+(criteria.length>4?" …":"")+'</small>':"")+
+        (x.last_error?'<p class="status error">'+esc(x.last_error)+'</p>':"")+
+        (actions?'<div class="heroActions">'+actions+'</div>':"")+
+      '</div>';
+    }).join(""):'<div class="card empty">No redesign projects yet. Ask the Website Design Team for your first change.</div>')+'</div>'+
+    '<div class="grid2" style="margin-top:14px">'+
       '<div>'+sectionHead("Top Pages","Page traffic collected by MW Growth analytics.")+'<div class="list">'+(pages.length?pages.map(x=>'<div class="row"><div><b>'+esc(x.page)+'</b><small>'+esc(x.sessions)+" unique sessions"+'</small></div><div class="right"><b>'+esc(x.views)+'</b><small>views</small></div></div>').join(""):'<div class="card empty">Website analytics will populate as tracked traffic arrives.</div>')+'</div></div>'+
       '<div>'+sectionHead("Funnel Events","Tracked actions across the website and app-entry flow.")+'<div class="list">'+(events.length?events.map(x=>'<div class="row"><div><b>'+esc(String(x.event).replaceAll("_"," "))+'</b></div><div class="right"><b>'+esc(x.count)+'</b></div></div>').join(""):'<div class="card empty">No tracked events yet.</div>')+'</div></div></div>'+
-    '<div class="card" style="margin-top:14px"><b>Public-site integration status</b><p class="muted">Founder OS monitors both live domains now. Conversion events are collected on the app-side website flows we control. The standalone public marketing deployment still needs the shared MW Growth tracker inserted in its own source before every public page view and CTA can appear here.</p></div>';
+    '<div class="card" style="margin-top:14px"><b>Production publishing rule</b><p class="muted">AI employees may research, redesign, code, test, and prepare a non-production preview. They may not publish a customer-facing production website change until you approve the verified preview.</p></div>';
+  $("requestWebsiteRedesign").onclick=openWebsiteRedesignModal;
+  document.querySelectorAll("[data-website-decision]").forEach(b=>b.onclick=()=>reviewWebsiteProject(b.dataset.websiteId,b.dataset.websiteDecision,b));
+}
+function openWebsiteRedesignModal(){
+  modal("MW Website Design Team",
+    '<p class="muted">Describe the result you want in normal language. Product Design, UX Research, Growth, Creative, Accessibility, and QA will turn it into a reviewable redesign plan.</p>'+
+    '<label class="field">TARGET<select id="websiteTarget"><option value="public website">Public MW Dynasty website</option><option value="athlete web app">Athlete web app</option><option value="coach web app">Coach web app</option><option value="founder os">Founder OS</option></select></label>'+
+    '<label class="field">WHAT DO YOU WANT CHANGED?<textarea id="websiteRequest" rows="8" placeholder="Example: Redesign the Athlete membership page so parents immediately understand the complete MW Dynasty ecosystem. Keep the current brand, navigation, images, and working links."></textarea></label>'+
+    '<button class="btn primary" id="createWebsiteProposal">Have the Team Design It</button><div id="websiteProposalStatus" class="status"></div>'
+  );
+  $("createWebsiteProposal").onclick=async()=>{
+    const request=$("websiteRequest").value.trim(),targetScope=$("websiteTarget").value,st=$("websiteProposalStatus"),b=$("createWebsiteProposal");
+    if(!request){st.textContent="Describe what you want changed.";st.className="status error";return}
+    b.disabled=true;st.textContent="Website Design Team is building the proposal…";st.className="status";
+    try{
+      await ai("website_redesign",{request,targetScope});
+      st.textContent="Proposal ready for your review.";
+      cache={};
+      setTimeout(()=>{closeModal();renderWebsite()},500)
+    }catch(e){st.textContent=e.message;st.className="status error"}
+    finally{b.disabled=false}
+  };
+}
+async function reviewWebsiteProject(id,decision,button){
+  const labels={approve_build:"Approving…",approve_publish:"Approving publish…",retry_build:"Re-queueing…",cancel:"Cancelling…"};
+  if(button){button.disabled=true;button.textContent=labels[decision]||"Working…"}
+  try{
+    if(decision==="approve_publish"&&!confirm("Publish this verified website preview to customers when the build worker runs?"))return;
+    if(decision==="cancel"&&!confirm("Cancel this website project?"))return;
+    await action("review_website_project",{id,decision});
+    cache={};renderWebsite()
+  }catch(e){alert(e.message)}
+  finally{if(button)button.disabled=false}
 }
 
 async function renderMarketing(){
