@@ -375,12 +375,12 @@ async function renderHome(){
     sectionHead("Recent Executive AI Briefings","Founder AI briefings are stored so decisions can be reviewed instead of disappearing after generation.")+
     '<div class="list">'+(briefs.length?briefs.map(x=>'<div class="card"><div class="row" style="border:0;background:transparent;padding:0"><div><b>Executive Brief</b><small>'+date(x.created_at)+'</small><p class="muted">'+esc((x.output_summary||"").slice(0,520))+(String(x.output_summary||"").length>520?"…":"")+'</p></div><div class="heroActions"><button class="btn small" data-brief-view="'+esc(x.id)+'">View</button></div></div></div>').join(""):'<div class="card empty">Generate the first executive briefing to start the decision history.</div>')+'</div>';
   bindGo();$("briefBtn").onclick=generateBrief;$("askAIHome").onclick=openAIModal;
-  document.querySelectorAll("[data-brief-view]").forEach(b=>b.onclick=()=>{const x=briefs.find(v=>String(v.id)===String(b.dataset.briefView));if(x)modal("Executive AI Brief",'<div class="bubble ai">'+esc(x.output_summary||"")+'</div>')});
+  document.querySelectorAll("[data-brief-view]").forEach(b=>b.onclick=()=>{const x=briefs.find(v=>String(v.id)===String(b.dataset.briefView));if(x)openVoiceResponseModal("Executive AI Brief",x.output_summary||"","Founder AI","founder")});
 }
 
 async function generateBrief(){
   const b=$("briefBtn"),out=$("briefOut");b.disabled=true;b.textContent="Building executive brief…";out.classList.remove("hidden");out.textContent="Founder AI is reviewing live MW data…";
-  try{const d=await ai("brief");out.textContent=d.answer||"No briefing returned.";cache.ai_company=null}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
+  try{const d=await ai("brief");const answer=d.answer||"No briefing returned.";out.textContent=answer;cache.ai_company=null;autoSpeakFounderText(answer,null,"founder","Founder AI")}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
 }
 async function renderAttention(){
   const [d,r,h,a,t,l]=await Promise.all([api("overview"),api("risk"),api("customer_health"),api("ai_company"),api("support_triage"),api("launch")]);
@@ -513,8 +513,23 @@ function openPartnershipModal(){
   $("savePartnership").onclick=async()=>{try{await action("create_partnership",{organizationName:$("partnershipOrg").value,opportunityType:$("partnershipType").value,contactName:$("partnershipContact").value,contactEmail:$("partnershipEmail").value,estimatedCoaches:Number($("partnershipCoaches").value||0),estimatedAthletes:Number($("partnershipAthletes").value||0),estimatedMonthlyValueCents:Math.round(Number($("partnershipValue").value||0)*100),nextAction:$("partnershipNext").value,notes:$("partnershipNotes").value,assignedAgentCode:"partnerships"});closeModal();cache={};renderPartnerships()}catch(e){alert(e.message)}};
 }
 function openPartnershipProposalModal(id,opportunity){
-  modal("Draft AI Partnership Proposal",'<p class="muted">This creates an internal draft for '+esc(opportunity?.organization_name||"the organization")+'. It will not be sent. Pricing and terms remain Founder-controlled.</p><label class="field">OPTIONAL FOUNDER PRICING GUIDANCE<textarea id="partnershipPricing" rows="4" placeholder="Leave blank if no special partnership price has been approved."></textarea></label><button class="btn primary" id="draftPartnershipProposal">Create Internal Draft</button><div id="partnershipProposalStatus" class="status"></div>');
-  $("draftPartnershipProposal").onclick=async()=>{const b=$("draftPartnershipProposal"),st=$("partnershipProposalStatus");b.disabled=true;st.textContent="Partnerships AI is preparing the internal draft…";try{await ai("partnership_proposal",{opportunityId:id,pricingGuidance:$("partnershipPricing").value});closeModal();cache={};renderPartnerships()}catch(e){st.textContent=e.message;st.className="status error"}finally{b.disabled=false}};
+  modal("Draft AI Partnership Proposal",
+    '<p class="muted">This creates an internal draft for '+esc(opportunity?.organization_name||"the organization")+'. It will not be sent. Pricing and terms remain Founder-controlled.</p>'+
+    '<label class="field">OPTIONAL FOUNDER PRICING GUIDANCE<textarea id="partnershipPricing" rows="4" placeholder="Leave blank if no special partnership price has been approved."></textarea></label>'+
+    '<div class="heroActions"><button class="btn small blue" id="partnershipSpeak" type="button">🎙 Speak Guidance</button><small class="muted" id="partnershipMicStatus" style="align-self:center">Speak or type your guidance.</small></div>'+
+    '<button class="btn primary" id="draftPartnershipProposal">Create Internal Draft</button><div id="partnershipProposalStatus" class="status"></div>');
+  $("partnershipSpeak").dataset.voiceInputLabel="🎙 Speak Guidance";
+  $("partnershipSpeak").onclick=()=>toggleFounderVoiceInput("partnershipPricing","partnershipSpeak","partnershipMicStatus");
+  $("draftPartnershipProposal").onclick=async()=>{
+    const b=$("draftPartnershipProposal"),st=$("partnershipProposalStatus");b.disabled=true;st.textContent="Partnerships AI is preparing the internal draft…";
+    try{
+      const d=await ai("partnership_proposal",{opportunityId:id,pricingGuidance:$("partnershipPricing").value});
+      cache={};await renderPartnerships();
+      const p=d.proposal||{};
+      openVoiceResponseModal("Partnerships AI · Draft Ready",p.scope_summary||p.draft_content||"The internal partnership proposal draft is ready for your review.","Partnerships AI","employee",'<p class="muted">Pricing and terms remain Founder-controlled. Close this window to review the stored proposal.</p>')
+    }catch(e){st.textContent=e.message;st.className="status error"}
+    finally{b.disabled=false}
+  };
 }
 
 async function renderWebsite(){
@@ -567,17 +582,20 @@ function openWebsiteRedesignModal(){
     '<p class="muted">Describe the result you want in normal language. Product Design, UX Research, Growth, Creative, Accessibility, and QA will turn it into a reviewable redesign plan.</p>'+
     '<label class="field">TARGET<select id="websiteTarget"><option value="public website">Public MW Dynasty website</option><option value="athlete web app">Athlete web app</option><option value="coach web app">Coach web app</option><option value="founder os">Founder OS</option></select></label>'+
     '<label class="field">WHAT DO YOU WANT CHANGED?<textarea id="websiteRequest" rows="8" placeholder="Example: Redesign the Athlete membership page so parents immediately understand the complete MW Dynasty ecosystem. Keep the current brand, navigation, images, and working links."></textarea></label>'+
+    '<div class="heroActions"><button class="btn small blue" id="websiteSpeak" type="button">🎙 Speak to Design Team</button><small class="muted" id="websiteMicStatus" style="align-self:center">Speak or type your redesign request.</small></div>'+
     '<button class="btn primary" id="createWebsiteProposal">Have the Team Design It</button><div id="websiteProposalStatus" class="status"></div>'
   );
+  $("websiteSpeak").dataset.voiceInputLabel="🎙 Speak to Design Team";
+  $("websiteSpeak").onclick=()=>toggleFounderVoiceInput("websiteRequest","websiteSpeak","websiteMicStatus");
   $("createWebsiteProposal").onclick=async()=>{
     const request=$("websiteRequest").value.trim(),targetScope=$("websiteTarget").value,st=$("websiteProposalStatus"),b=$("createWebsiteProposal");
     if(!request){st.textContent="Describe what you want changed.";st.className="status error";return}
     b.disabled=true;st.textContent="Website Design Team is building the proposal…";st.className="status";
     try{
-      await ai("website_redesign",{request,targetScope});
-      st.textContent="Proposal ready for your review.";
-      cache={};
-      setTimeout(()=>{closeModal();renderWebsite()},500)
+      const d=await ai("website_redesign",{request,targetScope});
+      const summary=d.project?.proposal_summary||"Your Website Design Team proposal is ready for review.";
+      cache={};await renderWebsite();
+      openVoiceResponseModal("Website Design Team · Proposal Ready",summary,"Website Design Team","employee",'<p class="muted">Close this window to review the proposal, approve the build, and continue the design workflow.</p>')
     }catch(e){st.textContent=e.message;st.className="status error"}
     finally{b.disabled=false}
   };
@@ -629,7 +647,7 @@ async function renderSkool(){
     try{
       const r=await ai("generate_skool_week",{startDate:founderLocalDateISO()});
       cache={};
-      modal("Skool Week Ready",'<p class="muted">'+esc(r.summary||"Your new Skool drafts are ready for review.")+'</p><button class="btn primary" id="reviewSkoolWeek">Review Calendar</button>');
+      openVoiceResponseModal("Skool Week Ready",r.summary||"Your new Skool drafts are ready for review.","Community Manager AI","employee",'<button class="btn primary" id="reviewSkoolWeek" style="margin-top:12px">Review Calendar</button>');
       $("reviewSkoolWeek").onclick=()=>{closeModal();renderSkool()}
     }catch(e){alert(e.message)}
     finally{b.disabled=false;b.textContent="Generate 7-Day Plan"}
@@ -1175,7 +1193,7 @@ async function renderSupport(){
   document.querySelectorAll("[data-triage-view]").forEach(b=>b.onclick=()=>{
     const x=triage.find(t=>String(t.id)===String(b.dataset.triageView));
     if(!x)return;
-    modal("Support Draft",'<div class="card"><b>Issue Summary</b><p class="muted">'+esc(x.issue_summary||"—")+'</p><b>Suggested Next Action</b><p class="muted">'+esc(x.suggested_next_action||"—")+'</p><b>Draft Response</b><div class="bubble ai" style="margin-top:8px">'+esc(x.response_draft||"No draft stored.")+'</div>'+(x.requires_founder?'<p class="muted">Founder review is required before any external action.</p>':"")+'</div>');
+    openVoiceResponseModal("Support Manager AI · Draft",x.response_draft||"No draft stored.","Support Manager AI","employee",'<div class="card"><b>Issue Summary</b><p class="muted">'+esc(x.issue_summary||"—")+'</p><b>Suggested Next Action</b><p class="muted">'+esc(x.suggested_next_action||"—")+'</p>'+(x.requires_founder?'<p class="muted">Founder review is required before any external action.</p>':"")+'</div>');
   });
   document.querySelectorAll("[data-triage-reviewed]").forEach(b=>b.onclick=async()=>{
     try{await action("update_support_triage",{id:b.dataset.triageReviewed,triageStatus:"reviewed"});cache={};await renderSupport()}catch(e){alert(e.message)}
