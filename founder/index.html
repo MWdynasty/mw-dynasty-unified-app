@@ -64,6 +64,7 @@
       <button class="navBtn" data-view="partnerships"><span>◇</span>Partnerships</button>
       <button class="navBtn" data-view="website"><span>⌘</span>Website & Growth</button>
       <button class="navBtn" data-view="marketing"><span>↗</span>Marketing & Sales</button>
+      <button class="navBtn" data-view="skool"><span>S</span>Skool Content</button>
     </div>
     <div class="navGroup"><div class="navLabel">INTELLIGENCE</div>
       <button class="navBtn" data-view="ai"><span>AI</span>AI Company <i class="navCount" data-count="ai"></i></button>
@@ -103,7 +104,7 @@ const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[],founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderRefreshPromise=null,founderSessionTimer=null,founderHealPromise=null,founderViewHealAttempts={};
 const FOUNDER_RESUME_VIEW_KEY="mwFounderResumeView";
-const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
+const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",skool:"Skool Content Center",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -590,6 +591,76 @@ async function reviewWebsiteProject(id,decision,button){
     cache={};renderWebsite()
   }catch(e){alert(e.message)}
   finally{if(button)button.disabled=false}
+}
+
+function founderLocalDateISO(offsetDays=0){
+  const d=new Date();d.setDate(d.getDate()+offsetDays);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")
+}
+function skoolPostCopyText(p){
+  const parts=[p.title||"MW Dynasty",p.body||""];
+  if(p.cta&&!(p.body||"").includes(p.cta))parts.push(p.cta);
+  return parts.filter(Boolean).join("\n\n")
+}
+async function copySkoolPost(p,button){
+  const text=skoolPostCopyText(p);
+  try{
+    await navigator.clipboard.writeText(text);
+    const old=button?.textContent;if(button){button.textContent="Copied ✓";setTimeout(()=>button.textContent=old||"Copy for Skool",1300)}
+  }catch{
+    modal("Copy Skool Post",'<textarea class="formInput" rows="14" id="skoolCopyFallback">'+esc(text)+'</textarea><p class="muted">Select the text above and copy it into Skool.</p>');
+    setTimeout(()=>{$("skoolCopyFallback")?.select()},50)
+  }
+}
+async function renderSkool(){
+  const d=await api("skool",true),posts=d.posts||[],summary=d.summary||{};
+  const today=founderLocalDateISO(),upcoming=posts.filter(x=>String(x.scheduled_for||"")>=today&&x.status!=="skipped");
+  const past=posts.filter(x=>String(x.scheduled_for||"")<today||x.status==="posted").slice(-20).reverse();
+  const statusType=s=>s==="posted"?"good":s==="approved"?"blue":s==="skipped"?"bad":"warn";
+  $("content").innerHTML='<section class="hero aiHero"><div class="brand">SKOOL CONTENT CENTER</div><h2>Your community content team, organized for you.</h2><p>Community Manager AI can prepare seven days of useful MW Dynasty posts. Review the drafts here, approve what you like, copy the finished post into Skool, then mark it posted. MW Dynasty does not use prohibited Skool posting bots.</p><div class="heroActions"><button class="btn primary" id="generateSkoolWeek">Generate 7-Day Plan</button><button class="btn blue" id="addSkoolPost">Add Manual Post</button></div></section>'+
+    '<div class="stats">'+stat("Upcoming",summary.upcoming||upcoming.length,"Draft + approved")+stat("Drafts",summary.draft||0)+stat("Approved",summary.approved||0)+stat("Posted",summary.posted||0)+'</div>'+
+    sectionHead("Upcoming Content Calendar","One clear workflow: AI draft → Founder review → copy to Skool → mark posted.")+
+    '<div class="list">'+(upcoming.length?upcoming.map(p=>'<div class="card"><div class="row" style="padding:0;border:0;background:transparent"><div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px">'+badge(p.scheduled_for,"blue")+badge(p.category||"Community","purple")+badge(String(p.post_type||"discussion").replaceAll("_"," "),statusType(p.status))+badge(p.status,statusType(p.status))+'</div><h3 style="margin:5px 0">'+esc(p.title)+'</h3><small>'+esc(String(p.audience||"everyone").replaceAll("_"," "))+'</small></div><div class="right"><small>'+esc(p.source==="ai"?"Community Manager AI":"Founder")+'</small></div></div><div class="bubble ai" style="margin:12px 0 0;white-space:pre-wrap">'+esc(p.body||"")+'</div>'+(p.cta?'<div class="card" style="margin-top:10px;padding:11px"><b>CTA</b><p class="muted" style="margin-bottom:0">'+esc(p.cta)+'</p></div>':"")+(p.asset_brief?'<div class="card" style="margin-top:10px;padding:11px"><b>Creative Brief</b><p class="muted" style="margin-bottom:0">'+esc(p.asset_brief)+'</p></div>':"")+'<div class="heroActions"><button class="btn small" data-skool-copy="'+esc(p.id)+'">Copy for Skool</button><button class="btn small" data-skool-edit="'+esc(p.id)+'">Edit</button>'+(p.status==="draft"?'<button class="btn small good" data-skool-status="'+esc(p.id)+'" data-status="approved">Approve</button>':"")+(p.status==="approved"?'<button class="btn small primary" data-skool-status="'+esc(p.id)+'" data-status="posted">Mark Posted</button>':"")+(p.status!=="posted"?'<button class="btn small danger" data-skool-status="'+esc(p.id)+'" data-status="skipped">Skip</button>':"")+'</div></div>').join(""):'<div class="card empty">No upcoming Skool posts yet. Generate a seven-day plan to have Community Manager AI fill the calendar.</div>')+'</div>'+
+    sectionHead("Recent Posted / Past Content","Keep a lightweight history so the AI team can avoid repeating itself.")+
+    '<div class="list">'+(past.length?past.map(p=>'<div class="row"><div><b>'+esc(p.title)+'</b><small>'+esc((p.scheduled_for||"")+" · "+(p.category||"Community"))+'</small></div><div class="right">'+badge(p.status,statusType(p.status))+'</div></div>').join(""):'<div class="card empty">No Skool post history yet.</div>')+'</div>';
+  $("generateSkoolWeek").onclick=async()=>{
+    const b=$("generateSkoolWeek");b.disabled=true;b.textContent="Building Week…";
+    try{
+      const r=await ai("generate_skool_week",{startDate:founderLocalDateISO()});
+      cache={};
+      modal("Skool Week Ready",'<p class="muted">'+esc(r.summary||"Your new Skool drafts are ready for review.")+'</p><button class="btn primary" id="reviewSkoolWeek">Review Calendar</button>');
+      $("reviewSkoolWeek").onclick=()=>{closeModal();renderSkool()}
+    }catch(e){alert(e.message)}
+    finally{b.disabled=false;b.textContent="Generate 7-Day Plan"}
+  };
+  $("addSkoolPost").onclick=openSkoolPostModal;
+  document.querySelectorAll("[data-skool-copy]").forEach(b=>b.onclick=()=>{const p=posts.find(x=>String(x.id)===String(b.dataset.skoolCopy));if(p)copySkoolPost(p,b)});
+  document.querySelectorAll("[data-skool-edit]").forEach(b=>b.onclick=()=>{const p=posts.find(x=>String(x.id)===String(b.dataset.skoolEdit));if(p)openSkoolPostModal(p)});
+  document.querySelectorAll("[data-skool-status]").forEach(b=>b.onclick=async()=>{
+    const next=b.dataset.status;
+    if(next==="posted"&&!confirm("Mark this post as posted to Skool?"))return;
+    try{await action("update_skool_post",{id:b.dataset.skoolStatus,status:next});cache={};renderSkool()}catch(e){alert(e.message)}
+  });
+}
+function openSkoolPostModal(existing){
+  const p=existing||{},editing=!!p.id;
+  modal(editing?"Edit Skool Post":"Add Skool Post",
+    '<div class="formGrid"><label class="field">DATE<input id="skoolDate" type="date" value="'+esc(p.scheduled_for||founderLocalDateISO())+'"></label><label class="field">CATEGORY<input id="skoolCategory" value="'+esc(p.category||"Community")+'" placeholder="Sprint School, Community…"></label><label class="field">TYPE<select id="skoolType"><option>discussion</option><option>education</option><option>challenge</option><option>announcement</option><option>poll</option><option>spotlight</option><option>recap</option></select></label><label class="field">AUDIENCE<select id="skoolAudience"><option value="athletes">Athletes</option><option value="coaches">Coaches</option><option value="parents">Parents</option><option value="athletes_and_coaches">Athletes + Coaches</option><option value="everyone">Everyone</option></select></label></div>'+
+    '<label class="field">TITLE<input id="skoolTitle" value="'+esc(p.title||"")+'"></label>'+
+    '<label class="field">POST<textarea id="skoolBody" rows="12">'+esc(p.body||"")+'</textarea></label>'+
+    '<label class="field">CALL TO ACTION<input id="skoolCta" value="'+esc(p.cta||"")+'" placeholder="Optional"></label>'+
+    '<label class="field">CREATIVE BRIEF<textarea id="skoolAsset" rows="3">'+esc(p.asset_brief||"")+'</textarea></label>'+
+    '<button class="btn primary" id="saveSkoolPost">'+(editing?"Save Changes":"Save Draft")+'</button>');
+  $("skoolType").value=p.post_type||"discussion";
+  $("skoolAudience").value=p.audience||"athletes_and_coaches";
+  $("saveSkoolPost").onclick=async()=>{
+    const payload={scheduledFor:$("skoolDate").value,title:$("skoolTitle").value,body:$("skoolBody").value,category:$("skoolCategory").value,postType:$("skoolType").value,audience:$("skoolAudience").value,cta:$("skoolCta").value,assetBrief:$("skoolAsset").value};
+    try{
+      if(editing)await action("update_skool_post",Object.assign({id:p.id},payload));
+      else await action("create_skool_post",payload);
+      closeModal();cache={};renderSkool()
+    }catch(e){alert(e.message)}
+  };
 }
 
 async function renderMarketing(){
@@ -1161,6 +1232,7 @@ async function renderView(v){
     if(v==="organizations")return await renderOrganizations();
     if(v==="website")return await renderWebsite();
     if(v==="marketing")return await renderMarketing();
+    if(v==="skool")return await renderSkool();
     if(v==="ai")return await renderAI();
     if(v==="programs")return await renderPrograms();
     if(v==="knowledge")return await renderKnowledge();
@@ -1214,7 +1286,7 @@ const FOUNDER_TOUR_VERSION="2026.09.21.1";
 const FOUNDER_TOUR_COMPLETE_KEY="mwFounderTourComplete";
 const FOUNDER_TOUR_PROGRESS_KEY="mwFounderTourProgress";
 const FOUNDER_TOUR_PAUSED_KEY="mwFounderTourPaused";
-const FOUNDER_TOUR_VIEWS=["home","attention","objectives","notifications","analytics","coaches","athletes","applications","organizations","revenue","costs","sponsorships","partnerships","website","marketing","ai","programs","knowledge","support","operations","people","risk","launch","product","system","security","settings"];
+const FOUNDER_TOUR_VIEWS=["home","attention","objectives","notifications","analytics","coaches","athletes","applications","organizations","revenue","costs","sponsorships","partnerships","website","marketing","skool","ai","programs","knowledge","support","operations","people","risk","launch","product","system","security","settings"];
 const FOUNDER_TOUR_VIEW_COPY={
   home:"Your executive command center. This is the first place to look for company-wide health, revenue, customers, risks, support, website activity, and items needing your attention.",
   attention:"A prioritized queue of matters that need Founder review. Use this to avoid hunting through every department for problems.",
@@ -1231,6 +1303,7 @@ const FOUNDER_TOUR_VIEW_COPY={
   partnerships:"Business-development opportunities and proposals. Drafting and pipeline status live here; external sending remains a human action.",
   website:"Traffic, conversion, signup, and public-site growth signals for MW Dynasty.",
   marketing:"Lead and campaign management for company growth, including campaign performance and sales pipeline information.",
+  skool:"Your AI-managed Skool content calendar. Generate a seven-day plan, review and approve drafts, copy posts for manual Skool publishing, and mark what has been posted without using prohibited posting bots.",
   ai:"The AI Company. This is where you see the AI workforce, queued work, approvals, objectives, playbooks, and AI operating activity.",
   programs:"Official MW program governance. Use this to control program releases and protect the training system from unauthorized methodology changes.",
   knowledge:"The official MW methodology and knowledge-governance area. Proposed changes should be reviewed before becoming official.",
