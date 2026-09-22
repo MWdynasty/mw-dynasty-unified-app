@@ -40,7 +40,13 @@ module.exports=async function handler(req,res){
       const managementSections=new Set(['finance_costs','people','risk','operations']);
       let data;
       if(section==='programs') data=await rpc(token,'mw_founder_program_control',{});
-      else if(section==='finance') data=await rpc(token,'mw_founder_finance_snapshot',{});
+      else if(section==='finance'){
+        const [snapshot,stripeResult]=await Promise.all([
+          rpc(token,'mw_founder_finance_snapshot',{}),
+          fetch(`${SUPABASE_URL}/functions/v1/mw-founder-stripe-cfo`,{headers:{Authorization:`Bearer ${token}`}}).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>null)})).catch(()=>({ok:false,status:0,data:null}))
+        ]);
+        data={...snapshot,stripe:stripeResult.ok?stripeResult.data:{ok:false,connected:false,error:stripeResult.data?.error||'Stripe CFO connection unavailable',status:stripeResult.status}};
+      }
       else if(section==='customer_health') data=await rpc(token,'mw_founder_customer_health',{});
       else if(section==='support_triage') data=await rpc(token,'mw_founder_support_triage_snapshot',{});
       else if(section==='notifications') data=await rpc(token,'mw_founder_notifications_snapshot',{});
