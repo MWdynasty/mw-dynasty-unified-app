@@ -151,6 +151,9 @@ includes('founder/index.html','🎙 Speak to Design Team','Website Design Team v
 includes('server/api/founder-ai.js',"'employee_chat'",'Direct AI employee conversation mode missing');
 includes('server/api/speak.js',"coachType==='employee'",'AI employee text-to-speech authorization missing');
 includes('server/api/transcribe.js',"gpt-4o-mini-transcribe",'Founder voice transcription endpoint missing');
+includes('founder/index.html','Financial Source Coverage','CFO financial source coverage UI missing');
+includes('supabase/migrations/20260921_founder_cfo_financial_source_registry.sql','founder_financial_sources','CFO financial source registry migration missing');
+includes('supabase/migrations/20260921_founder_cfo_financial_source_registry.sql','financial_source_summary','CFO financial source snapshot coverage missing');
 includes('api/mw.js',"'transcribe': require('../server/api/transcribe')",'Unified API gateway missing Founder voice transcription route');
 includes('vercel.json','"source": "/api/transcribe"','Vercel voice transcription rewrite missing');
 includes('vercel.json','microphone=(self)','Founder OS microphone permission policy missing');
