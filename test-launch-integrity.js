@@ -142,6 +142,8 @@ includes('founder/index.html','WEBSITE & GROWTH CENTER','Founder Website & Growt
 includes('founder/index.html','MW Website Design Team','Founder Website Design Studio request flow missing');
 includes('founder/index.html','Approve & Publish','Founder website publish approval control missing');
 includes('server/api/founder-ai.js',"mode==='website_redesign'",'Founder AI website redesign mode missing');
+includes('server/api/founder-ai.js','Website Design Studio exists inside Founder OS → Website & Growth.','Founder AI capability map missing Website Design Studio');
+includes('server/api/founder-ai.js','Skool Content Center exists inside Founder OS → Skool Content.','Founder AI capability map missing Skool Content Center');
 includes('server/api/founder.js',"action==='review_website_project'",'Founder website project review action missing');
 includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','founder_website_projects','Founder website project schema missing');
 includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','approved_for_publish','Founder website publish gate missing');
