@@ -114,6 +114,9 @@ includes('founder/index.html','Customer Success Watch','Founder customer-success
 includes('founder/index.html','AI Support Triage','Founder support triage UI missing');
 
 includes('server/api/founder-ai.js',"mode==='execute_task'",'Founder AI task execution mode missing');
+includes('server/api/founder-ai.js','Oversight mode:','Founder AI oversight context missing');
+includes('server/api/founder-ai.js','human_specialist_required','Founder AI specialist-review boundary missing');
+includes('server/api/founder-ai.js','Qualified specialist review required','Founder AI specialist escalation language missing');
 includes('founder/index.html','Run AI','Founder AI task execution control missing');
 includes('founder/index.html','AI AUTONOMOUS','Founder AI oversight badge missing');
 includes('founder/index.html','AI + FOUNDER APPROVAL','Founder approval oversight badge missing');
