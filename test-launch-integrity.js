@@ -95,6 +95,11 @@ includes('founder/index.html','FOUNDER_TOUR_VIEWS','Founder full-section tour pl
 includes('founder/index.html','querySelectorAll("#content button")','Founder live-button tour scan missing');
 includes('founder/index.html','FOUNDER_TOUR_REFERENCE_CONTROLS','Founder hidden-control tour references missing');
 includes('founder/index.html','maybeStartFounderTour','Founder first-access tour trigger missing');
+includes('founder/index.html','FOUNDER_RESUME_VIEW_KEY','Founder self-healing resume state missing');
+includes('founder/index.html','healFounderAuth','Founder automatic auth repair missing');
+includes('founder/index.html','founderWatchdog','Founder session watchdog missing');
+includes('founder/index.html','Connection interrupted','Founder offline self-recovery UX missing');
+includes('founder/index.html','Automatic recovery was attempted','Founder bounded recovery fallback missing');
 
 includes('server/api/founder.js',"action==='update_notification'",'Founder notification action missing');
 includes('founder/index.html','FOUNDER NOTIFICATIONS','Founder notifications UI missing');
