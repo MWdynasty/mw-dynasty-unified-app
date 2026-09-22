@@ -18,6 +18,7 @@ const handlers = {
   'smart-entry': require('../server/api/smart-entry'),
   'season-calendar': require('../server/api/season-calendar'),
   'speak': require('../server/api/speak'),
+  'transcribe': require('../server/api/transcribe'),
   'status': require('../server/api/status'),
   'coach/access': require('../server/api/coach/access'),
   'coach/athlete': require('../server/api/coach/athlete'),
@@ -40,12 +41,12 @@ module.exports = async function mwGateway(req, res) {
   res.setHeader('Vary','Authorization');
   res.setHeader('X-Robots-Tag','noindex, nofollow');
 
+  const route = String(req.query && req.query.route || '').replace(/^\/+|\/+$/g, '');
   const length=Number(req.headers?.['content-length']||0);
-  if(Number.isFinite(length)&&length>2_000_000){
+  const maxRequestBytes=route==='transcribe'?4_000_000:2_000_000;
+  if(Number.isFinite(length)&&length>maxRequestBytes){
     return res.status(413).json({error:'Request is too large.',requestId});
   }
-
-  const route = String(req.query && req.query.route || '').replace(/^\/+|\/+$/g, '');
   const handler = handlers[route];
   if (!handler) {
     return res.status(404).json({ error: 'MW API route not found',requestId });
