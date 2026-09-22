@@ -70,8 +70,12 @@ module.exports=async function handler(req,res){
       }else if(managementSections.has(section)) data=await rpc(token,'mw_founder_management_snapshot',{p_section:section});
       else data=await rpc(token,'mw_founder_os_snapshot',{p_section:section});
       if(section==='website'){
-        const [site,app]=await Promise.all([checkUrl('https://mwdynasty.com/'),checkUrl('https://app.mwdynasty.com/')]);
-        return res.status(200).json({ok:true,data:{...data,health:{website:site,app}}});
+        const [site,app,projects]=await Promise.all([
+          checkUrl('https://mwdynasty.com/'),
+          checkUrl('https://app.mwdynasty.com/'),
+          rest(token,'founder_website_projects?select=id,title,request_text,target_scope,source_system,source_reference,status,proposal_summary,proposed_changes,acceptance_criteria,design_notes,build_notes,preview_url,preview_commit_sha,production_commit_sha,production_url,requires_founder_publish_approval,approved_build_at,approved_publish_at,published_at,last_error,created_at,updated_at&order=updated_at.desc&limit=50')
+        ]);
+        return res.status(200).json({ok:true,data:{...data,health:{website:site,app},website_projects:projects}});
       }
       if(section==='ai_company'){
         const queue=await rpc(token,'mw_founder_ai_operating_queue_snapshot',{});
@@ -131,6 +135,29 @@ module.exports=async function handler(req,res){
       if(typeof b.outputSummary==='string')patch.output_summary=clean(b.outputSummary,4000)||null;
       if(patch.status==='completed')patch.completed_at=new Date().toISOString();
       const row=one(await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='review_website_project'){
+      const id=clean(b.id,80),decision=clean(b.decision,40);
+      if(!id||!['approve_build','approve_publish','cancel','retry_build'].includes(decision))return res.status(400).json({error:'Valid website project decision required.'});
+      const auth=await founderAuth(req);
+      const existing=one(await rest(token,`founder_website_projects?id=eq.${encodeURIComponent(id)}&select=id,status,preview_url,source_system&limit=1`));
+      if(!existing)return res.status(404).json({error:'Website project not found.'});
+      const patch={updated_at:new Date().toISOString()};
+      if(decision==='approve_build'){
+        if(!['proposal_ready','failed','blocked_external_editor'].includes(existing.status))return res.status(409).json({error:'This website project is not waiting for build approval.'});
+        patch.status='approved_for_build';patch.approved_build_by=auth.user.id;patch.approved_build_at=new Date().toISOString();patch.last_error=null;
+      }else if(decision==='retry_build'){
+        if(!['failed','blocked_external_editor'].includes(existing.status))return res.status(409).json({error:'Only a blocked or failed website build can be retried.'});
+        patch.status='approved_for_build';patch.approved_build_by=auth.user.id;patch.approved_build_at=new Date().toISOString();patch.last_error=null;
+      }else if(decision==='approve_publish'){
+        if(existing.status!=='preview_ready'||!existing.preview_url)return res.status(409).json({error:'A verified preview must be ready before production publish approval.'});
+        patch.status='approved_for_publish';patch.approved_publish_by=auth.user.id;patch.approved_publish_at=new Date().toISOString();
+      }else if(decision==='cancel'){
+        if(existing.status==='published')return res.status(409).json({error:'A published website project cannot be cancelled.'});
+        patch.status='cancelled';
+      }
+      const row=one(await rest(token,`founder_website_projects?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
       return res.status(200).json({ok:true,item:row});
     }
     if(action==='create_knowledge'){
