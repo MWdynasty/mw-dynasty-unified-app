@@ -151,6 +151,9 @@ includes('founder/index.html','🎙 Speak to Design Team','Website Design Team v
 includes('server/api/founder-ai.js',"'employee_chat'",'Direct AI employee conversation mode missing');
 includes('server/api/speak.js',"coachType==='employee'",'AI employee text-to-speech authorization missing');
 includes('server/api/transcribe.js',"gpt-4o-mini-transcribe",'Founder voice transcription endpoint missing');
+includes('api/mw.js',"'transcribe': require('../server/api/transcribe')",'Unified API gateway missing Founder voice transcription route');
+includes('vercel.json','"source": "/api/transcribe"','Vercel voice transcription rewrite missing');
+includes('vercel.json','microphone=(self)','Founder OS microphone permission policy missing');
 includes('server/api/founder.js',"action==='review_website_project'",'Founder website project review action missing');
 includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','founder_website_projects','Founder website project schema missing');
 includes('supabase/migrations/20260921_founder_os_v23_website_design_studio.sql','approved_for_publish','Founder website publish gate missing');
