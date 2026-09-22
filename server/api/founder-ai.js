@@ -70,7 +70,7 @@ module.exports=async function handler(req,res){
   try{
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const mode=['brief','chat','plan','execute_task','triage_support','department_brief','partnership_proposal','website_redesign'].includes(body.mode)?body.mode:'chat';
+    const mode=['brief','chat','plan','execute_task','triage_support','department_brief','partnership_proposal','website_redesign','generate_skool_week'].includes(body.mode)?body.mode:'chat';
     const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk,launch]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company'),
       rpcNamed(token,'mw_founder_finance_snapshot',{}),
@@ -115,6 +115,81 @@ Human authority is mandatory:
 SECURED MW BUSINESS CONTEXT:
 ${JSON.stringify(context).slice(0,90000)}`;
 
+    if(mode==='generate_skool_week'){
+      const startDate=clean(body.startDate,20);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate))return res.status(400).json({error:'Valid Skool calendar start date required.'});
+      const base=new Date(startDate+'T12:00:00Z');
+      if(Number.isNaN(base.getTime()))return res.status(400).json({error:'Valid Skool calendar start date required.'});
+      const dates=Array.from({length:7},(_,i)=>{
+        const d=new Date(base.getTime()+i*86400000);
+        return d.toISOString().slice(0,10);
+      });
+      const endDate=dates[6];
+      const existingResp=await fetch(`${SUPABASE_URL}/rest/v1/founder_skool_posts?scheduled_for=gte.${encodeURIComponent(startDate)}&scheduled_for=lte.${encodeURIComponent(endDate)}&select=id,scheduled_for,status,title&order=scheduled_for.asc`,{
+        headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}
+      });
+      const existing=await existingResp.json().catch(()=>[]);
+      if(!existingResp.ok)throw new Error(existing?.message||'Skool calendar could not be loaded.');
+      const occupied=new Set((Array.isArray(existing)?existing:[]).filter(x=>x.status!=='skipped').map(x=>String(x.scheduled_for)));
+      const openDates=dates.filter(d=>!occupied.has(d));
+      if(!openDates.length)return res.status(200).json({ok:true,mode,created:[],existing,summary:'The selected 7-day Skool calendar is already filled.'});
+
+      const communityAgent=(aiCompany.agents||[]).find(a=>a.code==='community_manager')||null;
+      const skoolInstructions=guard+`
+You are coordinating the MW Dynasty Skool content team led by Community Manager AI with support from Content/SEO, Creative, Lifecycle Marketing, Sprint School Education, UX Research, and Website & Growth.
+Create high-quality community content drafts only. Do NOT claim the posts were published or sent.
+Skool posting remains a human action. These drafts will be reviewed in Founder OS, copied, and posted manually.
+Return JSON only with this exact shape:
+{"posts":[{"scheduled_for":"YYYY-MM-DD","title":"...","body":"...","category":"...","post_type":"discussion|education|challenge|announcement|poll|spotlight|recap","audience":"athletes|coaches|parents|athletes_and_coaches|everyone","objective":"...","cta":"...","asset_brief":"..."}]}
+Rules:
+- Return exactly one post for every date listed in OPEN DATES and no other dates.
+- Keep MW Dynasty's voice premium, encouraging, useful, and specific rather than hype-heavy.
+- Vary the week: training education, Sprint School learning, engagement/community, accountability, coach or parent value, challenge/poll, and a recap or motivation angle.
+- Do not invent athlete results, testimonials, customer quotes, guarantees, medical claims, pricing, or product features not supported by the secured MW context.
+- Never diagnose injuries or give medical treatment advice.
+- Do not alter or invent official MW training methodology. Educational references must stay consistent with Founder-approved methodology.
+- Use mwdynasty.com as a website CTA only when it naturally helps; do not turn every post into an advertisement.
+- Make the post body ready to paste into Skool with readable short paragraphs.
+- If a visual would help, asset_brief should briefly tell Creative AI what to make. Otherwise use an empty string.
+- Poll posts should clearly include the question and answer choices in the body.
+OPEN DATES: ${JSON.stringify(openDates)}
+Primary AI employee: ${communityAgent?.title||'Community Manager'}`;
+
+      const raw=await openai(skoolInstructions,'Build the next MW Dynasty Skool community content week.',3600);
+      let result;try{result=parseJson(raw)}catch{return res.status(502).json({error:'Skool Content AI returned an unreadable weekly plan. Try again.'})}
+      const proposed=Array.isArray(result.posts)?result.posts:[];
+      const allowedDates=new Set(openDates);
+      const seen=new Set();
+      const rows=proposed.filter(p=>{
+        const d=String(p?.scheduled_for||'');
+        if(!allowedDates.has(d)||seen.has(d))return false;
+        seen.add(d);return true;
+      }).map(p=>({
+        scheduled_for:String(p.scheduled_for),
+        title:clean(p.title,180)||'MW Dynasty Community Post',
+        body:clean(p.body,12000),
+        category:clean(p.category,120)||'Community',
+        post_type:['discussion','education','challenge','announcement','poll','spotlight','recap'].includes(p.post_type)?p.post_type:'discussion',
+        audience:['athletes','coaches','parents','athletes_and_coaches','everyone'].includes(p.audience)?p.audience:'athletes_and_coaches',
+        objective:clean(p.objective,1000)||null,
+        cta:clean(p.cta,1000)||null,
+        asset_brief:clean(p.asset_brief,2000)||null,
+        status:'draft',
+        source:'ai',
+        ai_agent_code:'community_manager',
+        generation_metadata:{kind:'skool_weekly_plan',start_date:startDate,generated_at:new Date().toISOString()}
+      })).filter(x=>x.body);
+
+      if(rows.length!==openDates.length)return res.status(502).json({error:'Skool Content AI did not return a complete draft for every open calendar day. Try again.'});
+      const stored=await insert(token,'founder_skool_posts',rows);
+      await insert(token,'founder_ai_runs',[{
+        task_id:null,agent_code:'community_manager',run_type:'draft',status:'completed',
+        model:process.env.OPENAI_MODEL||'gpt-5.6-sol',
+        output_summary:`Prepared ${stored.length} Skool community post drafts for ${startDate} through ${endDate}.`,
+        metadata:{kind:'skool_weekly_content',start_date:startDate,end_date:endDate,posts_created:stored.length}
+      }]).catch(()=>[]);
+      return res.status(200).json({ok:true,mode,created:stored,existing,summary:`Prepared ${stored.length} Skool drafts for Founder review.`});
+    }
     if(mode==='website_redesign'){
       const request=clean(body.request,8000);
       const targetScope=clean(body.targetScope,120)||'public website';
