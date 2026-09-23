@@ -151,8 +151,23 @@ module.exports=async function handler(req,res){
       if(['approved','changes_requested','rejected'].includes(b.status))patch.decided_at=new Date().toISOString();
       const row=one(await rest(token,`founder_ai_presentations?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
       if(b.status==='approved'&&row?.project_id){
-        await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:'active',founder_decision_needed:null,updated_at:new Date().toISOString()}});
-        await rest(token,'founder_ai_authorizations',{method:'POST',body:{project_id:row.project_id,presentation_id:row.id,authorization_type:'approved_execution',scope:{source:'founder_presentation',presentation_title:row.title},status:'active',approved_by:auth.user.id}});
+        const project=one(await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}&select=id,status,authority_class,execution_scope,founder_decision_needed&limit=1`));
+        await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:project?.status||'active',founder_decision_needed:null,updated_at:new Date().toISOString()}});
+        await rest(token,'founder_ai_authorizations',{method:'POST',body:{
+          project_id:row.project_id,
+          presentation_id:row.id,
+          authorization_type:'approved_execution',
+          scope:{
+            source:'founder_presentation',
+            presentation_title:row.title,
+            decision_requested:row.decision_requested||null,
+            project_authority_class:project?.authority_class||null,
+            project_execution_scope:project?.execution_scope||{},
+            no_implied_authority:['production_publish','spending','pricing_changes','refunds','contracts','external_communications','brand_direction','official_methodology','destructive_security_or_data_changes']
+          },
+          status:'active',
+          approved_by:auth.user.id
+        }});
       }
       return res.status(200).json({ok:true,item:row});
     }
