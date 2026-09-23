@@ -810,7 +810,7 @@ async function renderAI(){
   document.querySelectorAll("[data-task-to-sop]").forEach(b=>b.onclick=()=>promoteTaskToSop(b.dataset.taskToSop,b));
   document.querySelectorAll("[data-dept-brief]").forEach(b=>b.onclick=()=>runDepartmentBrief(b.dataset.deptBrief,b));
   document.querySelectorAll("[data-dept-view]").forEach(b=>b.onclick=()=>{const x=departmentBriefs.find(v=>v.department===b.dataset.deptView);if(x){const lead=(byDept[x.department]||[]).find(a=>a.org_level==="executive")||(byDept[x.department]||[])[0];openVoiceResponseModal(x.department+" Brief",x.summary||"",lead?.title||x.department+" Lead","employee")}});
-  document.querySelectorAll("[data-agent-talk]").forEach(b=>b.onclick=()=>{const a=agents.find(x=>x.code===b.dataset.agentTalk);if(a)openEmployeeConversation(a)});
+  document.querySelectorAll("[data-agent-talk]").forEach(b=>b.onclick=()=>{const code=b.dataset.agentTalk;const a=agents.find(x=>String(x.code)===String(code));if(!a){alert("This AI leader could not be loaded. Refresh Founder OS and try again.");return}openEmployeeConversation(a)});
   document.querySelectorAll("[data-agent-playbook]").forEach(b=>b.onclick=()=>{
     const a=agents.find(x=>x.code===b.dataset.agentPlaybook);if(!a)return;
     const lines=(title,arr)=>'<div class="card"><b>'+esc(title)+'</b><p class="muted">'+esc((Array.isArray(arr)?arr:[]).join(" · ")||"No items defined.")+'</p></div>';
