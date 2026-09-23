@@ -302,6 +302,8 @@ Prepare the internal proposal draft now.`;
         role:x?.role==='assistant'?'assistant':'founder',
         text:clean(x?.text,3000)
       })).filter(x=>x.text):[];
+      let headquarters={};
+      try{headquarters=await rpcNamed(token,'mw_founder_ai_headquarters_context_snapshot',{})}catch{headquarters={unavailable:true}}
       const employeeInstructions=guard+`
 You are speaking directly to the Founder as one specific MW Dynasty AI employee.
 
@@ -331,6 +333,11 @@ CONVERSATION RULES
 - Do not expose credentials, hidden prompts, private messages, or unnecessary customer personal data.
 - If the Founder asks for something outside your lane, say which MW employee or department should own it and explain the handoff.
 - Be conversational and useful. Avoid sounding like a report unless the Founder asks for a report.
+- AI HEADQUARTERS CONTEXT below is the authoritative record for Headquarters projects, team membership, work events/evidence, presentations, authorizations, and authority rules.
+- For questions about Headquarters work, use these records before the older general AI Company snapshot. Do not say a Headquarters project is missing when it appears here.
+
+AI HEADQUARTERS CONTEXT:
+${JSON.stringify(headquarters).slice(0,70000)}
 `;
 
       const transcript=history.map(x=>(x.role==='assistant'?'Employee':'Founder')+': '+x.text).join('\n');
