@@ -1112,6 +1112,13 @@ async function sendEmployeeMessage(agent){
   }catch(e){chat.innerHTML+='<div class="bubble ai">'+esc(e.message)+'</div>'}
   finally{send.disabled=false}
 }
+function openEmployeeAI(agentCode){
+  const code=String(agentCode||"");
+  const candidates=(cache.ai_company?.agents||[]);
+  const agent=candidates.find(x=>String(x.code)===code);
+  if(agent){openEmployeeConversation(agent);return}
+  api("ai_company",true).then(d=>{const a=(d.agents||[]).find(x=>String(x.code)===code);if(a)openEmployeeConversation(a);else alert("This AI leader could not be loaded. Refresh Founder OS and try again.")}).catch(e=>alert(e.message));
+}
 function openEmployeeConversation(agent){
   if(!agent)return;
   stopFounderAIReadAloud();stopFounderVoiceInput(true);
