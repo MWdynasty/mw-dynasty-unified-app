@@ -87,6 +87,18 @@ module.exports=async function handler(req,res){
         data=await rpc(token,'mw_founder_kpi_history',{p_days:90});
       }else if(managementSections.has(section)) data=await rpc(token,'mw_founder_management_snapshot',{p_section:section});
       else data=await rpc(token,'mw_founder_os_snapshot',{p_section:section});
+      if(section==='headquarters'){
+        const [projects,members,events,presentations,authorizations,rules,agents]=await Promise.all([
+          rest(token,'founder_ai_collaboration_projects?select=*&order=updated_at.desc&limit=100'),
+          rest(token,'founder_ai_project_members?select=*&order=joined_at.asc&limit=500'),
+          rest(token,'founder_ai_work_events?select=*&order=created_at.desc&limit=500'),
+          rest(token,'founder_ai_presentations?select=*&order=updated_at.desc&limit=200'),
+          rest(token,'founder_ai_authorizations?select=*&order=created_at.desc&limit=200'),
+          rest(token,'founder_ai_authority_rules?select=*&active=eq.true&order=code.asc'),
+          rest(token,'founder_ai_agents?select=code,name,title,department,manager_code,org_level,authority_level,status,oversight_mode&status=eq.active&order=sort_order.asc')
+        ]);
+        return res.status(200).json({ok:true,data:{projects,members,events,presentations,authorizations,rules,agents}});
+      }
       if(section==='website'){
         const [site,app,projects]=await Promise.all([
           checkUrl('https://mwdynasty.com/'),
@@ -115,6 +127,34 @@ module.exports=async function handler(req,res){
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
     const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const action=clean(b.action,60);
+    if(action==='create_hq_project'){
+      const title=clean(b.title,180),lead=clean(b.leadAgentCode,80);
+      if(!title||!lead)return res.status(400).json({error:'Project title and lead AI employee are required.'});
+      const valid=one(await rest(token,`founder_ai_agents?code=eq.${encodeURIComponent(lead)}&status=eq.active&select=code,department&limit=1`));
+      if(!valid)return res.status(400).json({error:'Unknown active AI employee.'});
+      const authority=['autonomous','controlled','founder_required','specialist_required'].includes(b.authorityClass)?b.authorityClass:'controlled';
+      const row=one(await rest(token,'founder_ai_collaboration_projects',{method:'POST',body:{
+        title,department:valid.department,lead_agent_code:lead,status:'active',authority_class:authority,
+        problem_statement:clean(b.problemStatement,4000)||null,proposed_outcome:clean(b.proposedOutcome,4000)||null,
+        founder_decision_needed:clean(b.founderDecisionNeeded,2000)||null,created_by_agent_code:lead
+      }}));
+      await rest(token,'founder_ai_project_members',{method:'POST',body:{project_id:row.id,agent_code:lead,responsibility:'Project lead'}});
+      return res.status(200).json({ok:true,item:row});
+    }
+    if(action==='update_hq_presentation'){
+      const id=clean(b.id,80);if(!id)return res.status(400).json({error:'Presentation id required.'});
+      const allowed=['founder_reviewing','approved','changes_requested','rejected'];
+      if(!allowed.includes(b.status))return res.status(400).json({error:'Valid Founder presentation decision required.'});
+      const auth=await founderAuth(req);
+      const patch={status:b.status,updated_at:new Date().toISOString()};
+      if(['approved','changes_requested','rejected'].includes(b.status))patch.decided_at=new Date().toISOString();
+      const row=one(await rest(token,`founder_ai_presentations?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      if(b.status==='approved'&&row?.project_id){
+        await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:'active',founder_decision_needed:null,updated_at:new Date().toISOString()}});
+        await rest(token,'founder_ai_authorizations',{method:'POST',body:{project_id:row.project_id,presentation_id:row.id,authorization_type:'approved_execution',scope:{source:'founder_presentation',presentation_title:row.title},status:'active',approved_by:auth.user.id}});
+      }
+      return res.status(200).json({ok:true,item:row});
+    }
     if(action==='create_skool_post'){
       const scheduledFor=clean(b.scheduledFor,20),title=clean(b.title,180),body=clean(b.body,12000);
       if(!scheduledFor||!/^\d{4}-\d{2}-\d{2}$/.test(scheduledFor))return res.status(400).json({error:'Valid Skool schedule date required.'});
