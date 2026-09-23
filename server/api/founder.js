@@ -86,6 +86,7 @@ module.exports=async function handler(req,res){
         await rpc(token,'mw_founder_capture_kpi_snapshot',{});
         data=await rpc(token,'mw_founder_kpi_history',{p_days:90});
       }else if(managementSections.has(section)) data=await rpc(token,'mw_founder_management_snapshot',{p_section:section});
+      else if(section==='headquarters') data={};
       else data=await rpc(token,'mw_founder_os_snapshot',{p_section:section});
       if(section==='headquarters'){
         const [projects,members,events,presentations,authorizations,rules,agents]=await Promise.all([
