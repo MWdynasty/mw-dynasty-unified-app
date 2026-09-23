@@ -46,6 +46,7 @@
     <div class="sideBrand"><strong>MW DYNASTY</strong><span>FOUNDER OPERATING SYSTEM</span></div>
     <div class="navGroup"><div class="navLabel">EXECUTIVE</div>
       <button class="navBtn active" data-view="home"><span>⌂</span>Executive Home</button>
+      <button class="navBtn" data-view="headquarters"><span>HQ</span>AI Headquarters <i class="navCount" data-count="headquarters"></i></button>
       <button class="navBtn" data-view="attention"><span>!</span>Needs Attention <i class="navCount" data-count="attention"></i></button>
       <button class="navBtn" data-view="objectives"><span>◎</span>Company Objectives</button>
       <button class="navBtn" data-view="notifications"><span>●</span>Notifications <i class="navCount" data-count="notifications"></i></button>
@@ -105,7 +106,7 @@ const KEY="mwFounderSupabaseSession";
 let session=null,currentView="home",cache={},aiHistory=[],employeeAIHistories={},founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderVoiceActiveButtonId=null,founderMicRecorder=null,founderMicStream=null,founderMicTimer=null,founderRefreshPromise=null,founderSessionTimer=null,founderHealPromise=null,founderViewHealAttempts={};
 const FOUNDER_RESUME_VIEW_KEY="mwFounderResumeView";
 const FOUNDER_AUTO_VOICE_KEY="mwFounderAutoVoice";
-const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",skool:"Skool Content Center",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
+const titles={home:"Executive Home",headquarters:"AI Headquarters",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",skool:"Skool Content Center",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -1453,10 +1454,39 @@ async function renderAnalytics(){
     '<div class="card" style="margin-top:14px"><div class="brand">DATA & ANALYTICS AI</div><h3>Metrics should explain decisions, not decorate a dashboard.</h3><p class="muted">This history is the base for trend detection, churn analysis, customer cohorts, ARPU, plan mix, sponsorship utilization, engagement, and future forecasting. Founder AI receives current finance and customer-success context without exposing unnecessary customer content.</p></div>';
 }
 
+async function renderHeadquarters(){
+  const d=await api("headquarters",true),agents=d.agents||[],projects=d.projects||[],members=d.members||[],events=d.events||[],presentations=d.presentations||[],rules=d.rules||[];
+  const ready=presentations.filter(x=>["ready_for_founder","founder_reviewing"].includes(x.status));
+  const active=projects.filter(x=>!["completed","cancelled"].includes(x.status));
+  const autonomous=rules.filter(x=>x.authority_class==="autonomous");
+  const founderRules=rules.filter(x=>x.authority_class==="founder_required");
+  const departments=[...new Set(agents.map(x=>x.department).filter(Boolean))].sort();
+  const agentByCode=Object.fromEntries(agents.map(x=>[x.code,x]));
+  const memberCount=id=>members.filter(x=>x.project_id===id).length;
+  const eventCount=id=>events.filter(x=>x.project_id===id).length;
+  $("content").innerHTML='<section class="hero aiHero"><div class="brand">MW DYNASTY · AI HEADQUARTERS</div><h2>Your company is at work.</h2><p>AI employees collaborate across departments, repair routine operational problems within policy, prepare consequential decisions for leadership review, and bring Founder-level decisions to the Boardroom with evidence.</p><div class="heroActions"><button class="btn primary" id="newHQProject">Open Company Project</button><button class="btn blue" data-go="ai">View Workforce</button></div></section>'+
+  '<div class="stats">'+stat("AI Employees",agents.length,"Across "+departments.length+" departments")+stat("Active Team Projects",active.length,"Cross-functional work")+stat("Boardroom",ready.length,"Founder decisions waiting")+stat("Autonomous Rules",autonomous.length,"Fix, test, verify, report")+stat("Founder-Controlled",founderRules.length,"Present before consequential action")+'</div>'+
+  sectionHead("Founder Boardroom","Department leaders present decisions here. Approval authorizes only the defined execution scope; production publishing, money, pricing, major design/brand direction and important external marketing remain Founder-controlled.")+
+  '<div class="grid2">'+(ready.length?ready.map(p=>{const lead=agentByCode[p.presenting_agent_code]||{};return '<div class="card"><div class="brand">'+esc((p.presentation_type||"proposal").replaceAll("_"," ").toUpperCase())+'</div><h3>'+esc(p.title)+'</h3><p class="muted">'+esc(p.executive_summary||"Leadership presentation ready for review.")+'</p>'+(p.decision_requested?'<div class="row"><div><b>Decision requested</b><small>'+esc(p.decision_requested)+'</small></div></div>':"")+(p.risk_summary?'<p class="muted"><b>Risk:</b> '+esc(p.risk_summary)+'</p>':"")+'<small>'+esc(lead.title||p.presenting_agent_code||"Department leader")+'</small><div class="heroActions"><button class="btn small good" data-hq-approve="'+esc(p.id)+'">Approve Defined Scope</button><button class="btn small" data-hq-changes="'+esc(p.id)+'">Request Changes</button><button class="btn small danger" data-hq-reject="'+esc(p.id)+'">Reject</button></div></div>'}).join(""):'<div class="card empty">No leadership presentations are waiting for your decision.</div>')+'</div>'+
+  sectionHead("Company Work Floor","Shared projects let Engineering, IT, Security, Product, Finance, Marketing and other employees hand work to one another instead of operating as isolated boxes.")+
+  '<div class="grid3">'+(active.length?active.map(p=>'<div class="card"><div class="row" style="padding:0;border:0;background:transparent"><div><div class="brand">'+esc((p.department||"Company").toUpperCase())+'</div><h3>'+esc(p.title)+'</h3></div>'+badge(p.authority_class,p.authority_class==="autonomous"?"good":p.authority_class==="founder_required"?"warn":"blue")+'</div><p class="muted">'+esc(p.problem_statement||p.proposed_outcome||"Active company project")+'</p><div class="kpiLine"><span>Lead</span><b>'+esc(agentByCode[p.lead_agent_code]?.title||p.lead_agent_code||"—")+'</b></div><div class="kpiLine"><span>Employees collaborating</span><b>'+memberCount(p.id)+'</b></div><div class="kpiLine"><span>Work events / evidence</span><b>'+eventCount(p.id)+'</b></div><div class="kpiLine"><span>Status</span>'+badge(p.status,p.status==="blocked"?"bad":p.status==="waiting_founder"?"warn":"good")+'</div></div>').join(""):'<div class="card empty">No active cross-functional projects yet.</div>')+'</div>'+
+  sectionHead("Department Offices","Leaders coordinate specialists and bring only consequential decisions upstairs.")+
+  '<div class="grid3">'+departments.map(dept=>{const list=agents.filter(x=>x.department===dept);const lead=list.find(x=>x.org_level==="executive")||list.find(x=>!x.manager_code)||list[0];return '<div class="card"><div class="brand">'+esc(dept.toUpperCase())+'</div><h3>'+esc(lead?.title||dept+" Lead")+'</h3><p class="muted">'+esc(list.length+" AI employee"+(list.length===1?"":"s")+" in this office")+'</p><div class="heroActions"><button class="btn small blue" data-agent-talk="'+esc(lead?.code||"")+'">Talk to Leader</button></div></div>'}).join("")+'</div>'+
+  sectionHead("Authority Charter","Routine maintenance can be fixed and verified autonomously. Material company decisions stop at the appropriate approval boundary.")+
+  '<div class="list">'+rules.map(r=>'<div class="row"><div><b>'+esc(r.label)+'</b><small>'+esc(r.description)+'</small></div><div class="right">'+badge(r.authority_class,r.authority_class==="autonomous"?"good":r.authority_class==="specialist_required"?"bad":"warn")+'</div></div>').join("")+'</div>';
+  bindGo();
+  document.querySelectorAll("[data-agent-talk]").forEach(b=>b.onclick=()=>openEmployeeAI(b.dataset.agentTalk));
+  $("newHQProject").onclick=()=>{const options=agents.map(a=>'<option value="'+esc(a.code)+'">'+esc(a.title+" · "+a.department)+'</option>').join("");modal("Open Company Project",'<label class="field">PROJECT TITLE<input id="hqTitle" placeholder="What are we working on?"></label><label class="field">PROBLEM / OPPORTUNITY<textarea id="hqProblem" rows="4" placeholder="What needs to be solved?"></textarea></label><label class="field">LEAD AI EMPLOYEE<select id="hqLead">'+options+'</select></label><label class="field">AUTHORITY<select id="hqAuthority"><option value="controlled">Controlled — prepare, escalate if consequential</option><option value="autonomous">Autonomous maintenance</option><option value="founder_required">Founder approval required</option><option value="specialist_required">Qualified specialist required</option></select></label><button class="btn primary" id="hqCreate">Open Project</button>');$("hqCreate").onclick=async()=>{try{await action("create_hq_project",{title:$("hqTitle").value,problemStatement:$("hqProblem").value,leadAgentCode:$("hqLead").value,authorityClass:$("hqAuthority").value});closeModal();renderHeadquarters()}catch(e){alert(e.message)}}};
+  document.querySelectorAll("[data-hq-approve]").forEach(b=>b.onclick=async()=>{if(!confirm("Approve the defined execution scope? This does not automatically approve production publishing, spending, pricing, or any action outside the presentation scope."))return;try{await action("update_hq_presentation",{id:b.dataset.hqApprove,status:"approved"});renderHeadquarters()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-hq-changes]").forEach(b=>b.onclick=async()=>{try{await action("update_hq_presentation",{id:b.dataset.hqChanges,status:"changes_requested"});renderHeadquarters()}catch(e){alert(e.message)}});
+  document.querySelectorAll("[data-hq-reject]").forEach(b=>b.onclick=async()=>{if(!confirm("Reject this proposal?"))return;try{await action("update_hq_presentation",{id:b.dataset.hqReject,status:"rejected"});renderHeadquarters()}catch(e){alert(e.message)}});
+}
+
 async function renderView(v){
   loading();
   try{
     if(v==="home")return await renderHome();
+    if(v==="headquarters")return await renderHeadquarters();
     if(v==="attention")return await renderAttention();
     if(v==="objectives")return await renderObjectives();
     if(v==="notifications")return await renderNotifications();
@@ -1524,8 +1554,9 @@ const FOUNDER_TOUR_VERSION="2026.09.21.1";
 const FOUNDER_TOUR_COMPLETE_KEY="mwFounderTourComplete";
 const FOUNDER_TOUR_PROGRESS_KEY="mwFounderTourProgress";
 const FOUNDER_TOUR_PAUSED_KEY="mwFounderTourPaused";
-const FOUNDER_TOUR_VIEWS=["home","attention","objectives","notifications","analytics","coaches","athletes","applications","organizations","revenue","costs","sponsorships","partnerships","website","marketing","skool","ai","programs","knowledge","support","operations","people","risk","launch","product","system","security","settings"];
+const FOUNDER_TOUR_VIEWS=["home","headquarters","attention","objectives","notifications","analytics","coaches","athletes","applications","organizations","revenue","costs","sponsorships","partnerships","website","marketing","skool","ai","programs","knowledge","support","operations","people","risk","launch","product","system","security","settings"];
 const FOUNDER_TOUR_VIEW_COPY={
+  headquarters:"MW Dynasty AI Headquarters. Cross-functional AI employees collaborate on shared projects, leaders present consequential decisions in the Boardroom, and routine maintenance can be repaired autonomously within the authority charter.",
   home:"Your executive command center. This is the first place to look for company-wide health, revenue, customers, risks, support, website activity, and items needing your attention.",
   attention:"A prioritized queue of matters that need Founder review. Use this to avoid hunting through every department for problems.",
   objectives:"Where you define company objectives, monitor progress, pause or resume work, and direct the AI company toward safe, reviewable execution.",
