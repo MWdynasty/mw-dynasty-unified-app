@@ -150,6 +150,15 @@ module.exports=async function handler(req,res){
       const patch={status:b.status,updated_at:new Date().toISOString()};
       if(['approved','changes_requested','rejected'].includes(b.status))patch.decided_at=new Date().toISOString();
       const row=one(await rest(token,`founder_ai_presentations?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:patch}));
+      if(b.status==='changes_requested'&&row?.project_id){
+        const revision=clean(b.revisionRequest,4000);
+        if(!revision)return res.status(400).json({error:'Tell the team what changes you want before sending the presentation back.'});
+        await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:'active',founder_decision_needed:revision,updated_at:new Date().toISOString()}});
+        await rest(token,'founder_ai_work_events',{method:'POST',body:{project_id:row.project_id,agent_code:row.presenting_agent_code||null,event_type:'founder_revision_request',summary:'Founder requested changes: '+revision,evidence:{presentation_id:row.id,revision_request:revision,returned_to_team:true}}});
+      }
+      if(b.status==='rejected'&&row?.project_id){
+        await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:'blocked',founder_decision_needed:null,updated_at:new Date().toISOString()}});
+      }
       if(b.status==='approved'&&row?.project_id){
         const project=one(await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}&select=id,status,authority_class,execution_scope,founder_decision_needed&limit=1`));
         await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:project?.status||'active',founder_decision_needed:null,updated_at:new Date().toISOString()}});
