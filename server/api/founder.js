@@ -128,6 +128,29 @@ module.exports=async function handler(req,res){
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
     const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const action=clean(b.action,60);
+    if(action==='verify_hq_runtime'){
+      const projectId=clean(b.projectId,80);
+      if(!projectId)return res.status(400).json({error:'Project id required.'});
+      const project=one(await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(projectId)}&select=id,title,status&limit=1`));
+      if(!project)return res.status(404).json({error:'Headquarters project not found.'});
+      const nonce='runtime-'+Date.now().toString(36);
+      const written=one(await rest(token,'founder_ai_work_events',{method:'POST',body:{
+        project_id:projectId,agent_code:'qa_automation',event_type:'test',
+        summary:'Authenticated Founder OS runtime persistence probe.',
+        evidence:{qa_probe:true,nonce,phase:'authenticated_write',production_action:false}
+      }}));
+      if(!written?.id)return res.status(500).json({error:'Authenticated runtime write did not return an event id.'});
+      const readBack=one(await rest(token,`founder_ai_work_events?id=eq.${encodeURIComponent(written.id)}&project_id=eq.${encodeURIComponent(projectId)}&select=id,project_id,agent_code,event_type,summary,evidence,created_at&limit=1`));
+      const persisted=!!readBack&&readBack.project_id===projectId&&readBack.agent_code==='qa_automation'&&readBack.event_type==='test'&&readBack?.evidence?.nonce===nonce;
+      if(!persisted)return res.status(500).json({error:'Authenticated runtime read-back did not match the written QA event.'});
+      const verified=one(await rest(token,'founder_ai_work_events',{method:'POST',body:{
+        project_id:projectId,agent_code:'release_qa',event_type:'verification',
+        summary:'Authenticated runtime persistence verified through Founder OS: harmless QA event write succeeded and an independent authenticated read-back returned matching persisted fields.',
+        evidence:{qa_probe:true,source_event_id:written.id,nonce,authenticated_write:true,authenticated_read_back:true,field_match:true,boardroom_ui_evidence:'Founder must confirm rendered result in the live preview UI',production_action:false}
+      }}));
+      await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(projectId)}`,{method:'PATCH',body:{status:'active',updated_at:new Date().toISOString()}});
+      return res.status(200).json({ok:true,item:{project_id:projectId,write_event_id:written.id,verification_event_id:verified?.id||null,persisted:true}});
+    }
     if(action==='create_hq_project'){
       const title=clean(b.title,180),lead=clean(b.leadAgentCode,80);
       if(!title||!lead)return res.status(400).json({error:'Project title and lead AI employee are required.'});
