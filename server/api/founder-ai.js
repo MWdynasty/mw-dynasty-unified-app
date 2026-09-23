@@ -525,8 +525,33 @@ ${clean(item.message_excerpt,4000)}`;
       ]);
       const project=Array.isArray(projectRows)?projectRows[0]:null;
       if(!project)return res.status(404).json({error:'AI Headquarters project not found.'});
-      const memberCodes=(Array.isArray(memberRows)?memberRows:[]).map(x=>x.agent_code);
-      const team=(aiCompany.agents||[]).filter(a=>memberCodes.includes(a.code)||a.code===project.lead_agent_code);
+      let memberCodes=(Array.isArray(memberRows)?memberRows:[]).map(x=>x.agent_code);
+      const availableAgents=aiCompany.agents||[];
+      // Assemble a small cross-functional team when a project was opened with only its lead.
+      // This lets Headquarters perform specialist work, independent QA, and leader synthesis
+      // without requiring the Founder to manually orchestrate routine internal collaboration.
+      if(memberCodes.length<2){
+        const wanted=new Set([project.lead_agent_code]);
+        const haystack=(String(project.title||'')+' '+String(project.problem_statement||'')+' '+String(project.department||'')).toLowerCase();
+        if(haystack.match(/qa|test|release|deploy|technology|software|app|website|system|headquarters/)){
+          wanted.add('qa_automation');wanted.add('release_qa');
+        }
+        if(haystack.match(/security|auth|permission|access|privacy|credential/))wanted.add('security_specialist');
+        if(haystack.match(/product|experience|feature|ux|athlete|coach/))wanted.add('product_manager');
+        if(haystack.match(/design|brand|visual|website/))wanted.add('ux_ui_designer');
+        if(haystack.match(/finance|cost|revenue|price|pricing|billing/))wanted.add('cfo');
+        if(haystack.match(/marketing|campaign|content|growth/))wanted.add('cmo');
+        if(haystack.match(/operations|workflow|process/))wanted.add('operations_director');
+        const validWanted=[...wanted].filter(code=>availableAgents.some(a=>a.code===code));
+        const additions=validWanted.filter(code=>!memberCodes.includes(code)).map(code=>({
+          project_id:project.id,
+          agent_code:code,
+          responsibility:code===project.lead_agent_code?'Project lead':'Auto-assigned specialist for cross-functional execution and review'
+        }));
+        if(additions.length)await insert(token,'founder_ai_project_members',additions);
+        memberCodes=[...new Set([...memberCodes,...validWanted])];
+      }
+      const team=availableAgents.filter(a=>memberCodes.includes(a.code)||a.code===project.lead_agent_code);
       const instructions=guard+`
 You are coordinating one MW Dynasty AI Headquarters cross-functional project.
 The AI employees are coworkers, not isolated chatbots. Specialists should hand work to the appropriate teammate and the department/project leader synthesizes the result.
@@ -542,6 +567,8 @@ Rules:
 - Qualified-specialist matters must stop and escalate rather than invent an authoritative determination.
 - Never claim an external change happened unless evidence in the project proves it.
 - If a presentation is needed, it is delivered by the project/department leader, not every specialist.
+- Use the assigned cross-functional team: specialists may produce analysis/test evidence, QA reviewers independently assess it, and the project lead synthesizes the result.
+- A founder_required project does not automatically require a Boardroom presentation merely to perform safe internal analysis/testing. Create a Boardroom presentation when a consequential decision is actually needed or when a completion report is ready for Founder review.
 - Keep evidence factual and do not invent URLs, commits, test results or financial amounts.`;
       const raw=await openai(instructions,'Run the next safe collaboration cycle for this project.',3600);
       let result;try{result=parseJson(raw)}catch{return res.status(502).json({error:'AI Headquarters collaboration returned an unreadable result. Try again.'})}
