@@ -70,7 +70,7 @@ module.exports=async function handler(req,res){
   try{
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const mode=['brief','chat','employee_chat','plan','execute_task','triage_support','department_brief','partnership_proposal','website_redesign','generate_skool_week'].includes(body.mode)?body.mode:'chat';
+    const mode=['brief','chat','employee_chat','plan','execute_task','triage_support','department_brief','partnership_proposal','website_redesign','generate_skool_week','collaborate_project'].includes(body.mode)?body.mode:'chat';
     const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk,launch]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company'),
       rpcNamed(token,'mw_founder_finance_snapshot',{}),
@@ -506,6 +506,51 @@ ${clean(item.message_excerpt,4000)}`;
         updated_at:new Date().toISOString()
       });
       return res.status(200).json({ok:true,mode,item:updated});
+    }
+    if(mode==='collaborate_project'){
+      const projectId=clean(body.projectId,80);
+      if(!projectId)return res.status(400).json({error:'AI Headquarters project id required.'});
+      const [projectRows,memberRows,eventRows,ruleRows]=await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/founder_ai_collaboration_projects?id=eq.${encodeURIComponent(projectId)}&select=*&limit=1`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}}).then(r=>r.json()),
+        fetch(`${SUPABASE_URL}/rest/v1/founder_ai_project_members?project_id=eq.${encodeURIComponent(projectId)}&select=*&order=joined_at.asc`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}}).then(r=>r.json()),
+        fetch(`${SUPABASE_URL}/rest/v1/founder_ai_work_events?project_id=eq.${encodeURIComponent(projectId)}&select=*&order=created_at.asc&limit=100`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}}).then(r=>r.json()),
+        fetch(`${SUPABASE_URL}/rest/v1/founder_ai_authority_rules?active=eq.true&select=*`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}}).then(r=>r.json())
+      ]);
+      const project=Array.isArray(projectRows)?projectRows[0]:null;
+      if(!project)return res.status(404).json({error:'AI Headquarters project not found.'});
+      const memberCodes=(Array.isArray(memberRows)?memberRows:[]).map(x=>x.agent_code);
+      const team=(aiCompany.agents||[]).filter(a=>memberCodes.includes(a.code)||a.code===project.lead_agent_code);
+      const instructions=guard+`
+You are coordinating one MW Dynasty AI Headquarters cross-functional project.
+The AI employees are coworkers, not isolated chatbots. Specialists should hand work to the appropriate teammate and the department/project leader synthesizes the result.
+Authority charter: ${JSON.stringify(ruleRows||[])}
+Project: ${JSON.stringify(project)}
+Assigned team: ${JSON.stringify(team)}
+Prior work events: ${JSON.stringify(eventRows||[]).slice(0,30000)}
+Return JSON only:
+{"events":[{"agent_code":"valid team code","event_type":"finding|handoff|analysis|proposal|test|security_review|qa_review|incident|repair|verification|escalation|note","summary":"...","evidence":{}}],"project_status":"active|investigating|building|testing|waiting_founder|completed|blocked","presentation":null|{"title":"...","presentation_type":"proposal|problem|incident_report|executive_brief|design_review|financial_review|marketing_review|product_review|completion_report","status":"ready_for_founder","executive_summary":"...","decision_requested":"...","risk_summary":"...","visual_manifest":[],"data_snapshot":{}}}
+Rules:
+- Routine bug/maintenance work that restores intended behavior can proceed through analysis, repair planning, testing and verification without Founder approval.
+- Money, pricing, major product/production changes, major design/brand direction, marketing/public communications, official methodology, contracts, destructive changes and other consequential decisions must stop at waiting_founder and create a leadership presentation.
+- Qualified-specialist matters must stop and escalate rather than invent an authoritative determination.
+- Never claim an external change happened unless evidence in the project proves it.
+- If a presentation is needed, it is delivered by the project/department leader, not every specialist.
+- Keep evidence factual and do not invent URLs, commits, test results or financial amounts.`;
+      const raw=await openai(instructions,'Run the next safe collaboration cycle for this project.',3600);
+      let result;try{result=parseJson(raw)}catch{return res.status(502).json({error:'AI Headquarters collaboration returned an unreadable result. Try again.'})}
+      const validEvents=['finding','handoff','analysis','proposal','test','security_review','qa_review','incident','repair','verification','escalation','note'];
+      const eventRowsToInsert=(Array.isArray(result.events)?result.events:[]).filter(x=>validEvents.includes(x.event_type)&&team.some(a=>a.code===x.agent_code)&&clean(x.summary,5000)).slice(0,20).map(x=>({project_id:project.id,agent_code:x.agent_code,event_type:x.event_type,summary:clean(x.summary,5000),evidence:x.evidence&&typeof x.evidence==='object'?x.evidence:{}}));
+      if(eventRowsToInsert.length)await insert(token,'founder_ai_work_events',eventRowsToInsert);
+      const allowedStatuses=['active','investigating','building','testing','waiting_founder','completed','blocked'];
+      const nextStatus=allowedStatuses.includes(result.project_status)?result.project_status:project.status;
+      await patchRow(token,'founder_ai_collaboration_projects',project.id,{status:nextStatus,updated_at:new Date().toISOString(),completed_at:nextStatus==='completed'?new Date().toISOString():null});
+      let presentation=null;
+      if(result.presentation&&nextStatus==='waiting_founder'){
+        const p=result.presentation;
+        const rows=await insert(token,'founder_ai_presentations',[{project_id:project.id,presenting_agent_code:project.lead_agent_code,title:clean(p.title,180)||project.title,presentation_type:['proposal','problem','incident_report','executive_brief','design_review','financial_review','marketing_review','product_review','completion_report'].includes(p.presentation_type)?p.presentation_type:'proposal',status:'ready_for_founder',executive_summary:clean(p.executive_summary,8000)||null,decision_requested:clean(p.decision_requested,3000)||null,risk_summary:clean(p.risk_summary,3000)||null,visual_manifest:Array.isArray(p.visual_manifest)?p.visual_manifest.slice(0,20):[],data_snapshot:p.data_snapshot&&typeof p.data_snapshot==='object'?p.data_snapshot:{}}]);
+        presentation=rows[0]||null;
+      }
+      return res.status(200).json({ok:true,mode,project_id:project.id,status:nextStatus,events:eventRowsToInsert,presentation});
     }
     if(mode==='execute_task'){
       const taskId=clean(body.taskId,80);
