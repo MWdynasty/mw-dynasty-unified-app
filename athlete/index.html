@@ -1564,9 +1564,9 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div id="strengthPerformanceStatus" class="lockNote">Your coach sees these check-ins automatically.</div>
 </div>
 <button id="askStrength" class="smartBtn">ASK COACH MW ABOUT TODAY'S LIFT</button>
-<details class="advancedLog"><summary>OPTIONAL: LOG A SPECIFIC SET</summary>
+<details class="advancedLog" id="strengthAdvancedLog"><summary>LOG / RESUME SPECIFIC SETS</summary>
 <div class="strengthLogGrid">
-<label>TRAINING DAY<select id="strengthLogDay"><option value="1">Day 1</option><option value="2">Day 2</option><option value="3">Day 3</option><option value="4">Day 4</option></select></label>
+<label>TRAINING DAY<select id="strengthLogDay"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="7">Sunday</option></select></label>
 <label>EXERCISE<input id="strengthLogExercise" list="strengthExerciseList" placeholder="e.g. Back Squat"><datalist id="strengthExerciseList"></datalist></label>
 <label>SET #<input id="strengthLogSet" type="number" min="1" max="20" value="1"></label>
 <label>REPS<input id="strengthLogReps" type="number" min="0" max="100" placeholder="5"></label>
@@ -1576,6 +1576,10 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <label>SET RPE <span style="color:#6f8190">optional</span><select id="strengthLogRpe"><option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></label>
 </div>
 <button id="saveStrengthPerformance" class="save">SAVE SPECIFIC SET</button>
+<div id="strengthFinishActions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+<button id="finishStrengthAsPrescribed" type="button" class="save">✓ FINISH AS WRITTEN</button>
+<button id="finishStrengthModified" type="button" class="save" style="background:#0b1720;color:#f5c95e;border:1px solid #36505f">↔ FINISH MODIFIED</button>
+</div>
 <div id="strengthLogRecent" class="strengthLogRecent"></div>
 </details>
 </div>
@@ -2373,14 +2377,15 @@ async function renderStrengthWeek(w){
   const box=$('#strengthPlan');if(box)box.innerHTML='<div class="muted">Loading today’s MW lift…</div>';
   try{if(!MW_STRENGTH[w])await loadMWProgramWeek(w)}catch(e){if(box)box.innerHTML='<div class="lockNote">'+(e.message||'This MW week is locked.')+'</div>';return}
   const d=MW_STRENGTH[w]; if(!d)return;
-  const today=mwTodayStrengthInfo(), sections=(d.sections||[]).filter(s=>String(s.title||'').trim().toUpperCase().startsWith(today.key));
+  const today=mwTodayStrengthInfo(),viewDay=Number(window.mwStrengthViewDayOverride||today.day),dayNames=['','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],viewLabel=dayNames[viewDay]||today.label,isResume=!!window.mwStrengthViewDayOverride;
+  const sections=(d.sections||[]).filter((s,idx)=>strengthDayNumber(s.title,idx)===viewDay);
   $('#strengthPhaseLabel').textContent=`WEEK ${w} • PHASE ${d.phase}`;
-  const todayLabel=$('#strengthTodayLabel');if(todayLabel)todayLabel.innerHTML=`<b>${today.label.toUpperCase()}</b> · MW Week ${w} · ${d.phaseName}`;
+  const todayLabel=$('#strengthTodayLabel');if(todayLabel)todayLabel.innerHTML=`<b>${viewLabel.toUpperCase()}</b> · MW Week ${w} · ${d.phaseName}${isResume?' · RESUMING SAVED SESSION':''}`;
   const tg=d.tierGuidance||{};
   if(!sections.length){
-    box.innerHTML=`<div class="strengthPhase">NO LIFT SCHEDULED TODAY</div><div class="coachNoteBox">Recover, follow today’s track prescription, and come back here on your next scheduled lifting day. MW will automatically show that day’s lift.</div>`;
+    box.innerHTML=`<div class="strengthPhase">NO LIFT SCHEDULED FOR ${viewLabel.toUpperCase()}</div><div class="coachNoteBox">No MW strength session is assigned for this day.</div>`;
   }else{
-    box.innerHTML=`<div class="strengthPhase">${today.label.toUpperCase()} · TODAY'S LIFT</div>`+
+    box.innerHTML=`<div class="strengthPhase">${viewLabel.toUpperCase()} · ${isResume?'SAVED LIFT':'TODAY\'S LIFT'}</div>`+
       (d.tierLabel?`<details class="advancedLog"><summary>TODAY'S TRAINING GUIDANCE</summary><div class="coachNoteBox"><b>${d.tierLabel.toUpperCase()} TIER:</b> ${[tg.volume,tg.effort,tg.loading,tg.priority].filter(Boolean).join(' ')}</div></details>`:'')+
       sections.map(s=>`<div class="strengthSection"><h4>${s.title}</h4>${s.entries.map(e=>`<div class="strengthRow"><span>${e[0]}</span><span>${e[1]}${workingLoadHTML(e[0],e[1])}</span></div>`).join('')}</div>`).join('')+
       (d.coachNote?`<details class="advancedLog"><summary>COACH MW NOTE</summary><div class="coachNoteBox">${d.coachNote}</div></details>`:'');
@@ -2390,30 +2395,70 @@ async function renderStrengthWeek(w){
 }
 
 let mwStrengthQuickCache={};
-function strengthDayNumber(label,index){const x=String(label||'').toUpperCase();if(x.includes('MON')||x.includes('EARLY'))return 1;if(x.includes('TUE'))return 2;if(x.includes('WED'))return 3;if(x.includes('THU'))return 4;if(x.includes('FRI')||x.includes('LATE'))return 5;if(x.includes('SAT'))return 6;if(x.includes('SUN'))return 7;return Math.min(7,index+1)}
+let mwStrengthLogWeekOverride=null;
+function strengthDayNumber(label,index){const x=String(label||'').trim().toUpperCase();if(x.startsWith('MON')||x.startsWith('EARLY WEEK'))return 1;if(x.startsWith('TUE'))return 2;if(x.startsWith('WED'))return 3;if(x.startsWith('THU'))return 4;if(x.startsWith('FRI')||x.startsWith('LATE WEEK'))return 5;if(x.startsWith('SAT'))return 6;if(x.startsWith('SUN'))return 7;return null}
+function strengthLoggingWeek(){return Math.max(1,Math.min(41,Number(mwStrengthLogWeekOverride||activeMWWeek())))}
+function strengthSessionMeta(w,day){
+  const d=MW_STRENGTH[Number(w)],matches=(d?.sections||[]).filter((s,idx)=>strengthDayNumber(s.title,idx)===Number(day));
+  const optional=matches.length>0&&matches.every(s=>/\bOPTIONAL\b/i.test(String(s.title||'')));
+  return {label:String(matches[0]?.title||`Day ${day}`).slice(0,80),optional};
+}
+function latestIncompleteStrength(){
+  return Object.values(mwStrengthQuickCache||{}).filter(x=>x?.lifecycle_status==='incomplete').sort((a,b)=>String(b.scheduled_date||'').localeCompare(String(a.scheduled_date||''))||Number(b.program_week)-Number(a.program_week)||Number(b.strength_day)-Number(a.strength_day))[0]||null;
+}
 async function loadStrengthQuickCheckins(){
   const aid=completionAthleteId();if(!aid||!window.mwGetSessionToken?.())return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,strength_day,day_label,status,note,recorded_at&order=recorded_at.desc&limit=200',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
-  const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength check-ins.');mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength check-ins.');
+  mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}
 }
-async function saveStrengthQuickCheckin(w,day,label,status,button){
-  const aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');if(button){button.disabled=true;button.textContent='SAVING…'}
-  const payload={athlete_id:aid,program_week:Number(w),strength_day:Number(day),day_label:String(label||`Day ${day}`).slice(0,80),status,recorded_at:new Date().toISOString()};
-  try{const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?on_conflict=athlete_id,program_week,strength_day',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Strength check-in failed.');mwStrengthQuickCache[`${Number(w)}-${Number(day)}`]=payload;await renderStrengthQuickCheckins(w);const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent=status==='as_prescribed'?'✓ Got it. Your coach can see that you completed it as written.':'✓ Got it. Your coach can see that you modified the session.';}finally{if(button)button.disabled=false}
+async function markStrengthStatus(w,day,status,label,optional=false){
+  const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_mark_own_strength_status',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_strength_day:Number(day),p_status:String(status),p_day_label:String(label||`Day ${day}`),p_is_optional:!!optional}),cache:'no-store'});
+  const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out?.message||out?.hint||'Strength session status could not be updated.');
+  mwStrengthQuickCache[`${Number(w)}-${Number(day)}`]=out;return out;
+}
+async function completeStrengthSession(w,day,outcome,label,optional=false){
+  const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_complete_own_strength_session',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_strength_day:Number(day),p_outcome:String(outcome),p_day_label:String(label||`Day ${day}`),p_is_optional:!!optional}),cache:'no-store'});
+  const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out?.message||out?.hint||'Strength session completion could not be saved.');
+  mwStrengthQuickCache[`${Number(w)}-${Number(day)}`]=out;window.mwReloadAthleteNotifications?.();return out;
+}
+async function saveStrengthQuickCheckin(w,day,label,status,button,optional=false){
+  if(button){button.disabled=true;button.textContent='SAVING…'}
+  try{
+    const out=await completeStrengthSession(w,day,status,label,optional);
+    await renderStrengthQuickCheckins(w);
+    const st=document.getElementById('strengthPerformanceStatus');
+    if(st)st.textContent=(out?.completed_late?'✓ Late entry saved. ':'✓ ')+(status==='as_prescribed'?'Weight-room session completed as written.':'Modified weight-room session completed.');
+  }finally{if(button)button.disabled=false}
 }
 async function renderStrengthQuickCheckins(w){
   const box=document.getElementById('strengthQuickCheckins');if(!box)return;const d=MW_STRENGTH[Number(w)];if(!d){box.innerHTML='<div class="muted">Strength plan not available yet.</div>';return}
   if(!Object.keys(mwStrengthQuickCache).length){try{await loadStrengthQuickCheckins()}catch{}}
-  const today=mwTodayStrengthInfo();const sections=(d.sections||[]).filter(s=>Array.isArray(s.entries)&&s.entries.length&&String(s.title||'').trim().toUpperCase().startsWith(today.key));const seen=new Set(),days=[];sections.forEach((sec,idx)=>{const day=strengthDayNumber(sec.title,idx);if(seen.has(day))return;seen.add(day);days.push({day,label:'Today · '+today.label})});if(!days.length){box.innerHTML='<div class="muted">No strength check-in needed today.</div>';return}
-  box.innerHTML=days.map(x=>{const saved=mwStrengthQuickCache[`${Number(w)}-${x.day}`],txt=saved?.status==='as_prescribed'?'✓ Done as written':saved?.status==='modified'?'↔ Modified':'Not checked in yet';return `<div class="strengthCheckRow ${saved?'saved':''}"><div class="rowTop"><span><b>${x.label}</b><br><small>${txt}</small></span><small>Week ${w}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${x.day}" data-label="${String(x.label).replace(/"/g,'&quot;')}" data-status="as_prescribed">✅ DID IT</button><button class="strengthChanged" data-sday="${x.day}" data-label="${String(x.label).replace(/"/g,'&quot;')}" data-status="modified">↔ CHANGED IT</button></div></div>`}).join('');
-  box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b)}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
+  const today=mwTodayStrengthInfo(),viewDay=Number(window.mwStrengthViewDayOverride||today.day),dayNames=['','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],viewLabel=dayNames[viewDay]||today.label;
+  const sections=(d.sections||[]).filter((s,idx)=>Array.isArray(s.entries)&&s.entries.length&&strengthDayNumber(s.title,idx)===viewDay);
+  const overdue=latestIncompleteStrength(),parts=[];
+  if(overdue&&!(Number(overdue.program_week)===Number(w)&&Number(overdue.strength_day)===viewDay)){
+    parts.push(`<div class="strengthCheckRow"><div class="rowTop"><span><b>Week ${overdue.program_week} · ${String(overdue.day_label||('Day '+overdue.strength_day))}</b><br><small>INCOMPLETE · SAVED SETS ARE STILL IN MW DYNASTY</small></span><small>Needs finish</small></div><div class="strengthCheckActions"><button class="strengthDone" data-resume-strength="${overdue.program_week}-${overdue.strength_day}">FINISH LOGGING</button></div></div>`);
+  }
+  if(!sections.length){parts.push('<div class="muted">No strength check-in needed for '+viewLabel+'.</div>');box.innerHTML=parts.join('');box.querySelectorAll('[data-resume-strength]').forEach(b=>b.onclick=()=>{const [rw,rd]=b.dataset.resumeStrength.split('-').map(Number);window.mwOpenStrengthSessionFor?.(rw,rd)});return}
+  const meta=strengthSessionMeta(w,viewDay),saved=mwStrengthQuickCache[`${Number(w)}-${viewDay}`],life=String(saved?.lifecycle_status||'scheduled');
+  let txt='SCHEDULED';
+  if(life==='completed')txt=saved?.status==='modified'?'↔ MODIFIED · COMPLETED':'✓ COMPLETED AS WRITTEN';
+  else if(life==='in_progress')txt='IN PROGRESS · SAVED SETS';
+  else if(life==='incomplete')txt='INCOMPLETE · SAVED SETS';
+  else if(life==='absent')txt='ABSENT';
+  if(saved?.completed_late&&life==='completed')txt+=' · LATE ENTRY';
+  parts.push(`<div class="strengthCheckRow ${life==='completed'?'saved':''}"><div class="rowTop"><span><b>${window.mwStrengthViewDayOverride?'Resume · ':'Today · '}${viewLabel}</b><br><small>${txt}</small></span><small>Week ${w}${meta.optional?' · OPTIONAL':''}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${viewDay}" data-label="${String(meta.label).replace(/"/g,'&quot;')}" data-optional="${meta.optional?'1':'0'}" data-status="as_prescribed">✅ DID IT</button><button class="strengthChanged" data-sday="${viewDay}" data-label="${String(meta.label).replace(/"/g,'&quot;')}" data-optional="${meta.optional?'1':'0'}" data-status="modified">↔ CHANGED IT</button></div></div>`);
+  box.innerHTML=parts.join('');
+  box.querySelectorAll('[data-resume-strength]').forEach(b=>b.onclick=()=>{const [rw,rd]=b.dataset.resumeStrength.split('-').map(Number);window.mwOpenStrengthSessionFor?.(rw,rd)});
+  box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b,b.dataset.optional==='1')}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
 }
 function initStrength(){
   const sel=$('#strengthWeek'); if(!sel)return;
   const max=activeMWWeek();
   sel.innerHTML=Array.from({length:41},(_,i)=>`<option value="${i+1}" ${i+1>max?'disabled':''}>Week ${i+1}${i+1>max?' • Locked':''}</option>`).join('');
   sel.value=max; renderStrengthWeek(max);
-  sel.onchange=()=>renderStrengthWeek(sel.value);
+  sel.onchange=()=>{window.mwStrengthViewDayOverride=null;mwStrengthLogWeekOverride=null;renderStrengthWeek(sel.value)};
   $('#askStrength').onclick=()=>{openView('coach');send(`Coach, walk me through today’s weight-room lift for MW Week ${sel.value}.`)};
 }
 
@@ -2876,23 +2921,69 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       setTimeout(()=>{if(b)b.textContent='SAVE WEIGHT ROOM MAXES'},1400);
     }catch(e){if(st)st.textContent='Save failed: '+(e.message||'Please try again.');if(b)b.textContent='SAVE FAILED — TAP TO RETRY'}finally{if(b)b.disabled=false}
   }
+  let mwStrengthPerformanceRows=[];
+  function restoreStrengthLogger(){
+    const week=strengthLoggingWeek(),day=Number(document.getElementById('strengthLogDay')?.value||mwTodayStrengthInfo().day),exercise=(document.getElementById('strengthLogExercise')?.value||'').trim().toLowerCase();
+    const rows=(mwStrengthPerformanceRows||[]).filter(x=>Number(x.program_week)===week&&Number(x.program_day)===day&&(!exercise||String(x.exercise_name||'').trim().toLowerCase()===exercise));
+    if(exercise&&rows.length){const maxSet=Math.max(...rows.map(x=>Number(x.set_number)||0));const setEl=document.getElementById('strengthLogSet');if(setEl)setEl.value=String(maxSet+1)}
+    const life=mwStrengthQuickCache[`${week}-${day}`]?.lifecycle_status,st=document.getElementById('strengthPerformanceStatus');
+    if(st&&['in_progress','incomplete'].includes(String(life||''))&&rows.length)st.textContent=`↻ ${rows.length} saved set${rows.length===1?'':'s'} restored from MW Dynasty. Continue with the next set, then finish the session.`;
+  }
   async function loadStrengthPerformanceLogs(){
     const aid=mwRemoteProfile.athleteId,box=document.getElementById('strengthLogRecent');if(!aid||!token())return;
-    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?athlete_id=eq.'+encodeURIComponent(aid)+'&select=id,program_week,program_day,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=8',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
+    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?athlete_id=eq.'+encodeURIComponent(aid)+'&select=id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=200',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
     const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength performance.');
-    if(box)box.innerHTML=rows.map(x=>`<div class="strengthLogItem"><b>Week ${Number(x.program_week||1)} · Day ${Number(x.program_day||1)} · ${escapeHtmlLocal(x.exercise_name)}</b><br>Set ${Number(x.set_number||1)} · ${x.reps_completed??'—'} reps @ ${x.actual_load??'—'} ${escapeHtmlLocal(x.weight_unit||'lb')}${x.target_load!=null?` · Target ${x.target_load}`:''}${x.set_rpe!=null?` · RPE ${x.set_rpe}/10`:''}</div>`).join('');
+    mwStrengthPerformanceRows=Array.isArray(rows)?rows:[];
+    if(box)box.innerHTML=mwStrengthPerformanceRows.slice(0,12).map(x=>`<div class="strengthLogItem"><b>Week ${Number(x.program_week||1)} · Day ${Number(x.program_day||1)} · ${escapeHtmlLocal(x.exercise_name)}</b><br>Set ${Number(x.set_number||1)} · ${x.reps_completed??'—'} reps @ ${x.actual_load??'—'} ${escapeHtmlLocal(x.weight_unit||'lb')}${x.target_load!=null?` · Target ${x.target_load}`:''}${x.set_rpe!=null?` · RPE ${x.set_rpe}/10`:''}</div>`).join('');
+    restoreStrengthLogger();
   }
   function escapeHtmlLocal(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
   async function saveStrengthPerformance(){
     const aid=mwRemoteProfile.athleteId,btn=document.getElementById('saveStrengthPerformance'),st=document.getElementById('strengthPerformanceStatus');if(!aid)throw new Error('Athlete profile not found.');
-    const exercise=(document.getElementById('strengthLogExercise')?.value||'').trim(),actual=Number(document.getElementById('strengthLogActual')?.value),reps=Number(document.getElementById('strengthLogReps')?.value),setNo=Number(document.getElementById('strengthLogSet')?.value),targetRaw=(document.getElementById('strengthLogTarget')?.value||'').trim(),rpeRaw=(document.getElementById('strengthLogRpe')?.value||'').trim();
+    const week=strengthLoggingWeek(),day=Number(document.getElementById('strengthLogDay')?.value||mwTodayStrengthInfo().day),meta=strengthSessionMeta(week,day),exercise=(document.getElementById('strengthLogExercise')?.value||'').trim(),actual=Number(document.getElementById('strengthLogActual')?.value),reps=Number(document.getElementById('strengthLogReps')?.value),setNo=Number(document.getElementById('strengthLogSet')?.value),targetRaw=(document.getElementById('strengthLogTarget')?.value||'').trim(),rpeRaw=(document.getElementById('strengthLogRpe')?.value||'').trim();
     if(!exercise)throw new Error('Choose or enter the exercise.');if(!Number.isFinite(actual)||actual<0)throw new Error('Enter the actual load you used.');if(!Number.isFinite(reps)||reps<0)throw new Error('Enter reps completed.');if(!Number.isFinite(setNo)||setNo<1)throw new Error('Enter a valid set number.');
-    const payload={athlete_id:aid,program_week:activeMWWeek(),program_day:Number(document.getElementById('strengthLogDay')?.value||1),session_label:`Week ${activeMWWeek()} Strength`,exercise_name:exercise,set_number:setNo,reps_completed:reps,target_load:targetRaw===''?null:Number(targetRaw),actual_load:actual,weight_unit:document.getElementById('strengthLogUnit')?.value||'lb',set_rpe:rpeRaw===''?null:Number(rpeRaw),recorded_at:new Date().toISOString()};
-    if(btn){btn.disabled=true;btn.textContent='SAVING…'}if(st)st.textContent='Saving completed set to MW Dynasty…';
-    try{const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(payload)});const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Strength performance save failed.');if(st)st.textContent='✓ Set saved. Coach Intelligence can now use this result.';document.getElementById('strengthLogSet').value=String(setNo+1);await loadStrengthPerformanceLogs();}
-    finally{if(btn){btn.disabled=false;btn.textContent='SAVE COMPLETED SET'}}
+    const payload={athlete_id:aid,program_week:week,program_day:day,session_label:`Week ${week} Strength`,exercise_name:exercise,set_number:setNo,reps_completed:reps,target_load:targetRaw===''?null:Number(targetRaw),actual_load:actual,weight_unit:document.getElementById('strengthLogUnit')?.value||'lb',set_rpe:rpeRaw===''?null:Number(rpeRaw),recorded_at:new Date().toISOString()};
+    if(btn){btn.disabled=true;btn.textContent='SAVING…'}if(st)st.textContent='Saving this set to MW Dynasty…';
+    try{
+      const life=String(mwStrengthQuickCache[`${week}-${day}`]?.lifecycle_status||'');
+      if(life!=='completed')await markStrengthStatus(week,day,'in_progress',meta.label,meta.optional);
+      const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?on_conflict=athlete_id,program_week,program_day,exercise_name,set_number',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
+      const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Strength performance save failed.');
+      if(st)st.textContent=`✓ Set ${setNo} saved immediately. It will still be here if you close the app.`;
+      document.getElementById('strengthLogSet').value=String(setNo+1);
+      await loadStrengthPerformanceLogs();await loadStrengthQuickCheckins();await renderStrengthQuickCheckins(week);
+    }finally{if(btn){btn.disabled=false;btn.textContent='SAVE SPECIFIC SET'}}
   }
-  function bindStrengthPerformanceLogger(){const b=document.getElementById('saveStrengthPerformance');if(b)b.onclick=async()=>{try{await saveStrengthPerformance()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Save failed: '+(e.message||'Please try again.')}}}
+  async function finishStrengthFromLogger(outcome){
+    const week=strengthLoggingWeek(),day=Number(document.getElementById('strengthLogDay')?.value||mwTodayStrengthInfo().day),meta=strengthSessionMeta(week,day),st=document.getElementById('strengthPerformanceStatus');
+    const out=await completeStrengthSession(week,day,outcome,meta.label,meta.optional);
+    if(st)st.textContent=(out?.completed_late?'✓ COMPLETED · LATE ENTRY — ':'✓ COMPLETED — ')+(outcome==='modified'?'modified session saved.':'session saved as written.');
+    await loadStrengthQuickCheckins();await loadStrengthPerformanceLogs();
+    mwStrengthLogWeekOverride=null;window.mwStrengthViewDayOverride=null;
+    const dayEl=document.getElementById('strengthLogDay');if(dayEl)dayEl.value=String(mwTodayStrengthInfo().day);
+    await renderStrengthWeek(activeMWWeek());
+    window.mwReloadAthleteNotifications?.();
+  }
+  window.mwOpenStrengthSessionFor=async function(w,d){
+    w=Math.max(1,Math.min(41,Number(w)||1));d=Math.max(1,Math.min(7,Number(d)||1));
+    mwStrengthLogWeekOverride=w;window.mwStrengthViewDayOverride=d;openView('workouts',true);
+    try{if(!MW_STRENGTH[w])await loadMWProgramWeek(w)}catch{}
+    await renderStrengthWeek(w);
+    const dayEl=document.getElementById('strengthLogDay');if(dayEl)dayEl.value=String(d);
+    const details=document.getElementById('strengthAdvancedLog');if(details)details.open=true;
+    await loadStrengthPerformanceLogs();
+    const row=mwStrengthQuickCache[`${w}-${d}`],st=document.getElementById('strengthPerformanceStatus');
+    if(st)st.textContent=row?.lifecycle_status==='incomplete'?'INCOMPLETE · Your saved sets are restored below. Finish logging, then complete the session.':'Weight-room session ready.';
+    details?.scrollIntoView?.({behavior:'smooth',block:'start'});
+  };
+  function bindStrengthPerformanceLogger(){
+    const dayEl=document.getElementById('strengthLogDay');if(dayEl&&!mwStrengthLogWeekOverride)dayEl.value=String(mwTodayStrengthInfo().day);
+    const b=document.getElementById('saveStrengthPerformance');if(b)b.onclick=async()=>{try{await saveStrengthPerformance()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Save failed: '+(e.message||'Please try again.')}};
+    const a=document.getElementById('finishStrengthAsPrescribed');if(a)a.onclick=async()=>{a.disabled=true;try{await finishStrengthFromLogger('as_prescribed')}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Finish failed: '+(e.message||'Please try again.')}finally{a.disabled=false}};
+    const m=document.getElementById('finishStrengthModified');if(m)m.onclick=async()=>{m.disabled=true;try{await finishStrengthFromLogger('modified')}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Finish failed: '+(e.message||'Please try again.')}finally{m.disabled=false}};
+    document.getElementById('strengthLogExercise')?.addEventListener('change',restoreStrengthLogger);
+    document.getElementById('strengthLogDay')?.addEventListener('change',restoreStrengthLogger);
+  }
   async function loadSmartEntry(){
     if(!mwRemoteProfile.athleteId||!token())return;
     const d=await api('/api/smart-entry',{cache:'no-store'});const x=d?.assessment;if(!x)return;
@@ -3360,7 +3451,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   function render(){
     const wrap=document.getElementById('mwAthleteNotificationList');if(!wrap)return;
     wrap.innerHTML=items.length?items.map(n=>`<button type="button" class="mwAthleteNotificationRow ${n.read_at?'':'unread'}" data-mw-notification="${esc(n.id)}" data-mw-action="${esc(n.action_view||'home')}"><div><b>${esc(n.title)}</b><span>${esc(n.body)}</span></div><small>${new Date(n.created_at).toLocaleDateString([], {month:'short',day:'numeric'})}</small></button>`).join(''):'<div class="lockNote">You’re all caught up. New MW alerts will appear here.</div>';
-    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const m=String(n.entity_id||'').match(/^mw-track-w(\d+)-d(\d+)$/);if(m)setTimeout(()=>window.mwOpenPracticeFor?.(Number(m[1]),Number(m[2])),80)}});
+    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const m=String(n.entity_id||'').match(/^mw-track-w(\d+)-d(\d+)$/);if(m)setTimeout(()=>window.mwOpenPracticeFor?.(Number(m[1]),Number(m[2])),80)}if(n?.notification_type==='strength_incomplete'){const m=String(n.entity_id||'').match(/^mw-strength-w(\d+)-d(\d+)$/);if(m)setTimeout(()=>window.mwOpenStrengthSessionFor?.(Number(m[1]),Number(m[2])),80)}});
   }
   async function load(){try{const d=await request();if(!d)return;items=Array.isArray(d.items)?d.items:[];updateBadge();render()}catch(e){const wrap=document.getElementById('mwAthleteNotificationList');if(wrap)wrap.innerHTML='<div class="lockNote">'+esc(e.message)+'</div>'}}
   document.getElementById('mwAthleteNotificationBell')?.addEventListener('click',()=>{window.openView?.('notifications',true);load()});
