@@ -1021,6 +1021,11 @@ async function fetchCoachPerformance(athleteId=''){
   const r=await fetch('/api/coach/performance'+qs,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});
   const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Performance intelligence could not be loaded.');return d;
 }
+async function fetchCoachSeasonIntelligence(){
+  const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
+  const r=await fetch('/api/coach/season-intelligence',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});
+  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Season Intelligence could not be loaded.');return d;
+}
 async function hydrateLivePerformanceSummary(){
   const stat=document.querySelector('[data-stat="Pace Execution"] b');if(!stat)return;
   try{const d=await fetchCoachPerformance();if(d.rep_tracking_enabled===false){stat.textContent='MW ONLY';return}const v=d.summary?.average_latest_execution_pct;stat.textContent=v==null?'—':`${v}%`}catch{stat.textContent='—'}
