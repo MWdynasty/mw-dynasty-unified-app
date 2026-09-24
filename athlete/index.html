@@ -966,6 +966,7 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 .mwPracticePace{padding:14px;border:1px solid #253945;border-radius:14px;background:#050c12;display:grid;gap:4px}.mwPracticePace b{font-size:9px;color:#fff}.mwPracticePace span{font-size:8px;color:#8496a2}
 .mwPracticeControls{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:12px}.mwPracticeControls button{min-height:52px;border-radius:13px;border:1px solid #30434f;background:#09141c;color:#fff;font-weight:900;font-size:9px}.mwPracticeControls #mwPracticeStart{grid-column:1/-1;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;border:0}.mwPracticeControls button:disabled{opacity:.35}
 .mwPracticeQuick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:18px}.mwPracticeQuick button{min-height:46px;border:1px solid #263946;border-radius:12px;background:#050c12;color:#b9c6ce;font-size:7px;font-weight:800}
+.mwPracticeRepLog{margin-top:12px;display:grid;gap:7px}.mwPracticeRepRow{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #263946;border-radius:12px;background:#050c12;font-size:9px}.mwPracticeRepRow b{color:#fff}.mwPracticeRepRow span{color:#9badb8}.mwPracticeRepRow .on{color:#42e38b}.mwPracticeRepRow .off{color:#ffb45b}.mwPracticeSummary{margin-top:12px;padding:14px;border:1px solid rgba(66,227,139,.45);border-radius:14px;background:rgba(14,58,42,.28);font-size:10px;line-height:1.5}.mwPracticeControls #mwPracticeSave{grid-column:1/-1;background:linear-gradient(135deg,#1c9f62,#42e38b);color:#03110a;border:0}
 </style>
 <style id="mw-app-only-premium-login-v1">
 /* MW APP-ONLY PREMIUM LOGIN BACKGROUND v1 */
@@ -1706,10 +1707,13 @@ html.mw-native-app .mwLoginStory:after{
     <p id="mwPracticeWork">Your MW workout will appear here.</p>
     <div class="mwPracticeRep"><span id="mwPracticeRep">REP 1</span><strong id="mwPracticeClock">00:00.0</strong><small id="mwPracticeCue">PRESS START WHEN YOU ARE IN POSITION</small></div>
     <div class="mwPracticePace" id="mwPracticePace"><b>COACH MW PACE CALLER</b><span>Target pace calls will play hands-free during timed reps.</span></div>
+    <div id="mwPracticeRepLog" class="mwPracticeRepLog" hidden></div>
+    <div id="mwPracticeSummary" class="mwPracticeSummary" hidden></div>
     <div class="mwPracticeControls">
       <button id="mwPracticeStart" type="button">START PRACTICE</button>
       <button id="mwPracticePause" type="button" disabled>PAUSE</button>
-      <button id="mwPracticeNext" type="button" disabled>NEXT REP →</button>
+      <button id="mwPracticeNext" type="button" disabled>FINISH REP →</button>
+      <button id="mwPracticeSave" type="button" hidden>✓ SAVE & FINISH WORKOUT</button>
     </div>
     <div class="mwPracticeQuick"><button type="button" data-practice-coach>MW • ASK COACH</button><button type="button" onclick="location.href='/distance-pacer/'">◎ DISTANCE</button><button type="button" onclick="location.href='/pace-ai/'">⚡ PACE</button></div>
   </div>
@@ -3205,42 +3209,95 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   setTimeout(load,1200);setInterval(load,30000);
 })();
 </script>
-<script id="mw-practice-runtime-v1">
+<script id="mw-practice-runtime-v2">
 (()=>{
-let session=null, running=false, paused=false, startedAt=0, pausedAt=0, raf=0, timers=[];
+let session=null, running=false, paused=false, startedAt=0, pausedAt=0, raf=0, timers=[], results=[], practiceWeek=0, practiceDay=0;
 const $p=id=>document.getElementById(id);
 function clearTimers(){timers.forEach(clearTimeout);timers=[]}
 function say(x){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(x));u.rate=1;u.pitch=.95;speechSynthesis.speak(u)}catch{}}
-function clock(){if(!running||paused)return;const ms=performance.now()-startedAt;const s=ms/1000;$p('mwPracticeClock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')+'.'+Math.floor((s%1)*10);raf=requestAnimationFrame(clock)}
+function clock(){if(!running||paused)return;const s=(performance.now()-startedAt)/1000;$p('mwPracticeClock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')+'.'+Math.floor((s%1)*10);raf=requestAnimationFrame(clock)}
 function parsePrescription(){
  const raw=String(session?.tierWork?.[String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase()]||session?.work||'');
  const m=raw.match(/(\d+)\s*[x×]\s*(\d+)\s*m\b/i), reps=m?Number(m[1]):1, dist=m?Number(m[2]):null;
+ const explicit=[session?.targetSeconds,session?.target_seconds,session?.paceTargetSeconds,session?.pace_target_seconds].map(Number).find(x=>x>2&&x<300);
  const times=[...raw.matchAll(/(\d+(?:\.\d+)?)\s*(?:s|sec|seconds?)\b/ig)].map(x=>Number(x[1])).filter(x=>x>2&&x<300);
- return {raw,reps,dist,target:times.length?times[times.length-1]:null}
+ const target=explicit||(times.length?times[times.length-1]:null);
+ return {raw,reps,dist,target,timed:Boolean(m)}
 }
 function schedulePace(p){
  if(!p.target||!p.dist)return;
  const mark=p.dist>=200?50:(p.dist>=100?25:null); if(!mark)return;
  for(let d=mark;d<=p.dist;d+=mark){const t=p.target*(d/p.dist);timers.push(setTimeout(()=>say(d===p.dist?d+' meters. '+t.toFixed(1)+'. Finish!':d+' meters. '+t.toFixed(1)),t*1000))}
 }
+function currentRep(){return results.length+1}
+function renderLog(){
+ const box=$p('mwPracticeRepLog'); if(!box)return;
+ box.hidden=!results.length;
+ box.innerHTML=results.map(r=>'<div class="mwPracticeRepRow"><b>REP '+r.rep_number+'</b><span>'+r.time_seconds.toFixed(2)+'s'+(r.target_seconds?' / '+r.target_seconds.toFixed(2)+'s target':'')+'</span><span class="'+(r.pace_status==='on_pace'?'on':r.pace_status==='outside_target'?'off':'')+'">'+(r.pace_status==='on_pace'?'✓ ON PACE':r.pace_status==='outside_target'?'OUTSIDE TARGET':'TIME LOGGED')+'</span></div>').join('');
+}
 function beginRep(){
+ const p=parsePrescription(); if(!p.timed)return;
  clearTimers();speechSynthesis.cancel();$p('mwPracticeCue').textContent='GET READY';say('On your marks');
+ $p('mwPracticeStart').disabled=true;$p('mwPracticeNext').disabled=true;
  timers.push(setTimeout(()=>say('Set'),1800));
- timers.push(setTimeout(()=>{say('Go!');startedAt=performance.now();running=true;paused=false;$p('mwPracticeCue').textContent='COACH MW IS CALLING YOUR TARGET MARKS';$p('mwPracticePause').disabled=false;$p('mwPracticeNext').disabled=false;clock();schedulePace(parsePrescription())},3000));
+ timers.push(setTimeout(()=>{say('Go!');startedAt=performance.now();running=true;paused=false;$p('mwPracticeCue').textContent=p.target?'COACH MW IS CALLING YOUR TARGET MARKS':'REP TIMER IS LIVE';$p('mwPracticePause').disabled=false;$p('mwPracticeNext').disabled=false;clock();schedulePace(p)},3000));
+}
+function finishRep(){
+ if(!running)return;
+ const p=parsePrescription(), rep=currentRep(), actual=Math.max(.01,(performance.now()-startedAt)/1000);
+ running=false;paused=false;cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();
+ const status=p.target?(actual<=p.target?'on_pace':'outside_target'):'timed';
+ results.push({rep_number:rep,time_seconds:Number(actual.toFixed(2)),target_seconds:p.target?Number(p.target):null,pace_status:status});
+ renderLog();
+ $p('mwPracticeClock').textContent='00:00.0';$p('mwPracticePause').disabled=true;$p('mwPracticePause').textContent='PAUSE';$p('mwPracticeNext').disabled=true;
+ if(rep>=p.reps){$p('mwPracticeRep').textContent='SESSION COMPLETE';$p('mwPracticeCue').textContent='REVIEW YOUR REP LOG, THEN SAVE';$p('mwPracticeStart').hidden=true;$p('mwPracticeSave').hidden=false;showSummary()}
+ else{$p('mwPracticeRep').textContent='REP '+(rep+1)+' OF '+p.reps;$p('mwPracticeCue').textContent='RECOVER, THEN START THE NEXT REP';$p('mwPracticeStart').disabled=false;$p('mwPracticeStart').textContent='START REP '+(rep+1)}
+}
+function showSummary(){
+ const p=parsePrescription(),box=$p('mwPracticeSummary'); if(!box)return;
+ if(!p.timed){box.hidden=false;box.innerHTML='<b>NON-TIMED SESSION</b><br>Practice Mode will log completion without creating pace data.';return}
+ const hit=p.target?results.filter(r=>r.pace_status==='on_pace').length:null;
+ box.hidden=false;box.innerHTML='<b>SESSION SUMMARY</b><br>'+results.length+'/'+p.reps+' reps timed'+(hit!=null?' · '+hit+'/'+p.reps+' on pace':' · rep times ready to log');
+}
+async function persistRepResults(){
+ const p=parsePrescription(); if(!p.timed||!results.length)return;
+ const aid=completionAthleteId(); if(!aid)throw new Error('Athlete profile not found.');
+ const rows=results.map(r=>({athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:r.rep_number,distance_m:p.dist,time_seconds:r.time_seconds,target_seconds:r.target_seconds,pace_status:r.pace_status,recorded_at:new Date().toISOString()}));
+ const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(rows)});
+ if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep times could not be saved.')}
+}
+async function saveWorkout(){
+ const btn=$p('mwPracticeSave'),p=parsePrescription(); if(!btn)return;
+ btn.disabled=true;btn.textContent='SAVING…';
+ try{
+   await persistRepResults();
+   const hit=p.target?results.filter(r=>r.pace_status==='on_pace').length:null;
+   await markWorkoutComplete(practiceWeek,practiceDay,btn,p.target?{status:hit===p.reps?'all':hit===0?'none':'some',hit,total:p.reps}:{status:'not_applicable',hit:null,total:null});
+   const box=$p('mwPracticeSummary');box.hidden=false;box.innerHTML='<b>✓ WORKOUT LOGGED</b><br>'+(p.timed?(results.length+' rep time'+(results.length===1?'':'s')+' saved'+(p.target?' · '+hit+'/'+p.reps+' on pace':'')):'Completion saved. No pace data was created for this session.');
+   btn.textContent='✓ WORKOUT LOGGED';say('Workout logged');
+ }catch(e){btn.disabled=false;btn.textContent='RETRY SAVE';$p('mwPracticeSummary').hidden=false;$p('mwPracticeSummary').textContent='Could not save: '+(e.message||'Please try again.')}
 }
 window.mwOpenPractice=async function(){
- const w=activeMWWeek(),n=mwTodayTrackSessionNumber(); if(!n){alert('Today is a recovery day. No track practice is scheduled.');return}
- try{const data=await loadMWProgramWeek(w);session=data?.track?.sessions?.find(x=>Number(x.day)===Number(n))}catch{}
+ practiceWeek=activeMWWeek();practiceDay=mwTodayTrackSessionNumber(); if(!practiceDay){alert('Today is a recovery day. No track practice is scheduled.');return}
+ try{const data=await loadMWProgramWeek(practiceWeek);session=data?.track?.sessions?.find(x=>Number(x.day)===Number(practiceDay))}catch{}
  if(!session){alert('Today’s MW track session is not available yet.');return}
- const p=parsePrescription();$p('mwPracticeTitle').textContent=session.title||'Today’s Track Session';$p('mwPracticeWork').textContent=p.raw||session.focus||'Follow today’s MW prescription.';$p('mwPracticeRep').textContent='REP 1 OF '+p.reps;$p('mwPracticeClock').textContent='00:00.0';$p('mwPracticeCue').textContent='PRESS START WHEN YOU ARE IN POSITION';$p('mwPracticeMode').hidden=false;document.body.style.overflow='hidden'
+ results=[];renderLog();const p=parsePrescription();
+ $p('mwPracticeTitle').textContent=session.title||'Today’s Track Session';$p('mwPracticeWork').textContent=p.raw||session.focus||'Follow today’s MW prescription.';
+ $p('mwPracticeRep').textContent=p.timed?'REP 1 OF '+p.reps:'GUIDED SESSION';$p('mwPracticeClock').textContent=p.timed?'00:00.0':'—';
+ $p('mwPracticeCue').textContent=p.timed?'PRESS START WHEN YOU ARE IN POSITION':'FOLLOW THE PRESCRIPTION ABOVE. SAVE WHEN THE SESSION IS COMPLETE.';
+ $p('mwPracticePause').hidden=!p.timed;$p('mwPracticeNext').hidden=!p.timed;$p('mwPracticeStart').hidden=!p.timed;$p('mwPracticeStart').disabled=false;$p('mwPracticeStart').textContent='START PRACTICE';
+ $p('mwPracticeSave').hidden=p.timed;$p('mwPracticeSave').disabled=false;$p('mwPracticeSave').textContent=p.timed?'✓ SAVE & FINISH WORKOUT':'✓ FINISH & LOG WORKOUT';
+ $p('mwPracticeSummary').hidden=true;if(!p.timed){$p('mwPracticeSave').hidden=false;showSummary()}
+ $p('mwPracticeMode').hidden=false;document.body.style.overflow='hidden'
 }
 function exit(){clearTimers();cancelAnimationFrame(raf);speechSynthesis.cancel();running=false;paused=false;$p('mwPracticeMode').hidden=true;document.body.style.overflow=''}
 document.addEventListener('click',e=>{
  if(e.target.closest('#mwPracticeLaunch'))mwOpenPractice();
  if(e.target.closest('#mwPracticeExit'))exit();
  if(e.target.closest('#mwPracticeStart'))beginRep();
+ if(e.target.closest('#mwPracticeNext'))finishRep();
+ if(e.target.closest('#mwPracticeSave'))saveWorkout();
  if(e.target.closest('#mwPracticePause')){const b=$p('mwPracticePause');if(!paused){paused=true;pausedAt=performance.now();cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();b.textContent='RESUME';$p('mwPracticeCue').textContent='PAUSED'}else{startedAt+=performance.now()-pausedAt;paused=false;b.textContent='PAUSE';$p('mwPracticeCue').textContent='RESUMED';clock()}}
- if(e.target.closest('#mwPracticeNext')){running=false;cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();const p=parsePrescription(),el=$p('mwPracticeRep'),m=el.textContent.match(/REP (\d+)/),next=Math.min(p.reps,(Number(m?.[1]||1)+1));el.textContent='REP '+next+' OF '+p.reps;$p('mwPracticeClock').textContent='00:00.0';$p('mwPracticeCue').textContent=next>=p.reps?'FINAL REP — GET READY':'RECOVER, THEN START THE NEXT REP';$p('mwPracticePause').disabled=true;$p('mwPracticeNext').disabled=true}
  if(e.target.closest('[data-practice-coach]')){exit();document.querySelector('[data-v="coach"]')?.click()}
 });
 })();
