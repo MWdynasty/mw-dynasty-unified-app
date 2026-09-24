@@ -2570,20 +2570,68 @@ const PHASES={
   5:{name:'Peak / Championship',start:34,end:41}
 };
 function phaseFromWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(w<=8)return 1;if(w<=16)return 2;if(w<=24)return 3;if(w<=33)return 4;return 5}
+const MW_US_STATES=[['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']];
+function initSeasonIntelligenceFields(){
+  const state=$('#entryCompetitionState');
+  if(state&&state.options.length<=1)for(const [code,name] of MW_US_STATES){const o=document.createElement('option');o.value=code;o.textContent=name;state.appendChild(o)}
+  const season=$('#entrySeasonPreference'),level=$('#entryCompetitionLevel'),path=$('#entryCompetitionPath');
+  const sync=()=>{
+    const v=season?.value||'';
+    const indoor=$('#entryIndoorDates'),outdoor=$('#entryOutdoorDates');
+    if(indoor)indoor.hidden=!(v==='indoor'||v==='both');
+    if(outdoor)outdoor.hidden=!(v==='outdoor'||v==='both');
+  };
+  if(season){season.addEventListener('change',sync);sync()}
+  if(level&&path)level.addEventListener('change',()=>{
+    if(level.value==='collegiate')path.value='ncaa';
+    else if(level.value==='professional')path.value='professional_open';
+    else if(['ncaa','professional_open'].includes(path.value))path.value='school';
+  });
+}
+function seasonDatesPayload(){
+  const dates={};
+  const pref=$('#entrySeasonPreference')?.value||'';
+  if(pref==='indoor'||pref==='both')dates.indoor={startDate:$('#entryIndoorStart')?.value||null,firstMeetDate:$('#entryIndoorFirstMeet')?.value||null,primaryPeakDate:$('#entryIndoorPeak')?.value||null,secondaryPeakDate:$('#entryIndoorSecondPeak')?.value||null};
+  if(pref==='outdoor'||pref==='both')dates.outdoor={startDate:$('#entryOutdoorStart')?.value||null,firstMeetDate:$('#entryOutdoorFirstMeet')?.value||null,primaryPeakDate:$('#entryOutdoorPeak')?.value||null,secondaryPeakDate:$('#entryOutdoorSecondPeak')?.value||null};
+  return dates;
+}
+function renderSeasonPhaseStrip(c){
+  const strip=$('#phaseStrip');if(!strip)return;
+  if(c?.mode==='season_plan'){
+    strip.innerHTML='<div class="phasePill" data-phase="1"><span>1</span>FOUNDATION</div><div class="phasePill" data-phase="3"><span>2</span>PRE-COMP</div><div class="phasePill" data-phase="4"><span>3</span>COMPETE</div><div class="phasePill" data-phase="5"><span>4</span>PEAK</div>';
+  }
+}
 let mwSeasonCalendar=null;
 function mwCalendarDate(iso){if(!iso)return '—';try{return new Date(iso+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}catch{return iso}}
 function renderSeasonCalendarSummary(){
   const box=$('#seasonCalendarSummary'),home=$('#homeTrainingYear'),c=mwSeasonCalendar;
   if(!c){
-    if(box)box.innerHTML='<b>MW Standard Training Year</b><span>Calendar position will load when your account is connected.</span>';
-    if(home)home.innerHTML='<span class="mwTyKicker">MW TRAINING YEAR</span><strong>Connect your account to load your official week.</strong><small>Standard calendar + Smart Entry protection</small><em>WHY AM I ON THIS WEEK? →</em>';
+    if(box)box.innerHTML='<b>MW Season Intelligence</b><span>Choose your competition level, state, season, and championship date to build your plan.</span>';
+    if(home)home.innerHTML='<span class="mwTyKicker">MW SEASON INTELLIGENCE</span><strong>Build your official season plan.</strong><small>Track + strength synchronized to your peak</small><em>WHY AM I ON THIS WEEK? →</em>';
+    return;
+  }
+  renderSeasonPhaseStrip(c);
+  if(c.mode==='season_plan'){
+    const phaseName=c.phaseCode==='pre_competition'?'Pre-Competition':c.phaseCode==='competition'?'Competition':c.phaseCode==='peak'?'Peak / Championship':'Foundation';
+    const seasonName=String(c.seasonType||'season').replace(/^./,x=>x.toUpperCase());
+    let main='';
+    if(c.status==='active')main=`Season Week <strong>${c.week} of ${c.seasonLengthWeeks}</strong> · ${phaseName}`;
+    else if(c.status==='preseason')main=`Preseason · your ${seasonName} plan begins ${mwCalendarDate(c.startDate)}`;
+    else main=`Season complete · peak window ${mwCalendarDate(c.peakDate)}`;
+    const source=c.source==='state_registry'?'State calendar estimate':c.source==='coach_calendar'?'Coach calendar':'Your confirmed dates';
+    const foot=`${source} · Peak: ${mwCalendarDate(c.peakDate)}${c.competitionState?` · ${c.competitionState}`:''}`;
+    if(box)box.innerHTML=`<b>MW ${seasonName} Season Plan</b><span>${main}</span><small>${foot}</small>`;
+    if(home){
+      const headline=c.status==='active'?`Week ${c.week} of ${c.seasonLengthWeeks} · ${phaseName}`:c.status==='preseason'?`${seasonName} preseason · Foundation ready`:`${seasonName} season complete`;
+      home.innerHTML=`<span class="mwTyKicker">MW SEASON INTELLIGENCE</span><strong>${headline}</strong><small>Track + weight room · peak ${mwCalendarDate(c.peakDate)}</small><em>WHY AM I ON THIS WEEK? →</em>`;
+    }
     return;
   }
   const custom=c.mode==='custom';const title=custom?'Coach Custom Training Calendar':'MW Standard Training Year';
   let main='';
   if(c.status==='active')main=`Current position: <strong>Week ${c.week}</strong> · Phase ${c.phase} — ${PHASES[c.phase]?.name||'MW Progression'}`;
   else if(c.status==='preseason')main=`Preseason · Week 1 entry logic is active until ${mwCalendarDate(c.nextStartDate||c.startDate)}`;
-  else main=`Between 41-week cycles · Smart Entry uses Foundation placement until the next training year`;
+  else main='Between 41-week cycles · Smart Entry uses Foundation placement until the next training year';
   const foot=custom?`Coach calendar start: ${mwCalendarDate(c.startDate)}`:`Standard start: the day after Labor Day${c.nextStartDate&&c.status==='offseason'?` · Next start ${mwCalendarDate(c.nextStartDate)}`:` · ${mwCalendarDate(c.startDate)}`}`;
   if(box)box.innerHTML=`<b>${title}</b><span>${main}</span><small>${foot}</small>`;
   if(home){
@@ -2602,7 +2650,7 @@ async function loadSeasonCalendar(){
     mwSeasonCalendar=d.calendar||null;if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}renderSeasonCalendarSummary();syncEntrySeason();return mwSeasonCalendar;
   }catch(e){renderSeasonCalendarSummary();return null}
 }
-function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=phaseFromWeek(w);$$('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
+function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=mwSeasonCalendar?.mode==='season_plan'?Number(mwSeasonCalendar.phase||1):phaseFromWeek(w);$('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
 $('#openEntry').onclick=()=>{openView('entry');loadSeasonCalendar()}; $('#backCoach').onclick=()=>openView('coach');
 function readinessPhase(){
   const trainingAge=Number($('#trainingAge').value), continuity=Number($('#continuity').value), speed=Number($('#speedExposure').value), race=Number($('#recentRace').value), lift=Number($('#lifting').value), health=$('#health').value;
@@ -2650,8 +2698,8 @@ async function assessEntry(){
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
   }catch(e){out.innerHTML='<div class="warning">'+(e.message||'Smart Entry save failed. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & ASSIGN MY PROGRAM'}
 }
-$('#assess').onclick=assessEntry; syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='41-WEEK PROGRAM · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
+$('#assess').onclick=assessEntry; initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='MW SEASON PLAN · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
 
 setTimeout(()=>{renderSavedConversation();refreshPremiumStatus()},50);
 const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.splice(0);saveConversation();$('#chat').innerHTML='<div class="msg coach">Fresh conversation. I still have your athlete profile and MW context. What are we working on?</div>'};
