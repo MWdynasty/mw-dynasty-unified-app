@@ -30,21 +30,22 @@ module.exports=async function handler(req,res){
   }
 
   const repTrackingEnabled=coachTier==='mw_sprint_performance';
-  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions,calendarEvents,athleteAvailability]=await Promise.all([
+  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions,calendarEvents,athleteAvailability,seasonContexts]=await Promise.all([
     sb(`coach_assignments?select=*&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=200`,token),
     sb(`athletes?select=*&limit=200`,token),
     sb(`attendance_records?select=*&order=attendance_date.desc&limit=250`,token),
-    sb(`athlete_program_state?select=*&limit=200`,token),
+    coachTier==='mw_sprint_performance'?sb(`athlete_program_state?select=*&limit=200`,token):sb(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,last_completed_workout_at,track_tier,strength_tier,program_version,onboarding_assessment_completed_at&limit=200`,token),
     sb(`athlete_prs?select=*&limit=300`,token),
     sb(`athlete_flags?select=*&limit=200`,token),
     repTrackingEnabled?sb(`athlete_pace_logs?select=athlete_id,program_week,program_day,workout_key,rep_number,distance_m,target_seconds,actual_seconds,intensity_percent,recorded_at&actual_seconds=not.is.null&order=recorded_at.desc&limit=500`,token):Promise.resolve([]),
     sb(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=500`,token),
     sb(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&order=recorded_at.desc&limit=500`,token),
     sb(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&order=completed_at.desc&limit=500`,token),
-    sb(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact,location,notes&coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_at.asc&limit=150`,token),
-    sb(`athlete_schedule_constraints?select=id,athlete_id,constraint_type,title,starts_on,ends_on,training_impact,notes,review_status,coach_note,created_at&linked_coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_on.asc&limit=150`,token)
+    sb(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact,location,notes,meet_priority,is_primary_target,qualification_stage,parent_event_id&coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_at.asc&limit=150`,token),
+    sb(`athlete_schedule_constraints?select=id,athlete_id,constraint_type,title,starts_on,ends_on,training_impact,notes,review_status,coach_note,created_at&linked_coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_on.asc&limit=150`,token),
+    sb(`coach_season_contexts?select=id,group_id,season_year,season_type,competition_level_group,competition_state,competition_path,first_practice_date,first_meet_date,primary_peak_date,secondary_peak_date,goal,status&coach_user_id=eq.${encodeURIComponent(user.id)}&order=primary_peak_date.asc&limit=50`,token)
   ]);
-  const context={coach:me,coachTier,repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],athleteAvailability:athleteAvailability||[],performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
+  const context={coach:me,coachTier,seasonIntelligenceMode:coachTier==='mw_sprint_performance'?'engine':'insights',repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],athleteAvailability:athleteAvailability||[],seasonContexts:seasonContexts||[],performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
 
   const messages=Array.isArray(req.body?.messages)?req.body.messages.slice(-40):[];
   const input=messages.map(m=>{
@@ -67,6 +68,12 @@ ${JSON.stringify(SUPPORTING_KNOWLEDGE)}
 For Coach Core / Coach Intelligence own-program customers, the coach's uploaded program is the source of truth; never pretend MW authored it.
 Use secured coach/team context when answering roster, attendance, PR, progression, flag, athlete, strength-log, workout-completion, pace-check-in, or scheduling questions. If the required data is absent, say so.
 Respect the coach's saved calendar constraints when discussing or recommending schedules. Treat event_type school_break, holiday, or facility_closure with training_impact no_practice as unavailable training dates. Treat exam_week or any event marked reduced_load as a signal to reduce scheduling pressure, complexity, or total load. Awareness-only events should be mentioned when relevant but not treated as automatic cancellations. Never silently move official training; recommend an adjustment and keep the coach in control.
+SEASON INTELLIGENCE PRODUCT BOUNDARY:
+${coachTier==='mw_sprint_performance'
+  ? '- MW Sprint Performance has the full Season Intelligence Engine. You may reason about the athlete’s real season week, championship anchor, MW source-week mapping, synchronized track + strength phase, developmental tier/volume, meet priorities, and missed-session adaptation. Do not silently change official state; recommend and explain consequential changes.'
+  : '- Coach Intelligence has Season Intelligence Insights only. You may analyze the coach’s dates, countdown, A/B/C meet priorities, school constraints, athlete availability, attendance/completion and broad readiness context for the coach’s OWN program. Never expose MW source-week mapping, generate the 41-week MW prescription, adapt the coach’s program as though it were MW-authored, or imply automatic MW track/strength programming is included.'}
+- An A meet is a championship/primary target, B is important/preparatory, and C is a training/development meet. Do not recommend a full taper for every meet.
+- Athlete age and training experience affect developmental loading. In MW Sprint Performance, Season Intelligence chooses the appropriate source content while Foundation/Development/Performance loading controls how much work, recovery, complexity, and strength volume the athlete receives.
 SMART SCHEDULING TIER RULE:
 ${coachTier==='mw_sprint_performance'
   ? '- MW Sprint Performance: integrate saved constraints with the synchronized 41-week MW sprint + strength system. Preserve the current phase intent, key high-intensity exposures, recovery logic, and track/weight-room synchronization when recommending how to work around a constraint.'
