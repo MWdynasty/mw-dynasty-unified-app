@@ -1180,18 +1180,141 @@ function supportPage(){pageBase('Help & Support','Send a real support request to
 function taskBoardPage(){let tasks=mwLoad('aiTasks',[{name:'Maya T. — Missed Training',detail:'Review workload before next high-intensity day.',status:'Review'},{name:'Tyler B. — Performance Trend',detail:'Flying 30 trend improved across three sessions.',status:'Approve'},{name:'Aaliyah R. — Meet Preparation',detail:'Competition warm-up and race-model review are due.',status:'Open'}]);pageBase('AI Task Board','Daily coaching tasks and priorities.',`<div class="list">${tasks.map((t,i)=>`<div class="row"><span><b>${escapeHtml(t.name)}</b><br>${escapeHtml(t.detail)}<br><small>Status: ${escapeHtml(t.status)}</small></span><button class="action task-open" data-i="${i}">Open Task</button></div>`).join('')}</div>`);document.querySelectorAll('.task-open').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,t=tasks[i];mwModal('AI Task',`<div class="tile"><h3>${escapeHtml(t.name)}</h3><p>${escapeHtml(t.detail)}</p></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="action" id="approveTask">Approve</button><button class="back" id="holdTask">Hold</button></div>`);approveTask.onclick=()=>{tasks[i].status='Approved';mwStore('aiTasks',tasks);document.getElementById('mwModal')?.remove();taskBoardPage()};holdTask.onclick=()=>{tasks[i].status='Held';mwStore('aiTasks',tasks);document.getElementById('mwModal')?.remove();taskBoardPage()}})}
 async function seasonPage(){
   if(experience==='core'){
-    pageBase('Season Planner','Smart season planning is available with Coach Intelligence and MW Sprint Performance.',`
-      <div class="tile"><span class="status-kicker">COACH CORE</span><h3>Basic calendar included</h3><p>Coach Core can schedule practices, meets, testing, team events, and manually review athlete availability reports. Upgrade to Coach Intelligence for smart school/availability awareness, or MW Sprint Performance for those constraints integrated with the 41-week MW sprint + strength system.</p><button class="action" data-page="calendar" style="margin-top:12px">Open Core Calendar</button><button class="back" data-page="account" style="margin-top:12px">View Membership</button></div>`);
+    pageBase('Season Planner','Season Intelligence is reserved for Coach Intelligence and MW Sprint Performance.',`
+      <div class="tile"><span class="status-kicker">COACH CORE</span><h3>Calendar tools, without Season Intelligence</h3><p>Coach Core keeps practices, meets, testing, attendance, team events, and manual availability review. Upgrade to Coach Intelligence for season/calendar insights, or MW Sprint Performance for the full MW Season Intelligence programming engine.</p><button class="action" data-page="calendar" style="margin-top:12px">Open Core Calendar</button><button class="back" data-page="account" style="margin-top:12px">View Membership</button></div>`);
     bindPageNavigation(app);return;
   }
-  const rec=mwLoad('seasonRecommendation',null),performance=experience==='performance';
-  pageBase('AI Season Planner',performance?'Plan around school and athlete availability while preserving the 41-week MW sprint + strength progression.':'Build and optimize your season around school and athlete availability while keeping the coach in control.',`<div class="panel-grid"><div class="tile"><h3>Training-Year Position</h3><p id="seasonPlannerCalendar">Loading MW season calendar…</p></div><div class="tile"><h3>Next Meet</h3><p id="seasonPlannerNextMeet">Loading live meet schedule…</p></div><div class="tile"><h3>${performance?'41-Week Schedule Integration':'School / Schedule Constraints'}</h3><p id="seasonPlannerConstraints">Loading school calendar…</p><button class="back" data-page="calendar" style="margin-top:10px">Open Calendar</button></div><div class="tile"><h3>Athlete Availability</h3><p id="seasonPlannerAvailability">Loading athlete reports…</p><button class="back" data-page="calendar" style="margin-top:10px">Review Reports</button></div></div><div class="form" style="margin-top:14px"><label>Season Goal<textarea id="seasonGoal" rows="4" placeholder="What should the team be ready for?"></textarea></label><button class="action" id="genSeason">Generate Recommendation</button><div id="seasonOut" class="tile" style="${rec?'':'display:none;'}">${rec?escapeHtml(rec):''}</div></div>`);
-  try{const cal=await coachSeasonCalendarRequest();const el=document.getElementById('seasonPlannerCalendar');if(el)el.textContent=coachCalendarSummary(cal)}catch(e){const el=document.getElementById('seasonPlannerCalendar');if(el)el.textContent=e.message}
-  let nextMeet=null;try{const now=new Date().toISOString(),rows=await sbRest(`coach_calendar_events?select=id,title,starts_at,location&event_type=eq.meet&starts_at=gte.${encodeURIComponent(now)}&order=starts_at.asc&limit=1`);nextMeet=rows?.[0]||null;const el=document.getElementById('seasonPlannerNextMeet');if(el)el.textContent=nextMeet?`${nextMeet.title} · ${new Date(nextMeet.starts_at).toLocaleString()}${nextMeet.location?' · '+nextMeet.location:''}`:'No upcoming meet is scheduled yet.'}catch(e){const el=document.getElementById('seasonPlannerNextMeet');if(el)el.textContent='Meet schedule unavailable: '+e.message}
-  let constraints=[];try{const now=new Date().toISOString(),rows=await sbRest(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact&starts_at=gte.${encodeURIComponent(now)}&order=starts_at.asc&limit=12`)||[];constraints=rows.filter(e=>MW_SCHOOL_CONSTRAINT_TYPES.has(e.event_type));const el=document.getElementById('seasonPlannerConstraints');if(el)el.innerHTML=constraints.length?constraints.slice(0,4).map(e=>`<b>${escapeHtml(e.title)}</b> · ${escapeHtml(coachDateRange(e))} · ${escapeHtml(coachConstraintImpactLabel(e.training_impact))}`).join('<br>'):'No upcoming school constraints are saved.'}catch(e){const el=document.getElementById('seasonPlannerConstraints');if(el)el.textContent='School calendar unavailable: '+e.message}
-  let availability=[];try{const rows=await coachScheduleRpc('mw_coach_athlete_schedule_reports',{});availability=Array.isArray(rows)?rows:[];const upcoming=availability.filter(x=>String(x.endsOn||x.startsOn||'')>=new Date().toISOString().slice(0,10)),approved=upcoming.filter(x=>x.reviewStatus==='approved'),pending=upcoming.filter(x=>x.reviewStatus==='pending'||x.reviewStatus==='needs_discussion'),el=document.getElementById('seasonPlannerAvailability');if(el)el.innerHTML=approved.length||pending.length?`${approved.length?'<b>'+approved.length+' approved</b> scheduling consideration'+(approved.length===1?'':'s'):''}${approved.length&&pending.length?' · ':''}${pending.length?'<b>'+pending.length+' awaiting review/discussion</b>':''}`:'No upcoming athlete availability reports.'}catch(e){const el=document.getElementById('seasonPlannerAvailability');if(el)el.textContent='Athlete availability unavailable: '+e.message}
+
+  const performance=experience==='performance';
+  pageBase('Season Intelligence',performance
+    ?'Full MW season planning: championship anchor, synchronized track + strength, and MW source-week intelligence.'
+    :'Calendar and readiness intelligence for your coach-authored program. Your programming stays yours.',`
+    <section class="school-calendar-hero">
+      <div>
+        <span class="status-kicker">${performance?'MW SPRINT PERFORMANCE EXCLUSIVE':'COACH INTELLIGENCE'}</span>
+        <h2>${performance?'Full Season Intelligence Engine':'Season Intelligence Insights'}</h2>
+        <p>${performance?'MW can use your competition calendar as the anchor for the complete sprint + strength system.':'MW analyzes your season calendar, school constraints, athlete availability, and target dates without replacing your own training program.'}</p>
+        <span class="smart-schedule-badge">${performance?'MW ENGINE ACTIVE':'INSIGHTS · YOUR PROGRAM STAYS YOURS'}</span>
+      </div>
+      <button class="action" data-page="calendar">Open Calendar</button>
+    </section>
+
+    <div class="panel-grid" style="margin-top:14px">
+      <div class="tile"><h3>Primary Championship</h3><p id="siPrimaryTarget">Loading…</p></div>
+      <div class="tile"><h3>Countdown</h3><p id="siCountdown">Loading…</p></div>
+      <div class="tile"><h3>Next Meet</h3><p id="siNextMeet">Loading…</p></div>
+      <div class="tile"><h3>${performance?'MW Engine Status':'Schedule Intelligence'}</h3><p id="siEngineState">Loading…</p></div>
+    </div>
+
+    <details class="tile" style="margin-top:14px" open>
+      <summary><b>SEASON TARGETS & CONTEXT</b></summary>
+      <p>${performance?'These dates become inputs to the MW engine. The championship date is the anchor; athlete age, experience, event, readiness, and missed work control how MW delivers the training.':'These dates power insights and Coach MW context only. Coach Intelligence does not receive or generate the MW Sprint Performance methodology.'}</p>
+      <div class="form">
+        <div class="form-grid">
+          <label>Season<select id="siSeasonType"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select></label>
+          <label>Competition Level<select id="siLevelGroup"><option value="middle_school">Middle School</option><option value="high_school">High School</option><option value="youth_club">Youth Club</option><option value="collegiate">Collegiate</option><option value="professional">Professional / Open</option></select></label>
+        </div>
+        <div class="form-grid">
+          <label>Where do you compete? <input id="siState" maxlength="2" placeholder="AL"></label>
+          <label>Competition Path<select id="siPath"><option value="school">School / State Association</option><option value="aau">AAU</option><option value="usatf">USATF</option><option value="ncaa">NCAA</option><option value="professional_open">Professional / Open</option></select></label>
+        </div>
+        <div class="form-grid">
+          <label>First Practice<input id="siFirstPractice" type="date"></label>
+          <label>First Meet<input id="siFirstMeet" type="date"></label>
+        </div>
+        <div class="form-grid">
+          <label>Primary Championship / Peak<input id="siPeak" type="date"></label>
+          <label>Secondary Championship / Peak<input id="siSecondPeak" type="date"></label>
+        </div>
+        <label>Season Goal<textarea id="siGoal" rows="3" maxlength="1000" placeholder="Example: Be ready to qualify through State while protecting the outdoor peak."></textarea></label>
+        <button class="action" id="saveSeasonContext">Save Season Context</button>
+        <div id="saveSeasonContextState"></div>
+      </div>
+    </details>
+
+    <div class="panel-grid" style="margin-top:14px">
+      <div class="tile"><h3>School / Team Constraints</h3><p id="seasonPlannerConstraints">Loading…</p></div>
+      <div class="tile"><h3>Athlete Availability</h3><p id="seasonPlannerAvailability">Loading…</p></div>
+    </div>
+
+    <div class="form" style="margin-top:14px">
+      <label>Ask Season Intelligence<textarea id="seasonGoal" rows="4" placeholder="What should the team be ready for?"></textarea></label>
+      <button class="action" id="genSeason">Generate Recommendation</button>
+      <div id="seasonOut" class="tile" style="display:none"></div>
+    </div>`);
+
   bindPageNavigation(app);
-  document.getElementById('genSeason').onclick=()=>{const goal=document.getElementById('seasonGoal')?.value.trim()||'Protect speed quality while preparing for the next meet.',out=document.getElementById('seasonOut'),cal=coachSeasonCalendar,calendar=cal?coachCalendarSummary(cal):'MW season calendar',meet=nextMeet?` Next meet: ${nextMeet.title} on ${new Date(nextMeet.starts_at).toLocaleDateString()}.`:'',constraintText=constraints.length?` Upcoming team constraints: ${constraints.slice(0,4).map(e=>`${e.title} (${coachDateRange(e)}; ${coachConstraintImpactLabel(e.training_impact)})`).join('; ')}.`:'',approvedAvailability=availability.filter(x=>x.reviewStatus==='approved'),pendingAvailability=availability.filter(x=>x.reviewStatus==='pending'||x.reviewStatus==='needs_discussion'),availabilityText=approvedAvailability.length?` Approved athlete availability: ${approvedAvailability.slice(0,6).map(x=>`${x.athleteName}: ${x.title} (${x.startsOn}${x.endsOn&&x.endsOn!==x.startsOn?'–'+x.endsOn:''}; ${coachAthleteAvailabilityImpact(x.impact)})`).join('; ')}.`:'',pendingText=pendingAvailability.length?` ${pendingAvailability.length} athlete availability report${pendingAvailability.length===1?' is':'s are'} still awaiting coach resolution and must not be treated as approved changes.`:'',tierInstruction=performance?' Preserve the current 41-week MW sprint + strength phase intent, key speed exposures, recovery logic, and track/weight-room synchronization while working around approved constraints.':' Use approved constraints to organize the coach’s own program without inventing or replacing the coach’s training system.';const text=`Recommendation: use ${calendar} as the scheduling reference.${meet}${constraintText}${availabilityText}${pendingText} Keep no-practice/unavailable dates clear and reduce scheduling pressure during reduced-load periods.${tierInstruction} Coach approval is required before changing official program state. Goal: ${goal}`;mwStore('seasonRecommendation',text);if(out){out.style.display='block';out.textContent=text}}
+  let intel=null;
+  try{
+    intel=await fetchCoachSeasonIntelligence();
+    const ctx=intel.activeContext||null,target=intel.primaryTarget||null,next=intel.nextMeet||null;
+    const targetDate=ctx?.primaryPeakDate||(target?.startsAt?String(target.startsAt).slice(0,10):null);
+    const primary=document.getElementById('siPrimaryTarget');
+    const countdown=document.getElementById('siCountdown');
+    const nextEl=document.getElementById('siNextMeet');
+    const engineEl=document.getElementById('siEngineState');
+    if(primary)primary.innerHTML=targetDate?`<b>${escapeHtml(ctx?.goal||target?.title||'Primary target')}</b><br><small>${new Date(targetDate+'T00:00:00').toLocaleDateString()}</small>`:'No primary championship is saved yet.';
+    if(countdown)countdown.innerHTML=Number.isFinite(Number(intel.daysToTarget))?`<b>${Math.max(0,Number(intel.daysToTarget))} days</b><br><small>until the primary target</small>`:'Set a championship date to start the countdown.';
+    if(nextEl)nextEl.innerHTML=next?`<b>${escapeHtml(next.title)}</b><br><small>${new Date(next.startsAt).toLocaleDateString()}${next.meetPriority?' · '+escapeHtml(next.meetPriority)+' meet':''}</small>`:'No upcoming meet is saved.';
+    if(engineEl)engineEl.innerHTML=performance
+      ?`<b>Full engine</b><br><small>${intel.engine?.athletes?.length||0} athlete season state${Number(intel.engine?.athletes?.length||0)===1?'':'s'} connected.</small>`
+      :'<b>Insights only</b><br><small>MW methodology and automatic source-week programming remain locked to MW Sprint Performance.</small>';
+
+    const constraints=intel.teamConstraints||[],availability=intel.athleteAvailability||[];
+    const ce=document.getElementById('seasonPlannerConstraints');
+    if(ce)ce.innerHTML=constraints.length?constraints.slice(0,5).map(x=>`<b>${escapeHtml(x.title)}</b> · ${escapeHtml(String(x.trainingImpact||'awareness_only').replaceAll('_',' '))}`).join('<br>'):'No upcoming team constraints.';
+    const ae=document.getElementById('seasonPlannerAvailability');
+    const approved=availability.filter(x=>x.reviewStatus==='approved'),pending=availability.filter(x=>x.reviewStatus==='pending'||x.reviewStatus==='needs_discussion');
+    if(ae)ae.innerHTML=(approved.length||pending.length)?`${approved.length}<b> approved</b> · ${pending.length}<b> awaiting review</b>`:'No upcoming athlete availability reports.';
+
+    if(ctx){
+      const map={siSeasonType:ctx.seasonType,siLevelGroup:ctx.levelGroup,siState:ctx.competitionState||'',siPath:ctx.competitionPath,siFirstPractice:ctx.firstPracticeDate||'',siFirstMeet:ctx.firstMeetDate||'',siPeak:ctx.primaryPeakDate||'',siSecondPeak:ctx.secondaryPeakDate||'',siGoal:ctx.goal||''};
+      for(const [id,val] of Object.entries(map)){const el=document.getElementById(id);if(el)el.value=val}
+    }
+  }catch(e){
+    ['siPrimaryTarget','siCountdown','siNextMeet','siEngineState'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Season Intelligence setup is not active in this test environment yet.'});
+    const ce=document.getElementById('seasonPlannerConstraints');if(ce)ce.textContent='Calendar context will appear after the Season Intelligence data layer is enabled.';
+    const ae=document.getElementById('seasonPlannerAvailability');if(ae)ae.textContent='Athlete availability will appear after the Season Intelligence data layer is enabled.';
+  }
+
+  const save=document.getElementById('saveSeasonContext');
+  if(save)save.onclick=async()=>{
+    const state=document.getElementById('saveSeasonContextState'),peak=document.getElementById('siPeak').value;
+    if(!peak){if(state)state.textContent='Primary Championship / Peak is required.';return}
+    save.disabled=true;save.textContent='Saving…';
+    try{
+      const body={
+        action:'upsert_context',
+        seasonYear:Number(String(peak).slice(0,4)),
+        seasonType:document.getElementById('siSeasonType').value,
+        levelGroup:document.getElementById('siLevelGroup').value,
+        competitionState:document.getElementById('siState').value.trim().toUpperCase(),
+        competitionPath:document.getElementById('siPath').value,
+        firstPracticeDate:document.getElementById('siFirstPractice').value||null,
+        firstMeetDate:document.getElementById('siFirstMeet').value||null,
+        primaryPeakDate:peak,
+        secondaryPeakDate:document.getElementById('siSecondPeak').value||null,
+        goal:document.getElementById('siGoal').value.trim(),
+        status:'active'
+      };
+      const r=await fetch('/api/coach/season-intelligence',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Season context could not be saved.');
+      if(state)state.innerHTML='<b>✓ Season context saved.</b> Championship countdown and intelligence are now connected.';
+      toast('Season Intelligence updated');setTimeout(()=>seasonPage(),450);
+    }catch(e){if(state)state.textContent=e.message}finally{save.disabled=false;save.textContent='Save Season Context'}
+  };
+
+  const gen=document.getElementById('genSeason');
+  if(gen)gen.onclick=()=>{
+    const out=document.getElementById('seasonOut'),goal=document.getElementById('seasonGoal').value.trim()||document.getElementById('siGoal').value.trim()||'Prepare for the primary championship.';
+    const target=intel?.activeContext?.primaryPeakDate||intel?.primaryTarget?.startsAt||null;
+    const days=Number.isFinite(Number(intel?.daysToTarget))?Number(intel.daysToTarget):null;
+    const constraints=intel?.teamConstraints||[],availability=intel?.athleteAvailability||[];
+    const text=performance
+      ?`MW Season Intelligence: ${target?`primary championship ${new Date(String(target).slice(0,10)+'T00:00:00').toLocaleDateString()}${days!=null?` (${Math.max(0,days)} days)`:''}.`:'set the primary championship date first.'} Protect the championship anchor. Use athlete age, experience, event, current readiness, completion history, school constraints, and synchronized track + strength state to adjust delivery without adding unsafe make-up volume. ${constraints.length?`${constraints.length} upcoming team constraint${constraints.length===1?'':'s'} require schedule awareness.`:''} Goal: ${goal}`
+      :`Season Intelligence Insights: ${target?`your primary target is ${new Date(String(target).slice(0,10)+'T00:00:00').toLocaleDateString()}${days!=null?` (${Math.max(0,days)} days)`:''}.`:'set your primary championship date to start the countdown.'} Use the saved meet calendar, school constraints, and ${availability.length} athlete availability report${availability.length===1?'':'s'} to organize your coach-authored program. MW will not generate or expose the MW Sprint Performance methodology on Coach Intelligence. Goal: ${goal}`;
+    if(out){out.style.display='block';out.textContent=text}
+  };
 }
 async function adjustmentPage(){let status=mwLoad('seasonAdjustment','Pending coach review');pageBase('AI Season Adjustment','Detect → Analyze → Recommend → Coach Approves → System Executes.',`<div class="tile"><h3>Live Athlete Review</h3><div id="adjustLive"><p>Reviewing assigned athlete training and performance signals…</p></div><p><b>Status:</b> <span id="adjustStatus">${escapeHtml(status)}</span></p><div id="adjustActions" style="display:none;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="action" id="approveAdjustment">Approve for Review</button><button class="back" id="dismissAdjustment">Dismiss</button></div></div>`);
   let recommendation=null;const live=document.getElementById('adjustLive'),actions=document.getElementById('adjustActions'),statusEl=document.getElementById('adjustStatus');
