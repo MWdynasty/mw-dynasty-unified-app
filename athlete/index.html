@@ -2925,21 +2925,36 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     if(!['signup','email'].includes(type)||!h.get('access_token'))return null;
     return {access_token:h.get('access_token'),refresh_token:h.get('refresh_token')||'',token_type:h.get('token_type')||'bearer',expires_in:Number(h.get('expires_in')||3600),expires_at:Math.floor(Date.now()/1000)+Number(h.get('expires_in')||3600)};
   }
-  function recoveryRedirect(){return location.origin+location.pathname}
+  function recoveryRedirect(){
+    // Always send recovery back to the canonical athlete route. This keeps
+    // email links stable whether the request started in Safari or the iOS WKWebView.
+    return 'https://app.mwdynasty.com/athlete/';
+  }
+  let mwResetBusy=false;
   async function requestPasswordReset(){
     const email=document.querySelector('#mwAuthEmail').value.trim();
     if(!email){authStatus('Enter your email first, then tap Forgot password.',true);return}
+    if(mwResetBusy)return;
+    const btn=document.querySelector('#mwForgotPassword');
+    mwResetBusy=true;if(btn){btn.disabled=true;btn.textContent='Sending…'}
     authStatus('Sending password reset email…');
     try{
       const r=await fetch(SUPABASE_URL+'/auth/v1/recover?redirect_to='+encodeURIComponent(recoveryRedirect()),{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.error_description||d.error||'Could not send reset email');
-      authStatus('Reset email sent. Open the link in your email to create a new password.');
+      authStatus('If an MW Dynasty account exists for that email, a password reset link has been sent. Check your inbox and spam folder.');
     }catch(e){authStatus(e.message||'Could not send reset email',true)}
+    finally{mwResetBusy=false;if(btn){btn.disabled=false;btn.textContent='Forgot password?'}}
   }
   function recoveryTokenFromUrl(){
     const h=new URLSearchParams(location.hash.replace(/^#/,''));
     const q=new URLSearchParams(location.search);
-    return {type:h.get('type')||q.get('type'),access_token:h.get('access_token')||q.get('access_token')||''};
+    return {
+      type:h.get('type')||q.get('type')||'',
+      access_token:h.get('access_token')||q.get('access_token')||'',
+      refresh_token:h.get('refresh_token')||q.get('refresh_token')||'',
+      error:h.get('error')||q.get('error')||'',
+      error_description:h.get('error_description')||q.get('error_description')||''
+    };
   }
   async function saveRecoveredPassword(){
     const a=document.querySelector('#mwNewPassword').value,b=document.querySelector('#mwConfirmPassword').value;
@@ -2950,21 +2965,36 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{
       const r=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+rec.access_token},body:JSON.stringify({password:a})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.error_description||d.error||'Could not update password');
+      // End the temporary recovery session so the athlete returns to a normal,
+      // explicit sign-in with the new password.
+      try{await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+rec.access_token}})}catch(_){}
+      clearSession();
       history.replaceState({},document.title,location.pathname);
       document.querySelector('#mwAuthReset').classList.remove('show');
       document.querySelector('#mwAuthLogin').style.display='block';
       document.querySelector('#mwForgotPassword').style.display='inline-block';
       document.querySelector('#mwAuthPassword').value='';
-      authStatus('Password updated. Sign in with your new password.');
+      document.querySelector('#mwNewPassword').value='';
+      document.querySelector('#mwConfirmPassword').value='';
+      authStatus('Password updated successfully. Sign in with your new password.');
     }catch(e){authStatus(e.message||'Could not update password',true)}
   }
   function initRecoveryMode(){
     const rec=recoveryTokenFromUrl();
+    if(rec.error){
+      history.replaceState({},document.title,location.pathname);
+      authStatus(rec.error_description ? decodeURIComponent(rec.error_description.replace(/\\+/g,' ')) : 'This password reset link is invalid or expired. Request a new one.',true);
+      return false;
+    }
     if(rec.type==='recovery'&&rec.access_token){
+      // Keep the recovery credentials only in the URL until the password is
+      // changed; do not turn a recovery link into the athlete's normal app session.
+      document.body.classList.remove('mw-auth-ready');
+      document.body.classList.add('mw-auth-pending');
       document.querySelector('#mwAuthReset').classList.add('show');
       document.querySelector('#mwAuthLogin').style.display='none';
       document.querySelector('#mwForgotPassword').style.display='none';
-      authStatus('Create your new MW Dynasty password.');
+      authStatus('Create and confirm your new MW Dynasty password.');
       return true;
     }
     return false;
