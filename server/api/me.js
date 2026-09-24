@@ -1,6 +1,6 @@
 const {SUPABASE_URL,SUPABASE_KEY,authenticate,getAccountContext}=require('../lib/mw-auth');
 const {programWeek}=require('../lib/mw-program-service');
-const {reconcileSeasonPlan,positionForPlan,rpc:seasonRpc}=require('../lib/mw-season-intelligence');
+const {reconcileSeasonPlan,positionForPlan}=require('../lib/mw-season-intelligence');
 
 function strengthDayFromTitle(title=''){
   const x=String(title).trim().toUpperCase();
@@ -46,23 +46,10 @@ async function refresh(req){
     const {token}=await authenticate(req);
     const headers={apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
     const plan=await reconcileSeasonPlan(token);
-
-    const stateRes=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_refresh_own_program_state`,{method:'POST',headers,body:'{}'});
-    let state=await stateRes.json().catch(()=>null);
+    const refreshRpc=plan?.id?'mw_refresh_own_season_program_state':'mw_refresh_own_program_state';
+    const stateRes=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${refreshRpc}`,{method:'POST',headers,body:'{}'});
+    const state=await stateRes.json().catch(()=>null);
     if(!stateRes.ok||!state)return;
-
-    if(plan?.id){
-      const pos=positionForPlan(plan);
-      const preserveReview=String(state.program_status||'')==='needs_review';
-      const status=preserveReview?'needs_review':pos.status==='preseason'?'not_started':pos.status==='completed'?'completed':'active';
-      state=await seasonRpc('mw_apply_own_season_position',token,{
-        p_plan_id:plan.id,
-        p_current_week:pos.week,
-        p_phase_code:pos.phaseCode,
-        p_source_program_week:pos.sourceWeek,
-        p_status:status
-      })||state;
-    }
 
     const schedule=buildStrengthSchedule(state,plan);
     if(schedule.length){
