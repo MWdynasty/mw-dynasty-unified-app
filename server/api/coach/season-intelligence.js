@@ -87,8 +87,12 @@ module.exports=async function handler(req,res){
           const groupFilter=groupId?`group_id=eq.${encodeURIComponent(groupId)}`:'group_id=is.null';
           await request(`coach_season_contexts?coach_user_id=eq.${encodeURIComponent(c.user.id)}&${groupFilter}&status=eq.active`,c.token,{method:'PATCH',body:{status:'planned',updated_at:new Date().toISOString()},prefer:'return=minimal'});
         }
-        const conflict='coach_user_id,group_id,season_year,season_type,competition_path';
-        const rows=await request(`coach_season_contexts?on_conflict=${encodeURIComponent(conflict)}`,c.token,{method:'POST',body:payload,prefer:'resolution=merge-duplicates,return=representation'});
+        const groupFilter=groupId?`group_id=eq.${encodeURIComponent(groupId)}`:'group_id=is.null';
+        const existing=await request(`coach_season_contexts?select=id&coach_user_id=eq.${encodeURIComponent(c.user.id)}&${groupFilter}&season_year=eq.${seasonYear}&season_type=eq.${encodeURIComponent(seasonType)}&competition_path=eq.${encodeURIComponent(path)}&limit=1`,c.token);
+        const existingId=Array.isArray(existing)?existing[0]?.id:null;
+        const rows=existingId
+          ?await request(`coach_season_contexts?id=eq.${encodeURIComponent(existingId)}`,c.token,{method:'PATCH',body:payload})
+          :await request('coach_season_contexts',c.token,{method:'POST',body:payload});
         return res.status(200).json({ok:true,mode,context:summarizeContext(Array.isArray(rows)?rows[0]:rows)});
       }
 
@@ -132,7 +136,7 @@ module.exports=async function handler(req,res){
     if(athleteIds.length){
       const filter=`(${athleteIds.map(cleanId).filter(Boolean).join(',')})`;
       const [athleteRows,constraintRows]=await Promise.all([
-        request(`athletes?select=id,selected_events,experience_level,competition_level,competition_state,season_preference& id=in.${filter}`.replace(' &','&'),c.token),
+        request(`athletes?select=id,selected_events,experience_level,competition_level,competition_state,season_preference&id=in.${filter}`,c.token),
         request(`athlete_schedule_constraints?select=athlete_id,constraint_type,title,starts_on,ends_on,training_impact,review_status&athlete_id=in.${filter}&ends_on=gte.${new Date().toISOString().slice(0,10)}&order=starts_on.asc&limit=500`,c.token)
       ]);
       availability=(Array.isArray(constraintRows)?constraintRows:[]).map(x=>({
