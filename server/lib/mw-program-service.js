@@ -18,6 +18,9 @@ function normalizeTier(value){
 function trackGuidance(tier){
   const t=TIERS[normalizeTier(tier)];
   return {
+    volumeFactor:t.volumeFactor,
+    recoveryFactor:t.recoveryFactor,
+    rpeCap:t.rpeCap,
     volume:`Complete approximately ${Math.round(t.volumeFactor*100)}% of the listed repetitions or total distance; round down and preserve the main movement.`,
     recovery:t.recoveryFactor>1?`Take up to ${Math.round((t.recoveryFactor-1)*100)}% more recovery when needed to keep mechanics clean.`:'Use the listed full recoveries and stop when speed or mechanics deteriorate.',
     complexity:tier==='foundation'?'Use standing/three-point starts before blocks; use low-impact alternatives for bounds and advanced plyometrics.':tier==='development'?'Use blocks and advanced plyometrics only after the athlete demonstrates consistent positions and landing control.':'Use the complete event-specific setup when healthy and technically prepared.',
@@ -27,6 +30,9 @@ function trackGuidance(tier){
 function strengthGuidance(tier){
   const key=normalizeTier(tier),t=TIERS[key];
   return {
+    volumeFactor:t.volumeFactor,
+    recoveryFactor:t.recoveryFactor,
+    rpeCap:t.rpeCap,
     effort:`Cap working sets around RPE ${t.rpeCap}; leave ${Math.max(1,10-t.rpeCap)} or more quality reps in reserve.`,
     volume:key==='foundation'?'Use 1–2 working sets per listed movement and prioritize bodyweight, light dumbbells, or an empty/light bar.':key==='development'?'Use 2–3 working sets and about 75–85% of listed accessory volume.':'Use the full listed prescription when it supports track readiness.',
     loading:key==='foundation'?'Do not estimate maximal lifts for children. Progress only after repeatable technique and qualified supervision.':key==='development'?'Increase load only when every prescribed rep is technically sound.':'Use athlete-specific tested/training maxes and preserve bar speed.',
