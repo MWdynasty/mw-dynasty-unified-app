@@ -37,6 +37,14 @@ Do not merge to production until all required launch gates are checked.
 - [ ] Handle states where middle school schedules are district/local rather than statewide.
 - [ ] Coach/team dates and athlete-confirmed dates override state estimates.
 
+## C2. Product entitlement boundary
+- [x] Coach Core does NOT receive Season Intelligence.
+- [x] Coach Intelligence does NOT receive the MW 41-week source-mapping/adaptive-programming engine.
+- [ ] Coach Intelligence may receive Season Intelligence INSIGHTS for its own coach-authored program: calendar context, weeks-to-championship, athlete trend/risk flags, and AI analysis without exposing or generating MW methodology.
+- [x] MW Sprint Performance receives the full Season Intelligence engine: state/season calibration, MW source-week mapping, Track + Strength synchronization, Smart Entry, and adaptive season planning.
+- [x] Individual full MW Athlete membership follows full-MW access and may use the full athlete Season Intelligence experience.
+- [ ] Add explicit feature flags for season_intelligence_insights vs season_intelligence_engine before production UI rollout.
+
 ## D. Periodization rules
 - [x] Foundation phase.
 - [x] Pre-Competition phase.
@@ -46,6 +54,10 @@ Do not merge to production until all required launch gates are checked.
 - [x] Master-source mapping stays inside Weeks 1–41.
 - [x] Source-week mapping is monotonic.
 - [ ] Validate phase ratios for 6, 8, 10, 12, 16, 20, 24, and 41-week real coaching scenarios.
+- [x] Existing age + experience tier assignment remains active inside season-aware Smart Entry.
+- [x] Existing Foundation / Development / Performance volume factors remain active after a Season Week maps to an MW Master Source Week.
+- [x] Season-mapped program response carries a developmental load profile (age band, training years, track/strength tier, volume factor, recovery factor, RPE cap).
+- [ ] Verify every athlete-facing workout renderer actually applies the developmental volume factor rather than only displaying guidance.
 - [ ] Age-appropriate middle-school taper / peak rules.
 - [ ] High-school progression rules.
 - [ ] Collegiate progression rules.
@@ -162,6 +174,16 @@ Do not merge to production until all required launch gates are checked.
 - [ ] Verify coach access only applies to assigned athletes.
 - [ ] Validate all date and enum inputs server-side.
 - [ ] Ensure plan-history/audit records cannot be silently overwritten.
+
+## N2. Developmental loading regression tests
+- [x] New/young athlete resolves to Foundation loading.
+- [x] Experienced adult athlete can resolve to Performance loading.
+- [ ] 13-year-old / 100m / first season: condensed season + Foundation volume.
+- [ ] 15-year-old / 200m / 2 years experience: Development volume + correct source-week map.
+- [ ] 17-year-old / 400m / advanced: event-specific season mapping + appropriate tier volume.
+- [ ] Adult/pro athlete: Performance volume, no youth restrictions, flexible calendar.
+- [ ] Confirm age/experience affects HOW MUCH training is prescribed without changing the championship anchor.
+- [ ] Confirm age/experience loading applies to both Track and Strength.
 
 ## O. Required test matrix before production
 - [ ] Existing legacy 41-week athlete: unchanged.
