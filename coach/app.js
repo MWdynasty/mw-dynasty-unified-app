@@ -1534,10 +1534,64 @@ async function schoolConstraintModal(id=null){
   const del=modal.querySelector('#deleteSC');if(del)del.onclick=async()=>{if(!confirm('Delete this school calendar constraint?'))return;try{await sbRest(`coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method:'DELETE'});modal.remove();calendarPage();toast('Constraint deleted')}catch(e){toast(e.message)}};
 }
 async function calendarEventModal(id=null){
-  let row=null;if(id)row=(await sbRest(`coach_calendar_events?select=*&id=eq.${encodeURIComponent(id)}&limit=1`))?.[0];const local=row?.starts_at?new Date(new Date(row.starts_at).getTime()-new Date(row.starts_at).getTimezoneOffset()*60000).toISOString().slice(0,16):'';
-  const modal=mwModal(row?'Edit Event':'Add Event',`<div class="form"><label>Title<input id="ceTitle" value="${escapeHtml(row?.title||'')}"></label><label>Type<select id="ceType"><option value="practice">Practice</option><option value="meet">Meet</option><option value="testing">Testing</option><option value="other">Other</option></select></label><label>Date / Time<input id="ceStart" type="datetime-local" value="${local}"></label><label>Location<input id="ceLoc" value="${escapeHtml(row?.location||'')}"></label><label>Notes<textarea id="ceNotes" rows="3">${escapeHtml(row?.notes||'')}</textarea></label><button class="action" id="saveCE">Save Event</button></div>`);
-  modal.querySelector('#ceType').value=['practice','meet','testing','other'].includes(row?.event_type)?row.event_type:'practice';
-  modal.querySelector('#saveCE').onclick=async()=>{const title=modal.querySelector('#ceTitle').value.trim(),startValue=modal.querySelector('#ceStart').value;if(!title||!startValue)return toast('Title and date required');const u=await mwCurrentUser(),body={coach_user_id:u.id,title,event_type:modal.querySelector('#ceType').value,starts_at:new Date(startValue).toISOString(),ends_at:null,location:modal.querySelector('#ceLoc').value.trim()||null,notes:modal.querySelector('#ceNotes').value.trim()||null,registration_status:row?.registration_status||null,training_impact:'normal'};try{const d=id?await sbRest(`coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body}):await sbRest('coach_calendar_events',{method:'POST',body});await logCoachAction(id?'calendar_updated':'calendar_created','calendar_event',d?.[0]?.id||id,{title:body.title,type:body.event_type});modal.remove();calendarPage()}catch(e){toast(e.message)}};
+  let row=null;
+  if(id)row=(await sbRest(`coach_calendar_events?select=*&id=eq.${encodeURIComponent(id)}&limit=1`))?.[0];
+  const local=row?.starts_at?new Date(new Date(row.starts_at).getTime()-new Date(row.starts_at).getTimezoneOffset()*60000).toISOString().slice(0,16):'';
+  const smart=smartScheduleUnlocked();
+  const modal=mwModal(row?'Edit Event':'Add Event',`<div class="form">
+    <label>Title<input id="ceTitle" value="${escapeHtml(row?.title||'')}"></label>
+    <label>Type<select id="ceType"><option value="practice">Practice</option><option value="meet">Meet</option><option value="testing">Testing</option><option value="other">Other</option></select></label>
+    <label>Date / Time<input id="ceStart" type="datetime-local" value="${local}"></label>
+    <label>Location<input id="ceLoc" value="${escapeHtml(row?.location||'')}"></label>
+    ${smart?`<div id="ceMeetIntelligence" class="tile" style="display:none">
+      <span class="status-kicker">${experience==='performance'?'MW SEASON INTELLIGENCE ENGINE':'SEASON INTELLIGENCE INSIGHTS'}</span>
+      <h3>Meet Importance</h3>
+      <p>${experience==='performance'?'Meet priority becomes an input to taper/load decisions. A does not mean MW blindly tapers—the primary championship remains the anchor.':'Meet priority helps MW explain calendar pressure and readiness around your own program. It does not generate MW programming.'}</p>
+      <div class="form-grid">
+        <label>Priority<select id="cePriority"><option value="">Not classified</option><option value="A">A — Championship / Primary</option><option value="B">B — Important / Preparatory</option><option value="C">C — Training / Development</option></select></label>
+        <label>Qualification Stage<select id="ceQualification"><option value="">Not specified</option><option value="regular">Regular Meet</option><option value="conference">Conference</option><option value="district">District</option><option value="sectional">Sectional</option><option value="regional">Regional</option><option value="state">State</option><option value="national">National</option><option value="junior_olympics">Junior Olympics</option><option value="ncaa_championship">NCAA Championship</option><option value="professional_championship">Professional Championship</option><option value="other">Other</option></select></label>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center"><input id="cePrimaryTarget" type="checkbox" style="width:auto"> Primary championship / season target</label>
+    </div>`:''}
+    <label>Notes<textarea id="ceNotes" rows="3">${escapeHtml(row?.notes||'')}</textarea></label>
+    <button class="action" id="saveCE">Save Event</button>
+  </div>`);
+  const type=modal.querySelector('#ceType'),meetBox=modal.querySelector('#ceMeetIntelligence');
+  type.value=['practice','meet','testing','other'].includes(row?.event_type)?row.event_type:'practice';
+  if(modal.querySelector('#cePriority'))modal.querySelector('#cePriority').value=row?.meet_priority||'';
+  if(modal.querySelector('#ceQualification'))modal.querySelector('#ceQualification').value=row?.qualification_stage||'';
+  if(modal.querySelector('#cePrimaryTarget'))modal.querySelector('#cePrimaryTarget').checked=!!row?.is_primary_target;
+  const syncMeetFields=()=>{if(meetBox)meetBox.style.display=type.value==='meet'?'block':'none'};
+  type.onchange=syncMeetFields;syncMeetFields();
+
+  modal.querySelector('#saveCE').onclick=async()=>{
+    const title=modal.querySelector('#ceTitle').value.trim(),startValue=modal.querySelector('#ceStart').value;
+    if(!title||!startValue)return toast('Title and date required');
+    const u=await mwCurrentUser(),eventType=type.value;
+    const body={
+      coach_user_id:u.id,title,event_type:eventType,starts_at:new Date(startValue).toISOString(),ends_at:null,
+      location:modal.querySelector('#ceLoc').value.trim()||null,notes:modal.querySelector('#ceNotes').value.trim()||null,
+      registration_status:row?.registration_status||null,training_impact:'normal'
+    };
+    if(smart&&eventType==='meet'){
+      body.meet_priority=modal.querySelector('#cePriority')?.value||null;
+      body.qualification_stage=modal.querySelector('#ceQualification')?.value||null;
+      body.is_primary_target=!!modal.querySelector('#cePrimaryTarget')?.checked;
+    }else if(smart){
+      body.meet_priority=null;body.qualification_stage=null;body.is_primary_target=false;
+    }
+    try{
+      if(smart&&eventType==='meet'&&body.is_primary_target){
+        const existingId=id?String(id):'';
+        let path='coach_calendar_events?event_type=eq.meet&is_primary_target=eq.true';
+        if(existingId)path+='&id=neq.'+encodeURIComponent(existingId);
+        await sbRest(path,{method:'PATCH',body:{is_primary_target:false}});
+      }
+      const d=id?await sbRest(`coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body}):await sbRest('coach_calendar_events',{method:'POST',body});
+      await logCoachAction(id?'calendar_updated':'calendar_created','calendar_event',d?.[0]?.id||id,{title:body.title,type:body.event_type,meetPriority:body.meet_priority||null,primaryTarget:!!body.is_primary_target});
+      modal.remove();calendarPage();
+    }catch(e){toast(e.message)}
+  };
 }
 async function meetsPage(){pageBase('Meets','Meet schedule pulled from your live MW calendar.',`<div id="meetLive" class="list"><div class="tile">Loading meets…</div></div><button class="action" id="newMeet" style="margin-top:14px">+ Add Meet</button>`);newMeet.onclick=()=>calendarEventModal();try{const rows=await sbRest('coach_calendar_events?select=id,title,starts_at,location,registration_status,notes&event_type=eq.meet&order=starts_at.asc')||[];meetLive.innerHTML=rows.map(e=>`<div class="row"><span><b>${escapeHtml(e.title)}</b><br><small>${new Date(e.starts_at).toLocaleDateString()} · ${escapeHtml(e.location||'Location TBD')}</small></span><span class="status">${escapeHtml(e.registration_status||'Planned')}</span></div>`).join('')||'<div class="tile">No meets scheduled yet.</div>'}catch(e){meetLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}}
 async function messagesPage(preselectGroup=null){
