@@ -2106,6 +2106,7 @@ if($('#replayTour'))$('#replayTour').onclick=()=>startQuickStart(true);
 const DEFAULT_PREFS={voiceSpeed:'1',voiceMode:'fast',autoVoice:'on',workoutReminders:'on',meetReminders:'on',messageAlerts:'on'};
 function getPrefs(){return {...DEFAULT_PREFS,...JSON.parse(localStorage.getItem('mwPrefs')||'{}')}}
 let mwCompletionCache={};
+let mwWorkoutStatusCache={};
 let mwSessionRpeCache={};
 let mwPaceCheckCache={};
 let mwCompletionLoaded=false;
@@ -2119,6 +2120,25 @@ function completionHeaders(extra={}){
 }
 function completionAthleteId(){const remote=window.mwGetRemoteProfile?.();return remote?.athleteId||null}
 function workoutKey(w,i){return `mw-track-w${Number(w)}-d${Number(i)}`}
+function workoutStatus(w,d){return mwWorkoutStatusCache[String(w)]?.['s'+Number(d)]||null}
+function latestIncompleteWorkout(){
+  const rows=[];
+  for(const [w,days] of Object.entries(mwWorkoutStatusCache||{})){
+    for(const [k,row] of Object.entries(days||{})){
+      if(row?.completion_status==='incomplete')rows.push({...row,program_week:Number(w),program_day:Number(String(k).replace('s',''))});
+    }
+  }
+  return rows.sort((a,b)=>String(b.scheduled_date||'').localeCompare(String(a.scheduled_date||''))||Number(b.program_week)-Number(a.program_week)||Number(b.program_day)-Number(a.program_day))[0]||null;
+}
+async function setWorkoutStatus(w,d,status){
+  const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_mark_own_workout_status',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_program_day:Number(d),p_status:String(status)}),cache:'no-store'});
+  const out=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(out?.message||out?.hint||'Workout status could not be updated.');
+  mwWorkoutStatusCache[String(w)]=mwWorkoutStatusCache[String(w)]||{};
+  mwWorkoutStatusCache[String(w)]['s'+Number(d)]={...(mwWorkoutStatusCache[String(w)]['s'+Number(d)]||{}),...(out||{}),completion_status:String(status)};
+  if(status==='incomplete')window.mwReloadAthleteNotifications?.();
+  return out;
+}
 let mwPracticeProgressCache=[];
 async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
@@ -2141,10 +2161,13 @@ function renderPracticeProgress(){
   }).join('');
 }
 function rowsToCompletion(rows){
-  const out={};mwPaceCheckCache={};
+  const out={};mwPaceCheckCache={};mwWorkoutStatusCache={};
   for(const r of (Array.isArray(rows)?rows:[])){
     const w=String(Number(r.program_week||0)),d=Number(r.program_day||0);
-    if(!w||!d||r.completion_status!=='completed'||!String(r.workout_key||'').startsWith('mw-track-'))continue;
+    if(!w||!d||!String(r.workout_key||'').startsWith('mw-track-'))continue;
+    mwWorkoutStatusCache[w]=mwWorkoutStatusCache[w]||{};
+    mwWorkoutStatusCache[w]['s'+d]={...r};
+    if(r.completion_status!=='completed')continue;
     out[w]=out[w]||{};out[w]['s'+d]=true;
     if(r.session_rpe!=null){mwSessionRpeCache[w]=mwSessionRpeCache[w]||{};mwSessionRpeCache[w]['s'+d]=Number(r.session_rpe)}
     if(Number(r.pace_reps_total)>0){mwPaceCheckCache[w]=mwPaceCheckCache[w]||{};mwPaceCheckCache[w]['s'+d]={status:r.pace_check_status||'',hit:Number(r.pace_reps_hit||0),total:Number(r.pace_reps_total||0)}}
@@ -2153,11 +2176,11 @@ function rowsToCompletion(rows){
 }
 async function loadWorkoutCompletions(){
   const aid=completionAthleteId();if(!aid)return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at,scheduled_date,started_at,last_activity_at,completed_late',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load workout completion history.');
   mwCompletionCache=rowsToCompletion(rows);mwCompletionLoaded=true;
 }
-async function paceRepTotalForWorkout(w,d){
+async function paceRepTotalForWorkoutasync function paceRepTotalForWorkout(w,d){
   try{
     const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===Number(d));
     const m=String(session?.work||'').match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
@@ -2175,6 +2198,9 @@ async function markWorkoutComplete(w,i,button,pace={status:'not_applicable',hit:
     const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?on_conflict=athlete_id,workout_key',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
     const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
     mwCompletionCache[String(w)]=mwCompletionCache[String(w)]||{};mwCompletionCache[String(w)]['s'+i]=true;
+    mwWorkoutStatusCache[String(w)]=mwWorkoutStatusCache[String(w)]||{};
+    const prior=mwWorkoutStatusCache[String(w)]['s'+i]||{};
+    mwWorkoutStatusCache[String(w)]['s'+i]={...prior,...payload,completion_status:'completed',completed_late:!!(prior.scheduled_date&&prior.scheduled_date<new Date().toISOString().slice(0,10))};
     if(total){mwPaceCheckCache[String(w)]=mwPaceCheckCache[String(w)]||{};mwPaceCheckCache[String(w)]['s'+i]={status:payload.pace_check_status,hit,total}}
     try{await window.mwReloadAccount?.()}catch{}
     renderCompletion();renderProgressUI();
@@ -2210,8 +2236,8 @@ function weekDone(w){const c=getCompletion()[String(w)]||{};return [1,2,3,4].eve
 function completedCount(){const c=getCompletion();return Object.values(c).reduce((n,w)=>n+Object.values(w).filter(Boolean).length,0)}
 function weeksComplete(){let n=0;for(let w=1;w<=41;w++)if(weekDone(w))n++;return n}
 function scheduledWeek(){const p=getProfile();const start=Number(p.startWeek||p.entryAssessment?.assignedWeek||1);const d=p.startDate?new Date(p.startDate+'T00:00:00'):new Date();const days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));return Math.min(41,start+Math.floor(days/7))}
-function unlockedThrough(){const p=getProfile();return Math.max(1,Math.min(41,Number(p.week||p.startWeek||1)))}
-function advanceCurrentWeek(){const p=getProfile();const u=unlockedThrough();let current=Math.max(1,Number(p.week||p.startWeek||1));if(current<u && weekDone(current))current=Math.min(u,current+1);p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
+function unlockedThrough(){const p=getProfile();return Math.max(1,Math.min(41,Number(p.week||scheduledWeek()||p.startWeek||1)))}
+function advanceCurrentWeek(){const p=getProfile();const current=Math.max(1,Math.min(41,Number(p.week||scheduledWeek()||p.startWeek||1)));p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
 function mwTodayTrackSessionNumber(){
   const n=new Date().getDay();
   return (n>=1&&n<=4)?n:null;
@@ -2225,6 +2251,13 @@ async function renderCompletion(){
   const c=getCompletion(),wc=c[String(w)]||{},pace=mwPaceCheckCache[String(w)]||{},box=$('#weekChecklist');
   if(!box)return;
   box.innerHTML='';
+  const overdue=latestIncompleteWorkout();
+  if(overdue&&!(Number(overdue.program_week)===Number(w)&&Number(overdue.program_day)===Number(mwTodayTrackSessionNumber()))){
+    const late=document.createElement('div');late.className='checkRow';
+    late.innerHTML=`<span><b>Week ${overdue.program_week} · Session ${overdue.program_day}</b><br><small class="muted">INCOMPLETE · YOUR SAVED REPS ARE STILL HERE</small></span><span class="completionActions"><button data-finish-previous="1">FINISH LOGGING</button></span>`;
+    box.appendChild(late);
+    late.querySelector('button')?.addEventListener('click',()=>window.mwOpenPracticeFor?.(overdue.program_week,overdue.program_day));
+  }
   const sessionNumber=mwTodayTrackSessionNumber();
   let session=null;
   try{const data=await loadMWProgramWeek(w);session=sessionNumber?data?.track?.sessions?.find(x=>Number(x.day)===Number(sessionNumber)):null}catch{}
@@ -2240,13 +2273,14 @@ async function renderCompletion(){
     const prescribed=session?.tierWork?.[tier]||session?.work||'Follow the MW prescription for today.';
     details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WORK:</b> ${prescribed}<br><b>RECOVERY:</b> ${session.recovery||'Full quality recovery'}</div>`;
   }
-  const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
+  const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
   const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
-  row.innerHTML=`<span><b>${session.title||('Track Session '+sessionNumber)}</b><br><small class="muted">Completion check${paceNote}</small></span><span class="completionActions"><button data-session="${sessionNumber}">${isDone?'✓ DONE':'DONE'}</button></span>`;
+  const statusLabel=isDone?(state?.completed_late?'COMPLETED · LATE ENTRY':'COMPLETED'):status==='in_progress'?'IN PROGRESS':status==='incomplete'?'INCOMPLETE · REPS SAVED':status==='absent'?'ABSENT':'SCHEDULED';
+  row.innerHTML=`<span><b>${session.title||('Track Session '+sessionNumber)}</b><br><small class="muted">${statusLabel}${paceNote}</small></span><span class="completionActions"><button data-session="${sessionNumber}">${isDone?'✓ DONE':status==='incomplete'?'FINISH LOGGING':'DONE'}</button></span>`;
   box.appendChild(row);
-  const btn=box.querySelector('button[data-session]');if(btn)btn.onclick=()=>beginWorkoutCheckin(w,sessionNumber,btn);
-  if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':'IN PROGRESS';
-  if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':'Finish today’s track session, then tap DONE.';
+  const btn=box.querySelector('button[data-session]');if(btn)btn.onclick=()=>status==='incomplete'?window.mwOpenPracticeFor?.(w,sessionNumber):beginWorkoutCheckin(w,sessionNumber,btn);
+  if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':status==='incomplete'?'INCOMPLETE':status==='in_progress'?'IN PROGRESS':'SCHEDULED';
+  if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Every finished rep is being saved automatically.':'Today’s session is scheduled and ready.';
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}}
 function renderProfileIdentity(){const p=getProfile(),first=(document.getElementById('name')?.value||p.name||'Athlete').trim(),last=(document.getElementById('profileLastName')?.value||'').trim(),events=(document.getElementById('profileEvents')?.value||'SPRINT PERFORMANCE').trim();const nm=document.getElementById('mwProfileDisplayName'),ev=document.getElementById('mwProfileEventLine'),mo=document.getElementById('mwProfileMonogram');if(nm)nm.textContent=(first+' '+last).trim();if(ev)ev.textContent=events||'SPRINT PERFORMANCE';if(mo)mo.textContent=((first[0]||'M')+(last[0]||'W')).toUpperCase()}
@@ -3335,9 +3369,9 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   setTimeout(load,1200);setInterval(load,30000);
 })();
 </script>
-<script id="mw-practice-runtime-v2">
+<script id="mw-practice-runtime-v3">
 (()=>{
-let session=null, running=false, paused=false, startedAt=0, pausedAt=0, raf=0, timers=[], results=[], practiceWeek=0, practiceDay=0;
+let session=null, running=false, paused=false, startedAt=0, pausedAt=0, raf=0, timers=[], results=[], practiceWeek=0, practiceDay=0, practiceStarted=false, workoutSaved=false;
 const $p=id=>document.getElementById(id);
 function clearTimers(){timers.forEach(clearTimeout);timers=[]}
 function say(x){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(x));u.rate=1;u.pitch=.95;speechSynthesis.speak(u)}catch{}}
@@ -3359,64 +3393,106 @@ function currentRep(){return results.length+1}
 function renderLog(){
  const box=$p('mwPracticeRepLog'); if(!box)return;
  box.hidden=!results.length;
- box.innerHTML=results.map(r=>'<div class="mwPracticeRepRow"><b>REP '+r.rep_number+'</b><span>'+r.time_seconds.toFixed(2)+'s'+(r.target_seconds?' / '+r.target_seconds.toFixed(2)+'s target':'')+'</span><span class="'+(r.pace_status==='on_pace'?'on':r.pace_status==='outside_target'?'off':'')+'">'+(r.pace_status==='on_pace'?'✓ ON PACE':r.pace_status==='outside_target'?'OUTSIDE TARGET':'TIME LOGGED')+'</span></div>').join('');
+ box.innerHTML=results.map(r=>'<div class="mwPracticeRepRow"><b>REP '+r.rep_number+'</b><span>'+Number(r.time_seconds).toFixed(2)+'s'+(r.target_seconds?' / '+Number(r.target_seconds).toFixed(2)+'s target':'')+'</span><span class="'+(r.pace_status==='on_pace'?'on':r.pace_status==='outside_target'?'off':'')+'">'+(r.pace_status==='on_pace'?'✓ ON PACE':r.pace_status==='outside_target'?'OUTSIDE TARGET':'✓ SAVED')+'</span></div>').join('');
 }
-function beginRep(){
+async function loadExistingReps(w,d){
+ const aid=completionAthleteId();if(!aid)return[];
+ const key=workoutKey(w,d);
+ const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+'&workout_key=eq.'+encodeURIComponent(key)+'&select=rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at&order=rep_number.asc',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+ const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Saved rep data could not be loaded.');
+ return (Array.isArray(rows)?rows:[]).map(x=>({...x,rep_number:Number(x.rep_number),time_seconds:Number(x.time_seconds),target_seconds:x.target_seconds==null?null:Number(x.target_seconds)}));
+}
+async function persistOneRep(row){
+ const p=parsePrescription(),aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
+ const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString()};
+ const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});
+ if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep time could not be saved.')}
+}
+async function ensureStarted(){
+ if(practiceStarted)return;
+ await setWorkoutStatus(practiceWeek,practiceDay,'in_progress');
+ practiceStarted=true;workoutSaved=false;
+}
+async function beginRep(){
  const p=parsePrescription(); if(!p.timed)return;
+ try{await ensureStarted()}catch(e){$p('mwPracticeCue').textContent='COULD NOT START LOGGING · CHECK CONNECTION';return}
  clearTimers();speechSynthesis.cancel();$p('mwPracticeCue').textContent='GET READY';say('On your marks');
  $p('mwPracticeStart').disabled=true;$p('mwPracticeNext').disabled=true;
  timers.push(setTimeout(()=>say('Set'),1800));
  timers.push(setTimeout(()=>{say('Go!');startedAt=performance.now();running=true;paused=false;$p('mwPracticeCue').textContent=p.target?'COACH MW IS CALLING YOUR TARGET MARKS':'REP TIMER IS LIVE';$p('mwPracticePause').disabled=false;$p('mwPracticeNext').disabled=false;clock();schedulePace(p)},3000));
 }
-function finishRep(){
+async function finishRep(){
  if(!running)return;
  const p=parsePrescription(), rep=currentRep(), actual=Math.max(.01,(performance.now()-startedAt)/1000);
  running=false;paused=false;cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();
  const status=p.target?(actual<=p.target?'on_pace':'outside_target'):'timed';
- results.push({rep_number:rep,time_seconds:Number(actual.toFixed(2)),target_seconds:p.target?Number(p.target):null,pace_status:status});
- renderLog();
- $p('mwPracticeClock').textContent='00:00.0';$p('mwPracticePause').disabled=true;$p('mwPracticePause').textContent='PAUSE';$p('mwPracticeNext').disabled=true;
- if(rep>=p.reps){$p('mwPracticeRep').textContent='SESSION COMPLETE';$p('mwPracticeCue').textContent='REVIEW YOUR REP LOG, THEN SAVE';$p('mwPracticeStart').hidden=true;$p('mwPracticeSave').hidden=false;showSummary()}
- else{$p('mwPracticeRep').textContent='REP '+(rep+1)+' OF '+p.reps;$p('mwPracticeCue').textContent='RECOVER, THEN START THE NEXT REP';$p('mwPracticeStart').disabled=false;$p('mwPracticeStart').textContent='START REP '+(rep+1)}
+ const row={rep_number:rep,time_seconds:Number(actual.toFixed(2)),target_seconds:p.target?Number(p.target):null,pace_status:status};
+ results.push(row);renderLog();
+ $p('mwPracticeClock').textContent='00:00.0';$p('mwPracticePause').disabled=true;$p('mwPracticePause').textContent='PAUSE';$p('mwPracticeNext').disabled=true;$p('mwPracticeStart').disabled=true;
+ $p('mwPracticeCue').textContent='SAVING REP '+rep+'…';
+ try{
+   await persistOneRep(row);
+   $p('mwPracticeCue').textContent=rep>=p.reps?'ALL REPS SAVED · FINISH WORKOUT':'REP '+rep+' SAVED · RECOVER';
+ }catch(e){
+   $p('mwPracticeCue').textContent='REP '+rep+' IS ON THIS SCREEN · SAVE WILL RETRY';
+ }
+ if(rep>=p.reps){$p('mwPracticeRep').textContent='SESSION COMPLETE';$p('mwPracticeStart').hidden=true;$p('mwPracticeSave').hidden=false;showSummary()}
+ else{$p('mwPracticeRep').textContent='REP '+(rep+1)+' OF '+p.reps;$p('mwPracticeStart').disabled=false;$p('mwPracticeStart').textContent='START REP '+(rep+1)}
 }
 function showSummary(){
  const p=parsePrescription(),box=$p('mwPracticeSummary'); if(!box)return;
  if(!p.timed){box.hidden=false;box.innerHTML='<b>NON-TIMED SESSION</b><br>Practice Mode will log completion without creating pace data.';return}
  const hit=p.target?results.filter(r=>r.pace_status==='on_pace').length:null;
- box.hidden=false;box.innerHTML='<b>SESSION SUMMARY</b><br>'+results.length+'/'+p.reps+' reps timed'+(hit!=null?' · '+hit+'/'+p.reps+' on pace':' · rep times ready to log');
+ box.hidden=false;box.innerHTML='<b>SESSION SUMMARY</b><br>'+results.length+'/'+p.reps+' reps timed'+(hit!=null?' · '+hit+'/'+p.reps+' on pace':' · every finished rep is already saved');
 }
 async function persistRepResults(){
  const p=parsePrescription(); if(!p.timed||!results.length)return;
- const aid=completionAthleteId(); if(!aid)throw new Error('Athlete profile not found.');
- const rows=results.map(r=>({athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:r.rep_number,distance_m:p.dist,time_seconds:r.time_seconds,target_seconds:r.target_seconds,pace_status:r.pace_status,recorded_at:new Date().toISOString()}));
- const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(rows)});
- if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep times could not be saved.')}
+ for(const row of results)await persistOneRep(row);
 }
 async function saveWorkout(){
  const btn=$p('mwPracticeSave'),p=parsePrescription(); if(!btn)return;
  btn.disabled=true;btn.textContent='SAVING…';
  try{
+   if(!practiceStarted){await ensureStarted()}
    await persistRepResults();
    const hit=p.target?results.filter(r=>r.pace_status==='on_pace').length:null;
    await markWorkoutComplete(practiceWeek,practiceDay,btn,p.target?{status:hit===p.reps?'all':hit===0?'none':'some',hit,total:p.reps}:{status:'not_applicable',hit:null,total:null});
+   workoutSaved=true;
    const box=$p('mwPracticeSummary');box.hidden=false;box.innerHTML='<b>✓ WORKOUT LOGGED</b><br>'+(p.timed?(results.length+' rep time'+(results.length===1?'':'s')+' saved'+(p.target?' · '+hit+'/'+p.reps+' on pace':'')):'Completion saved. No pace data was created for this session.');
-   btn.textContent='✓ WORKOUT LOGGED';mwPracticeProgressCache=results.map(r=>({...r,workout_key:workoutKey(practiceWeek,practiceDay),program_week:practiceWeek,program_day:practiceDay,recorded_at:new Date().toISOString()})).concat(mwPracticeProgressCache||[]);say('Workout logged');
+   btn.textContent='✓ WORKOUT LOGGED';
+   mwPracticeProgressCache=results.map(r=>({...r,workout_key:workoutKey(practiceWeek,practiceDay),program_week:practiceWeek,program_day:practiceDay,recorded_at:new Date().toISOString()})).concat((mwPracticeProgressCache||[]).filter(r=>r.workout_key!==workoutKey(practiceWeek,practiceDay)));
+   say('Workout logged');window.mwReloadAthleteNotifications?.();renderProgressUI();
  }catch(e){btn.disabled=false;btn.textContent='RETRY SAVE';$p('mwPracticeSummary').hidden=false;$p('mwPracticeSummary').textContent='Could not save: '+(e.message||'Please try again.')}
 }
-window.mwOpenPractice=async function(){
- practiceWeek=activeMWWeek();practiceDay=mwTodayTrackSessionNumber(); if(!practiceDay){alert('Today is a recovery day. No track practice is scheduled.');return}
+async function openPracticeFor(w,d){
+ practiceWeek=Number(w);practiceDay=Number(d);workoutSaved=workoutStatus(practiceWeek,practiceDay)?.completion_status==='completed';practiceStarted=['in_progress','incomplete'].includes(String(workoutStatus(practiceWeek,practiceDay)?.completion_status||''));
  try{const data=await loadMWProgramWeek(practiceWeek);session=data?.track?.sessions?.find(x=>Number(x.day)===Number(practiceDay))}catch{}
- if(!session){alert('Today’s MW track session is not available yet.');return}
- results=[];renderLog();const p=parsePrescription();
- $p('mwPracticeTitle').textContent=session.title||'Today’s Track Session';$p('mwPracticeWork').textContent=p.raw||session.focus||'Follow today’s MW prescription.';
- $p('mwPracticeRep').textContent=p.timed?'REP 1 OF '+p.reps:'GUIDED SESSION';$p('mwPracticeClock').textContent=p.timed?'00:00.0':'—';
- $p('mwPracticeCue').textContent=p.timed?'PRESS START WHEN YOU ARE IN POSITION':'FOLLOW THE PRESCRIPTION ABOVE. SAVE WHEN THE SESSION IS COMPLETE.';
- $p('mwPracticePause').hidden=!p.timed;$p('mwPracticeNext').hidden=!p.timed;$p('mwPracticeStart').hidden=!p.timed;$p('mwPracticeStart').disabled=false;$p('mwPracticeStart').textContent='START PRACTICE';
- $p('mwPracticeSave').hidden=p.timed;$p('mwPracticeSave').disabled=false;$p('mwPracticeSave').textContent=p.timed?'✓ SAVE & FINISH WORKOUT':'✓ FINISH & LOG WORKOUT';
- $p('mwPracticeSummary').hidden=true;if(!p.timed){$p('mwPracticeSave').hidden=false;showSummary()}
- $p('mwPracticeMode').hidden=false;document.body.style.overflow='hidden'
+ if(!session){alert('This MW track session is not available yet.');return}
+ try{results=await loadExistingReps(practiceWeek,practiceDay)}catch{results=[]}
+ renderLog();const p=parsePrescription(),next=Math.min(p.reps,results.length+1);
+ $p('mwPracticeTitle').textContent=session.title||'MW Track Session';$p('mwPracticeWork').textContent=p.raw||session.focus||'Follow today’s MW prescription.';
+ if(workoutSaved){
+   $p('mwPracticeRep').textContent='WORKOUT COMPLETE';$p('mwPracticeClock').textContent='—';$p('mwPracticeCue').textContent='THIS SESSION IS ALREADY LOGGED';$p('mwPracticeStart').hidden=true;$p('mwPracticePause').hidden=true;$p('mwPracticeNext').hidden=true;$p('mwPracticeSave').hidden=true;showSummary();
+ }else{
+   $p('mwPracticeRep').textContent=p.timed?(results.length>=p.reps?'SESSION COMPLETE':'REP '+next+' OF '+p.reps):'GUIDED SESSION';$p('mwPracticeClock').textContent=p.timed?'00:00.0':'—';
+   $p('mwPracticeCue').textContent=results.length?(results.length+' REP'+(results.length===1?'':'S')+' RESTORED FROM MW · CONTINUE WHEN READY'):(p.timed?'PRESS START WHEN YOU ARE IN POSITION':'FOLLOW THE PRESCRIPTION ABOVE. SAVE WHEN THE SESSION IS COMPLETE.');
+   $p('mwPracticePause').hidden=!p.timed;$p('mwPracticeNext').hidden=!p.timed;$p('mwPracticeStart').hidden=!p.timed||results.length>=p.reps;$p('mwPracticeStart').disabled=false;$p('mwPracticeStart').textContent=results.length?'START REP '+next:'START PRACTICE';
+   $p('mwPracticeSave').hidden=p.timed&&results.length<p.reps;$p('mwPracticeSave').disabled=false;$p('mwPracticeSave').textContent=p.timed?'✓ SAVE & FINISH WORKOUT':'✓ FINISH & LOG WORKOUT';
+   $p('mwPracticeSummary').hidden=true;if(!p.timed||results.length>=p.reps)showSummary();
+   if(!p.timed){try{await ensureStarted()}catch{}}
+ }
+ $p('mwPracticeMode').hidden=false;document.body.style.overflow='hidden';
 }
-function exit(){clearTimers();cancelAnimationFrame(raf);speechSynthesis.cancel();running=false;paused=false;$p('mwPracticeMode').hidden=true;document.body.style.overflow=''}
+window.mwOpenPracticeFor=openPracticeFor;
+window.mwOpenPractice=async function(){
+ const w=activeMWWeek(),d=mwTodayTrackSessionNumber(); if(!d){alert('Today is a recovery day. No track practice is scheduled.');return}
+ return openPracticeFor(w,d);
+}
+async function exit(){
+ clearTimers();cancelAnimationFrame(raf);speechSynthesis.cancel();running=false;paused=false;
+ if(practiceStarted&&!workoutSaved){try{await setWorkoutStatus(practiceWeek,practiceDay,'incomplete')}catch{}}
+ $p('mwPracticeMode').hidden=true;document.body.style.overflow='';renderCompletion().catch(()=>{});
+}
 document.addEventListener('click',e=>{
  if(e.target.closest('#mwPracticeLaunch'))mwOpenPractice();
  if(e.target.closest('#mwPracticeExit'))exit();
@@ -3424,7 +3500,7 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#mwPracticeNext'))finishRep();
  if(e.target.closest('#mwPracticeSave'))saveWorkout();
  if(e.target.closest('#mwPracticePause')){const b=$p('mwPracticePause');if(!paused){paused=true;pausedAt=performance.now();cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();b.textContent='RESUME';$p('mwPracticeCue').textContent='PAUSED'}else{startedAt+=performance.now()-pausedAt;paused=false;b.textContent='PAUSE';$p('mwPracticeCue').textContent='RESUMED';clock()}}
- if(e.target.closest('[data-practice-coach]')){exit();document.querySelector('[data-v="coach"]')?.click()}
+ if(e.target.closest('[data-practice-coach]')){exit().finally(()=>document.querySelector('[data-v="coach"]')?.click())}
 });
 })();
 </script>
