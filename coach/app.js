@@ -882,6 +882,19 @@ window.mwNativePurchaseResult=function(result){
   if(btn)btn.disabled=false;
 };
 
+function showCoachEntering(){
+  document.getElementById('mwCoachEntering')?.remove();
+  const el=document.createElement('div');
+  el.id='mwCoachEntering';
+  el.className='coach-entering-overlay';
+  el.setAttribute('aria-live','polite');
+  el.innerHTML=`<div class="coach-entering-inner"><div class="coach-entering-orb"><img src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty"></div><div class="coach-entering-copy"><b>ENTERING MW DYNASTY</b><span>COACH EXPERIENCE</span></div><div class="coach-entering-line" aria-hidden="true"><i></i></div></div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  return performance.now();
+}
+function hideCoachEntering(){document.getElementById('mwCoachEntering')?.remove()}
+async function holdCoachEntering(start,minMs=420){const left=Math.max(0,minMs-(performance.now()-start));if(left)await new Promise(r=>setTimeout(r,left))}
 function bindLogin(){
   const form=document.getElementById('loginForm'),pass=document.getElementById('loginPassword'),toggle=document.getElementById('togglePassword'),forgot=document.getElementById('forgotPassword');
   toggle.addEventListener('click',()=>{const show=pass.type==='password';pass.type=show?'text':'password';toggle.textContent=show?'Hide':'Show';toggle.setAttribute('aria-label',show?'Hide password':'Show password')});
@@ -899,12 +912,20 @@ function bindLogin(){
     try{
       const session=await supabasePasswordLogin(email,password);
       persistSession(session,remember);
-      try{await verifyCoachAccess(session);dashboard()}
+      const enteringStarted=showCoachEntering();
+      try{
+        await verifyCoachAccess(session);
+        await holdCoachEntering(enteringStarted);
+        dashboard();
+        hideCoachEntering();
+      }
       catch(accessErr){
+        hideCoachEntering();
         if(coachTransient(accessErr)){setLoginMessage('Signed in, but MW is having a temporary connection issue. Your Coach session is safe and will reconnect automatically.','neutral');return}
         renderCoachMembershipSelection(session)
       }
     }catch(err){
+      hideCoachEntering();
       if(coachTransient(err)&&authSession?.access_token){setLoginMessage('Connection interrupted after sign-in. Your Coach session is safe and will reconnect automatically.','neutral')}
       else{clearSession();setLoginMessage(err.message)}
     }finally{setLoginBusy(false)}

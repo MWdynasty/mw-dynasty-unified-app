@@ -1941,3 +1941,26 @@ html.mw-native-app .coach-login-bg:after{
   .athlete-availability-review{width:100%}
   .availability-review-actions{grid-template-columns:1fr}
 }
+
+
+/* MW Dynasty Coach post-login transition */
+.coach-entering-overlay{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;overflow:hidden;background:
+radial-gradient(circle at 50% 42%,rgba(28,104,148,.22),transparent 27%),
+radial-gradient(circle at 50% 46%,rgba(232,186,77,.08),transparent 42%),
+linear-gradient(180deg,#07141d 0%,#02080c 64%,#010406 100%);color:#fff;text-align:center;padding:24px;opacity:0;transition:opacity .16s ease}
+.coach-entering-overlay.show{opacity:1}
+.coach-entering-inner{display:grid;justify-items:center;gap:18px;transform:translateY(-2vh)}
+.coach-entering-orb{position:relative;display:grid;place-items:center;width:196px;height:196px}
+.coach-entering-orb:before,.coach-entering-orb:after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(232,186,77,.28);animation:mwCoachLoginRing 1.8s ease-out infinite}
+.coach-entering-orb:before{inset:11px}.coach-entering-orb:after{inset:-8px;animation-delay:.6s;opacity:.55}
+.coach-entering-orb img{position:relative;z-index:2;width:148px;height:148px;border-radius:31px;box-shadow:0 24px 70px rgba(0,0,0,.5),0 0 0 1px rgba(232,186,77,.42),0 0 46px rgba(232,186,77,.13);animation:mwCoachLoginPulse 1.35s ease-in-out infinite}
+.coach-entering-copy{display:grid;gap:7px}
+.coach-entering-copy b{color:#e8ba4d;font-size:14px;letter-spacing:.16em}
+.coach-entering-copy span{color:#7e939f;font-size:9px;font-weight:800;letter-spacing:.24em}
+.coach-entering-line{width:118px;height:2px;border-radius:99px;overflow:hidden;background:#16232b;margin-top:5px}
+.coach-entering-line i{display:block;width:42%;height:100%;background:linear-gradient(90deg,transparent,#e8ba4d,transparent);animation:mwCoachLoginSweep 1.15s ease-in-out infinite}
+@keyframes mwCoachLoginPulse{0%,100%{transform:scale(1);filter:brightness(.96)}50%{transform:scale(1.065);filter:brightness(1.12)}}
+@keyframes mwCoachLoginRing{0%{transform:scale(.86);opacity:0}35%{opacity:.65}100%{transform:scale(1.18);opacity:0}}
+@keyframes mwCoachLoginSweep{0%{transform:translateX(-140%)}100%{transform:translateX(340%)}}
+@media(max-width:430px){.coach-entering-orb{width:180px;height:180px}.coach-entering-orb img{width:138px;height:138px;border-radius:29px}.coach-entering-copy b{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.coach-entering-orb:before,.coach-entering-orb:after,.coach-entering-orb img,.coach-entering-line i{animation:none}}
