@@ -184,8 +184,16 @@ module.exports=async function handler(req,res){
       }
       if(b.status==='approved'&&row?.project_id){
         const project=one(await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}&select=id,status,authority_class,execution_scope,founder_decision_needed&limit=1`));
-        const nextProjectStatus=project?.status==='waiting_founder'?'active':(project?.status||'active');
+        const isFinalQaApproval=/final boardroom rendering check|end-to-end qa/i.test(String(row.title||'')) && /qa|final|complete|certif/i.test(String(row.summary||row.decision_requested||''));
+        const nextProjectStatus=isFinalQaApproval?'completed':(project?.status==='waiting_founder'?'active':(project?.status||'active'));
         await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:nextProjectStatus,founder_decision_needed:null,updated_at:new Date().toISOString()}});
+        if(isFinalQaApproval){
+          await rest(token,'founder_ai_work_events',{method:'POST',body:{
+            project_id:row.project_id,agent_code:row.presenting_agent_code||'release_qa',event_type:'completion',
+            summary:'Founder approved the final non-production QA Boardroom presentation; the QA project lifecycle is complete.',
+            evidence:{presentation_id:row.id,founder_approved:true,project_status:'completed',production_action:false}
+          }});
+        }
         await rest(token,'founder_ai_authorizations',{method:'POST',body:{
           project_id:row.project_id,
           presentation_id:row.id,
