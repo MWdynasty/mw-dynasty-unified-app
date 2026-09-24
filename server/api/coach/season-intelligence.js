@@ -1,5 +1,7 @@
 const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../../lib/mw-coach-auth');
 const {coachSeasonMode}=require('../../lib/mw-season-entitlements');
+const {adaptationRecommendation}=require('../../lib/mw-season-adaptation');
+const {developmentalLoadProfile}=require('../../lib/mw-developmental-load');
 
 async function request(path,token,{method='GET',body=null,prefer=null}={}){
   const headers={apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`};
@@ -133,7 +135,7 @@ module.exports=async function handler(req,res){
     if(athleteIds.length){
       const filter=`(${athleteIds.map(cleanId).filter(Boolean).join(',')})`;
       const [athleteRows,constraintRows]=await Promise.all([
-        request(`athletes?select=id,selected_events,experience_level,competition_level,competition_state,season_preference&id=in.${filter}`,c.token),
+        request(`athletes?select=id,date_of_birth,track_training_years,selected_events,experience_level,competition_level,competition_state,season_preference&id=in.${filter}`,c.token),
         request(`athlete_schedule_constraints?select=athlete_id,constraint_type,title,starts_on,ends_on,training_impact,review_status&athlete_id=in.${filter}&ends_on=gte.${new Date().toISOString().slice(0,10)}&order=starts_on.asc&limit=500`,c.token)
       ]);
       availability=(Array.isArray(constraintRows)?constraintRows:[]).map(x=>({
@@ -146,14 +148,47 @@ module.exports=async function handler(req,res){
       }));
 
       if(mode==='engine'){
-        const states=await request(`athlete_program_state?select=athlete_id,current_week,current_phase,program_status,season_plan_id,season_length_weeks,source_program_week,season_phase_code,track_tier,strength_tier,program_version&athlete_id=in.${filter}`,c.token);
+        const sevenDaysAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+        const [states,completions,plans]=await Promise.all([
+          request(`athlete_program_state?select=athlete_id,current_week,current_phase,program_status,season_plan_id,season_length_weeks,source_program_week,season_phase_code,track_tier,strength_tier,program_version&athlete_id=in.${filter}`,c.token),
+          request(`workout_completions?select=athlete_id,completion_status,scheduled_date,program_week,program_day&athlete_id=in.${filter}&scheduled_date=gte.${sevenDaysAgo}&order=scheduled_date.desc&limit=2000`,c.token),
+          request(`athlete_season_plans?select=id,athlete_id,primary_peak_date,secondary_peak_date,season_start_date,season_length_weeks,season_type,competition_path,plan_status&athlete_id=in.${filter}&plan_status=eq.active`,c.token)
+        ]);
+        const rawAthleteMap=new Map((Array.isArray(athleteRows)?athleteRows:[]).map(x=>[x.id,x]));
+        const planMap=new Map((Array.isArray(plans)?plans:[]).map(x=>[x.athlete_id,x]));
+        const completionRows=Array.isArray(completions)?completions:[];
         engine={
-          athletes:(Array.isArray(states)?states:[]).map(x=>({
-            athleteId:x.athlete_id,seasonWeek:Number(x.current_week||1),seasonLengthWeeks:Number(x.season_length_weeks||0),
-            phaseCode:x.season_phase_code||null,sourceProgramWeek:Number(x.source_program_week||x.current_week||1),
-            programStatus:x.program_status,trackTier:x.track_tier,strengthTier:x.strength_tier,programVersion:x.program_version,
-            seasonPlanId:x.season_plan_id||null
-          }))
+          athletes:(Array.isArray(states)?states:[]).map(x=>{
+            const raw=rawAthleteMap.get(x.athlete_id)||{},plan=planMap.get(x.athlete_id)||null;
+            const recent=completionRows.filter(r=>r.athlete_id===x.athlete_id);
+            const missed=recent.filter(r=>r.completion_status==='absent').length;
+            const incomplete=recent.filter(r=>r.completion_status==='incomplete').length;
+            const load=developmentalLoadProfile({
+              dateOfBirth:raw.date_of_birth,
+              trainingYears:raw.track_training_years,
+              trackTier:x.track_tier,
+              strengthTier:x.strength_tier
+            });
+            const peakDate=plan?.primary_peak_date||activeContext?.primaryPeakDate||null;
+            const athleteDaysToPeak=peakDate?daysUntil(peakDate):daysToTarget;
+            const adaptation=adaptationRecommendation({
+              phaseCode:x.season_phase_code||'foundation',
+              daysToPrimaryPeak:athleteDaysToPeak,
+              nextMeetPriority:nextMeet?.meetPriority||null,
+              nextMeetIsPrimary:!!nextMeet?.isPrimaryTarget,
+              missedSessions7d:missed,
+              incompleteSessions7d:incomplete,
+              ageBand:load.ageBand,
+              trainingTier:x.track_tier
+            });
+            return {
+              athleteId:x.athlete_id,seasonWeek:Number(x.current_week||1),seasonLengthWeeks:Number(x.season_length_weeks||0),
+              phaseCode:x.season_phase_code||null,sourceProgramWeek:Number(x.source_program_week||x.current_week||1),
+              programStatus:x.program_status,trackTier:x.track_tier,strengthTier:x.strength_tier,programVersion:x.program_version,
+              seasonPlanId:x.season_plan_id||null,primaryPeakDate:peakDate,daysToPrimaryPeak:athleteDaysToPeak,
+              developmentalLoad:load,adaptation
+            };
+          })
         };
       }
     }
