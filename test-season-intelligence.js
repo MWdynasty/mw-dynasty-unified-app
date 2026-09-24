@@ -2,6 +2,7 @@ const assert=require('assert');
 const {
   phaseAllocation,sourceWeekMap,derivePlan,positionForPlan,levelGroup
 }=require('./server/lib/mw-season-intelligence');
+const {recommendedTiers,developmentalLoadProfile}=require('./server/lib/mw-developmental-load');
 
 function counts(plan){return ['foundation','pre_competition','competition','peak'].map(k=>plan[k].count)}
 function sum(xs){return xs.reduce((a,b)=>a+b,0)}
@@ -68,3 +69,19 @@ const continuationMap=sourceWeekMap(continuationPhases,{continuation:true});
 assert(Number(continuationMap['1'].sourceWeek)>=7);
 
 console.log('MW Season Intelligence tests passed');
+
+
+const young=recommendedTiers({athlete:{date_of_birth:'2013-10-01'}},{dateOfBirth:'2013-10-01',trainingAge:0,lifting:0,continuity:3,speedExposure:3,recentRace:1});
+assert.equal(young.trackTier,'foundation');
+assert.equal(young.strengthTier,'foundation');
+const youngLoad=developmentalLoadProfile({dateOfBirth:'2013-10-01',trainingYears:0,trackTier:young.trackTier,strengthTier:young.strengthTier});
+assert.equal(youngLoad.track.volumeFactor,0.65);
+assert.equal(youngLoad.track.recoveryFactor,1.25);
+assert.equal(youngLoad.strength.rpeCap,6);
+
+const experienced=recommendedTiers({athlete:{date_of_birth:'2004-01-01'}},{dateOfBirth:'2004-01-01',trainingAge:5,lifting:2,continuity:3,speedExposure:3,recentRace:1});
+assert.equal(experienced.trackTier,'performance');
+assert.equal(experienced.strengthTier,'performance');
+const experiencedLoad=developmentalLoadProfile({dateOfBirth:'2004-01-01',trainingYears:5,trackTier:experienced.trackTier,strengthTier:experienced.strengthTier});
+assert.equal(experiencedLoad.track.volumeFactor,1);
+assert.equal(experiencedLoad.strength.rpeCap,8);
