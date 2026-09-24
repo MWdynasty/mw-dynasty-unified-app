@@ -15,6 +15,15 @@ module.exports=async(req,res)=>{
     }
     let tier='mw_sprint_performance',isFounder=role==='founder_owner';
     if(role==='coach'){const rows=await request(`coach_access_entitlements?select=access_tier,status&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.active&limit=1`,c.token);const e=Array.isArray(rows)?rows[0]:null;if(!e)return res.status(403).json({error:'This coach account does not have an active MW Coach entitlement.'});tier=e.access_tier}
-    return res.status(200).json({ok:true,role,tier,isFounder,firstName:c.profile.first_name||'',lastName:c.profile.last_name||'',organization:c.profile.coach_organization||'',coachTitle:c.profile.coach_title||'',email:c.user.email||''});
+    const seasonIntelligence=tier==='core'?'none':tier==='intelligence'?'insights':'engine';
+    return res.status(200).json({
+      ok:true,role,tier,isFounder,firstName:c.profile.first_name||'',lastName:c.profile.last_name||'',
+      organization:c.profile.coach_organization||'',coachTitle:c.profile.coach_title||'',email:c.user.email||'',
+      features:{
+        season_intelligence:seasonIntelligence,
+        season_intelligence_insights:seasonIntelligence==='insights'||seasonIntelligence==='engine',
+        season_intelligence_engine:seasonIntelligence==='engine'
+      }
+    });
   }catch(e){return res.status(e.status||500).json({error:e.message})}
 };
