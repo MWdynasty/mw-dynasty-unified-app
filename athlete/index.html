@@ -2747,6 +2747,18 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{renderProgressUI()}catch{}
     try{renderCompletion()}catch{}
 
+    const returnView=new URLSearchParams(location.search).get('returnView');
+    const canRestoreReturnView=returnView==='pacer'
+      ? featureAccess.advanced_performance_tools===true
+      : returnView==='workouts'
+        ? (featureAccess.mw_training_system===true||featureAccess.coach_assigned_training===true)
+        : false;
+    if(returnView&&canRestoreReturnView&&!window.mwDobRequired&&!window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1'){
+      const clean=new URL(location.href);clean.searchParams.delete('returnView');
+      history.replaceState({...history.state,mwView:returnView},'',clean.pathname+(clean.search||''));
+      setTimeout(()=>openView(returnView,false),420);
+    }
+
     // Athletes get the first-login tutorial. Founder/staff accounts bypass athlete onboarding.
     if(hasAthlete&&featureAccess.mw_training_system===true)setTimeout(()=>{startQuickStart(false);if(window.mwDobRequired)mwPromptDobVerification();else if(window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1')openView('entry')},350);
     else if(hasAthlete&&window.mwDobRequired)setTimeout(()=>mwPromptDobVerification(),350);
