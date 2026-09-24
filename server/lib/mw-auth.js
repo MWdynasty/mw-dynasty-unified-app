@@ -43,7 +43,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   // This keeps sign-in from paying three network round trips in sequence.
   const [profile,athlete,membershipAccess]=await Promise.all([
     one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${userId}&limit=1`,token),
-    one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal&user_id=eq.${userId}&limit=1`,token),
+    one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal,competition_level,competition_state,season_preference,competition_paths&user_id=eq.${userId}&limit=1`,token),
     athleteFeatureAccess(token)
   ]);
   if(!profile) throw Object.assign(new Error('MW profile not found for this login.'),{status:403});
@@ -74,7 +74,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   // Once the athlete id is known, load the remaining account context in parallel.
   const athleteId=encodeURIComponent(athlete.id);
   const [programState,prs,repTracking,access]=await Promise.all([
-    one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at&athlete_id=eq.${athleteId}&limit=1`,token),
+    one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at,season_plan_id,season_length_weeks,source_program_week,season_phase_code&athlete_id=eq.${athleteId}&limit=1`,token),
     sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified&athlete_id=eq.${athleteId}&order=event.asc`,token),
     repTrackingAccess(token),
     Promise.resolve(membershipAccess)

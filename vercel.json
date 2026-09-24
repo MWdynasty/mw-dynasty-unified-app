@@ -135,6 +135,10 @@
       "destination": "/api/mw?route=season-calendar"
     },
     {
+      "source": "/api/season-plan",
+      "destination": "/api/mw?route=season-plan"
+    },
+    {
       "source": "/api/speak",
       "destination": "/api/mw?route=speak"
     },

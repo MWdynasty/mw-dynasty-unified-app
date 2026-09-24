@@ -1515,11 +1515,17 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 
 <section class="view" id="entry">
 <div class="top"><div><div class="logo"><b>MW</b> SMART ENTRY</div><div class="sub">ATHLETE PLACEMENT ASSESSMENT</div></div><div class="online"><span class="dot">●</span> MW SYSTEM</div></div>
-<div class="entryHero"><h2>Start where you’re <strong>prepared</strong>.</h2><p>MW Smart Entry uses the MW Standard Training Year — beginning the day after Labor Day — or your assigned coach’s custom calendar, then compares that position with your recent training readiness. Track and strength placement stay synchronized.</p><div class="phaseStrip" id="phaseStrip"><div class="phasePill" data-phase="1"><span>1</span>W1–8</div><div class="phasePill" data-phase="2"><span>2</span>W9–16</div><div class="phasePill" data-phase="3"><span>3</span>W17–24</div><div class="phasePill" data-phase="4"><span>4</span>W25–33</div><div class="phasePill" data-phase="5"><span>5</span>W34–41</div></div></div>
+<div class="entryHero"><h2>Train for the season you <strong>actually have</strong>.</h2><p>MW Season Intelligence uses your level, state, Indoor/Outdoor calendar, championship date, and Smart Entry readiness to build a condensed MW season from the 41-week master system. Track and strength stay synchronized to the same peak.</p><div class="phaseStrip" id="phaseStrip"><div class="phasePill" data-phase="1"><span>1</span>W1–8</div><div class="phasePill" data-phase="2"><span>2</span>W9–16</div><div class="phasePill" data-phase="3"><span>3</span>W17–24</div><div class="phasePill" data-phase="4"><span>4</span>W25–33</div><div class="phasePill" data-phase="5"><span>5</span>W34–41</div></div></div>
 <div class="assessment">
 <div class="question"><label>First name</label><input id="entryFirstName" autocomplete="given-name" maxlength="80" placeholder="First name"></div>
 <div class="question"><label>Last name</label><input id="entryLastName" autocomplete="family-name" maxlength="80" placeholder="Last name"></div>
 <div class="question"><label>Date of birth</label><input id="entryDob" type="date"></div>
+<div class="question"><label>Competition level</label><select id="entryCompetitionLevel"><option value="">Choose your level</option><option value="6">6th Grade</option><option value="7">7th Grade</option><option value="8">8th Grade</option><option value="9">9th Grade</option><option value="10">10th Grade</option><option value="11">11th Grade</option><option value="12">12th Grade</option><option value="collegiate">Collegiate</option><option value="professional">Professional</option></select><small>MW uses your level to choose development rules and the right season model.</small></div>
+<div class="question"><label>Where do you compete?</label><select id="entryCompetitionState"><option value="">Choose state</option></select><small>For school athletes, MW uses your state to estimate the official track calendar when verified data is available.</small></div>
+<div class="question"><label>Which season are you preparing for?</label><select id="entrySeasonPreference"><option value="">Choose season</option><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option><option value="both">Both Indoor + Outdoor</option></select></div>
+<div class="question"><label>Main competition path</label><select id="entryCompetitionPath"><option value="school">School Track</option><option value="aau">AAU</option><option value="usatf">USATF</option><option value="ncaa">NCAA</option><option value="professional_open">Professional / Open</option></select><small>Choose the calendar that should control this plan. Additional seasons can be connected later.</small></div>
+<div class="question seasonDateGroup" id="entryIndoorDates" hidden><label>Indoor season dates</label><input id="entryIndoorStart" type="date" aria-label="Indoor first practice date"><small>First practice</small><input id="entryIndoorFirstMeet" type="date" aria-label="Indoor first meet date"><small>First meet</small><input id="entryIndoorPeak" type="date" aria-label="Indoor championship or peak date"><small>Primary championship / peak date</small><input id="entryIndoorSecondPeak" type="date" aria-label="Indoor second championship date"><small>Second championship / peak (optional)</small></div>
+<div class="question seasonDateGroup" id="entryOutdoorDates" hidden><label>Outdoor season dates</label><input id="entryOutdoorStart" type="date" aria-label="Outdoor first practice date"><small>First practice</small><input id="entryOutdoorFirstMeet" type="date" aria-label="Outdoor first meet date"><small>First meet</small><input id="entryOutdoorPeak" type="date" aria-label="Outdoor championship or peak date"><small>Primary championship / peak date</small><input id="entryOutdoorSecondPeak" type="date" aria-label="Outdoor second championship date"><small>Second championship / peak (optional)</small></div>
 <div class="question"><label>Which events do you run?</label><div class="checkList"><label><input id="event100" type="checkbox" value="100m"> 100m</label><label><input id="event200" type="checkbox" value="200m"> 200m</label><label><input id="event400" type="checkbox" value="400m"> 400m</label></div><small>Select at least one event.</small></div><div class="question"><label>What are you working toward? (optional)</label><textarea id="entryGoal" maxlength="500" rows="3" placeholder="Tell Coach MW your main performance goal for this training year."></textarea><small>This becomes your Athlete Goal and can be updated later from your profile.</small></div>
 <div class="question"><label>100m PR (optional)</label><input id="entryPr100" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr100Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
 <div class="question"><label>200m PR (optional)</label><input id="entryPr200" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr200Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
@@ -2123,7 +2129,14 @@ function completionHeaders(extra={}){
   return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,...extra};
 }
 function completionAthleteId(){const remote=window.mwGetRemoteProfile?.();return remote?.athleteId||null}
-function workoutKey(w,i){return `mw-track-w${Number(w)}-d${Number(i)}`}
+function activeSeasonPlanId(){const remote=window.mwGetRemoteProfile?.();return mwSeasonCalendar?.planId||remote?.seasonPlan?.id||remote?.seasonPlan?.season_plan_id||null}
+function trainingCycleKey(){const id=activeSeasonPlanId();return id?'season:'+id:'mw-41'}
+function sourceWeekForSeasonWeek(w){
+  const remote=window.mwGetRemoteProfile?.(),plan=remote?.seasonPlan||{},map=plan.source_week_map||plan.sourceWeekMap||{};
+  const n=Number(map?.[String(Number(w))]?.sourceWeek||((Number(mwSeasonCalendar?.week)===Number(w))?mwSeasonCalendar?.sourceWeek:null)||w);
+  return Math.max(1,Math.min(41,Number.isFinite(n)?n:Number(w)||1));
+}
+function workoutKey(w,i){const id=activeSeasonPlanId();return id?`mw-season-${id}-w${Number(w)}-d${Number(i)}`:`mw-track-w${Number(w)}-d${Number(i)}`}
 function workoutStatus(w,d){return mwWorkoutStatusCache[String(w)]?.['s'+Number(d)]||null}
 function latestIncompleteWorkout(){
   const rows=[];
@@ -2147,7 +2160,8 @@ let mwPracticeProgressCache=[];
 async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,source_program_week&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
   mwPracticeProgressCache=Array.isArray(rows)?rows:[];
   renderPracticeProgress();
@@ -2168,7 +2182,7 @@ function rowsToCompletion(rows){
   const out={};mwPaceCheckCache={};mwWorkoutStatusCache={};
   for(const r of (Array.isArray(rows)?rows:[])){
     const w=String(Number(r.program_week||0)),d=Number(r.program_day||0);
-    if(!w||!d||!String(r.workout_key||'').startsWith('mw-track-'))continue;
+    if(!w||!d||String(r.workout_key||'')!==workoutKey(Number(w),d))continue;
     mwWorkoutStatusCache[w]=mwWorkoutStatusCache[w]||{};
     mwWorkoutStatusCache[w]['s'+d]={...r};
     if(r.completion_status!=='completed')continue;
@@ -2180,7 +2194,8 @@ function rowsToCompletion(rows){
 }
 async function loadWorkoutCompletions(){
   const aid=completionAthleteId();if(!aid)return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at,scheduled_date,started_at,last_activity_at,completed_late',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
+  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at,scheduled_date,started_at,last_activity_at,completed_late,season_plan_id,source_program_week',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load workout completion history.');
   mwCompletionCache=rowsToCompletion(rows);mwCompletionLoaded=true;
 }
@@ -2197,7 +2212,7 @@ async function markWorkoutComplete(w,i,button,pace={status:'not_applicable',hit:
   if(getCompletion()[String(w)]?.['s'+i])return;
   if(button){button.disabled=true;button.textContent='SAVING…'}
   const total=repEnabled&&Number(pace?.total)>0?Number(pace.total):null,hit=total==null?null:Math.max(0,Math.min(total,Number(pace?.hit)||0));
-  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',session_rpe:null,pace_check_status:repEnabled?(pace?.status||'not_applicable'):'not_applicable',pace_reps_total:total,pace_reps_hit:hit,performance_checked_at:repEnabled&&total?new Date().toISOString():null,completed_at:new Date().toISOString()};
+  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',session_rpe:null,pace_check_status:repEnabled?(pace?.status||'not_applicable'):'not_applicable',pace_reps_total:total,pace_reps_hit:hit,performance_checked_at:repEnabled&&total?new Date().toISOString():null,completed_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(w)};
   try{
     const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?on_conflict=athlete_id,workout_key',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
     const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
@@ -2408,7 +2423,7 @@ function latestIncompleteStrength(){
 }
 async function loadStrengthQuickCheckins(){
   const aid=completionAthleteId();if(!aid||!window.mwGetSessionToken?.())return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional,training_cycle_key,season_plan_id,source_program_week&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength check-ins.');
   mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}
 }
@@ -2564,20 +2579,68 @@ const PHASES={
   5:{name:'Peak / Championship',start:34,end:41}
 };
 function phaseFromWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(w<=8)return 1;if(w<=16)return 2;if(w<=24)return 3;if(w<=33)return 4;return 5}
+const MW_US_STATES=[['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']];
+function initSeasonIntelligenceFields(){
+  const state=$('#entryCompetitionState');
+  if(state&&state.options.length<=1)for(const [code,name] of MW_US_STATES){const o=document.createElement('option');o.value=code;o.textContent=name;state.appendChild(o)}
+  const season=$('#entrySeasonPreference'),level=$('#entryCompetitionLevel'),path=$('#entryCompetitionPath');
+  const sync=()=>{
+    const v=season?.value||'';
+    const indoor=$('#entryIndoorDates'),outdoor=$('#entryOutdoorDates');
+    if(indoor)indoor.hidden=!(v==='indoor'||v==='both');
+    if(outdoor)outdoor.hidden=!(v==='outdoor'||v==='both');
+  };
+  if(season){season.addEventListener('change',sync);sync()}
+  if(level&&path)level.addEventListener('change',()=>{
+    if(level.value==='collegiate')path.value='ncaa';
+    else if(level.value==='professional')path.value='professional_open';
+    else if(['ncaa','professional_open'].includes(path.value))path.value='school';
+  });
+}
+function seasonDatesPayload(){
+  const dates={};
+  const pref=$('#entrySeasonPreference')?.value||'';
+  if(pref==='indoor'||pref==='both')dates.indoor={startDate:$('#entryIndoorStart')?.value||null,firstMeetDate:$('#entryIndoorFirstMeet')?.value||null,primaryPeakDate:$('#entryIndoorPeak')?.value||null,secondaryPeakDate:$('#entryIndoorSecondPeak')?.value||null};
+  if(pref==='outdoor'||pref==='both')dates.outdoor={startDate:$('#entryOutdoorStart')?.value||null,firstMeetDate:$('#entryOutdoorFirstMeet')?.value||null,primaryPeakDate:$('#entryOutdoorPeak')?.value||null,secondaryPeakDate:$('#entryOutdoorSecondPeak')?.value||null};
+  return dates;
+}
+function renderSeasonPhaseStrip(c){
+  const strip=$('#phaseStrip');if(!strip)return;
+  if(c?.mode==='season_plan'){
+    strip.innerHTML='<div class="phasePill" data-phase="1"><span>1</span>FOUNDATION</div><div class="phasePill" data-phase="3"><span>2</span>PRE-COMP</div><div class="phasePill" data-phase="4"><span>3</span>COMPETE</div><div class="phasePill" data-phase="5"><span>4</span>PEAK</div>';
+  }
+}
 let mwSeasonCalendar=null;
 function mwCalendarDate(iso){if(!iso)return '—';try{return new Date(iso+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}catch{return iso}}
 function renderSeasonCalendarSummary(){
   const box=$('#seasonCalendarSummary'),home=$('#homeTrainingYear'),c=mwSeasonCalendar;
   if(!c){
-    if(box)box.innerHTML='<b>MW Standard Training Year</b><span>Calendar position will load when your account is connected.</span>';
-    if(home)home.innerHTML='<span class="mwTyKicker">MW TRAINING YEAR</span><strong>Connect your account to load your official week.</strong><small>Standard calendar + Smart Entry protection</small><em>WHY AM I ON THIS WEEK? →</em>';
+    if(box)box.innerHTML='<b>MW Season Intelligence</b><span>Choose your competition level, state, season, and championship date to build your plan.</span>';
+    if(home)home.innerHTML='<span class="mwTyKicker">MW SEASON INTELLIGENCE</span><strong>Build your official season plan.</strong><small>Track + strength synchronized to your peak</small><em>WHY AM I ON THIS WEEK? →</em>';
+    return;
+  }
+  renderSeasonPhaseStrip(c);
+  if(c.mode==='season_plan'){
+    const phaseName=c.phaseCode==='pre_competition'?'Pre-Competition':c.phaseCode==='competition'?'Competition':c.phaseCode==='peak'?'Peak / Championship':'Foundation';
+    const seasonName=String(c.seasonType||'season').replace(/^./,x=>x.toUpperCase());
+    let main='';
+    if(c.status==='active')main=`Season Week <strong>${c.week} of ${c.seasonLengthWeeks}</strong> · ${phaseName}`;
+    else if(c.status==='preseason')main=`Preseason · your ${seasonName} plan begins ${mwCalendarDate(c.startDate)}`;
+    else main=`Season complete · peak window ${mwCalendarDate(c.peakDate)}`;
+    const source=c.source==='state_registry'?'State calendar estimate':c.source==='coach_calendar'?'Coach calendar':'Your confirmed dates';
+    const foot=`${source} · Peak: ${mwCalendarDate(c.peakDate)}${c.competitionState?` · ${c.competitionState}`:''}`;
+    if(box)box.innerHTML=`<b>MW ${seasonName} Season Plan</b><span>${main}</span><small>${foot}</small>`;
+    if(home){
+      const headline=c.status==='active'?`Week ${c.week} of ${c.seasonLengthWeeks} · ${phaseName}`:c.status==='preseason'?`${seasonName} preseason · Foundation ready`:`${seasonName} season complete`;
+      home.innerHTML=`<span class="mwTyKicker">MW SEASON INTELLIGENCE</span><strong>${headline}</strong><small>Track + weight room · peak ${mwCalendarDate(c.peakDate)}</small><em>WHY AM I ON THIS WEEK? →</em>`;
+    }
     return;
   }
   const custom=c.mode==='custom';const title=custom?'Coach Custom Training Calendar':'MW Standard Training Year';
   let main='';
   if(c.status==='active')main=`Current position: <strong>Week ${c.week}</strong> · Phase ${c.phase} — ${PHASES[c.phase]?.name||'MW Progression'}`;
   else if(c.status==='preseason')main=`Preseason · Week 1 entry logic is active until ${mwCalendarDate(c.nextStartDate||c.startDate)}`;
-  else main=`Between 41-week cycles · Smart Entry uses Foundation placement until the next training year`;
+  else main='Between 41-week cycles · Smart Entry uses Foundation placement until the next training year';
   const foot=custom?`Coach calendar start: ${mwCalendarDate(c.startDate)}`:`Standard start: the day after Labor Day${c.nextStartDate&&c.status==='offseason'?` · Next start ${mwCalendarDate(c.nextStartDate)}`:` · ${mwCalendarDate(c.startDate)}`}`;
   if(box)box.innerHTML=`<b>${title}</b><span>${main}</span><small>${foot}</small>`;
   if(home){
@@ -2596,7 +2659,7 @@ async function loadSeasonCalendar(){
     mwSeasonCalendar=d.calendar||null;if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}renderSeasonCalendarSummary();syncEntrySeason();return mwSeasonCalendar;
   }catch(e){renderSeasonCalendarSummary();return null}
 }
-function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=phaseFromWeek(w);$$('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
+function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=mwSeasonCalendar?.mode==='season_plan'?Number(mwSeasonCalendar.phase||1):phaseFromWeek(w);$('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
 $('#openEntry').onclick=()=>{openView('entry');loadSeasonCalendar()}; $('#backCoach').onclick=()=>openView('coach');
 function readinessPhase(){
   const trainingAge=Number($('#trainingAge').value), continuity=Number($('#continuity').value), speed=Number($('#speedExposure').value), race=Number($('#recentRace').value), lift=Number($('#lifting').value), health=$('#health').value;
@@ -2627,25 +2690,52 @@ function renderEntryStatus(){
   box.innerHTML=`<small>⚡ MW SMART ENTRY ACTIVE</small><b>Phase ${ep.assignedPhase} • Week ${ep.assignedWeek} — ${PHASES[ep.assignedPhase].name}</b><span class="syncTag">TRACK + STRENGTH SYNCHRONIZED</span><span>Season calendar: Phase ${ep.seasonPhase} • Week ${ep.seasonWeek}. Next MW gate/checkpoint: after Week ${ep.nextCheckpoint}.</span>`;
 }
 async function assessEntry(){
-  await loadSeasonCalendar();
-  syncEntrySeason();
   const btn=$('#assess'),out=$('#entryResult');out.classList.add('show');
   const events=['100m','200m','400m'].filter(e=>$('#event'+e.replace('m',''))?.checked);
+  const competitionLevel=$('#entryCompetitionLevel')?.value||'';
+  const competitionState=$('#entryCompetitionState')?.value||'';
+  const seasonPreference=$('#entrySeasonPreference')?.value||'';
+  const competitionPath=$('#entryCompetitionPath')?.value||'school';
   const payload={firstName:$('#entryFirstName').value.trim(),lastName:$('#entryLastName').value.trim(),dateOfBirth:$('#entryDob').value,events,trainingGoal:($('#entryGoal')?.value||'').trim().slice(0,500),prs:{'100m':$('#entryPr100').value,'200m':$('#entryPr200').value,'400m':$('#entryPr400').value},prTiming:{'100m':$('#entryPr100Timing').value,'200m':$('#entryPr200Timing').value,'400m':$('#entryPr400Timing').value},weightUnit:$('#entryWeightUnit').value,maxes:{powerClean:$('#entryPowerClean').value,frontSquat:$('#entryFrontSquat').value,backSquat:$('#entryBackSquat').value,deadlift:$('#entryDeadlift').value,deadliftType:$('#entryDeadliftType').value},eventGroup:events.includes('400m')?(events.includes('100m')?'multi':'long'):'short',trainingAge:Number($('#trainingAge').value),continuity:Number($('#continuity').value),speedExposure:Number($('#speedExposure').value),recentRace:Number($('#recentRace').value),lifting:Number($('#lifting').value),health:$('#health').value};
   if(!payload.firstName||!payload.lastName||!payload.dateOfBirth||!events.length){out.innerHTML='<div class="warning">First name, last name, date of birth, and at least one event are required.</div>';return}
-  btn.disabled=true;btn.textContent='SAVING MW ENTRY…';
+  if(!competitionLevel||!seasonPreference){out.innerHTML='<div class="warning">Choose your competition level and whether you are preparing for Indoor, Outdoor, or Both.</div>';return}
+  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&competitionPath==='school'&&!competitionState){out.innerHTML='<div class="warning">Choose the state where you compete so MW can use the right school-season calendar.</div>';return}
+  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&['ncaa','professional_open'].includes(competitionPath)){out.innerHTML='<div class="warning">Choose School Track, AAU, or USATF for a middle/high-school athlete.</div>';return}
+
+  btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';
   try{
-    const tok=window.mwGetSessionToken?.()||'';const r=await fetch('/api/smart-entry',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(payload)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Smart Entry could not be saved');
+    const tok=window.mwGetSessionToken?.()||'';
+    const seasonRequest={competitionLevel,competitionState,seasonPreference,competitionPath,dates:seasonDatesPayload()};
+    const sr=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(seasonRequest)});
+    const sd=await sr.json().catch(()=>({}));
+    if(!sr.ok){
+      if(sd.needsDates){
+        const estimates=(sd.estimates||[]).map(x=>`${String(x.seasonType||'season').toUpperCase()}: MW expects about ${x.targetWeeks||'—'} weeks${x.estimatedPeakDate?` · estimated peak ${mwCalendarDate(x.estimatedPeakDate)}`:''}`).join('<br>');
+        out.innerHTML=`<div class="warning"><b>One more season detail.</b><br>${sd.error||'Enter your championship date.'}<br><br>${estimates}<br><br>Enter the championship / peak date above, then tap the button again.</div>`;
+        return;
+      }
+      throw new Error(sd.error||'MW Season Intelligence could not build your season.');
+    }
+
+    mwSeasonCalendar=sd.calendar||null;
+    if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}
+    renderSeasonCalendarSummary();syncEntrySeason();
+
+    btn.textContent='SAVING MW SMART ENTRY…';
+    const r=await fetch('/api/smart-entry',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Smart Entry could not be saved');
     if(d.calendar){mwSeasonCalendar=d.calendar;$('#seasonWeek').value=Number(d.calendar.week||1);renderSeasonCalendarSummary();syncEntrySeason();}
-    if(d.locked){out.innerHTML='<div class="resultTop"><div><span class="badge">MW SMART ENTRY LOCKED</span><h3>Your official entry placement is already on file.</h3></div></div><div class="reason">Entry placement can only be changed by an authorized MW coach/admin after the first completed assessment.</div>';try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after locked Smart Entry',syncErr)}return}
-    if(d.hold){out.innerHTML=`<div class="resultTop"><div><span class="badge">COACH REVIEW REQUIRED</span><h3>Do not assign a sprint phase yet.</h3></div></div><div class="reason">${d.why||'A health review is required before high-speed placement.'}</div><div class="warning">MW Smart Entry does not medically clear an athlete. Resolve the pain/injury issue before assigning high-speed training.</div>`;return}
+    if(d.locked){out.innerHTML='<div class="resultTop"><div><span class="badge">MW SMART ENTRY LOCKED</span><h3>Your official entry placement is already on file.</h3></div></div><div class="reason">Your Season Intelligence plan is saved. Entry placement can only be changed by an authorized MW coach/admin after the first completed assessment.</div>';try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after locked Smart Entry',syncErr)}return}
+    if(d.hold){out.innerHTML=`<div class="resultTop"><div><span class="badge">COACH REVIEW REQUIRED</span><h3>Do not assign high-speed work yet.</h3></div></div><div class="reason">${d.why||'A health review is required before high-speed placement.'}</div><div class="warning">MW Smart Entry does not medically clear an athlete. Your season calendar is preserved, but high-speed loading stays protected until the issue is resolved.</div>`;return}
     window.mwAssessmentComplete=true;window.mwAssessmentRequired=false;
-    out.innerHTML=`<div class="resultTop"><div><span class="badge">MW ATHLETE ASSESSMENT COMPLETE</span><h3>Start at <em>Week ${d.assignedWeek}</em></h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>ATHLETE ASSIGNMENT</small><b>Phase ${d.assignedPhase} • Week ${d.assignedWeek}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your profile, PRs, weight-room information, tiers, and official week are synchronized with the coaching dashboard.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY ASSIGNED PROGRAM</button>`;
+    const seasonLength=Number(d.calendar?.seasonLengthWeeks||mwSeasonCalendar?.seasonLengthWeeks||0);
+    const phaseName=d.calendar?.phaseCode==='pre_competition'?'Pre-Competition':d.calendar?.phaseCode==='competition'?'Competition':d.calendar?.phaseCode==='peak'?'Peak / Championship':'Foundation';
+    out.innerHTML=`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
-  }catch(e){out.innerHTML='<div class="warning">'+(e.message||'Smart Entry save failed. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & ASSIGN MY PROGRAM'}
+  }catch(e){out.innerHTML='<div class="warning">'+(e.message||'MW Season Intelligence could not be saved. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON'}
 }
-$('#assess').onclick=assessEntry; syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='41-WEEK PROGRAM · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
+$('#assess').onclick=assessEntry; initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='MW SEASON PLAN · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
 
 setTimeout(()=>{renderSavedConversation();refreshPremiumStatus()},50);
 const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.splice(0);saveConversation();$('#chat').innerHTML='<div class="msg coach">Fresh conversation. I still have your athlete profile and MW context. What are we working on?</div>'};
@@ -2740,6 +2830,11 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       athleteId:d.athlete?.id||'',
       dateOfBirth:d.athlete?.date_of_birth||'',
       trainingGoal:d.athlete?.training_goal||'',
+      competitionLevel:d.athlete?.competition_level||'',
+      competitionState:d.athlete?.competition_state||'',
+      seasonPreference:d.athlete?.season_preference||'',
+      competitionPath:Array.isArray(d.athlete?.competition_paths)?(d.athlete.competition_paths[0]||'school'):'school',
+      seasonPlan:d.seasonPlan||null,
       email:d.user?.email||'',
       mode:d.mode||(hasAthlete?'athlete':role),
       repTracking:d.features?.repTracking===true,
@@ -2753,8 +2848,10 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{advanceCurrentWeek=()=>Number(mwRemoteProfile.week||1)}catch{}
     try{unlockedThrough=()=>Number(mwRemoteProfile.week||1)}catch{}
 
-    const map={name:mwRemoteProfile.name,profileLastName:profile.last_name||'',profileEvents:(Array.isArray(d.athlete?.selected_events)?d.athlete.selected_events:[d.athlete?.primary_event,d.athlete?.secondary_event].filter(Boolean)).join(', '),profileDob:d.athlete?.date_of_birth||'',trainingGoal:d.athlete?.training_goal||'',entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',entryGoal:d.athlete?.training_goal||'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,entryPr100:mwRemoteProfile.p100,entryPr200:mwRemoteProfile.p200,entryPr400:mwRemoteProfile.p400,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
+    const activeSeason=d.seasonPlan||null,activeType=activeSeason?.season_type||'';
+    const map={name:mwRemoteProfile.name,profileLastName:profile.last_name||'',profileEvents:(Array.isArray(d.athlete?.selected_events)?d.athlete.selected_events:[d.athlete?.primary_event,d.athlete?.secondary_event].filter(Boolean)).join(', '),profileDob:d.athlete?.date_of_birth||'',trainingGoal:d.athlete?.training_goal||'',entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',entryGoal:d.athlete?.training_goal||'',entryCompetitionLevel:d.athlete?.competition_level||'',entryCompetitionState:d.athlete?.competition_state||'',entrySeasonPreference:d.athlete?.season_preference||'',entryCompetitionPath:Array.isArray(d.athlete?.competition_paths)?(d.athlete.competition_paths[0]||'school'):'school',entryIndoorStart:activeType==='indoor'?(activeSeason?.season_start_date||''):'',entryIndoorFirstMeet:activeType==='indoor'?(activeSeason?.first_meet_date||''):'',entryIndoorPeak:activeType==='indoor'?(activeSeason?.primary_peak_date||''):'',entryIndoorSecondPeak:activeType==='indoor'?(activeSeason?.secondary_peak_date||''):'',entryOutdoorStart:activeType==='outdoor'?(activeSeason?.season_start_date||''):'',entryOutdoorFirstMeet:activeType==='outdoor'?(activeSeason?.first_meet_date||''):'',entryOutdoorPeak:activeType==='outdoor'?(activeSeason?.primary_peak_date||''):'',entryOutdoorSecondPeak:activeType==='outdoor'?(activeSeason?.secondary_peak_date||''):'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,entryPr100:mwRemoteProfile.p100,entryPr200:mwRemoteProfile.p200,entryPr400:mwRemoteProfile.p400,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
     for(const [id,val] of Object.entries(map)){const el=document.querySelector('#'+id);if(el)el.value=val||''}
+    document.querySelector('#entrySeasonPreference')?.dispatchEvent(new Event('change'));
 
     ['week','startDate','startWeek'].forEach(id=>{
       const el=document.querySelector('#'+id);
@@ -2931,7 +3028,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   }
   async function loadStrengthPerformanceLogs(){
     const aid=mwRemoteProfile.athleteId,box=document.getElementById('strengthLogRecent');if(!aid||!token())return;
-    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?athlete_id=eq.'+encodeURIComponent(aid)+'&select=id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=200',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
+    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at,training_cycle_key,season_plan_id,source_program_week&order=recorded_at.desc&limit=200',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
     const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength performance.');
     mwStrengthPerformanceRows=Array.isArray(rows)?rows:[];
     if(box)box.innerHTML=mwStrengthPerformanceRows.slice(0,12).map(x=>`<div class="strengthLogItem"><b>Week ${Number(x.program_week||1)} · Day ${Number(x.program_day||1)} · ${escapeHtmlLocal(x.exercise_name)}</b><br>Set ${Number(x.set_number||1)} · ${x.reps_completed??'—'} reps @ ${x.actual_load??'—'} ${escapeHtmlLocal(x.weight_unit||'lb')}${x.target_load!=null?` · Target ${x.target_load}`:''}${x.set_rpe!=null?` · RPE ${x.set_rpe}/10`:''}</div>`).join('');
@@ -2942,12 +3039,12 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const aid=mwRemoteProfile.athleteId,btn=document.getElementById('saveStrengthPerformance'),st=document.getElementById('strengthPerformanceStatus');if(!aid)throw new Error('Athlete profile not found.');
     const week=strengthLoggingWeek(),day=Number(document.getElementById('strengthLogDay')?.value||mwTodayStrengthInfo().day),meta=strengthSessionMeta(week,day),exercise=(document.getElementById('strengthLogExercise')?.value||'').trim(),actual=Number(document.getElementById('strengthLogActual')?.value),reps=Number(document.getElementById('strengthLogReps')?.value),setNo=Number(document.getElementById('strengthLogSet')?.value),targetRaw=(document.getElementById('strengthLogTarget')?.value||'').trim(),rpeRaw=(document.getElementById('strengthLogRpe')?.value||'').trim();
     if(!exercise)throw new Error('Choose or enter the exercise.');if(!Number.isFinite(actual)||actual<0)throw new Error('Enter the actual load you used.');if(!Number.isFinite(reps)||reps<0)throw new Error('Enter reps completed.');if(!Number.isFinite(setNo)||setNo<1)throw new Error('Enter a valid set number.');
-    const payload={athlete_id:aid,program_week:week,program_day:day,session_label:`Week ${week} Strength`,exercise_name:exercise,set_number:setNo,reps_completed:reps,target_load:targetRaw===''?null:Number(targetRaw),actual_load:actual,weight_unit:document.getElementById('strengthLogUnit')?.value||'lb',set_rpe:rpeRaw===''?null:Number(rpeRaw),recorded_at:new Date().toISOString()};
+    const payload={athlete_id:aid,training_cycle_key:trainingCycleKey(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(week),program_week:week,program_day:day,session_label:`Week ${week} Strength`,exercise_name:exercise,set_number:setNo,reps_completed:reps,target_load:targetRaw===''?null:Number(targetRaw),actual_load:actual,weight_unit:document.getElementById('strengthLogUnit')?.value||'lb',set_rpe:rpeRaw===''?null:Number(rpeRaw),recorded_at:new Date().toISOString()};
     if(btn){btn.disabled=true;btn.textContent='SAVING…'}if(st)st.textContent='Saving this set to MW Dynasty…';
     try{
       const life=String(mwStrengthQuickCache[`${week}-${day}`]?.lifecycle_status||'');
       if(life!=='completed')await markStrengthStatus(week,day,'in_progress',meta.label,meta.optional);
-      const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?on_conflict=athlete_id,program_week,program_day,exercise_name,set_number',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
+      const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?on_conflict=athlete_id,training_cycle_key,program_week,program_day,exercise_name,set_number',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
       const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Strength performance save failed.');
       if(st)st.textContent=`✓ Set ${setNo} saved immediately. It will still be here if you close the app.`;
       document.getElementById('strengthLogSet').value=String(setNo+1);
@@ -3451,7 +3548,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   function render(){
     const wrap=document.getElementById('mwAthleteNotificationList');if(!wrap)return;
     wrap.innerHTML=items.length?items.map(n=>`<button type="button" class="mwAthleteNotificationRow ${n.read_at?'':'unread'}" data-mw-notification="${esc(n.id)}" data-mw-action="${esc(n.action_view||'home')}"><div><b>${esc(n.title)}</b><span>${esc(n.body)}</span></div><small>${new Date(n.created_at).toLocaleDateString([], {month:'short',day:'numeric'})}</small></button>`).join(''):'<div class="lockNote">You’re all caught up. New MW alerts will appear here.</div>';
-    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const m=String(n.entity_id||'').match(/^mw-track-w(\d+)-d(\d+)$/);if(m)setTimeout(()=>window.mwOpenPracticeFor?.(Number(m[1]),Number(m[2])),80)}if(n?.notification_type==='strength_incomplete'){const m=String(n.entity_id||'').match(/^mw-strength-w(\d+)-d(\d+)$/);if(m)setTimeout(()=>window.mwOpenStrengthSessionFor?.(Number(m[1]),Number(m[2])),80)}});
+    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const id=String(n.entity_id||''),m=id.match(/^mw-track-w(\d+)-d(\d+)$/)||id.match(/^mw-season-[0-9a-f-]+-w(\d+)-d(\d+)$/i);if(m)setTimeout(()=>window.mwOpenPracticeFor?.(Number(m[1]),Number(m[2])),80)}if(n?.notification_type==='strength_incomplete'){const id=String(n.entity_id||''),m=id.match(/^mw-strength-w(\d+)-d(\d+)$/)||id.match(/^mw-season-strength-[0-9a-f-]+-w(\d+)-d(\d+)$/i);if(m)setTimeout(()=>window.mwOpenStrengthSessionFor?.(Number(m[1]),Number(m[2])),80)}});
   }
   async function load(){try{const d=await request();if(!d)return;items=Array.isArray(d.items)?d.items:[];updateBadge();render()}catch(e){const wrap=document.getElementById('mwAthleteNotificationList');if(wrap)wrap.innerHTML='<div class="lockNote">'+esc(e.message)+'</div>'}}
   document.getElementById('mwAthleteNotificationBell')?.addEventListener('click',()=>{window.openView?.('notifications',true);load()});
@@ -3495,7 +3592,7 @@ async function loadExistingReps(w,d){
 }
 async function persistOneRep(row){
  const p=parsePrescription(),aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
- const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString()};
+ const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek)};
  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});
  if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep time could not be saved.')}
 }
