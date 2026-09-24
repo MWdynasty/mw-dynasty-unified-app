@@ -53,13 +53,13 @@ module.exports=async function handler(req,res){
     if(result.hold){
       await sj(`athlete_program_state?athlete_id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({program_status:'needs_review',track_tier:'foundation',strength_tier:'foundation',program_version:programVersion,assignment_updated_at:new Date().toISOString(),assignment_updated_by:c.user.id})});
       if(seasonAware){
-        await sj('rpc/mw_apply_own_season_position',token,{method:'POST',body:JSON.stringify({p_plan_id:calendar.planId,p_current_week:Number(calendar.week||1),p_phase_code:String(calendar.phaseCode||'foundation'),p_source_program_week:Number(calendar.sourceWeek||1),p_status:'needs_review'})});
+        await sj('rpc/mw_refresh_own_season_program_state',token,{method:'POST',body:'{}'});
       }
       return res.status(200).json({...result,trackTier:'foundation',strengthTier:'foundation',programVersion,calendar});
     }
     await sj(`athlete_program_state?athlete_id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({track_tier:tiers.trackTier,strength_tier:tiers.strengthTier,program_version:programVersion,onboarding_assessment_completed_at:new Date().toISOString(),assignment_updated_at:new Date().toISOString(),assignment_updated_by:c.user.id})});
     if(seasonAware){
-      await sj('rpc/mw_apply_own_season_position',token,{method:'POST',body:JSON.stringify({p_plan_id:calendar.planId,p_current_week:Number(calendar.week||1),p_phase_code:String(calendar.phaseCode||'foundation'),p_source_program_week:Number(calendar.sourceWeek||1),p_status:result.review?'needs_review':calendar.status==='preseason'?'not_started':'active'})});
+      await sj('rpc/mw_refresh_own_season_program_state',token,{method:'POST',body:'{}'});
     }
     await sj('athlete_program_assignment_history',token,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,track_tier:tiers.trackTier,strength_tier:tiers.strengthTier,week:assignedWeek,reason:'MW Smart Entry initial tier recommendation',changed_by:c.user.id})});
     return res.status(200).json({...result,...tiers,programVersion,calendar});
