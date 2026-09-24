@@ -1331,6 +1331,24 @@ body.mw-tool-return #mwAuth{display:none!important}
 body.mw-tool-return.mw-auth-pending #mwToolReturnLoader{display:grid}
 body.mw-auth-ready #mwToolReturnLoader{display:none!important}
 .mwToolReturnInner{display:grid;justify-items:center;gap:11px}.mwToolReturnInner img{width:78px;height:78px;border-radius:20px;box-shadow:0 16px 44px rgba(0,0,0,.45),0 0 0 1px rgba(232,186,77,.35)}.mwToolReturnInner b{color:#e8ba4d;font-size:12px;letter-spacing:.13em}.mwToolReturnInner span{color:#758995;font-size:9px;letter-spacing:.18em}
+#mwEnteringLoader{display:none;position:fixed;inset:0;z-index:10060;place-items:center;overflow:hidden;background:
+radial-gradient(circle at 50% 42%,rgba(28,104,148,.22),transparent 27%),
+radial-gradient(circle at 50% 46%,rgba(232,186,77,.08),transparent 42%),
+linear-gradient(180deg,#07141d 0%,#02080c 64%,#010406 100%);color:#fff;text-align:center;padding:24px}
+body.mw-entering #mwAuth{display:none!important}
+body.mw-entering #mwEnteringLoader{display:grid}
+body.mw-auth-ready #mwEnteringLoader{display:none!important}
+.mwEnteringInner{display:grid;justify-items:center;gap:18px;transform:translateY(-2vh)}
+.mwEnteringOrb{position:relative;display:grid;place-items:center;width:190px;height:190px}
+.mwEnteringOrb:before,.mwEnteringOrb:after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(232,186,77,.28);animation:mwLoginRing 1.8s ease-out infinite}
+.mwEnteringOrb:before{inset:11px}.mwEnteringOrb:after{inset:-8px;animation-delay:.6s;opacity:.55}
+.mwEnteringOrb img{position:relative;z-index:2;width:142px;height:142px;border-radius:30px;box-shadow:0 24px 70px rgba(0,0,0,.5),0 0 0 1px rgba(232,186,77,.42),0 0 46px rgba(232,186,77,.13);animation:mwLoginPulse 1.35s ease-in-out infinite}
+.mwEnteringCopy{display:grid;gap:7px}.mwEnteringCopy b{color:#e8ba4d;font-size:14px;letter-spacing:.16em}.mwEnteringCopy span{color:#7e939f;font-size:9px;font-weight:800;letter-spacing:.24em}.mwEnteringLine{width:118px;height:2px;border-radius:99px;overflow:hidden;background:#16232b;margin-top:5px}.mwEnteringLine i{display:block;width:42%;height:100%;background:linear-gradient(90deg,transparent,#e8ba4d,transparent);animation:mwLoginSweep 1.15s ease-in-out infinite}
+@keyframes mwLoginPulse{0%,100%{transform:scale(1);filter:brightness(.96)}50%{transform:scale(1.065);filter:brightness(1.12)}}
+@keyframes mwLoginRing{0%{transform:scale(.86);opacity:0}35%{opacity:.65}100%{transform:scale(1.18);opacity:0}}
+@keyframes mwLoginSweep{0%{transform:translateX(-140%)}100%{transform:translateX(340%)}}
+@media(max-width:430px){.mwEnteringOrb{width:174px;height:174px}.mwEnteringOrb img{width:132px;height:132px;border-radius:28px}.mwEnteringCopy b{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.mwEnteringOrb:before,.mwEnteringOrb:after,.mwEnteringOrb img,.mwEnteringLine i{animation:none}}
 </style>
 </head>
 <body class="mw-auth-pending">
@@ -1338,6 +1356,7 @@ body.mw-auth-ready #mwToolReturnLoader{display:none!important}
 (()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
 </script>
 <div id="mwToolReturnLoader" aria-live="polite"><div class="mwToolReturnInner"><img src="/mw-dynasty-app-icon-512.png" alt=""><b>RETURNING TO PERFORMANCE TOOLS</b><span>MW DYNASTY</span></div></div>
+<div id="mwEnteringLoader" aria-live="polite"><div class="mwEnteringInner"><div class="mwEnteringOrb"><img src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty"></div><div class="mwEnteringCopy"><b>ENTERING MW DYNASTY</b><span>ATHLETE EXPERIENCE</span></div><div class="mwEnteringLine" aria-hidden="true"><i></i></div></div></div>
 <div id="mwAuth" class="mwAthleteLoginV26">
   <div class="mwLoginStage">
     <div class="mwLoginTopbar">
@@ -2565,7 +2584,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   function transientProblem(error,status=0){return !navigator.onLine||error?.mwTransient===true||window.MWResilience?.isTransientStatus?.(status)===true||window.MWResilience?.isTransientError?.(error)===true}
   function mwAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
   function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
-  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return')}
+  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status);return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
@@ -2930,14 +2949,25 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-in failed');
       saveSession(d,document.querySelector('#mwRememberMe')?.checked===true);
       if(websiteCheckoutPlan){await beginWebsiteCheckout(d.access_token);return}
-      try{await loadMe();document.body.classList.remove('mw-auth-pending');document.body.classList.add('mw-auth-ready');authStatus('')}
+      const enterStarted=performance.now();
+      document.body.classList.add('mw-entering');
+      try{
+        await loadMe();
+        const remaining=Math.max(0,420-(performance.now()-enterStarted));
+        if(remaining)await new Promise(r=>setTimeout(r,remaining));
+        document.body.classList.remove('mw-auth-pending','mw-entering');
+        document.body.classList.add('mw-auth-ready');
+        authStatus('')
+      }
       catch(accessErr){
+        document.body.classList.remove('mw-entering');
         const msg=String(accessErr?.message||'');
         if(msg.toLowerCase().includes('not active')){renderAthleteMembership(d);return}
         throw accessErr;
       }
     }catch(e){
       if(transientProblem(e)&&mwSession?.access_token){
+        document.body.classList.remove('mw-entering');
         authStatus('Connection interrupted after sign-in. Your MW session is safe and will reconnect automatically.',true);
         return
       }
