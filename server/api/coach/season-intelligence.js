@@ -95,6 +95,38 @@ module.exports=async function handler(req,res){
         return res.status(200).json({ok:true,mode,context:summarizeContext(Array.isArray(rows)?rows[0]:rows)});
       }
 
+      if(action==='set_target_result'){
+        if(mode!=='engine')return res.status(403).json({error:'Qualification-driven MW season targets are an MW Sprint Performance feature.'});
+        const targetId=cleanId(b.targetId);
+        const status=['qualified','not_qualified','completed'].includes(String(b.status))?String(b.status):'';
+        if(!targetId||!status)return res.status(400).json({error:'Target and result status are required.'});
+        const rows=await request(`athlete_season_targets?select=id,athlete_id,season_plan_id,name,target_date,target_type,meet_priority,is_primary,peak_rank,qualification_stage,status&id=eq.${encodeURIComponent(targetId)}&limit=1`,c.token);
+        const target=Array.isArray(rows)?rows[0]:null;
+        if(!target)return res.status(404).json({error:'Season target not found.'});
+        if(role==='coach'){
+          const assigned=await request(`coach_assignments?select=athlete_id&coach_user_id=eq.${encodeURIComponent(c.user.id)}&athlete_id=eq.${encodeURIComponent(target.athlete_id)}&status=eq.active&limit=1`,c.token);
+          if(!Array.isArray(assigned)||!assigned[0])return res.status(403).json({error:'This athlete is not assigned to your coach account.'});
+        }
+        await request(`athlete_season_targets?id=eq.${encodeURIComponent(targetId)}`,c.token,{method:'PATCH',body:{status,updated_at:new Date().toISOString()},prefer:'return=minimal'});
+        let nextTarget=null,seasonExtensionRecommended=false;
+        if(status==='qualified'){
+          const nextRows=await request(`athlete_season_targets?select=id,name,target_date,target_type,meet_priority,is_primary,peak_rank,qualification_stage,status&qualification_dependency_target_id=eq.${encodeURIComponent(targetId)}&status=eq.planned&order=target_date.asc&limit=1`,c.token);
+          nextTarget=Array.isArray(nextRows)?nextRows[0]||null:null;
+          if(nextTarget){
+            const planRows=await request(`athlete_season_plans?select=id,primary_peak_date&season_plan_id=eq.${encodeURIComponent(target.season_plan_id)}`.replace('season_plan_id','id'),c.token).catch(()=>[]);
+            const plan=Array.isArray(planRows)?planRows[0]:null;
+            seasonExtensionRecommended=!!(plan?.primary_peak_date&&String(nextTarget.target_date)>String(plan.primary_peak_date));
+          }
+        }
+        return res.status(200).json({
+          ok:true,mode,status,targetId,nextTarget,
+          seasonExtensionRecommended,
+          message:status==='qualified'
+            ?(nextTarget?'Qualification recorded. The next target is ready for coach review.':'Qualification recorded.')
+            :status==='not_qualified'?'Result recorded. MW will not extend the season automatically.':'Target marked complete.'
+        });
+      }
+
       if(action==='set_meet_priority'){
         const eventId=cleanId(b.eventId),priority=['A','B','C'].includes(String(b.meetPriority))?String(b.meetPriority):null;
         const stage=['regular','conference','district','sectional','regional','state','national','junior_olympics','ncaa_championship','professional_championship','other'].includes(String(b.qualificationStage))?String(b.qualificationStage):null;
