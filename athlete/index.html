@@ -2681,22 +2681,49 @@ function renderEntryStatus(){
   box.innerHTML=`<small>⚡ MW SMART ENTRY ACTIVE</small><b>Phase ${ep.assignedPhase} • Week ${ep.assignedWeek} — ${PHASES[ep.assignedPhase].name}</b><span class="syncTag">TRACK + STRENGTH SYNCHRONIZED</span><span>Season calendar: Phase ${ep.seasonPhase} • Week ${ep.seasonWeek}. Next MW gate/checkpoint: after Week ${ep.nextCheckpoint}.</span>`;
 }
 async function assessEntry(){
-  await loadSeasonCalendar();
-  syncEntrySeason();
   const btn=$('#assess'),out=$('#entryResult');out.classList.add('show');
   const events=['100m','200m','400m'].filter(e=>$('#event'+e.replace('m',''))?.checked);
+  const competitionLevel=$('#entryCompetitionLevel')?.value||'';
+  const competitionState=$('#entryCompetitionState')?.value||'';
+  const seasonPreference=$('#entrySeasonPreference')?.value||'';
+  const competitionPath=$('#entryCompetitionPath')?.value||'school';
   const payload={firstName:$('#entryFirstName').value.trim(),lastName:$('#entryLastName').value.trim(),dateOfBirth:$('#entryDob').value,events,trainingGoal:($('#entryGoal')?.value||'').trim().slice(0,500),prs:{'100m':$('#entryPr100').value,'200m':$('#entryPr200').value,'400m':$('#entryPr400').value},prTiming:{'100m':$('#entryPr100Timing').value,'200m':$('#entryPr200Timing').value,'400m':$('#entryPr400Timing').value},weightUnit:$('#entryWeightUnit').value,maxes:{powerClean:$('#entryPowerClean').value,frontSquat:$('#entryFrontSquat').value,backSquat:$('#entryBackSquat').value,deadlift:$('#entryDeadlift').value,deadliftType:$('#entryDeadliftType').value},eventGroup:events.includes('400m')?(events.includes('100m')?'multi':'long'):'short',trainingAge:Number($('#trainingAge').value),continuity:Number($('#continuity').value),speedExposure:Number($('#speedExposure').value),recentRace:Number($('#recentRace').value),lifting:Number($('#lifting').value),health:$('#health').value};
   if(!payload.firstName||!payload.lastName||!payload.dateOfBirth||!events.length){out.innerHTML='<div class="warning">First name, last name, date of birth, and at least one event are required.</div>';return}
-  btn.disabled=true;btn.textContent='SAVING MW ENTRY…';
+  if(!competitionLevel||!seasonPreference){out.innerHTML='<div class="warning">Choose your competition level and whether you are preparing for Indoor, Outdoor, or Both.</div>';return}
+  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&competitionPath==='school'&&!competitionState){out.innerHTML='<div class="warning">Choose the state where you compete so MW can use the right school-season calendar.</div>';return}
+  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&['ncaa','professional_open'].includes(competitionPath)){out.innerHTML='<div class="warning">Choose School Track, AAU, or USATF for a middle/high-school athlete.</div>';return}
+
+  btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';
   try{
-    const tok=window.mwGetSessionToken?.()||'';const r=await fetch('/api/smart-entry',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(payload)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Smart Entry could not be saved');
+    const tok=window.mwGetSessionToken?.()||'';
+    const seasonRequest={competitionLevel,competitionState,seasonPreference,competitionPath,dates:seasonDatesPayload()};
+    const sr=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(seasonRequest)});
+    const sd=await sr.json().catch(()=>({}));
+    if(!sr.ok){
+      if(sd.needsDates){
+        const estimates=(sd.estimates||[]).map(x=>`${String(x.seasonType||'season').toUpperCase()}: MW expects about ${x.targetWeeks||'—'} weeks${x.estimatedPeakDate?` · estimated peak ${mwCalendarDate(x.estimatedPeakDate)}`:''}`).join('<br>');
+        out.innerHTML=`<div class="warning"><b>One more season detail.</b><br>${sd.error||'Enter your championship date.'}<br><br>${estimates}<br><br>Enter the championship / peak date above, then tap the button again.</div>`;
+        return;
+      }
+      throw new Error(sd.error||'MW Season Intelligence could not build your season.');
+    }
+
+    mwSeasonCalendar=sd.calendar||null;
+    if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}
+    renderSeasonCalendarSummary();syncEntrySeason();
+
+    btn.textContent='SAVING MW SMART ENTRY…';
+    const r=await fetch('/api/smart-entry',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Smart Entry could not be saved');
     if(d.calendar){mwSeasonCalendar=d.calendar;$('#seasonWeek').value=Number(d.calendar.week||1);renderSeasonCalendarSummary();syncEntrySeason();}
-    if(d.locked){out.innerHTML='<div class="resultTop"><div><span class="badge">MW SMART ENTRY LOCKED</span><h3>Your official entry placement is already on file.</h3></div></div><div class="reason">Entry placement can only be changed by an authorized MW coach/admin after the first completed assessment.</div>';try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after locked Smart Entry',syncErr)}return}
-    if(d.hold){out.innerHTML=`<div class="resultTop"><div><span class="badge">COACH REVIEW REQUIRED</span><h3>Do not assign a sprint phase yet.</h3></div></div><div class="reason">${d.why||'A health review is required before high-speed placement.'}</div><div class="warning">MW Smart Entry does not medically clear an athlete. Resolve the pain/injury issue before assigning high-speed training.</div>`;return}
+    if(d.locked){out.innerHTML='<div class="resultTop"><div><span class="badge">MW SMART ENTRY LOCKED</span><h3>Your official entry placement is already on file.</h3></div></div><div class="reason">Your Season Intelligence plan is saved. Entry placement can only be changed by an authorized MW coach/admin after the first completed assessment.</div>';try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after locked Smart Entry',syncErr)}return}
+    if(d.hold){out.innerHTML=`<div class="resultTop"><div><span class="badge">COACH REVIEW REQUIRED</span><h3>Do not assign high-speed work yet.</h3></div></div><div class="reason">${d.why||'A health review is required before high-speed placement.'}</div><div class="warning">MW Smart Entry does not medically clear an athlete. Your season calendar is preserved, but high-speed loading stays protected until the issue is resolved.</div>`;return}
     window.mwAssessmentComplete=true;window.mwAssessmentRequired=false;
-    out.innerHTML=`<div class="resultTop"><div><span class="badge">MW ATHLETE ASSESSMENT COMPLETE</span><h3>Start at <em>Week ${d.assignedWeek}</em></h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>ATHLETE ASSIGNMENT</small><b>Phase ${d.assignedPhase} • Week ${d.assignedWeek}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your profile, PRs, weight-room information, tiers, and official week are synchronized with the coaching dashboard.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY ASSIGNED PROGRAM</button>`;
+    const seasonLength=Number(d.calendar?.seasonLengthWeeks||mwSeasonCalendar?.seasonLengthWeeks||0);
+    const phaseName=d.calendar?.phaseCode==='pre_competition'?'Pre-Competition':d.calendar?.phaseCode==='competition'?'Competition':d.calendar?.phaseCode==='peak'?'Peak / Championship':'Foundation';
+    out.innerHTML=`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
-  }catch(e){out.innerHTML='<div class="warning">'+(e.message||'Smart Entry save failed. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & ASSIGN MY PROGRAM'}
+  }catch(e){out.innerHTML='<div class="warning">'+(e.message||'MW Season Intelligence could not be saved. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON'}
 }
 $('#assess').onclick=assessEntry; initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='MW SEASON PLAN · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
