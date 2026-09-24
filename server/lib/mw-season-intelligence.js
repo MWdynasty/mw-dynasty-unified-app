@@ -184,7 +184,6 @@ function derivePlan({seasonType,competitionLevel,competitionState,competitionPat
   }
   const length=weeksBetween(start,peak);
   if(!length)throw Object.assign(new Error('Season start and championship dates are not valid.'),{status:400});
-  if(!firstMeet)firstMeet=addDays(start,Math.max(7,Math.round((Math.min(3,length-1))*7)));
   const phasePlan=phaseAllocation(length,{continuation});
   const weekMap=sourceWeekMap(phasePlan,{continuation});
   return {
