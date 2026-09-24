@@ -967,6 +967,7 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 .mwPracticeControls{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:12px}.mwPracticeControls button{min-height:52px;border-radius:13px;border:1px solid #30434f;background:#09141c;color:#fff;font-weight:900;font-size:9px}.mwPracticeControls #mwPracticeStart{grid-column:1/-1;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;border:0}.mwPracticeControls button:disabled{opacity:.35}
 .mwPracticeQuick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:18px}.mwPracticeQuick button{min-height:46px;border:1px solid #263946;border-radius:12px;background:#050c12;color:#b9c6ce;font-size:7px;font-weight:800}
 .mwPracticeRepLog{margin-top:12px;display:grid;gap:7px}.mwPracticeRepRow{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #263946;border-radius:12px;background:#050c12;font-size:9px}.mwPracticeRepRow b{color:#fff}.mwPracticeRepRow span{color:#9badb8}.mwPracticeRepRow .on{color:#42e38b}.mwPracticeRepRow .off{color:#ffb45b}.mwPracticeSummary{margin-top:12px;padding:14px;border:1px solid rgba(66,227,139,.45);border-radius:14px;background:rgba(14,58,42,.28);font-size:10px;line-height:1.5}.mwPracticeControls #mwPracticeSave{grid-column:1/-1;background:linear-gradient(135deg,#1c9f62,#42e38b);color:#03110a;border:0}
+.mwPracticeProgressResults{display:grid;gap:8px}.mwPracticeProgressSession{border:1px solid #2a3b47;border-radius:13px;background:#050c12;padding:11px}.mwPracticeProgressSession>div:first-child{display:flex;justify-content:space-between;gap:10px;align-items:center}.mwPracticeProgressSession b{font-size:10px;color:#fff}.mwPracticeProgressSession small{font-size:8px;color:#80929f}.mwPracticeProgressChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.mwPracticeProgressChips span{padding:6px 8px;border:1px solid #2b3e4b;border-radius:999px;font-size:8px;color:#b9c7d0}.mwPracticeProgressChips span.on{border-color:rgba(66,227,139,.45);color:#42e38b}.mwPracticeProgressChips span.off{border-color:rgba(255,180,91,.45);color:#ffb45b}
 </style>
 <style id="mw-app-only-premium-login-v1">
 /* MW APP-ONLY PREMIUM LOGIN BACKGROUND v1 */
@@ -1624,6 +1625,10 @@ html.mw-native-app .mwLoginStory:after{
   <div class="mwProgressTitle"><span>THIS WEEK</span><small id="progressCurrentWeek">WEEK 1</small></div>
   <div id="progressChecklist" class="mwWeekDots"></div>
 </div>
+<div class="mwProgressSection">
+  <div class="mwProgressTitle"><span>PRACTICE MODE</span><small>REP RESULTS</small></div>
+  <div id="mwPracticeProgressResults" class="mwPracticeProgressResults"><div class="muted">Your timed Practice Mode reps will appear here after they are logged.</div></div>
+</div>
 </section>
 <section class="view" id="settings"><div class="top"><div><div class="logo"><b>MW</b> SETTINGS</div><div class="sub">YOUR MW EXPERIENCE</div></div><button class="gearBtn" data-open="home">×</button></div><div class="settingGroup"><h3>YOUR COACH MW</h3><div class="settingRow"><label>COACH PREFERENCE</label><select id="settingsCoachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div><div class="lockNote">Choose once during setup. You can change your Coach MW here anytime.</div></div><div class="settingGroup"><h3>COACH MW VOICE</h3><div class="settingRow"><label>VOICE SPEED</label><select id="voiceSpeed"><option value="0.9">0.9× Relaxed</option><option value="1" selected>1.0× Natural</option><option value="1.1">1.1× Quick</option><option value="1.2">1.2× Fast</option></select></div><div class="settingRow"><label>VOICE RESPONSE</label><select id="voiceMode"><option value="fast" selected>Fast — start speaking sooner</option><option value="standard">Standard — full response audio</option></select></div><div class="settingRow"><label>AUTO-PLAY COACH VOICE</label><select id="autoVoice"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>ACCOUNT & ALERTS</h3><div class="settingRow" style="display:none"><label>WORKOUT REMINDERS</label><select id="workoutReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow" style="display:none"><label>MEET REMINDERS</label><select id="meetReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>IN-APP MESSAGE ALERTS</label><select id="messageAlerts"><option value="on" selected>On</option><option value="off">Off</option></select><small>Controls unread Coach-message alerts inside MW Dynasty.</small></div></div><div class="settingGroup"><h3>MEMBERSHIP</h3><div class="lockNote"><b id="mwAthleteMembershipPrice">MW Athlete · $19/month</b><br><span id="mwAthleteBillingStatus">Loading secure membership status…</span></div><button type="button" class="accountLink" id="mwContinueSelfPay" style="display:none;margin-top:10px">CONTINUE ON MY OWN</button><div class="lockNote" id="mwBillingTransitionNote" style="display:none;margin-top:10px"></div></div><div class="settingGroup"><h3>HELP & ACCOUNT</h3><div class="lockNote">MW Dynasty 3.0.16 · iOS Build 13</div><div class="accountLinkGrid"><button type="button" class="accountLink" id="helpCenterBtn">HELP CENTER</button><button type="button" class="accountLink" id="reportIssueBtn">REPORT A PROBLEM</button><button type="button" class="accountLink" id="privacyBtn">PRIVACY</button><button type="button" class="accountLink" id="termsBtn">TERMS</button><button type="button" class="accountLink" id="deleteAccountBtn">DELETE ACCOUNT</button></div></div><div class="settingGroup"><h3>LAUNCH DIAGNOSTICS</h3><div class="lockNote" id="mwDiagnosticsStatus">TestFlight diagnostics are active on iPhone builds. MW records only non-sensitive technical events.</div><button type="button" class="accountLink" id="mwDiagnosticsSend" style="margin-top:10px">SEND DIAGNOSTICS NOW</button></div><div class="settingGroup"><h3>PROGRAM PROGRESSION</h3><div class="lockNote"><b>MW-controlled progression.</b><br>Your official week is synced from MW Dynasty. Athletes cannot unlock future weeks or change progression rules.</div></div><button id="saveSettings" class="save">SAVE SETTINGS</button><button id="replayTour" class="entryGhost">REPLAY APP TUTORIAL</button><button id="mwSignOut" class="mwSignOut">SIGN OUT</button></section>
 </main>
@@ -1877,6 +1882,7 @@ function openView(id,pushHistory=false){
   if(id==='workouts'&&coachAssigned){mwRenderCoachAssignedTraining();}
   else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
   if(id==='progress'&&access.mw_training_system!==true&&access.coach_assigned_training===true)mwRenderSponsoredProgress();else if(id==='home'||id==='progress')renderProgressUI();
+  if(id==='progress'&&access.mw_training_system===true)loadPracticeProgress().catch(e=>{const box=document.getElementById('mwPracticeProgressResults');if(box)box.innerHTML='<div class="muted">Practice Mode results could not be loaded right now.</div>'});
   if(id==='messages')window.mwLoadCoachMessages?.(true);
   if(id==='schedule')mwRenderAthleteSchedule();
   if(pushHistory&&history.state?.mwView!==id)history.pushState({...history.state,mwView:id},'',location.href);
@@ -2072,6 +2078,27 @@ function completionHeaders(extra={}){
 }
 function completionAthleteId(){const remote=window.mwGetRemoteProfile?.();return remote?.athleteId||null}
 function workoutKey(w,i){return `mw-track-w${Number(w)}-d${Number(i)}`}
+let mwPracticeProgressCache=[];
+async function loadPracticeProgress(){
+  const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
+  box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
+  mwPracticeProgressCache=Array.isArray(rows)?rows:[];
+  renderPracticeProgress();
+}
+function renderPracticeProgress(){
+  const box=document.getElementById('mwPracticeProgressResults');if(!box)return;
+  const rows=mwPracticeProgressCache||[];if(!rows.length){box.innerHTML='<div class="muted">Your timed Practice Mode reps will appear here after they are logged.</div>';return}
+  const groups=new Map();
+  for(const r of rows){const k=String(r.workout_key||('w'+r.program_week+'d'+r.program_day));if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)}
+  box.innerHTML=[...groups.values()].slice(0,4).map(g=>{
+    g.sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
+    const first=g[0],hit=g.filter(x=>x.pace_status==='on_pace').length,targets=g.some(x=>Number(x.target_seconds)>0);
+    const chips=g.map(x=>'<span class="'+(x.pace_status==='on_pace'?'on':x.pace_status==='outside_target'?'off':'')+'">REP '+x.rep_number+' · '+Number(x.time_seconds).toFixed(2)+'s'+(Number(x.target_seconds)>0?' / '+Number(x.target_seconds).toFixed(2)+'s':'')+'</span>').join('');
+    return '<div class="mwPracticeProgressSession"><div><b>WEEK '+first.program_week+' · DAY '+first.program_day+'</b><small>'+g.length+' REP'+(g.length===1?'':'S')+(targets?' · '+hit+'/'+g.length+' ON PACE':'')+'</small></div><div class="mwPracticeProgressChips">'+chips+'</div></div>'
+  }).join('');
+}
 function rowsToCompletion(rows){
   const out={};mwPaceCheckCache={};
   for(const r of (Array.isArray(rows)?rows:[])){
@@ -3274,7 +3301,7 @@ async function saveWorkout(){
    const hit=p.target?results.filter(r=>r.pace_status==='on_pace').length:null;
    await markWorkoutComplete(practiceWeek,practiceDay,btn,p.target?{status:hit===p.reps?'all':hit===0?'none':'some',hit,total:p.reps}:{status:'not_applicable',hit:null,total:null});
    const box=$p('mwPracticeSummary');box.hidden=false;box.innerHTML='<b>✓ WORKOUT LOGGED</b><br>'+(p.timed?(results.length+' rep time'+(results.length===1?'':'s')+' saved'+(p.target?' · '+hit+'/'+p.reps+' on pace':'')):'Completion saved. No pace data was created for this session.');
-   btn.textContent='✓ WORKOUT LOGGED';say('Workout logged');
+   btn.textContent='✓ WORKOUT LOGGED';mwPracticeProgressCache=results.map(r=>({...r,workout_key:workoutKey(practiceWeek,practiceDay),program_week:practiceWeek,program_day:practiceDay,recorded_at:new Date().toISOString()})).concat(mwPracticeProgressCache||[]);say('Workout logged');
  }catch(e){btn.disabled=false;btn.textContent='RETRY SAVE';$p('mwPracticeSummary').hidden=false;$p('mwPracticeSummary').textContent='Could not save: '+(e.message||'Please try again.')}
 }
 window.mwOpenPractice=async function(){
