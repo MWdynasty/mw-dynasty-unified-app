@@ -142,7 +142,7 @@ async function practiceModePage(){
     finishBtn.disabled=true;finishBtn.textContent='SAVING…';
     try{
       const saveCount=sessionResults.length,body={results:sessionResults.map(x=>({athleteId:x.athleteId,sessionDate:new Date().toISOString().slice(0,10),groupName:x.groupName,repNumber:x.repNumber,timeSeconds:x.ms/1000,targetSeconds:x.targetSeconds,paceStatus:x.paceStatus}))},
-      r=await fetch('/api/coach/practice-timing',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify(body)}),d=await r.json().catch(()=>({});
+      r=await fetch('/api/coach/practice-timing',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify(body)}),d=await r.json().catch(()=>({}));
       if(!r.ok)throw new Error(d.error||'Timing session could not be saved');
       timingState.innerHTML=`<b>✓ ${d.count||saveCount} athlete times saved to MW performance history.</b>`;toast('Practice timing saved');
       sessionResults=[];repResults=[];rep=1;repLabel.textContent='REP 1';clockState.textContent='Ready for Rep 1';startBtn.textContent='START REP';paintClock();renderTiming();
