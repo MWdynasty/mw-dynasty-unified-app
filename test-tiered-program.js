@@ -17,3 +17,21 @@ for(let week=1;week<=41;week++){
   }
 }
 console.log('PASS: 41 weeks × 3 track tiers × 3 synchronized strength tiers');
+
+
+const foundationWeek1=programWeek(1,'foundation','foundation');
+const developmentWeek1=programWeek(1,'development','development');
+const performanceWeek1=programWeek(1,'performance','performance');
+
+assert.notEqual(foundationWeek1.track.sessions[0].prescribedWork,performanceWeek1.track.sessions[0].prescribedWork,'Foundation track prescription should be reduced');
+assert.equal(foundationWeek1.track.sessions[0].prescribedWork.startsWith('4 x 30m'),true);
+assert.equal(developmentWeek1.track.sessions[0].prescribedWork.startsWith('5 x 30m'),true);
+assert.equal(performanceWeek1.track.sessions[0].prescribedWork.startsWith('6 x 30m'),true);
+
+assert.equal(foundationWeek1.strength.sections[0].entries[0][1].startsWith('2 x 3'),true);
+assert.equal(developmentWeek1.strength.sections[0].entries[0][1].startsWith('3 x 3'),true);
+assert.equal(performanceWeek1.strength.sections[0].entries[0][1].startsWith('3 x 3'),true);
+assert.equal(foundationWeek1.strength.sections[1].title.includes('1 round'),true);
+assert.equal(performanceWeek1.strength.sections[1].title.includes('2 rounds'),true);
+
+console.log('PASS: developmental volume changes actual track reps and strength sets/rounds');
