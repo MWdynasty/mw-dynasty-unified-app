@@ -130,6 +130,8 @@ module.exports=async function handler(req,res){
     const primaryMeet=ev.find(x=>x.eventType==='meet'&&x.isPrimaryTarget)||ev.find(x=>x.eventType==='meet'&&x.meetPriority==='A')||null;
     const nextMeet=ev.find(x=>x.eventType==='meet')||null;
     const teamConstraints=ev.filter(x=>['school_break','exam_week','holiday','facility_closure','travel'].includes(x.eventType));
+    const activeContext=ctx.find(x=>x.status==='active')||ctx.find(x=>(x.daysToPrimaryPeak??-1)>=0)||null;
+    const daysToTarget=activeContext?.daysToPrimaryPeak??(primaryMeet?Math.ceil((new Date(primaryMeet.startsAt)-new Date())/86400000):null);
 
     let availability=[],athletes=[],engine=null;
     if(athleteIds.length){
@@ -193,8 +195,6 @@ module.exports=async function handler(req,res){
       }
     }
 
-    const activeContext=ctx.find(x=>x.status==='active')||ctx.find(x=>(x.daysToPrimaryPeak??-1)>=0)||null;
-    const daysToTarget=activeContext?.daysToPrimaryPeak??(primaryMeet?Math.ceil((new Date(primaryMeet.startsAt)-new Date())/86400000):null);
     return res.status(200).json({
       ok:true,tier,mode,
       capability:mode==='engine'
