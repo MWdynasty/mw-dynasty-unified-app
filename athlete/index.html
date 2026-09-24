@@ -2202,7 +2202,7 @@ async function loadWorkoutCompletions(){
 async function paceRepTotalForWorkout(w,d){
   try{
     const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===Number(d));
-    const m=String(session?.work||'').match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
+    const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();const prescribed=session?.tierWork?.[tier]||session?.prescribedWork||session?.work||'';const m=String(prescribed).match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
     return m?Math.max(1,Math.min(60,Number(m[1]))):null;
   }catch{return null}
 }
