@@ -2113,16 +2113,16 @@ function showPaceRepChoices(total){
   const box=document.getElementById('paceRepChoices');if(!box)return;box.innerHTML='';
   for(let hit=0;hit<=total;hit++){
     const b=document.createElement('button');b.type='button';b.className='repChoice';b.innerHTML=`<strong>${hit}/${total}</strong>${hit===0?'NONE':hit===total?'ALL':'ON PACE'}`;
-    b.onclick=async()=>{const p=mwPendingCompletion;if(!p)return;closePaceCheckin();const status=hit===total?'all':hit===0?'none':'some';try{await markWorkoutComplete(p.w,p.i,p.button,{status,hit,total})}catch(e){if(p.button)p.button.textContent='TRY AGAIN';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}};box.appendChild(b)
+    b.onclick=async()=>{const p=mwPendingCompletion;if(!p)return;closePaceCheckin();const status=hit===total?'all':hit===0?'none':'some';try{await markWorkoutComplete(p.w,p.i,p.button,{status,hit,total})}catch(e){if(p.button){p.button.textContent='RETRY SAVE';if($('#unlockBadge'))$('#unlockBadge').textContent='SAVE FAILED'};if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}};box.appendChild(b)
   }
 }
 async function beginWorkoutCheckin(w,i,button){
   if(getCompletion()[String(w)]?.['s'+i])return;
-  if(!getProfile().repTracking){try{await markWorkoutComplete(w,i,button,{status:'not_applicable'})}catch(e){if(button)button.textContent='TRY AGAIN';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}return}
+  if(!getProfile().repTracking){try{await markWorkoutComplete(w,i,button,{status:'not_applicable'})}catch(e){if(button)button.textContent='RETRY SAVE';if($('#unlockBadge'))$('#unlockBadge').textContent='SAVE FAILED';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}return}
   if(button){button.disabled=true;button.textContent='CHECKING…'}
   const total=await paceRepTotalForWorkout(w,i);
   if(button){button.disabled=false;button.textContent='DONE'}
-  if(!total){try{await markWorkoutComplete(w,i,button,{status:'not_applicable'})}catch(e){button.textContent='TRY AGAIN';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}return}
+  if(!total){try{await markWorkoutComplete(w,i,button,{status:'not_applicable'})}catch(e){button.textContent='RETRY SAVE';if($('#unlockBadge'))$('#unlockBadge').textContent='SAVE FAILED';if($('#unlockNote'))$('#unlockNote').textContent='Could not save: '+(e.message||'Please try again.')}return}
   mwPendingCompletion={w,i,button,total};
   const modal=document.getElementById('mwPaceModal'),yesNo=document.getElementById('paceYesNo'),repStep=document.getElementById('paceRepStep');
   if(yesNo)yesNo.style.display='grid';if(repStep)repStep.style.display='none';
@@ -2130,7 +2130,7 @@ async function beginWorkoutCheckin(w,i,button){
   document.getElementById('paceHelp').textContent='One tap. No times to type unless you want detailed tracking.';
   modal?.classList.add('show');
 }
-document.getElementById('paceAllYes')?.addEventListener('click',async()=>{const p=mwPendingCompletion;if(!p)return;closePaceCheckin();try{await markWorkoutComplete(p.w,p.i,p.button,{status:'all',hit:p.total,total:p.total})}catch(e){if(p.button)p.button.textContent='TRY AGAIN'}});
+document.getElementById('paceAllYes')?.addEventListener('click',async()=>{const p=mwPendingCompletion;if(!p)return;closePaceCheckin();try{await markWorkoutComplete(p.w,p.i,p.button,{status:'all',hit:p.total,total:p.total})}catch(e){if(p.button){p.button.textContent='RETRY SAVE';if($('#unlockBadge'))$('#unlockBadge').textContent='SAVE FAILED'}}});
 document.getElementById('paceSomeNo')?.addEventListener('click',()=>{const p=mwPendingCompletion;if(!p)return;document.getElementById('paceYesNo').style.display='none';document.getElementById('paceRepStep').style.display='block';showPaceRepChoices(p.total)});
 document.getElementById('paceBack')?.addEventListener('click',()=>{document.getElementById('paceYesNo').style.display='grid';document.getElementById('paceRepStep').style.display='none'});
 document.getElementById('mwPaceModal')?.addEventListener('click',e=>{if(e.target?.id==='mwPaceModal')closePaceCheckin()});
@@ -2170,7 +2170,7 @@ async function renderCompletion(){
   }
   const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
   const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
-  row.innerHTML=`<span><b>Today’s Track Workout</b><br><small class="muted">${session.title||('Session '+sessionNumber)}${paceNote}</small></span><span class="completionActions"><button data-session="${sessionNumber}">${isDone?'✓ DONE':'DONE'}</button></span>`;
+  row.innerHTML=`<span><b>${session.title||('Track Session '+sessionNumber)}</b><br><small class="muted">Completion check${paceNote}</small></span><span class="completionActions"><button data-session="${sessionNumber}">${isDone?'✓ DONE':'DONE'}</button></span>`;
   box.appendChild(row);
   const btn=box.querySelector('button[data-session]');if(btn)btn.onclick=()=>beginWorkoutCheckin(w,sessionNumber,btn);
   if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':'IN PROGRESS';
