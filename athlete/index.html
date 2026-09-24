@@ -925,8 +925,7 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 #coach .msg.coach{font-size:13px!important;line-height:1.5!important}
 #coach .voiceLabel{opacity:.72}
 #coach .askrow{grid-template-columns:46px 1fr 46px!important}
-#coach #attachImage{position:absolute!important;left:59px!important;bottom:9px!important;width:28px!important;height:28px!important;border-radius:50%!important;z-index:2!important}
-#coach #q{padding-left:38px!important}
+#coach #q{padding-left:14px!important}
 #coach .mwWordToday summary strong:after{content:"";display:inline-block;margin-left:5px}
 </style>
 <style id="mw-progress-visual-v1">
@@ -1463,7 +1462,7 @@ html.mw-native-app .mwLoginStory:after{
   <div class="connectionNotice" id="connectionNotice"></div>
   <div class="chat" id="chat"><div class="msg coach">I’m Coach MW. What can I help you with today?</div></div>
   <div class="chatControls"><button id="clearChat" title="Clear conversation" aria-label="Clear conversation">•••</button></div>
-  <div class="ask"><div class="askrow"><button id="mic" class="round" title="Speak">🎙</button><button id="attachImage" class="attach" title="Add a photo">＋</button><input id="imagePick" type="file" accept="image/png,image/jpeg,image/webp"><input id="q" placeholder="Message Coach MW…"><button id="go" class="send">↑</button></div><div id="attachStatus" class="attachStatus"></div><div class="voice"><span id="voiceState">TAP MIC TO SPEAK</span><span>COACH MW VOICE 🔊</span></div></div>
+  <div class="ask"><div class="askrow"><button id="mic" class="round" title="Speak" aria-label="Speak to Coach MW">🎙</button><input id="q" placeholder="Message Coach MW…"><button id="go" class="send" aria-label="Send message">↑</button></div><span id="voiceState" hidden></span></div>
 </div>
 
 <div class="mwSmartEntryOneBox"><button class="smartBtn" id="openEntry">⚡ <span>MW SMART ENTRY</span> — I just joined. Where do I start?</button><div class="entryStatus" id="entryStatus"></div></div>
