@@ -37,19 +37,23 @@ async function authenticate(req){
 async function one(path,token){const rows=await sj(`${SUPABASE_URL}/rest/v1/${path}`,token);return Array.isArray(rows)?(rows[0]||null):rows}
 async function getAccountContext(req,{requireAthlete=false}={}){
   const {token,user}=await authenticate(req);
-  const profile=await one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
+  const userId=encodeURIComponent(user.id);
+
+  // These reads depend only on the authenticated user, so run them together.
+  // This keeps sign-in from paying three network round trips in sequence.
+  const [profile,athlete,membershipAccess]=await Promise.all([
+    one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${userId}&limit=1`,token),
+    one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal&user_id=eq.${userId}&limit=1`,token),
+    athleteFeatureAccess(token)
+  ]);
   if(!profile) throw Object.assign(new Error('MW profile not found for this login.'),{status:403});
   if(profile.account_status!=='active') throw Object.assign(new Error('This MW account is not active.'),{status:403});
 
   const role=String(profile.role||'athlete');
   const privileged=['founder_owner','admin','coach'].includes(role);
-  if(role==='athlete'){
-    const membershipAccess=await athleteFeatureAccess(token);
-    if(!membershipAccess?.has_access){
-      throw Object.assign(new Error('An active MW Athlete membership is required for training access.'),{status:403});
-    }
+  if(role==='athlete'&&!membershipAccess?.has_access){
+    throw Object.assign(new Error('An active MW Athlete membership is required for training access.'),{status:403});
   }
-  const athlete=await one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);
 
   if(!athlete){
     if(requireAthlete || !privileged){
@@ -67,11 +71,13 @@ async function getAccountContext(req,{requireAthlete=false}={}){
     };
   }
 
-  const programState=await one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at&athlete_id=eq.${encodeURIComponent(athlete.id)}&limit=1`,token);
-  const [prs,repTracking,access]=await Promise.all([
-    sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified&athlete_id=eq.${encodeURIComponent(athlete.id)}&order=event.asc`,token),
+  // Once the athlete id is known, load the remaining account context in parallel.
+  const athleteId=encodeURIComponent(athlete.id);
+  const [programState,prs,repTracking,access]=await Promise.all([
+    one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at&athlete_id=eq.${athleteId}&limit=1`,token),
+    sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified&athlete_id=eq.${athleteId}&order=event.asc`,token),
     repTrackingAccess(token),
-    athleteFeatureAccess(token)
+    Promise.resolve(membershipAccess)
   ]);
   return {token,user:{id:user.id,email:user.email},profile,athlete,programState,prs:Array.isArray(prs)?prs:[],mode:'athlete',features:{repTracking,access}};
 }
