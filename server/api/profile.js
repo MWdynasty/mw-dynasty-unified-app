@@ -41,7 +41,7 @@ module.exports=async function handler(req,res){
     const goalResponse=await fetch(`${SUPABASE_URL}/rest/v1/athletes?user_id=eq.${encodeURIComponent(user.id)}`,{
       method:'PATCH',
       headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=minimal'},
-      body:JSON.stringify({training_goal:trainingGoal||null,updated_at:new Date().toISOString()})
+      body:JSON.stringify({training_goal:trainingGoal||null})
     });
     if(!goalResponse.ok){
       const d=await goalResponse.json().catch(()=>null);
