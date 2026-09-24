@@ -184,7 +184,8 @@ module.exports=async function handler(req,res){
       }
       if(b.status==='approved'&&row?.project_id){
         const project=one(await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}&select=id,status,authority_class,execution_scope,founder_decision_needed&limit=1`));
-        await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:project?.status||'active',founder_decision_needed:null,updated_at:new Date().toISOString()}});
+        const nextProjectStatus=project?.status==='waiting_founder'?'active':(project?.status||'active');
+        await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:nextProjectStatus,founder_decision_needed:null,updated_at:new Date().toISOString()}});
         await rest(token,'founder_ai_authorizations',{method:'POST',body:{
           project_id:row.project_id,
           presentation_id:row.id,
