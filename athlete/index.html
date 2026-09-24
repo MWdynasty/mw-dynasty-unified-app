@@ -2129,7 +2129,14 @@ function completionHeaders(extra={}){
   return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,...extra};
 }
 function completionAthleteId(){const remote=window.mwGetRemoteProfile?.();return remote?.athleteId||null}
-function workoutKey(w,i){return `mw-track-w${Number(w)}-d${Number(i)}`}
+function activeSeasonPlanId(){const remote=window.mwGetRemoteProfile?.();return mwSeasonCalendar?.planId||remote?.seasonPlan?.id||remote?.seasonPlan?.season_plan_id||null}
+function trainingCycleKey(){const id=activeSeasonPlanId();return id?'season:'+id:'mw-41'}
+function sourceWeekForSeasonWeek(w){
+  const remote=window.mwGetRemoteProfile?.(),plan=remote?.seasonPlan||{},map=plan.source_week_map||plan.sourceWeekMap||{};
+  const n=Number(map?.[String(Number(w))]?.sourceWeek||((Number(mwSeasonCalendar?.week)===Number(w))?mwSeasonCalendar?.sourceWeek:null)||w);
+  return Math.max(1,Math.min(41,Number.isFinite(n)?n:Number(w)||1));
+}
+function workoutKey(w,i){const id=activeSeasonPlanId();return id?`mw-season-${id}-w${Number(w)}-d${Number(i)}`:`mw-track-w${Number(w)}-d${Number(i)}`}
 function workoutStatus(w,d){return mwWorkoutStatusCache[String(w)]?.['s'+Number(d)]||null}
 function latestIncompleteWorkout(){
   const rows=[];
@@ -2153,7 +2160,8 @@ let mwPracticeProgressCache=[];
 async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,source_program_week&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
   mwPracticeProgressCache=Array.isArray(rows)?rows:[];
   renderPracticeProgress();
@@ -2174,7 +2182,7 @@ function rowsToCompletion(rows){
   const out={};mwPaceCheckCache={};mwWorkoutStatusCache={};
   for(const r of (Array.isArray(rows)?rows:[])){
     const w=String(Number(r.program_week||0)),d=Number(r.program_day||0);
-    if(!w||!d||!String(r.workout_key||'').startsWith('mw-track-'))continue;
+    if(!w||!d||String(r.workout_key||'')!==workoutKey(Number(w),d))continue;
     mwWorkoutStatusCache[w]=mwWorkoutStatusCache[w]||{};
     mwWorkoutStatusCache[w]['s'+d]={...r};
     if(r.completion_status!=='completed')continue;
@@ -2186,7 +2194,8 @@ function rowsToCompletion(rows){
 }
 async function loadWorkoutCompletions(){
   const aid=completionAthleteId();if(!aid)return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at,scheduled_date,started_at,last_activity_at,completed_late',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
+  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at,scheduled_date,started_at,last_activity_at,completed_late,season_plan_id,source_program_week',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load workout completion history.');
   mwCompletionCache=rowsToCompletion(rows);mwCompletionLoaded=true;
 }
@@ -2203,7 +2212,7 @@ async function markWorkoutComplete(w,i,button,pace={status:'not_applicable',hit:
   if(getCompletion()[String(w)]?.['s'+i])return;
   if(button){button.disabled=true;button.textContent='SAVING…'}
   const total=repEnabled&&Number(pace?.total)>0?Number(pace.total):null,hit=total==null?null:Math.max(0,Math.min(total,Number(pace?.hit)||0));
-  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',session_rpe:null,pace_check_status:repEnabled?(pace?.status||'not_applicable'):'not_applicable',pace_reps_total:total,pace_reps_hit:hit,performance_checked_at:repEnabled&&total?new Date().toISOString():null,completed_at:new Date().toISOString()};
+  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',session_rpe:null,pace_check_status:repEnabled?(pace?.status||'not_applicable'):'not_applicable',pace_reps_total:total,pace_reps_hit:hit,performance_checked_at:repEnabled&&total?new Date().toISOString():null,completed_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(w)};
   try{
     const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?on_conflict=athlete_id,workout_key',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
     const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
@@ -2414,7 +2423,7 @@ function latestIncompleteStrength(){
 }
 async function loadStrengthQuickCheckins(){
   const aid=completionAthleteId();if(!aid||!window.mwGetSessionToken?.())return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional,training_cycle_key,season_plan_id,source_program_week&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength check-ins.');
   mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}
 }
@@ -3019,7 +3028,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   }
   async function loadStrengthPerformanceLogs(){
     const aid=mwRemoteProfile.athleteId,box=document.getElementById('strengthLogRecent');if(!aid||!token())return;
-    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?athlete_id=eq.'+encodeURIComponent(aid)+'&select=id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=200',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
+    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at,training_cycle_key,season_plan_id,source_program_week&order=recorded_at.desc&limit=200',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
     const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength performance.');
     mwStrengthPerformanceRows=Array.isArray(rows)?rows:[];
     if(box)box.innerHTML=mwStrengthPerformanceRows.slice(0,12).map(x=>`<div class="strengthLogItem"><b>Week ${Number(x.program_week||1)} · Day ${Number(x.program_day||1)} · ${escapeHtmlLocal(x.exercise_name)}</b><br>Set ${Number(x.set_number||1)} · ${x.reps_completed??'—'} reps @ ${x.actual_load??'—'} ${escapeHtmlLocal(x.weight_unit||'lb')}${x.target_load!=null?` · Target ${x.target_load}`:''}${x.set_rpe!=null?` · RPE ${x.set_rpe}/10`:''}</div>`).join('');
@@ -3030,12 +3039,12 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const aid=mwRemoteProfile.athleteId,btn=document.getElementById('saveStrengthPerformance'),st=document.getElementById('strengthPerformanceStatus');if(!aid)throw new Error('Athlete profile not found.');
     const week=strengthLoggingWeek(),day=Number(document.getElementById('strengthLogDay')?.value||mwTodayStrengthInfo().day),meta=strengthSessionMeta(week,day),exercise=(document.getElementById('strengthLogExercise')?.value||'').trim(),actual=Number(document.getElementById('strengthLogActual')?.value),reps=Number(document.getElementById('strengthLogReps')?.value),setNo=Number(document.getElementById('strengthLogSet')?.value),targetRaw=(document.getElementById('strengthLogTarget')?.value||'').trim(),rpeRaw=(document.getElementById('strengthLogRpe')?.value||'').trim();
     if(!exercise)throw new Error('Choose or enter the exercise.');if(!Number.isFinite(actual)||actual<0)throw new Error('Enter the actual load you used.');if(!Number.isFinite(reps)||reps<0)throw new Error('Enter reps completed.');if(!Number.isFinite(setNo)||setNo<1)throw new Error('Enter a valid set number.');
-    const payload={athlete_id:aid,program_week:week,program_day:day,session_label:`Week ${week} Strength`,exercise_name:exercise,set_number:setNo,reps_completed:reps,target_load:targetRaw===''?null:Number(targetRaw),actual_load:actual,weight_unit:document.getElementById('strengthLogUnit')?.value||'lb',set_rpe:rpeRaw===''?null:Number(rpeRaw),recorded_at:new Date().toISOString()};
+    const payload={athlete_id:aid,training_cycle_key:trainingCycleKey(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(week),program_week:week,program_day:day,session_label:`Week ${week} Strength`,exercise_name:exercise,set_number:setNo,reps_completed:reps,target_load:targetRaw===''?null:Number(targetRaw),actual_load:actual,weight_unit:document.getElementById('strengthLogUnit')?.value||'lb',set_rpe:rpeRaw===''?null:Number(rpeRaw),recorded_at:new Date().toISOString()};
     if(btn){btn.disabled=true;btn.textContent='SAVING…'}if(st)st.textContent='Saving this set to MW Dynasty…';
     try{
       const life=String(mwStrengthQuickCache[`${week}-${day}`]?.lifecycle_status||'');
       if(life!=='completed')await markStrengthStatus(week,day,'in_progress',meta.label,meta.optional);
-      const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?on_conflict=athlete_id,program_week,program_day,exercise_name,set_number',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
+      const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_session_logs?on_conflict=athlete_id,training_cycle_key,program_week,program_day,exercise_name,set_number',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
       const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Strength performance save failed.');
       if(st)st.textContent=`✓ Set ${setNo} saved immediately. It will still be here if you close the app.`;
       document.getElementById('strengthLogSet').value=String(setNo+1);
@@ -3539,7 +3548,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   function render(){
     const wrap=document.getElementById('mwAthleteNotificationList');if(!wrap)return;
     wrap.innerHTML=items.length?items.map(n=>`<button type="button" class="mwAthleteNotificationRow ${n.read_at?'':'unread'}" data-mw-notification="${esc(n.id)}" data-mw-action="${esc(n.action_view||'home')}"><div><b>${esc(n.title)}</b><span>${esc(n.body)}</span></div><small>${new Date(n.created_at).toLocaleDateString([], {month:'short',day:'numeric'})}</small></button>`).join(''):'<div class="lockNote">You’re all caught up. New MW alerts will appear here.</div>';
-    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const m=String(n.entity_id||'').match(/^mw-track-w(\d+)-d(\d+)$/);if(m)setTimeout(()=>window.mwOpenPracticeFor?.(Number(m[1]),Number(m[2])),80)}if(n?.notification_type==='strength_incomplete'){const m=String(n.entity_id||'').match(/^mw-strength-w(\d+)-d(\d+)$/);if(m)setTimeout(()=>window.mwOpenStrengthSessionFor?.(Number(m[1]),Number(m[2])),80)}});
+    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const id=String(n.entity_id||''),m=id.match(/^mw-track-w(\d+)-d(\d+)$/)||id.match(/^mw-season-[0-9a-f-]+-w(\d+)-d(\d+)$/i);if(m)setTimeout(()=>window.mwOpenPracticeFor?.(Number(m[1]),Number(m[2])),80)}if(n?.notification_type==='strength_incomplete'){const id=String(n.entity_id||''),m=id.match(/^mw-strength-w(\d+)-d(\d+)$/)||id.match(/^mw-season-strength-[0-9a-f-]+-w(\d+)-d(\d+)$/i);if(m)setTimeout(()=>window.mwOpenStrengthSessionFor?.(Number(m[1]),Number(m[2])),80)}});
   }
   async function load(){try{const d=await request();if(!d)return;items=Array.isArray(d.items)?d.items:[];updateBadge();render()}catch(e){const wrap=document.getElementById('mwAthleteNotificationList');if(wrap)wrap.innerHTML='<div class="lockNote">'+esc(e.message)+'</div>'}}
   document.getElementById('mwAthleteNotificationBell')?.addEventListener('click',()=>{window.openView?.('notifications',true);load()});
@@ -3583,7 +3592,7 @@ async function loadExistingReps(w,d){
 }
 async function persistOneRep(row){
  const p=parsePrescription(),aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
- const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString()};
+ const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek)};
  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});
  if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep time could not be saved.')}
 }
