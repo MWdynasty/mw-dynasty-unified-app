@@ -1,7 +1,7 @@
 const {authenticate,getAthleteContext}=require('../lib/mw-auth');
 const {
   normalizeLevel,normalizeState,normalizeSeasonPreference,normalizeCompetitionPath,levelGroup,
-  loadTemplate,loadStateRegistry,derivePlan,upsertSeasonPlan,listOwnSeasonPlans,reconcileSeasonPlan,rest,dateOnly
+  loadTemplate,loadStateRegistry,derivePlan,upsertSeasonPlan,listOwnSeasonPlans,reconcileSeasonPlan,rest,rpc,dateOnly
 }=require('../lib/mw-season-intelligence');
 const {effectiveCalendar}=require('../lib/mw-season-calendar');
 
@@ -13,6 +13,7 @@ function defaultSeasonYear(){
 function yearFromDate(value,fallback){
   const d=dateOnly(value);return d?d.getUTCFullYear():fallback;
 }
+function jsonEqual(a,b){try{return JSON.stringify(a||{})===JSON.stringify(b||{})}catch{return false}}
 function cleanDates(x={}){
   return {
     startDate:String(x.startDate||'').trim()||null,
@@ -103,11 +104,62 @@ module.exports=async function handler(req,res){
     if(activeIndex<0)activeIndex=built.findIndex(p=>p.primaryPeakDate>=today);
     if(activeIndex<0)activeIndex=built.length-1;
 
+    const existingPlans=await listOwnSeasonPlans(token,c.athlete.id);
     const saved=[];let previousId=null;
     for(let i=0;i<built.length;i++){
-      const row=await upsertSeasonPlan(token,built[i],{activate:i===activeIndex,continuationFromPlanId:i>0?previousId:null});
+      const plan=built[i];
+      const existing=(existingPlans||[]).find(x=>
+        Number(x.season_year)===Number(plan.seasonYear)
+        &&String(x.season_type)===String(plan.seasonType)
+        &&String(x.competition_path)===String(plan.competitionPath)
+      );
+      const changed=existing&&(
+        String(existing.season_start_date)!==String(plan.seasonStartDate)
+        ||String(existing.primary_peak_date)!==String(plan.primaryPeakDate)
+        ||Number(existing.season_length_weeks)!==Number(plan.seasonLengthWeeks)
+        ||!jsonEqual(existing.phase_plan,plan.phasePlan)
+        ||!jsonEqual(existing.source_week_map,plan.sourceWeekMap)
+      );
+      if(changed){
+        await rpc('mw_record_season_plan_revision',token,{
+          p_plan_id:existing.id,
+          p_reason:String(b.changeReason||`Athlete updated ${plan.seasonType} season dates`).slice(0,1000),
+          p_new_start:plan.seasonStartDate,
+          p_new_peak:plan.primaryPeakDate,
+          p_new_length:plan.seasonLengthWeeks,
+          p_new_phase_plan:plan.phasePlan,
+          p_new_source_map:plan.sourceWeekMap
+        });
+      }
+      const row=await upsertSeasonPlan(token,plan,{activate:i===activeIndex,continuationFromPlanId:i>0?previousId:null});
       previousId=row?.id||previousId;
       saved.push(row);
+
+      const planId=row?.id||existing?.id;
+      if(planId){
+        const source=plan.calendarSource==='state_registry'?'state_registry':'athlete';
+        const primaryRows=await rest(`athlete_season_targets?season_plan_id=eq.${encodeURIComponent(planId)}&is_primary=eq.true&select=id&limit=1`,token,{method:'GET'});
+        const primaryId=Array.isArray(primaryRows)?primaryRows[0]?.id:null;
+        const primaryPayload={
+          season_plan_id:planId,athlete_id:c.athlete.id,name:'Primary Championship / Peak',
+          target_date:plan.primaryPeakDate,target_type:'championship',meet_priority:'A',
+          is_primary:true,peak_rank:1,status:'planned',source,updated_at:new Date().toISOString()
+        };
+        if(primaryId)await rest(`athlete_season_targets?id=eq.${encodeURIComponent(primaryId)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(primaryPayload)});
+        else await rest('athlete_season_targets',token,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(primaryPayload)});
+
+        if(plan.secondaryPeakDate){
+          const secondaryRows=await rest(`athlete_season_targets?season_plan_id=eq.${encodeURIComponent(planId)}&peak_rank=eq.2&select=id&limit=1`,token,{method:'GET'});
+          const secondaryId=Array.isArray(secondaryRows)?secondaryRows[0]?.id:null;
+          const secondaryPayload={
+            season_plan_id:planId,athlete_id:c.athlete.id,name:'Secondary Championship / Peak',
+            target_date:plan.secondaryPeakDate,target_type:'championship',meet_priority:'A',
+            is_primary:false,peak_rank:2,status:'planned',source,updated_at:new Date().toISOString()
+          };
+          if(secondaryId)await rest(`athlete_season_targets?id=eq.${encodeURIComponent(secondaryId)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify(secondaryPayload)});
+          else await rest('athlete_season_targets',token,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(secondaryPayload)});
+        }
+      }
     }
 
     await rest(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{
