@@ -2928,7 +2928,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   function recoveryRedirect(){
     // Always send recovery back to the canonical athlete route. This keeps
     // email links stable whether the request started in Safari or the iOS WKWebView.
-    return 'https://app.mwdynasty.com/athlete/';
+    return 'https://app.mwdynasty.com/athlete/reset-password.html';
   }
   let mwResetBusy=false;
   async function requestPasswordReset(){
