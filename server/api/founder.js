@@ -189,7 +189,7 @@ module.exports=async function handler(req,res){
         await rest(token,`founder_ai_collaboration_projects?id=eq.${encodeURIComponent(row.project_id)}`,{method:'PATCH',body:{status:nextProjectStatus,founder_decision_needed:null,updated_at:new Date().toISOString()}});
         if(isFinalQaApproval){
           await rest(token,'founder_ai_work_events',{method:'POST',body:{
-            project_id:row.project_id,agent_code:row.presenting_agent_code||'release_qa',event_type:'completion',
+            project_id:row.project_id,agent_code:row.presenting_agent_code||'release_qa',event_type:'verification',
             summary:'Founder approved the final non-production QA Boardroom presentation; the QA project lifecycle is complete.',
             evidence:{presentation_id:row.id,founder_approved:true,project_status:'completed',production_action:false}
           }});
