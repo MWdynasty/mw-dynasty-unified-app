@@ -113,7 +113,7 @@ module.exports=async function handler(req,res){
           const nextRows=await request(`athlete_season_targets?select=id,name,target_date,target_type,meet_priority,is_primary,peak_rank,qualification_stage,status&qualification_dependency_target_id=eq.${encodeURIComponent(targetId)}&status=eq.planned&order=target_date.asc&limit=1`,c.token);
           nextTarget=Array.isArray(nextRows)?nextRows[0]||null:null;
           if(nextTarget){
-            const planRows=await request(`athlete_season_plans?select=id,primary_peak_date&season_plan_id=eq.${encodeURIComponent(target.season_plan_id)}`.replace('season_plan_id','id'),c.token).catch(()=>[]);
+            const planRows=await request(`athlete_season_plans?select=id,primary_peak_date&id=eq.${encodeURIComponent(target.season_plan_id)}&limit=1`,c.token).catch(()=>[]);
             const plan=Array.isArray(planRows)?planRows[0]:null;
             seasonExtensionRecommended=!!(plan?.primary_peak_date&&String(nextTarget.target_date)>String(plan.primary_peak_date));
           }
