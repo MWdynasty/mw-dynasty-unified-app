@@ -31,6 +31,7 @@ const handlers = {
   'coach/program': require('../server/api/coach/program'),
   'coach/performance': require('../server/api/coach/performance'),
   'coach/progression': require('../server/api/coach/progression'),
+  'coach/season-intelligence': require('../server/api/coach/season-intelligence'),
   'coach/roster': require('../server/api/coach/roster')
 };
 
