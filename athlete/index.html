@@ -2180,7 +2180,7 @@ async function loadWorkoutCompletions(){
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load workout completion history.');
   mwCompletionCache=rowsToCompletion(rows);mwCompletionLoaded=true;
 }
-async function paceRepTotalForWorkoutasync function paceRepTotalForWorkout(w,d){
+async function paceRepTotalForWorkout(w,d){
   try{
     const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===Number(d));
     const m=String(session?.work||'').match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
