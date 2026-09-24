@@ -5,7 +5,7 @@ const SESSION_KEY='mwCoachSupabaseSession';
 const MW_APP_VERSION='3.0.16';
 const MW_IOS_BUILD='13';
 let authSession=null;
-let accountAccess={role:null,tier:null,isFounder:false,firstName:'',lastName:'',organization:'',coachTitle:'',email:''};
+let accountAccess={role:null,tier:null,isFounder:false,firstName:'',lastName:'',organization:'',coachTitle:'',email:'',features:{}};
 function coachTransient(error,status=0){return !navigator.onLine||error?.mwTransient===true||window.MWResilience?.isTransientStatus?.(status)===true||window.MWResilience?.isTransientError?.(error)===true}
 function coachAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
 
@@ -735,7 +735,7 @@ async function verifyCoachAccess(session){
     if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError(d.error||'Coach access is temporarily unavailable.',r.status);
     throw coachAccessError(r.status===403?'This login is not an approved, active MW Coach account.':(d.error||'Coach access could not be verified.'),r.status)
   }
-  accountAccess={role:d.role||null,tier:d.tier||null,isFounder:!!d.isFounder,firstName:d.firstName||'',lastName:d.lastName||'',organization:d.organization||'',coachTitle:d.coachTitle||'',email:d.email||''};
+  accountAccess={role:d.role||null,tier:d.tier||null,isFounder:!!d.isFounder,firstName:d.firstName||'',lastName:d.lastName||'',organization:d.organization||'',coachTitle:d.coachTitle||'',email:d.email||'',features:d.features||{}};
   window.MWDiag?.snapshot({audience:'coach',role:String(d.role||''),tier:String(d.tier||''),founder:!!d.isFounder,native:document.documentElement.classList.contains('mw-native-app')});
   if(accountAccess.isFounder){experience='performance';return d;}
   const map={core:'core',intelligence:'intelligence',mw_sprint_performance:'performance'};
