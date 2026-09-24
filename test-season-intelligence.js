@@ -3,6 +3,7 @@ const {
   phaseAllocation,sourceWeekMap,derivePlan,positionForPlan,levelGroup
 }=require('./server/lib/mw-season-intelligence');
 const {recommendedTiers,developmentalLoadProfile}=require('./server/lib/mw-developmental-load');
+const {coachSeasonMode,coachSeasonCapabilities,athleteSeasonEngineEnabled}=require('./server/lib/mw-season-entitlements');
 
 function counts(plan){return ['foundation','pre_competition','competition','peak'].map(k=>plan[k].count)}
 function sum(xs){return xs.reduce((a,b)=>a+b,0)}
@@ -85,3 +86,16 @@ assert.equal(experienced.strengthTier,'performance');
 const experiencedLoad=developmentalLoadProfile({dateOfBirth:'2004-01-01',trainingYears:5,trackTier:experienced.trackTier,strengthTier:experienced.strengthTier});
 assert.equal(experiencedLoad.track.volumeFactor,1);
 assert.equal(experiencedLoad.strength.rpeCap,8);
+
+
+assert.equal(coachSeasonMode('core','coach'),'none');
+assert.equal(coachSeasonMode('intelligence','coach'),'insights');
+assert.equal(coachSeasonMode('mw_sprint_performance','coach'),'engine');
+assert.equal(coachSeasonMode(null,'founder_owner'),'engine');
+assert.equal(coachSeasonCapabilities('intelligence','coach').season_intelligence_engine,false);
+assert.equal(coachSeasonCapabilities('intelligence','coach').season_intelligence_insights,true);
+assert.equal(coachSeasonCapabilities('mw_sprint_performance','coach').season_intelligence_engine,true);
+assert.equal(athleteSeasonEngineEnabled({mw_training_system:true,smart_entry:true}),true);
+assert.equal(athleteSeasonEngineEnabled({mw_training_system:false,smart_entry:false}),false);
+
+console.log('MW Season Intelligence entitlement boundaries passed');
