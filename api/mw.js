@@ -17,6 +17,7 @@ const handlers = {
   'assigned-program': require('../server/api/assigned-program'),
   'smart-entry': require('../server/api/smart-entry'),
   'season-calendar': require('../server/api/season-calendar'),
+  'season-plan': require('../server/api/season-plan'),
   'speak': require('../server/api/speak'),
   'transcribe': require('../server/api/transcribe'),
   'status': require('../server/api/status'),
