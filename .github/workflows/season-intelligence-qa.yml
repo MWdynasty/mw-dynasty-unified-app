@@ -1,0 +1,58 @@
+name: MW Season Intelligence QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'athlete/**'
+      - 'api/**'
+      - 'server/**'
+      - 'supabase/migrations/**'
+      - 'test-season-intelligence.js'
+      - 'package.json'
+      - 'vercel.json'
+      - '.github/workflows/season-intelligence-qa.yml'
+  workflow_dispatch:
+
+jobs:
+  season-intelligence-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run MW regression suite
+        run: npm test
+
+      - name: Check Season Intelligence server syntax
+        run: |
+          node --check server/lib/mw-season-intelligence.js
+          node --check server/lib/mw-season-calendar.js
+          node --check server/lib/mw-auth.js
+          node --check server/api/season-plan.js
+          node --check server/api/season-calendar.js
+          node --check server/api/smart-entry.js
+          node --check server/api/program.js
+          node --check server/api/me.js
+          node --check api/mw.js
+
+      - name: Check athlete inline JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('athlete/index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',html,flags=re.S|re.I)
+          out=Path('/tmp/mw-athlete-scripts')
+          out.mkdir(exist_ok=True)
+          for i,script in enumerate(scripts):
+              if script.strip():
+                  (out/f'script-{i}.js').write_text(script,encoding='utf-8')
+          print(f'Extracted {len(list(out.glob("*.js")))} inline scripts')
+          PY
+          for f in /tmp/mw-athlete-scripts/*.js; do
+            node --check "$f"
+          done
