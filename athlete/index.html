@@ -2977,6 +2977,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     details?.scrollIntoView?.({behavior:'smooth',block:'start'});
   };
   function bindStrengthPerformanceLogger(){
+    const dayEl=document.getElementById('strengthLogDay');if(dayEl&&!mwStrengthLogWeekOverride)dayEl.value=String(mwTodayStrengthInfo().day);
     const b=document.getElementById('saveStrengthPerformance');if(b)b.onclick=async()=>{try{await saveStrengthPerformance()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Save failed: '+(e.message||'Please try again.')}};
     const a=document.getElementById('finishStrengthAsPrescribed');if(a)a.onclick=async()=>{a.disabled=true;try{await finishStrengthFromLogger('as_prescribed')}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Finish failed: '+(e.message||'Please try again.')}finally{a.disabled=false}};
     const m=document.getElementById('finishStrengthModified');if(m)m.onclick=async()=>{m.disabled=true;try{await finishStrengthFromLogger('modified')}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Finish failed: '+(e.message||'Please try again.')}finally{m.disabled=false}};
