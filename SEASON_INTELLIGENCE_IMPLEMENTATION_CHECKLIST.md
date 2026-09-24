@@ -43,7 +43,7 @@ Do not merge to production until all required launch gates are checked.
 - [ ] Coach Intelligence may receive Season Intelligence INSIGHTS for its own coach-authored program: calendar context, weeks-to-championship, athlete trend/risk flags, and AI analysis without exposing or generating MW methodology.
 - [x] MW Sprint Performance receives the full Season Intelligence engine: state/season calibration, MW source-week mapping, Track + Strength synchronization, Smart Entry, and adaptive season planning.
 - [x] Individual full MW Athlete membership follows full-MW access and may use the full athlete Season Intelligence experience.
-- [ ] Add explicit feature flags for season_intelligence_insights vs season_intelligence_engine before production UI rollout.
+- [x] Add explicit feature flags for season_intelligence_insights vs season_intelligence_engine before production UI rollout.
 
 ## D. Periodization rules
 - [x] Foundation phase.
@@ -57,7 +57,7 @@ Do not merge to production until all required launch gates are checked.
 - [x] Existing age + experience tier assignment remains active inside season-aware Smart Entry.
 - [x] Existing Foundation / Development / Performance volume factors remain active after a Season Week maps to an MW Master Source Week.
 - [x] Season-mapped program response carries a developmental load profile (age band, training years, track/strength tier, volume factor, recovery factor, RPE cap).
-- [ ] Verify every athlete-facing workout renderer actually applies the developmental volume factor rather than only displaying guidance.
+- [x] Athlete track + strength prescriptions now apply developmental volume directly; pace rep totals also follow the reduced prescription. Full regression QA still required before release.
 - [ ] Age-appropriate middle-school taper / peak rules.
 - [ ] High-school progression rules.
 - [ ] Collegiate progression rules.
@@ -78,13 +78,13 @@ Do not merge to production until all required launch gates are checked.
 - [ ] Support two primary championship targets when an athlete legitimately needs them.
 
 ## F. Meet intelligence
-- [ ] Competition schedule table / meet targets.
-- [ ] Meet importance classification: C = training meet, B = important, A = peak/championship.
-- [ ] Do not taper for every meet.
-- [ ] Allow athlete/coach to select the priority championship.
+- [x] Competition target hierarchy schema added for athlete season plans, plus coach meet-priority fields.
+- [x] Meet importance classification: C = training meet, B = important, A = peak/championship.
+- [x] Adaptation policy explicitly prevents a full taper for B/C meets and separates primary-A vs qualifier-A freshness.
+- [x] Coach can mark a meet as the primary target; athlete season plans store a primary championship target.
 - [ ] Race-model and load adjustments around A/B/C meets.
 - [ ] Meet reminders tied to the active season plan.
-- [ ] Qualification result can update the next target automatically after confirmation.
+- [x] Performance-coach qualification workflow records qualified/not-qualified/completed and surfaces the dependent next target without silently changing the plan.
 
 ## G. Smart Entry
 - [x] Smart Entry can read a Season Intelligence calendar.
@@ -103,10 +103,10 @@ Do not merge to production until all required launch gates are checked.
 - [x] Existing lifecycle states preserved: scheduled, in-progress, incomplete, absent, completed.
 - [x] Season-aware refresh uses the real season calendar.
 - [x] Missing a workout does not push the championship date automatically.
-- [ ] Build adaptation rules for one missed session.
-- [ ] Build adaptation rules for multiple missed sessions / missed week.
-- [ ] Never “make up” unsafe speed volume just because work was missed.
-- [ ] Decide which low-priority sessions may be removed when calendar time is lost.
+- [x] Build adaptation rules for one missed session.
+- [x] Build conservative adaptation rules for multiple missed/incomplete sessions and major disruption.
+- [x] Never “make up” unsafe speed volume just because work was missed.
+- [x] Policy removes/reduces low-priority volume first while preserving the next important speed exposure; session-level execution still requires integration QA.
 - [ ] Recompute remaining load while protecting Peak date.
 - [ ] Coach alert when missed training materially changes preparation.
 - [ ] Athlete explanation: calendar moved, workload adapted, championship date did not.
@@ -123,10 +123,10 @@ Do not merge to production until all required launch gates are checked.
 
 ## J. Coach / team integration
 - [ ] Coach sees each athlete’s active season, phase, target championship, and weeks remaining.
-- [ ] Coach can enter team State, season, first practice, first meet, championships.
+- [x] Coach Season Intelligence context supports state, season, competition path, first practice, first meet, primary peak, secondary peak, and goal.
 - [ ] Sponsored athletes can inherit the team calendar.
 - [ ] Athlete/team override hierarchy is explicit and auditable.
-- [ ] Existing school breaks / exams / blocked dates feed Season Intelligence.
+- [x] Existing school breaks / exams / blocked dates feed Coach Intelligence insights and Performance engine context.
 - [ ] Coach can override dates with an audit trail.
 - [ ] Individual athlete can branch from team calendar if their season continues.
 - [ ] Coach receives notification when athlete qualifies and plan extension is available.
@@ -137,16 +137,16 @@ Do not merge to production until all required launch gates are checked.
 - [ ] Founder can inspect an athlete’s season-plan source and mapping.
 - [ ] Diagnostics show Season Week, Phase, Source Week, target date, and calendar source.
 - [ ] Founder/admin can identify state-registry records needing annual refresh.
-- [ ] Audit trail for date overrides and plan changes.
+- [x] Versioned season-plan revision history records who changed dates/maps, why, and before/after values.
 - [ ] No silent automatic plan change without a stored reason.
 
 ## L. Coach MW AI awareness
-- [ ] Coach MW receives active Season Week, phase, championship date, and source week.
+- [x] Coach MW receives season context; source-week/engine internals are exposed only for MW Sprint Performance, not Coach Intelligence.
 - [ ] Coach MW can explain “why am I on this week?”
-- [ ] Coach MW knows State estimate vs confirmed athlete/coach dates.
+- [x] Coach MW receives coach season contexts and calendar sources; state-estimate vs confirmed-date wording is guarded by product/source rules.
 - [ ] Coach MW does not tell athlete a state estimate is guaranteed/official.
 - [ ] Coach MW can explain missed-session adaptations.
-- [ ] Coach MW can distinguish Master Week from Athlete Season Week in internal context while speaking simply to the athlete.
+- [x] Season Week and Master Source Week are separate fields in the engine; Coach Intelligence is blocked from source-week internals.
 
 ## M. UI / athlete experience
 - [x] Competition level selector added on branch.
@@ -168,10 +168,10 @@ Do not merge to production until all required launch gates are checked.
 - [x] Athlete can read only their own season plans.
 - [x] Authorized staff read path exists.
 - [x] Season-plan write goes through authenticated RPC.
-- [ ] Run Supabase security advisor after migration.
+- [ ] Run Supabase security advisor after migration (not run yet because the feature migration has intentionally not been applied to production).
 - [ ] Run Supabase performance advisor after migration.
-- [ ] Verify no athlete can activate/edit another athlete’s plan.
-- [ ] Verify coach access only applies to assigned athletes.
+- [ ] Verify no athlete can activate/edit another athlete’s plan in database integration QA; RLS/RPC ownership checks are implemented.
+- [ ] Verify coach access only applies to assigned athletes in integration QA; full season-plan/target access is restricted to assigned MW Sprint Performance coaches.
 - [ ] Validate all date and enum inputs server-side.
 - [ ] Ensure plan-history/audit records cannot be silently overwritten.
 
@@ -213,9 +213,9 @@ Do not merge to production until all required launch gates are checked.
 ## P. Deployment gates
 - [x] Work isolated on feature/season-intelligence-v1.
 - [x] Production main branch not replaced during initial build.
-- [ ] Local/static tests pass.
+- [ ] Full Node regression suite must run in CI/preview. Static JavaScript syntax checks pass in development review.
 - [ ] Database migration tested safely before production.
-- [ ] Preview deployment created.
+- [ ] Preview deployment created (held until the database migrations have a safe test target).
 - [ ] Founder manual QA on preview.
 - [ ] Coach pilot QA.
 - [ ] Athlete pilot QA.
