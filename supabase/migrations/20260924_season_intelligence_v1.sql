@@ -498,3 +498,156 @@ begin
 end;
 $function$;
 grant execute on function public.mw_submit_smart_entry_v2(integer,text,text,integer,integer,integer,integer,integer,text) to authenticated;
+
+
+-- Keep a Season Intelligence athlete on the real competition calendar while
+-- retaining the 41-week master program as the source library.
+create or replace function public.mw_refresh_own_season_program_state()
+returns jsonb
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_uid uuid:=auth.uid();
+  v_athlete uuid;
+  v_plan public.athlete_season_plans%rowtype;
+  v_state public.athlete_program_state%rowtype;
+  v_today date:=current_date;
+  v_week integer:=1;
+  v_phase_code text:='foundation';
+  v_phase integer:=1;
+  v_source_week integer:=1;
+  v_status public.mw_program_status:='not_started'::public.mw_program_status;
+  v_map jsonb;
+begin
+  if v_uid is null then raise exception 'Authentication required' using errcode='42501'; end if;
+  if not private.mw_athlete_feature_enabled('mw_training_system') then
+    raise exception 'MW Training System access required' using errcode='42501';
+  end if;
+
+  select a.id into v_athlete
+  from public.athletes a
+  join public.profiles p on p.user_id=a.user_id
+  where a.user_id=v_uid and p.account_status='active'::public.mw_account_status
+  limit 1;
+  if v_athlete is null then raise exception 'Athlete profile not found' using errcode='42501'; end if;
+
+  perform public.mw_reconcile_own_season_plan();
+
+  select * into v_plan
+  from public.athlete_season_plans
+  where athlete_id=v_athlete and plan_status='active'
+  order by updated_at desc
+  limit 1;
+
+  if v_plan.id is null then
+    return public.mw_refresh_own_program_state();
+  end if;
+
+  if v_today < v_plan.season_start_date then
+    v_week:=1;
+    v_status:='not_started'::public.mw_program_status;
+  elsif v_today > v_plan.primary_peak_date then
+    v_week:=v_plan.season_length_weeks;
+    v_status:='completed'::public.mw_program_status;
+  else
+    v_week:=least(v_plan.season_length_weeks,greatest(1,floor((v_today-v_plan.season_start_date)/7.0)::integer+1));
+    v_status:='active'::public.mw_program_status;
+  end if;
+
+  v_map:=coalesce(v_plan.source_week_map->v_week::text,'{}'::jsonb);
+  v_source_week:=least(41,greatest(1,coalesce(nullif(v_map->>'sourceWeek','')::integer,v_week)));
+  v_phase_code:=coalesce(nullif(v_map->>'phase',''),'foundation');
+  v_phase:=case v_phase_code
+    when 'foundation' then 1
+    when 'pre_competition' then 3
+    when 'competition' then 4
+    else 5
+  end;
+
+  update public.athlete_program_state set
+    season_plan_id=v_plan.id,
+    season_length_weeks=v_plan.season_length_weeks,
+    source_program_week=v_source_week,
+    season_phase_code=v_phase_code,
+    current_week=v_week,
+    current_day=extract(isodow from v_today)::integer,
+    current_phase=v_phase,
+    start_date=v_plan.season_start_date,
+    starting_week=1,
+    program_status=v_status,
+    program_version='mw-season-intelligence-v1',
+    last_completed_workout_at=(
+      select max(wc.completed_at)
+      from public.workout_completions wc
+      where wc.athlete_id=v_athlete and wc.completion_status='completed'
+    ),
+    updated_at=now()
+  where athlete_id=v_athlete
+  returning * into v_state;
+
+  -- Track lifecycle remains calendar-aware. Missing a session records what
+  -- happened; it does not move the championship date.
+  with sched as (
+    select w as program_week,d as program_day,
+      format('mw-track-w%s-d%s',w,d) as workout_key,
+      (v_plan.season_start_date + ((w-1)*7) +
+        ((d-extract(isodow from (v_plan.season_start_date + ((w-1)*7)))::integer+7)%7))::date as scheduled_date
+    from generate_series(1,least(v_plan.season_length_weeks,v_week)) w
+    cross join generate_series(1,4) d
+  )
+  insert into public.workout_completions(
+    athlete_id,program_week,program_day,workout_key,completion_status,
+    scheduled_date,started_at,last_activity_at,completed_at
+  )
+  select
+    v_athlete,s.program_week,s.program_day,s.workout_key,
+    case
+      when s.scheduled_date=v_today then 'scheduled'
+      when exists(
+        select 1 from public.athlete_practice_rep_results pr
+        where pr.athlete_id=v_athlete and pr.workout_key=s.workout_key
+      ) then 'incomplete'
+      else 'absent'
+    end,
+    s.scheduled_date,
+    (select min(pr.recorded_at) from public.athlete_practice_rep_results pr
+      where pr.athlete_id=v_athlete and pr.workout_key=s.workout_key),
+    now(),null
+  from sched s
+  where s.scheduled_date<=v_today
+  on conflict (athlete_id,workout_key) do update set
+    scheduled_date=coalesce(public.workout_completions.scheduled_date,excluded.scheduled_date),
+    completion_status=case
+      when public.workout_completions.completion_status='completed' then 'completed'
+      when excluded.scheduled_date=v_today and public.workout_completions.completion_status in ('in_progress','incomplete') then public.workout_completions.completion_status
+      when excluded.scheduled_date=v_today then 'scheduled'
+      when exists(
+        select 1 from public.athlete_practice_rep_results pr
+        where pr.athlete_id=v_athlete and pr.workout_key=excluded.workout_key
+      ) then 'incomplete'
+      when public.workout_completions.completion_status in ('in_progress','incomplete','partial') then 'incomplete'
+      else 'absent'
+    end,
+    started_at=coalesce(public.workout_completions.started_at,excluded.started_at),
+    last_activity_at=now();
+
+  return jsonb_build_object(
+    'athlete_id',v_state.athlete_id,
+    'season_plan_id',v_state.season_plan_id,
+    'current_week',v_state.current_week,
+    'current_day',v_state.current_day,
+    'current_phase',v_state.current_phase,
+    'season_phase_code',v_state.season_phase_code,
+    'source_program_week',v_state.source_program_week,
+    'season_length_weeks',v_state.season_length_weeks,
+    'program_status',v_state.program_status,
+    'start_date',v_state.start_date,
+    'peak_date',v_plan.primary_peak_date,
+    'sync_model','season_intelligence'
+  );
+end;
+$function$;
+
+grant execute on function public.mw_refresh_own_season_program_state() to authenticated;
