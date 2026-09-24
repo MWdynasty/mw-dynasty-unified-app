@@ -477,9 +477,9 @@ begin
   insert into public.athlete_entry_assessments(
     athlete_id,season_week,season_phase,readiness_phase,assigned_phase,assigned_week,status,next_checkpoint,confidence,event_group,assessment_data
   ) values (
-    v_athlete,p_season_week,p_season_phase,v_ready::text,v_phase_ui::text,p_season_week,v_status,v_next::text,v_conf,p_event_group,
+    v_athlete,p_season_week,v_phase_ui::text,v_ready::text,v_phase_ui::text,p_season_week,v_status,v_next::text,v_conf,p_event_group,
     jsonb_build_object('training_age',p_training_age,'continuity',p_continuity,'speed_exposure',p_speed_exposure,
-      'recent_race',p_recent_race,'lifting',p_lifting,'health',p_health,'season_plan_id',v_plan_id,'season_aware',true)
+      'recent_race',p_recent_race,'lifting',p_lifting,'health',p_health,'season_plan_id',v_plan_id,'season_aware',true,'season_phase_code',p_season_phase)
   ) returning id into v_id;
 
   update public.athlete_program_state set
