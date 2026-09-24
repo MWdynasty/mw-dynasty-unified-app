@@ -18,6 +18,22 @@ function getTrackSession(week,day){const w=getTrackWeek(week);return w?.sessions
 function getStrengthWeek(week){return STRENGTH?.[String(week)]||null}
 function compactTrackWeek(week,tier){return compactTrack(week,tier)}
 function compactStrengthWeek(week,tier){return compactStrength(week,tier)}
+function safeTimeZone(value){
+  const z=String(value||'').trim();
+  if(!z)return 'UTC';
+  try{new Intl.DateTimeFormat('en-US',{timeZone:z}).format(new Date());return z}catch{return 'UTC'}
+}
+function localToday(timeZone){
+  const z=safeTimeZone(timeZone);
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:z,weekday:'long',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const get=t=>parts.find(p=>p.type===t)?.value||'';
+  const weekday=get('weekday')||'Unknown';
+  return {timeZone:z,date:get('year')+'-'+get('month')+'-'+get('day'),weekday,weekdayKey:weekday.slice(0,3).toUpperCase()};
+}
+function strengthSectionsForDay(strengthWeek,weekdayKey){
+  const key=String(weekdayKey||'').toUpperCase();
+  return (strengthWeek?.sections||[]).filter(s=>String(s?.title||'').trim().toUpperCase().startsWith(key));
+}
 
 async function restRows(path,token){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'}});
@@ -46,6 +62,7 @@ module.exports=async function handler(req,res){
     if(access.basic_coach_mw!==true)return res.status(403).json({error:'Coach MW is not available for this account right now.',feature:'basic_coach_mw'});
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const messages=Array.isArray(body.messages)?body.messages.slice(-40):[];
+    const today=localToday(body.timeZone);
     const ps=c.programState||{};
     const athleteName=c.profile?.first_name||'Athlete';
     const fullMW=access.mw_training_system===true;
@@ -66,12 +83,14 @@ module.exports=async function handler(req,res){
       const trackTier=normalizeTier(ps.track_tier||c.athlete?.experience_level),strengthTier=normalizeTier(ps.strength_tier||c.athlete?.experience_level);
       const asked=requestedState(messages,officialWeek,officialDay);
       const officialSession=getTrackSession(officialWeek,officialDay),officialTrackWeek=compactTrackWeek(officialWeek,trackTier),officialStrengthWeek=compactStrengthWeek(officialWeek,strengthTier);
+      const todayStrengthSections=strengthSectionsForDay(officialStrengthWeek,today.weekdayKey);
+      const todayContext={date:today.date,weekday:today.weekday,weekdayKey:today.weekdayKey,timeZone:today.timeZone,strengthScheduled:todayStrengthSections.length>0,strengthSections:todayStrengthSections};
       const futureLocked=asked.week>officialWeek,browseWeek=futureLocked?officialWeek:asked.week;
       const requestedTrackWeek=browseWeek!==officialWeek?compactTrackWeek(browseWeek,trackTier):null;
       const requestedSession=(browseWeek!==officialWeek||asked.day!==officialDay)?getTrackSession(browseWeek,asked.day):null;
       const requestedStrengthWeek=browseWeek!==officialWeek?compactStrengthWeek(browseWeek,strengthTier):null;
-      const programContext={library:{trackProduct:TRACK.product,trackCoverage:TRACK.coverage,trackComplete:TRACK.complete,trackProvenance:TRACK.provenance_note,globalRules:TRACK.global_rules,supportingKnowledgeVersion:SUPPORTING_KNOWLEDGE.knowledgeVersion},official:{week:officialWeek,day:officialDay,trackTier,strengthTier,programVersion:ps.program_version||PROGRAM_VERSION,trackSession:officialSession,trackWeek:officialTrackWeek,strengthWeek:officialStrengthWeek},browsing:(asked.explicitlyRequestedWeek||asked.explicitlyRequestedDay)?{requestedWeek:asked.week,requestedDay:asked.day,futureLocked,requestedTrackSession:futureLocked?null:(requestedSession||getTrackSession(browseWeek,asked.day)),requestedTrackWeek,requestedStrengthWeek}:null};
-      instructions=`You are Coach MW AI inside MW Dynasty for an athlete with FULL MW SPRINT PERFORMANCE access. You help the athlete execute Coach Mustaqeem Williams' approved MW system.\n\nAUTHORITATIVE ATHLETE STATE\nAthlete: ${athleteName}\nOfficial current week: ${officialWeek}\nOfficial current day: ${officialDay}\nTrack tier: ${trackTier}\nStrength tier: ${strengthTier}\nProgram version: ${ps.program_version||PROGRAM_VERSION}\nPRs: ${prText(c.prs)}\n\nFULL MW ACCESS RULES\n- The 41-week track program, synchronized Strength & Power system, Sprint School logic, Smart Entry, and advanced performance tools are authorized for this athlete.\n- Use PROGRAM_CONTEXT as authoritative for exact MW prescriptions.\n- Never reveal a future locked week's prescriptions.\n- Never replace an exact MW prescription with a generic workout.\n- Preserve exact distances, reps, percentages, recovery, circuit order, and other prescription details that are present.\n- Supporting science strengthens explanation but never overrides the approved MW program.\n${sharedSafety()}\n\nPROGRAM_CONTEXT:\n${JSON.stringify(programContext,null,2)}\n\nMW_SUPPORTING_SCIENCE:\n${JSON.stringify(SUPPORTING_KNOWLEDGE)}`;
+      const programContext={library:{trackProduct:TRACK.product,trackCoverage:TRACK.coverage,trackComplete:TRACK.complete,trackProvenance:TRACK.provenance_note,globalRules:TRACK.global_rules,supportingKnowledgeVersion:SUPPORTING_KNOWLEDGE.knowledgeVersion},official:{week:officialWeek,day:officialDay,trackTier,strengthTier,programVersion:ps.program_version||PROGRAM_VERSION,trackSession:officialSession,trackWeek:officialTrackWeek,strengthWeek:officialStrengthWeek},today:todayContext,browsing:(asked.explicitlyRequestedWeek||asked.explicitlyRequestedDay)?{requestedWeek:asked.week,requestedDay:asked.day,futureLocked,requestedTrackSession:futureLocked?null:(requestedSession||getTrackSession(browseWeek,asked.day)),requestedTrackWeek,requestedStrengthWeek}:null};
+      instructions=`You are Coach MW AI inside MW Dynasty for an athlete with FULL MW SPRINT PERFORMANCE access. You help the athlete execute Coach Mustaqeem Williams' approved MW system.\n\nAUTHORITATIVE ATHLETE STATE\nAthlete: ${athleteName}\nOfficial current week: ${officialWeek}\nOfficial current day: ${officialDay}\nTrack tier: ${trackTier}\nStrength tier: ${strengthTier}\nProgram version: ${ps.program_version||PROGRAM_VERSION}\nPRs: ${prText(c.prs)}\n\nFULL MW ACCESS RULES\n- The 41-week track program, synchronized Strength & Power system, Sprint School logic, Smart Entry, and advanced performance tools are authorized for this athlete.\n- Use PROGRAM_CONTEXT as authoritative for exact MW prescriptions.\n- PROGRAM_CONTEXT.today is authoritative whenever the athlete says "today", "today's", "tonight", or otherwise asks what is scheduled on the current calendar day.\n- Official current day is a program-session index, NOT a weekday. Never infer Monday from official day 1, Wednesday from day 3, or any other calendar day from that field.\n- For strength/weight-room questions about today: if PROGRAM_CONTEXT.today.strengthScheduled is false, say there is NO MW lift scheduled today. Do not substitute Monday, Wednesday, Friday, or another day's lift unless the athlete explicitly asks for that day.\n- If strength is scheduled today, use only PROGRAM_CONTEXT.today.strengthSections for a "today" strength answer.\n- Never reveal a future locked week's prescriptions.\n- Never replace an exact MW prescription with a generic workout.\n- Preserve exact distances, reps, percentages, recovery, circuit order, and other prescription details that are present.\n- Supporting science strengthens explanation but never overrides the approved MW program.\n${sharedSafety()}\n\nPROGRAM_CONTEXT:\n${JSON.stringify(programContext,null,2)}\n\nMW_SUPPORTING_SCIENCE:\n${JSON.stringify(SUPPORTING_KNOWLEDGE)}`;
     }else if(intelligence){
       const perf=await performanceContext(c);
       instructions=`You are Coach MW AI inside MW Dynasty for an athlete sponsored by a COACH INTELLIGENCE plan. The athlete's human coach owns the training program. Your job is to add useful data intelligence without exposing or substituting the proprietary MW 41-week Sprint Performance System.\n\nATHLETE\nName: ${athleteName}\nPRs: ${prText(c.prs)}\n\nAUTHORIZED CAPABILITIES\n- Explain the athlete's coach-assigned program content shown in ASSIGNED_COACH_PROGRAMS.\n- Analyze the athlete's own recent pace, completion, strength, and RPE data in PERFORMANCE_CONTEXT.\n- Identify patterns, trends, inconsistencies, and questions the athlete may want to discuss with the coach.\n- Explain sprint mechanics, training concepts, race concepts, recovery principles, and safe execution.\n- Make it clear that meaningful program changes belong to the human coach.\n\nNOT AUTHORIZED\n- Do not reveal, reconstruct, quote, or prescribe the MW 41-week Sprint Performance System, MW Strength & Power plan, Sprint School curriculum, Smart Entry placement, or locked MW methodology.\n- Do not silently substitute an MW workout for the coach's program.\n- If the athlete asks for a locked MW prescription, explain that their current sponsored access is Coach Intelligence and direct them back to their coach-assigned training.\n${sharedSafety()}\n\nASSIGNED_COACH_PROGRAMS:\n${JSON.stringify(assigned)}\n\nPERFORMANCE_CONTEXT:\n${JSON.stringify(perf)}`;
