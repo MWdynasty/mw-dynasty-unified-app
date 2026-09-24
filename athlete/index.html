@@ -1325,8 +1325,19 @@ html.mw-native-app .mwLoginStory:after{
   html:not(.mw-native-app) body.mw-auth-ready #schedule .mwScheduleList{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
 }
 </style>
+<style id="mw-tool-return-transition">
+body.mw-tool-return #mwAuth{display:none!important}
+#mwToolReturnLoader{display:none;position:fixed;inset:0;z-index:10050;place-items:center;background:radial-gradient(circle at 50% 34%,rgba(29,111,157,.16),transparent 30%),linear-gradient(180deg,#061119,#02070b);color:#fff;text-align:center;padding:24px}
+body.mw-tool-return.mw-auth-pending #mwToolReturnLoader{display:grid}
+body.mw-auth-ready #mwToolReturnLoader{display:none!important}
+.mwToolReturnInner{display:grid;justify-items:center;gap:11px}.mwToolReturnInner img{width:78px;height:78px;border-radius:20px;box-shadow:0 16px 44px rgba(0,0,0,.45),0 0 0 1px rgba(232,186,77,.35)}.mwToolReturnInner b{color:#e8ba4d;font-size:12px;letter-spacing:.13em}.mwToolReturnInner span{color:#758995;font-size:9px;letter-spacing:.18em}
+</style>
 </head>
 <body class="mw-auth-pending">
+<script>
+(()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
+</script>
+<div id="mwToolReturnLoader" aria-live="polite"><div class="mwToolReturnInner"><img src="/mw-dynasty-app-icon-512.png" alt=""><b>RETURNING TO PERFORMANCE TOOLS</b><span>MW DYNASTY</span></div></div>
 <div id="mwAuth" class="mwAthleteLoginV26">
   <div class="mwLoginStage">
     <div class="mwLoginTopbar">
@@ -2554,7 +2565,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   function transientProblem(error,status=0){return !navigator.onLine||error?.mwTransient===true||window.MWResilience?.isTransientStatus?.(status)===true||window.MWResilience?.isTransientError?.(error)===true}
   function mwAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
   function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
-  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
+  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status);return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
@@ -2747,22 +2758,27 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{renderProgressUI()}catch{}
     try{renderCompletion()}catch{}
 
-    const returnView=new URLSearchParams(location.search).get('returnView');
+    const returnParams=new URLSearchParams(location.search);
+    const returnView=returnParams.get('returnView');
     const canRestoreReturnView=returnView==='pacer'
       ? featureAccess.advanced_performance_tools===true
       : returnView==='workouts'
         ? (featureAccess.mw_training_system===true||featureAccess.coach_assigned_training===true)
         : false;
-    if(returnView&&canRestoreReturnView&&!window.mwDobRequired&&!window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1'){
-      const clean=new URL(location.href);clean.searchParams.delete('returnView');
+    let restoredToolView=false;
+    if(returnView&&canRestoreReturnView&&!window.mwDobRequired&&!window.mwAssessmentRequired){
+      const clean=new URL(location.href);clean.searchParams.delete('returnView');clean.searchParams.delete('toolReturn');
       history.replaceState({...history.state,mwView:returnView},'',clean.pathname+(clean.search||''));
-      setTimeout(()=>openView(returnView,false),420);
+      openView(returnView,false);
+      restoredToolView=true;
     }
 
     // Athletes get the first-login tutorial. Founder/staff accounts bypass athlete onboarding.
-    if(hasAthlete&&featureAccess.mw_training_system===true)setTimeout(()=>{startQuickStart(false);if(window.mwDobRequired)mwPromptDobVerification();else if(window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1')openView('entry')},350);
-    else if(hasAthlete&&window.mwDobRequired)setTimeout(()=>mwPromptDobVerification(),350);
-    else openView('home');
+    if(!restoredToolView){
+      if(hasAthlete&&featureAccess.mw_training_system===true)setTimeout(()=>{startQuickStart(false);if(window.mwDobRequired)mwPromptDobVerification();else if(window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1')openView('entry')},350);
+      else if(hasAthlete&&window.mwDobRequired)setTimeout(()=>mwPromptDobVerification(),350);
+      else openView('home');
+    }
   }
   const STRENGTH_FIELD_MAP={maxPowerClean:'power_clean_max',maxFrontSquat:'front_squat_max',maxBackSquat:'back_squat_max',maxDeadlift:'deadlift_max',profileDeadliftType:'deadlift_type',profileWeightUnit:'weight_unit'};
   function strengthHeaders(extra={}){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+token(),...extra}}
