@@ -4,6 +4,7 @@ const {
 }=require('./server/lib/mw-season-intelligence');
 const {recommendedTiers,developmentalLoadProfile}=require('./server/lib/mw-developmental-load');
 const {coachSeasonMode,coachSeasonCapabilities,athleteSeasonEngineEnabled}=require('./server/lib/mw-season-entitlements');
+const {adaptationRecommendation}=require('./server/lib/mw-season-adaptation');
 
 function counts(plan){return ['foundation','pre_competition','competition','peak'].map(k=>plan[k].count)}
 function sum(xs){return xs.reduce((a,b)=>a+b,0)}
@@ -99,3 +100,21 @@ assert.equal(athleteSeasonEngineEnabled({mw_training_system:true,smart_entry:tru
 assert.equal(athleteSeasonEngineEnabled({mw_training_system:false,smart_entry:false}),false);
 
 console.log('MW Season Intelligence entitlement boundaries passed');
+
+
+const oneMiss=adaptationRecommendation({phaseCode:'competition',daysToPrimaryPeak:21,missedSessions7d:1,nextMeetPriority:'C'});
+assert.equal(oneMiss.action,'continue_no_makeup');
+assert.equal(oneMiss.taper,'none');
+
+const peakMiss=adaptationRecommendation({phaseCode:'peak',daysToPrimaryPeak:5,missedSessions7d:2,nextMeetPriority:'A',nextMeetIsPrimary:true});
+assert.equal(peakMiss.action,'protect_peak');
+assert.equal(peakMiss.loadAdjustment,'reduce_low_priority_volume');
+assert.equal(peakMiss.taper,'primary_peak');
+
+const qualifier=adaptationRecommendation({phaseCode:'competition',daysToPrimaryPeak:28,nextMeetPriority:'A',nextMeetIsPrimary:false});
+assert.equal(qualifier.taper,'qualifier_freshness');
+
+const youthDisruption=adaptationRecommendation({phaseCode:'pre_competition',daysToPrimaryPeak:35,missedSessions7d:2,ageBand:'mid_adolescent',trainingTier:'foundation'});
+assert.equal(youthDisruption.coachReview,true);
+
+console.log('MW Season Intelligence adaptation guardrails passed');
