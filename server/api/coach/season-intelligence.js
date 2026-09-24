@@ -1,4 +1,5 @@
 const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../../lib/mw-coach-auth');
+const {coachSeasonMode}=require('../../lib/mw-season-entitlements');
 
 async function request(path,token,{method='GET',body=null,prefer=null}={}){
   const headers={apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`};
@@ -22,11 +23,7 @@ function daysUntil(value){
   const day=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()));
   return Math.ceil((target-day)/86400000);
 }
-function modeForTier(tier,role){
-  if(['founder_owner','admin'].includes(role)||tier==='mw_sprint_performance')return 'engine';
-  if(tier==='intelligence')return 'insights';
-  return 'none';
-}
+function modeForTier(tier,role){return coachSeasonMode(tier,role)}
 async function coachTier(c){
   if(['founder_owner','admin'].includes(String(c.profile.role||'')))return 'mw_sprint_performance';
   const rows=await request(`coach_access_entitlements?select=access_tier,status&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.active&limit=1`,c.token);
