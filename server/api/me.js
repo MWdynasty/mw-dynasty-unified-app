@@ -2,6 +2,7 @@ const {SUPABASE_URL,SUPABASE_KEY,authenticate,getAccountContext}=require('../lib
 const {programWeek}=require('../lib/mw-program-service');
 const {reconcileSeasonPlan,positionForPlan}=require('../lib/mw-season-intelligence');
 const {resolveAuthoritativeState,applyAuthoritativeState}=require('../lib/mw-authoritative-state');
+const {effectiveCalendar}=require('../lib/mw-season-calendar');
 const {loadPerformanceContext,evaluatePerformance}=require('../lib/mw-performance-intelligence');
 
 function strengthDayFromTitle(title=''){
@@ -53,7 +54,19 @@ async function refresh(req){
     const state=await stateRes.json().catch(()=>null);
     if(!stateRes.ok||!state)return;
 
-    const schedule=buildStrengthSchedule(state,plan);
+    let scheduleState=state;
+    try{
+      const calendar=await effectiveCalendar(token);
+      if(calendar&&Number.isFinite(Number(calendar.week))){
+        scheduleState={
+          ...state,
+          current_week:Number(calendar.week),
+          current_phase:Number(calendar.phase||state.current_phase||1),
+          source_program_week:Number(calendar.sourceWeek||calendar.week)
+        };
+      }
+    }catch{}
+    const schedule=buildStrengthSchedule(scheduleState,plan);
     if(schedule.length){
       await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_refresh_own_strength_schedule`,{
         method:'POST',headers,body:JSON.stringify({p_schedule:schedule})
