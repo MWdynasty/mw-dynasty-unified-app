@@ -3,6 +3,7 @@
 const UPSTREAM = 'https://mw-dynasty.irisblue2016.chatgpt.site';
 const PUBLIC_HOST = 'https://mwdynasty.com';
 const APP_HOST = 'https://app.mwdynasty.com';
+const membershipHandler = require('./membership');
 
 function cleanPath(value) {
   if (Array.isArray(value)) return value.join('/');
@@ -244,6 +245,10 @@ module.exports = async function handler(req, res) {
   const path = cleanPath(req.query && req.query.path);
   const suffix = path ? '/' + path : '/';
   const query = buildQuery(req.query);
+
+  if (path === 'memberships' || path === 'membership-experience' || path === 'membership-experience.html') {
+    return membershipHandler(req, res);
+  }
 
   if (/MWDynasty-iOS\//i.test(ua)) {
     res.statusCode = 307;
