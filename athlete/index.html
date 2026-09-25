@@ -972,6 +972,24 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 #home .mwHomeProgress .progressBar{position:absolute;left:12px;right:12px;bottom:7px;height:3px;padding:0}
 #home .mwHomeShortcuts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}#home .mwHomeShortcuts button{position:relative;min-height:74px;padding:10px 5px;border:1px solid #263743;border-radius:15px;background:#050c12;color:#fff;display:grid;place-items:center;align-content:center;gap:6px}#home .mwHomeShortcuts button>span{font-size:19px}#home .mwHomeShortcuts button b{font-size:8px;letter-spacing:.06em}#home .mwHomeShortcuts .mwCoachCrestMark{font-size:10px}
 #home .mwHomeShortcuts .mwMessageBadge{position:absolute;top:7px;right:7px}
+#home .mwHomeShortcuts{display:none!important}
+#home .top{position:relative;z-index:90}
+#home .mwHomeMenuWrap{position:relative}
+#home .mwHomeMenuButton{width:42px;height:42px;border:1px solid rgba(245,185,46,.55);border-radius:13px;background:linear-gradient(180deg,#0b1822,#060b10);color:#f5cd63;font-size:22px;font-weight:900;line-height:1;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 5px 0 #020508,0 9px 16px rgba(0,0,0,.3)}
+#home .mwHomeMenuButton:active,#home .mwHomeMenuButton[aria-expanded="true"]{transform:translateY(2px);box-shadow:inset 0 3px 8px rgba(0,0,0,.38),0 2px 4px rgba(0,0,0,.24);border-color:#f4cb62;background:linear-gradient(180deg,#17150d,#080d11)}
+#home .mwHomeMenu{position:absolute;right:0;top:calc(100% + 12px);z-index:220;width:min(320px,calc(100vw - 30px));padding:8px;border:1px solid rgba(245,185,46,.48);border-radius:18px;background:linear-gradient(155deg,rgba(8,19,27,.995),rgba(3,7,11,.995));box-shadow:0 24px 60px rgba(0,0,0,.64),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:blur(18px)}
+#home .mwHomeMenu[hidden]{display:none!important}
+#home .mwHomeMenu button{position:relative;width:100%;min-height:62px;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:11px;padding:10px;border:0;border-bottom:1px solid #1c2a33;background:transparent;color:#fff;text-align:left;border-radius:11px}
+#home .mwHomeMenu button:last-child{border-bottom:0}
+#home .mwHomeMenu button:active{background:#0b1720}
+#home .mwHomeMenuIcon{width:38px;height:38px;display:grid;place-items:center;border:1px solid #31424d;border-radius:11px;background:#071018;font-size:18px}
+#home .mwHomeMenu .mwCoachCrestMark{color:#f4ca60;font-size:11px;font-weight:1000;letter-spacing:.04em}
+#home .mwHomeMenuCopy{display:grid;gap:3px;min-width:0}
+#home .mwHomeMenuCopy b{font-size:10px;letter-spacing:.08em;color:#fff}
+#home .mwHomeMenuCopy small{font-size:8px;line-height:1.35;color:#8fa0aa}
+#home .mwHomeMenuSettings{margin-top:2px}
+#home .mwHomeMenu .mwMessageBadge{position:static;justify-self:end;margin:0}
+
 @media(max-width:380px){#home .mwHomeBrand{height:88px}#home .mwHomeBrand img{width:82px;height:82px}#home .mwTodayCard{padding:15px}#home .mwTodayTop h2{font-size:18px}}
 </style><style id="mw-practice-mode-v1">
 .mwPracticeLaunch{width:100%;margin:12px 0 4px;min-height:48px;border:1px solid rgba(245,185,46,.6);border-radius:13px;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;font-weight:1000;font-size:10px;letter-spacing:.08em}
@@ -1441,7 +1459,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 </div>
 <main class="app">
 <section class="view active" id="home">
-<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MW</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button><button type="button" data-open-settings role="menuitem" class="mwHomeMenuSettings"><span class="mwHomeMenuIcon" aria-hidden="true">⚙</span><span class="mwHomeMenuCopy"><b>SETTINGS</b><small>Manage your MW experience and account controls.</small></span></button></div></div></div></div>
 
 <div class="mwHomeBrand"><img src="/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG" alt="MW Dynasty" onerror="this.style.display='none'"></div>
 
@@ -1458,12 +1476,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div class="progressBar"><i id="homeProgressBar"></i></div>
 </div>
 
-<div class="mwHomeShortcuts">
-  <button data-open="coach"><span class="mwCoachCrestMark" aria-hidden="true">MW</span><b>COACH MW</b></button>
-  <button data-open="messages"><span>💬</span><b>MESSAGES</b><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button>
-  <button data-open="schedule" id="mwScheduleHomeShortcut"><span>📅</span><b>MY SCHEDULE</b></button>
-  <button data-open="pacer"><span>⚡</span><b>TOOLS</b></button>
-</div>
+
 </section>
 <section class="view" id="messages">
 <div class="top"><div><div class="logo"><b>MW</b> MESSAGES</div><div class="sub">COACH COMMUNICATION</div></div><div class="topActions"><div class="online"><span class="dot">●</span> CONNECTED</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
@@ -1927,6 +1940,7 @@ async function mwRenderAthleteSchedule(){
   }catch(e){root.innerHTML=`<div class="card"><h2>Schedule unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p><button class="save" onclick="mwRenderAthleteSchedule()">TRY AGAIN</button></div>`}
 }
 function openView(id,pushHistory=false){
+  window.mwCloseAthleteHomeMenu?.();
   const access=window.mwFeatureAccess||{};
   if(window.mwDobRequired){mwPromptDobVerification();return}
   if(id==='entry'&&access.smart_entry!==true){mwFeatureLock('MW Smart Entry','Smart Entry is part of the complete MW Sprint Performance athlete experience. Your current sponsored access follows your coach’s assigned program.');return}
@@ -2314,6 +2328,17 @@ document.querySelectorAll('.mwProfileSaveAlias').forEach(b=>b.onclick=()=>docume
 ['name','profileLastName','profileEvents'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProfileIdentity));
 setTimeout(renderProfileIdentity,0);
 document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openView(b.dataset.open,true));document.querySelectorAll('[data-open-settings]').forEach(b=>b.onclick=()=>openView('settings',true));if($('#profileEntry'))$('#profileEntry').onclick=()=>openView('entry',true);
+(function initHomeMenu(){
+  const button=document.getElementById('mwHomeMenuButton'),menu=document.getElementById('mwHomeMenu');
+  if(!button||!menu)return;
+  const close=()=>{menu.hidden=true;button.setAttribute('aria-expanded','false')};
+  const toggle=()=>{const willOpen=menu.hidden;menu.hidden=!willOpen;button.setAttribute('aria-expanded',willOpen?'true':'false')};
+  button.addEventListener('click',e=>{e.stopPropagation();toggle()});
+  menu.addEventListener('click',e=>{if(e.target.closest('button'))setTimeout(close,0)});
+  document.addEventListener('click',e=>{if(!e.target.closest('.mwHomeMenuWrap'))close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+  window.mwCloseAthleteHomeMenu=close;
+})();
 const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=async()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);localStorage.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
 
 
