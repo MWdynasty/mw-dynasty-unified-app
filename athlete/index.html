@@ -2834,6 +2834,12 @@ async function loadSeasonCalendar(){
     mwSeasonCalendar=d.calendar||null;
     if(mwSeasonCalendar){
       const seasonWeek=Math.max(1,Math.min(41,Number(mwSeasonCalendar.week||1)));
+      if(typeof mwRemoteProfile!=='undefined'&&mwRemoteProfile){
+        mwRemoteProfile.week=String(seasonWeek);
+        mwRemoteProfile.authoritativeWeek=String(seasonWeek);
+        mwRemoteProfile.sourceWeek=String(mwSeasonCalendar.sourceWeek||seasonWeek);
+        mwRemoteProfile.currentPhase=String(mwSeasonCalendar.phase||mwRemoteProfile.currentPhase||1);
+      }
       $('#seasonWeek').value=seasonWeek;
       const p=getProfile();p.week=String(seasonWeek);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));
       if($('#week'))$('#week').value=String(seasonWeek);
@@ -3160,8 +3166,11 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       coachType:['male','female'].includes(localVoice.coachType)?localVoice.coachType:'male',
       ...pr,
       week:String(ps.current_week||1),
-      currentDay:String(ps.current_day||1),
-      currentPhase:String(ps.current_phase||1),
+      authoritativeWeek:String(d.authoritativeProgram?.week||ps.current_week||1),
+      sourceWeek:String(d.authoritativeProgram?.sourceWeek||ps.source_program_week||ps.current_week||1),
+      currentDay:String(d.authoritativeProgram?.day||ps.current_day||1),
+      currentPhase:String(d.authoritativeProgram?.phase||ps.current_phase||1),
+      performanceIntelligence:d.performanceIntelligence||null,
       programStatus:ps.program_status||(hasAthlete?'not_started':'founder_preview'),
       startDate:ps.start_date||'',
       startWeek:String(ps.starting_week||ps.current_week||1),
@@ -3184,9 +3193,9 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     if(window.getProfile) window.getProfile=()=>({...mwRemoteProfile});
     else getProfile=()=>({...mwRemoteProfile});
 
-    try{activeMWWeek=(q='')=>Math.max(1,Math.min(41,Number(mwRemoteProfile.week||1)))}catch{}
-    try{advanceCurrentWeek=()=>Number(mwRemoteProfile.week||1)}catch{}
-    try{unlockedThrough=()=>Number(mwRemoteProfile.week||1)}catch{}
+    try{activeMWWeek=(q='')=>{const m=String(q||'').match(/week\s*(\d{1,2})/i);if(m)return Math.max(1,Math.min(41,Number(m[1])));return Math.max(1,Math.min(41,Number(mwSeasonCalendar?.week||mwRemoteProfile.authoritativeWeek||mwRemoteProfile.week||1)))}}catch{}
+    try{advanceCurrentWeek=()=>activeMWWeek()}catch{}
+    try{unlockedThrough=()=>activeMWWeek()}catch{}
 
     const activeSeason=d.seasonPlan||null,activeType=activeSeason?.season_type||'';
     const map={name:mwRemoteProfile.name,profileLastName:profile.last_name||'',profileEvents:(Array.isArray(d.athlete?.selected_events)?d.athlete.selected_events:[d.athlete?.primary_event,d.athlete?.secondary_event].filter(Boolean)).join(', '),profileDob:d.athlete?.date_of_birth||'',trainingGoal:d.athlete?.training_goal||'',entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',entryGoal:d.athlete?.training_goal||'',entryCompetitionLevel:d.athlete?.competition_level||'',entryCompetitionState:d.athlete?.competition_state||'',entrySeasonPreference:d.athlete?.season_preference||'',entryCompetitionPath:Array.isArray(d.athlete?.competition_paths)?(d.athlete.competition_paths[0]||'school'):'school',entryIndoorStart:activeType==='indoor'?(activeSeason?.season_start_date||''):'',entryIndoorFirstMeet:activeType==='indoor'?(activeSeason?.first_meet_date||''):'',entryIndoorPeak:activeType==='indoor'?(activeSeason?.primary_peak_date||''):'',entryIndoorSecondPeak:activeType==='indoor'?(activeSeason?.secondary_peak_date||''):'',entryOutdoorStart:activeType==='outdoor'?(activeSeason?.season_start_date||''):'',entryOutdoorFirstMeet:activeType==='outdoor'?(activeSeason?.first_meet_date||''):'',entryOutdoorPeak:activeType==='outdoor'?(activeSeason?.primary_peak_date||''):'',entryOutdoorSecondPeak:activeType==='outdoor'?(activeSeason?.secondary_peak_date||''):'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,entryPr100:mwRemoteProfile.p100,entryPr200:mwRemoteProfile.p200,entryPr400:mwRemoteProfile.p400,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
@@ -3250,6 +3259,20 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     if(document.querySelector('#ctxWeek'))document.querySelector('#ctxWeek').textContent=hasAthlete?('Week '+mwRemoteProfile.week+' • Day '+mwRemoteProfile.currentDay):(role==='founder_owner'?'Founder Access':'Staff Access');
     if(document.querySelector('#homeName'))document.querySelector('#homeName').textContent=mwRemoteProfile.name||'Athlete';
     if(document.querySelector('#homeWeek'))document.querySelector('#homeWeek').textContent=hasAthlete?mwRemoteProfile.week:'—';
+    const mwPerf=d.performanceIntelligence||null;window.mwPerformanceIntelligence=mwPerf;
+    const todayStrong=document.querySelector('#home .mwTodayStatus strong'),todayCopy=document.querySelector('#home .mwTodayStatus span');
+    if(todayStrong&&todayCopy&&hasAthlete){
+      if(mwPerf?.status==='coach_review'){
+        todayStrong.textContent=/^coach_/i.test(String(featureAccess.access_mode||''))?'COACH REVIEW RECOMMENDED':'MW REVIEW RECOMMENDED';
+        todayCopy.textContent='MW detected a stronger workload-response pattern. Do not add extra volume while the next step is reviewed.';
+      }else if(mwPerf?.status==='monitor'){
+        todayStrong.textContent='TRAINING READY · LOAD MONITORED';
+        todayCopy.textContent='Follow today’s plan. MW is protecting quality and watching your recent response.';
+      }else{
+        todayStrong.textContent='YOUR TRAINING IS READY';
+        todayCopy.textContent='Track + Strength • Follow today’s MW session.';
+      }
+    }
     if(document.querySelector('#completionWeek'))document.querySelector('#completionWeek').textContent=mwRemoteProfile.week;
     if(document.querySelector('#progressCurrentWeek'))document.querySelector('#progressCurrentWeek').textContent=hasAthlete?('WEEK '+mwRemoteProfile.week):'FOUNDER MODE';
     if(document.querySelector('#strengthWeek')){
