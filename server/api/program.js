@@ -2,6 +2,8 @@ const {getAccountContext}=require('../lib/mw-auth');
 const {programWeek,PROGRAM_VERSION,normalizeTier,normalizeEventGroup}=require('../lib/mw-program-service');
 const {reconcileSeasonPlan,positionForPlan,uiPhaseForCode}=require('../lib/mw-season-intelligence');
 const {developmentalLoadProfile}=require('../lib/mw-developmental-load');
+const {resolveAuthoritativeState}=require('../lib/mw-authoritative-state');
+const {loadPerformanceContext,evaluatePerformance}=require('../lib/mw-performance-intelligence');
 
 function clampWeek(v){const n=Number(v);return Number.isFinite(n)?Math.max(1,Math.min(41,Math.trunc(n))):1}
 function planMap(plan){
@@ -27,7 +29,8 @@ module.exports=async function handler(req,res){
   if(req.method!=='GET')return res.status(405).json({error:'GET only'});
   try{
     const c=await getAccountContext(req);
-    const week=clampWeek(req.query?.week);
+    const authority=await resolveAuthoritativeState(c);
+    const week=req.query?.week==null?authority.week:clampWeek(req.query?.week);
     const role=String(c.profile?.role||'athlete');
     const privileged=['founder_owner','admin','coach'].includes(role);
     const access=c.features?.access||{};
@@ -52,7 +55,7 @@ module.exports=async function handler(req,res){
       }
     }
 
-    const official=plan?.id?clampWeek(position?.week||1):clampWeek(c.programState?.current_week||1);
+    const official=clampWeek(authority.week);
     if(!privileged && week>official)return res.status(403).json({error:`Week ${week} is locked. Your official MW week is ${official}.`,locked:true,officialWeek:official});
 
     const trackTier=normalizeTier(c.programState?.track_tier||c.athlete?.experience_level);
@@ -74,10 +77,22 @@ module.exports=async function handler(req,res){
       strength=presentMappedProgram(strength,{seasonWeek:week,sourceWeek,phaseCode});
     }
 
+    const perfContext=await loadPerformanceContext(c);
+    const coachManaged=/^coach_/i.test(String(access.access_mode||''));
+    const performanceIntelligence=evaluatePerformance(perfContext,{
+      coachManaged,
+      officialWeek:authority.week,
+      officialDay:authority.day
+    });
+    if(track)track={...track,adaptiveGuidance:performanceIntelligence.directive,performanceStatus:performanceIntelligence.status};
+    if(strength)strength={...strength,adaptiveGuidance:performanceIntelligence.directive,performanceStatus:performanceIntelligence.status};
+
     return res.status(200).json({
-      week,officialWeek:official,officialDay:Number(c.programState?.current_day||1),
+      week,officialWeek:official,officialDay:Number(authority.day||1),
       trackTier,strengthTier,eventGroup,eventLabel:eventGroup==='400'?'400m':'100m / 200m',programVersion:plan?.id?`mw-season-intelligence-v1+${PROGRAM_VERSION}`:PROGRAM_VERSION,
       developmentalLoad,
+      seasonIntelligence:{authority:authority.authority,week:authority.week,day:authority.day,phase:authority.phase,sourceWeek:authority.sourceWeek,diverged:authority.diverged,storedWeek:authority.storedWeek,calendar:authority.calendar},
+      performanceIntelligence,
       seasonPlan:plan?.id?{
         id:plan.id,seasonType:plan.season_type,seasonLengthWeeks:Number(plan.season_length_weeks||0),
         phaseCode,peakDate:plan.primary_peak_date,sourceProgramWeek:sourceWeek
