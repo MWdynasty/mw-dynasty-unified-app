@@ -24,6 +24,8 @@ check (
 
 create index if not exists coach_calendar_events_target_idx
   on public.coach_calendar_events(coach_user_id,event_type,is_primary_target,starts_at);
+create index if not exists coach_calendar_events_parent_event_idx
+  on public.coach_calendar_events(parent_event_id) where parent_event_id is not null;
 
 create table if not exists public.coach_season_contexts (
   id uuid primary key default gen_random_uuid(),
@@ -57,6 +59,8 @@ create unique index if not exists coach_one_active_context_per_group_idx
 
 create index if not exists coach_season_context_timeline_idx
   on public.coach_season_contexts(coach_user_id,primary_peak_date,season_type);
+create index if not exists coach_season_context_group_idx
+  on public.coach_season_contexts(group_id) where group_id is not null;
 
 alter table public.coach_season_contexts enable row level security;
 grant select,insert,update,delete on public.coach_season_contexts to authenticated;
@@ -125,4 +129,5 @@ begin
 end;
 $function$;
 
+revoke execute on function public.mw_coach_season_intelligence_access() from public, anon;
 grant execute on function public.mw_coach_season_intelligence_access() to authenticated;
