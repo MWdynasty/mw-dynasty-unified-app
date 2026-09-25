@@ -78,6 +78,31 @@ function enhancementScript() {
     return changed;
   }
 
+  function autoOpenPreviewMembership() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mwPreview') !== 'athlete-membership') return;
+
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts += 1;
+      const bodyText = (document.body?.innerText || '').replace(/\\s+/g, ' ');
+      if (bodyText.includes('WHAT YOU GET') || bodyText.includes('YOUR COMPLETE SPRINT PERFORMANCE SYSTEM')) {
+        rewriteAthleteMembershipCopy();
+        clearInterval(timer);
+        return;
+      }
+
+      const athleteButton = document.querySelector('button.athlete-option, .athlete-option button, [data-role="athlete"]');
+      if (athleteButton && !athleteButton.dataset.mwPreviewOpened) {
+        athleteButton.dataset.mwPreviewOpened = '1';
+        athleteButton.click();
+      }
+
+      rewriteAthleteMembershipCopy();
+      if (attempts >= 12) clearInterval(timer);
+    }, 350);
+  }
+
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
@@ -157,6 +182,7 @@ function enhancementScript() {
 
   wireMembershipLinks();
   rewriteAthleteMembershipCopy();
+  autoOpenPreviewMembership();
 
   if (!enhance()) {
     const observer = new MutationObserver(() => {
