@@ -49,6 +49,16 @@
       "destination": "/api/membership"
     },
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "mwdynastyunifiedappv31tiered13plusdeploy-git-m-93003e-mw-sprint.vercel.app"
+        }
+      ],
+      "destination": "/api/public-site?path=:path*"
+    },
+    {
       "source": "/",
       "has": [
         {
