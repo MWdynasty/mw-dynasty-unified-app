@@ -1,4 +1,5 @@
 const assert=require('assert');
+const fs=require('fs');
 const {
   phaseAllocation,sourceWeekMap,derivePlan,positionForPlan,levelGroup
 }=require('./server/lib/mw-season-intelligence');
@@ -118,3 +119,13 @@ const youthDisruption=adaptationRecommendation({phaseCode:'pre_competition',days
 assert.equal(youthDisruption.coachReview,true);
 
 console.log('MW Season Intelligence adaptation guardrails passed');
+
+
+const athleteHtml=fs.readFileSync('athlete/index.html','utf8');
+assert(
+  athleteHtml.indexOf('let mwSeasonCalendar=null;') < athleteHtml.indexOf('function activeSeasonPlanId()'),
+  'mwSeasonCalendar must be initialized before completion/practice helpers use it'
+);
+const fridayHotfix=fs.readFileSync('supabase/migrations/20260925_v3_friday_workout_status_hotfix.sql','utf8');
+assert(fridayHotfix.includes('p_program_day > 5'),'Friday program_day 5 must be accepted by workout status RPC');
+console.log('MW V3 Friday interaction hotfix guards passed');
