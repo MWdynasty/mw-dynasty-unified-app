@@ -67,9 +67,11 @@ module.exports=async function handler(req,res){
     const baseYear=Number(b.seasonYear)||defaultSeasonYear();
     const built=[];
     const estimates=[];
+    const confirmations=[];
 
     for(const seasonType of seasonTypes){
       const d=cleanDates(b.dates?.[seasonType]||{});
+      const hasUserDates=Object.values(d).some(Boolean);
       const seasonYear=yearFromDate(d.primaryPeakDate,baseYear);
       const group=levelGroup(competitionLevel,competitionPath);
       const template=await loadTemplate(token,{group,seasonType,competitionPath});
@@ -86,7 +88,20 @@ module.exports=async function handler(req,res){
           estimatedStartDate:registry?.estimated_start_date||null,
           estimatedFirstMeetDate:registry?.estimated_first_meet_date||null,
           estimatedPeakDate:registry?.estimated_peak_date||null,
-          sourceLabel:registry?.source_label||null
+          sourceLabel:registry?.source_label||null,
+          sourceUrl:registry?.source_url||null,
+          sourceConfidence:registry?.source_confidence||'estimated'
+        });
+      }else if(!hasUserDates&&plan.calendarSource==='state_registry'&&b.confirmEstimatedDates!==true){
+        confirmations.push({
+          seasonType,
+          estimatedStartDate:plan.seasonStartDate,
+          estimatedFirstMeetDate:plan.firstMeetDate,
+          estimatedPeakDate:plan.primaryPeakDate,
+          estimatedSecondPeakDate:plan.secondaryPeakDate,
+          sourceLabel:registry?.source_label||'Verified state calendar',
+          sourceUrl:registry?.source_url||null,
+          sourceConfidence:registry?.source_confidence||'official'
         });
       }else built.push(plan);
     }
@@ -94,7 +109,14 @@ module.exports=async function handler(req,res){
     if(estimates.length){
       return res.status(422).json({
         error:'MW needs a championship/peak date (or a verified state calendar) to build this season safely.',
-        needsDates:true,estimates
+        needsDates:true,estimates,confirmations
+      });
+    }
+    if(confirmations.length){
+      return res.status(409).json({
+        error:'MW found a verified calendar. Confirm or edit the proposed dates before the season plan is created.',
+        confirmationRequired:true,
+        estimates:confirmations
       });
     }
 
