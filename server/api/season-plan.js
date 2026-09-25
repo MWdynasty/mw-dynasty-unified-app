@@ -64,14 +64,11 @@ module.exports=async function handler(req,res){
     }
 
     if(b.deferSeasonDates===true){
-      await rest(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{
-        method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({
-          competition_level:competitionLevel,
-          competition_state:competitionState||null,
-          season_preference:seasonPreference,
-          competition_paths:[competitionPath],
-          updated_at:new Date().toISOString()
-        })
+      await rpc('mw_update_own_athlete_season_context',token,{
+        p_competition_level:competitionLevel,
+        p_competition_state:competitionState||null,
+        p_season_preference:seasonPreference,
+        p_competition_paths:[competitionPath]
       });
       const calendar=await effectiveCalendar(token);
       return res.status(200).json({
@@ -201,14 +198,11 @@ module.exports=async function handler(req,res){
       }
     }
 
-    await rest(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{
-      method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({
-        competition_level:competitionLevel,
-        competition_state:competitionState||null,
-        season_preference:seasonPreference,
-        competition_paths:[competitionPath],
-        updated_at:new Date().toISOString()
-      })
+    await rpc('mw_update_own_athlete_season_context',token,{
+      p_competition_level:competitionLevel,
+      p_competition_state:competitionState||null,
+      p_season_preference:seasonPreference,
+      p_competition_paths:[competitionPath]
     });
 
     await reconcileSeasonPlan(token);
