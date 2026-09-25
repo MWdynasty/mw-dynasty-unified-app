@@ -40,7 +40,7 @@ const directIds=[
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
   'mwPracticeNext','mwPracticeSave','mwDobVerifySave','mwScSave','mwDeferSeasonDates',
   'mwAssessmentDeferDates','mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
-  'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend'
+  'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton'
 ];
 
 for(const id of directIds){
