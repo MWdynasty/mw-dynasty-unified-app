@@ -224,7 +224,7 @@ begin
     'sync_model','calendar'
   );
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.mw_refresh_own_season_program_state()
@@ -396,7 +396,7 @@ begin
     'season_phase_code',v_state.season_phase_code,'sync_model','season_plan'
   );
 end;
-$function$
+$function$;
 
 
 update public.athlete_program_state
