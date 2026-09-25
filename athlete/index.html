@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+window.MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
+window.MW_SUPABASE_URL=window.MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':window.MW_SUPABASE_URL+'';
+window.MW_SUPABASE_KEY=window.MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':window.MW_SUPABASE_KEY;
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#02060b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1526,6 +1531,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="question"><label>Main competition path</label><select id="entryCompetitionPath"><option value="school">School Track</option><option value="aau">AAU</option><option value="usatf">USATF</option><option value="ncaa">NCAA</option><option value="professional_open">Professional / Open</option></select><small>Choose the calendar that should control this plan. Additional seasons can be connected later.</small></div>
 <div class="question seasonDateGroup" id="entryIndoorDates" hidden><label>Indoor season dates</label><input id="entryIndoorStart" type="date" aria-label="Indoor first practice date"><small>First practice</small><input id="entryIndoorFirstMeet" type="date" aria-label="Indoor first meet date"><small>First meet</small><input id="entryIndoorPeak" type="date" aria-label="Indoor championship or peak date"><small>Primary championship / peak date</small><input id="entryIndoorSecondPeak" type="date" aria-label="Indoor second championship date"><small>Second championship / peak (optional)</small></div>
 <div class="question seasonDateGroup" id="entryOutdoorDates" hidden><label>Outdoor season dates</label><input id="entryOutdoorStart" type="date" aria-label="Outdoor first practice date"><small>First practice</small><input id="entryOutdoorFirstMeet" type="date" aria-label="Outdoor first meet date"><small>First meet</small><input id="entryOutdoorPeak" type="date" aria-label="Outdoor championship or peak date"><small>Primary championship / peak date</small><input id="entryOutdoorSecondPeak" type="date" aria-label="Outdoor second championship date"><small>Second championship / peak (optional)</small></div>
+<div class="question"><label>Season calendar</label><button type="button" class="entryGhost" id="saveSeasonDatesOnly">SAVE / UPDATE SEASON DATES</button><small id="seasonDatesState">You can update your competition calendar later without repeating Smart Entry.</small></div>
 <div class="question"><label>Which events do you run?</label><div class="checkList"><label><input id="event100" type="checkbox" value="100m"> 100m</label><label><input id="event200" type="checkbox" value="200m"> 200m</label><label><input id="event400" type="checkbox" value="400m"> 400m</label></div><small>Select at least one event.</small></div><div class="question"><label>What are you working toward? (optional)</label><textarea id="entryGoal" maxlength="500" rows="3" placeholder="Tell Coach MW your main performance goal for this training year."></textarea><small>This becomes your Athlete Goal and can be updated later from your profile.</small></div>
 <div class="question"><label>100m PR (optional)</label><input id="entryPr100" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr100Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
 <div class="question"><label>200m PR (optional)</label><input id="entryPr200" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr200Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
@@ -1777,8 +1783,8 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <nav class="nav mwDepthNav mwImageNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b class="mwNavArt mwNavHome" aria-hidden="true"></b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b class="mwNavArt mwNavCoach" aria-hidden="true"></b><span>COACH MW</span></button><button data-v="workouts"><b class="mwNavArt mwNavTrain" aria-hidden="true"></b><span>TRAIN</span></button><button data-v="progress"><b class="mwNavArt mwNavProgram" aria-hidden="true"></b><span>PROGRESS</span></button><button data-v="athlete"><b class="mwNavArt mwNavProfile" aria-hidden="true"></b><span>PROFILE</span></button></nav>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const MW_SB_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-const MW_SB_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const MW_SB_URL=window.MW_SUPABASE_URL+'';
+const MW_SB_KEY=window.MW_SUPABASE_KEY;
 const saved=JSON.parse(localStorage.getItem('mwPremiumProfile')||'{}');
 const LIFT_MAX_KEY='mwLiftMaxes';
 function getLiftMaxes(){return JSON.parse(localStorage.getItem(LIFT_MAX_KEY)||'{}')}
@@ -1825,7 +1831,7 @@ function mwPromptDobVerification(){
     btn.disabled=true;btn.textContent='VERIFYING…';state.style.display='block';state.textContent='';
     try{
       const s=sess();if(!s?.access_token)throw new Error('Sign in again to verify your age.');
-      const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_set_athlete_date_of_birth',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_date_of_birth:dob})});
+      const r=await fetch(window.MW_SUPABASE_URL+'/rest/v1/rpc/mw_set_athlete_date_of_birth',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_date_of_birth:dob})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.error||'Age verification failed.');
       window.mwDobRequired=false;if(window.mwRemoteProfile)window.mwRemoteProfile.dateOfBirth=dob;
       state.textContent='✓ Age verified.';setTimeout(()=>c(),450)
@@ -2202,7 +2208,7 @@ async function loadWorkoutCompletions(){
 async function paceRepTotalForWorkout(w,d){
   try{
     const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===Number(d));
-    const m=String(session?.work||'').match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
+    const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'';const m=String(prescribed).match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
     return m?Math.max(1,Math.min(60,Number(m[1]))):null;
   }catch{return null}
 }
@@ -2289,7 +2295,7 @@ async function renderCompletion(){
   if(hint)hint.style.display='block';
   if(details){
     const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
-    const prescribed=session?.tierWork?.[tier]||session?.work||'Follow the MW prescription for today.';
+    const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'Follow the MW prescription for today.';
     details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WORK:</b> ${prescribed}<br><b>RECOVERY:</b> ${session.recovery||'Full quality recovery'}</div>`;
   }
   const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
@@ -2604,6 +2610,77 @@ function seasonDatesPayload(){
   if(pref==='outdoor'||pref==='both')dates.outdoor={startDate:$('#entryOutdoorStart')?.value||null,firstMeetDate:$('#entryOutdoorFirstMeet')?.value||null,primaryPeakDate:$('#entryOutdoorPeak')?.value||null,secondaryPeakDate:$('#entryOutdoorSecondPeak')?.value||null};
   return dates;
 }
+let mwSeasonEstimateConfirmationPending=false;
+let mwDeferSeasonDates=false;
+function seasonPlanRequestFromFields(){
+  return {
+    competitionLevel:$('#entryCompetitionLevel')?.value||'',
+    competitionState:$('#entryCompetitionState')?.value||'',
+    seasonPreference:$('#entrySeasonPreference')?.value||'',
+    competitionPath:$('#entryCompetitionPath')?.value||'school',
+    dates:seasonDatesPayload(),
+    confirmEstimatedDates:mwSeasonEstimateConfirmationPending
+  };
+}
+function applySeasonEstimateFields(estimates=[]){
+  for(const x of (Array.isArray(estimates)?estimates:[])){
+    const type=String(x.seasonType||'').toLowerCase();
+    const ids=type==='indoor'
+      ?{start:'entryIndoorStart',meet:'entryIndoorFirstMeet',peak:'entryIndoorPeak',second:'entryIndoorSecondPeak'}
+      :type==='outdoor'
+        ?{start:'entryOutdoorStart',meet:'entryOutdoorFirstMeet',peak:'entryOutdoorPeak',second:'entryOutdoorSecondPeak'}
+        :null;
+    if(!ids)continue;
+    const pairs=[
+      [ids.start,x.estimatedStartDate],[ids.meet,x.estimatedFirstMeetDate],
+      [ids.peak,x.estimatedPeakDate],[ids.second,x.estimatedSecondPeakDate]
+    ];
+    for(const [id,val] of pairs){const el=document.getElementById(id);if(el&&val&&!el.value)el.value=String(val)}
+  }
+}
+function seasonEstimateMessage(estimates=[]){
+  return (Array.isArray(estimates)?estimates:[]).map(x=>{
+    const season=String(x.seasonType||'season').toUpperCase();
+    const source=mwEscape(x.sourceLabel||((x.sourceConfidence==='official')?'Verified state calendar':'MW estimate'));
+    const dates=[x.estimatedStartDate?('start '+mwCalendarDate(x.estimatedStartDate)):'',x.estimatedPeakDate?('peak '+mwCalendarDate(x.estimatedPeakDate)):''].filter(Boolean).join(' · ');
+    return `<b>${season}</b>: ${source}${dates?' · '+dates:''}`;
+  }).join('<br>');
+}
+async function saveSeasonDatesOnly(){
+  const btn=$('#saveSeasonDatesOnly'),state=$('#seasonDatesState'),tok=window.mwGetSessionToken?.()||'';
+  const req=seasonPlanRequestFromFields();
+  if(!req.competitionLevel||!req.seasonPreference){if(state)state.textContent='Choose your competition level and season first.';return}
+  if(['6','7','8','9','10','11','12'].includes(req.competitionLevel)&&req.competitionPath==='school'&&!req.competitionState){if(state)state.textContent='Choose the state where you compete.';return}
+  if(btn){btn.disabled=true;btn.textContent='SAVING SEASON…'};if(state)state.textContent='Checking your calendar…';
+  try{
+    const r=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(req)});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){
+      if(d.confirmationRequired){
+        applySeasonEstimateFields(d.estimates||[]);mwSeasonEstimateConfirmationPending=true;
+        if(state)state.innerHTML=seasonEstimateMessage(d.estimates||[])+'<br><b>Review or edit these dates, then tap Confirm Dates.</b>';
+        if(btn)btn.textContent='CONFIRM THESE DATES';return;
+      }
+      if(d.needsDates){
+        applySeasonEstimateFields(d.estimates||[]);
+        if(state)state.innerHTML=(seasonEstimateMessage(d.estimates||[])||mwEscape(d.error||''))+'<br>Add at least your championship / peak date, then save again.';
+        return;
+      }
+      throw new Error(d.error||'Season dates could not be saved.');
+    }
+    mwSeasonEstimateConfirmationPending=false;
+    mwSeasonCalendar=d.calendar||mwSeasonCalendar;
+    renderSeasonCalendarSummary();syncEntrySeason();
+    try{await window.mwReloadAccount?.()}catch{}
+    if(state)state.innerHTML='<b>✓ Season dates saved.</b> Your championship anchor and Track + Strength calendar are synchronized.';
+    if(btn)btn.textContent='✓ SEASON DATES SAVED';
+    setTimeout(()=>{if(btn)btn.textContent='SAVE / UPDATE SEASON DATES'},1400);
+  }catch(e){
+    if(state)state.textContent=e.message||'Season dates could not be saved.';
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
 function renderSeasonPhaseStrip(c){
   const strip=$('#phaseStrip');if(!strip)return;
   if(c?.mode==='season_plan'){
@@ -2705,18 +2782,29 @@ async function assessEntry(){
   btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';
   try{
     const tok=window.mwGetSessionToken?.()||'';
-    const seasonRequest={competitionLevel,competitionState,seasonPreference,competitionPath,dates:seasonDatesPayload()};
+    const seasonRequest={...seasonPlanRequestFromFields(),competitionLevel,competitionState,seasonPreference,competitionPath,deferSeasonDates:mwDeferSeasonDates};
     const sr=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(seasonRequest)});
     const sd=await sr.json().catch(()=>({}));
     if(!sr.ok){
+      if(sd.confirmationRequired){
+        applySeasonEstimateFields(sd.estimates||[]);mwSeasonEstimateConfirmationPending=true;
+        out.innerHTML=`<div class="warning"><b>Confirm your competition calendar.</b><br>${seasonEstimateMessage(sd.estimates||[])}<br><br>MW found verified calendar dates, but it will not lock them into your plan without you. Review or edit the dates above, then tap <b>Confirm Dates & Build My Season</b>.</div>`;
+        btn.textContent='CONFIRM DATES & BUILD MY SEASON';
+        return;
+      }
       if(sd.needsDates){
+        applySeasonEstimateFields(sd.estimates||[]);
         const estimates=(sd.estimates||[]).map(x=>`${String(x.seasonType||'season').toUpperCase()}: MW expects about ${x.targetWeeks||'—'} weeks${x.estimatedPeakDate?` · estimated peak ${mwCalendarDate(x.estimatedPeakDate)}`:''}`).join('<br>');
-        out.innerHTML=`<div class="warning"><b>One more season detail.</b><br>${sd.error||'Enter your championship date.'}<br><br>${estimates}<br><br>Enter the championship / peak date above, then tap the button again.</div>`;
+        out.innerHTML=`<div class="warning"><b>One more season detail.</b><br>${sd.error||'Enter your championship date.'}<br><br>${estimates}<br><br>Enter the championship / peak date above and try again, or continue temporarily on the standard MW calendar and update your season dates later.<br><button type="button" class="entryGhost" id="mwDeferSeasonDates" style="margin-top:12px">I DON'T KNOW YET — CONTINUE FOR NOW</button></div>`;
+        document.getElementById('mwDeferSeasonDates')?.addEventListener('click',()=>{mwDeferSeasonDates=true;assessEntry()});
         return;
       }
       throw new Error(sd.error||'MW Season Intelligence could not build your season.');
     }
 
+    const seasonDeferred=sd.deferred===true;
+    mwSeasonEstimateConfirmationPending=false;
+    mwDeferSeasonDates=false;
     mwSeasonCalendar=sd.calendar||null;
     if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}
     renderSeasonCalendarSummary();syncEntrySeason();
@@ -2730,11 +2818,13 @@ async function assessEntry(){
     window.mwAssessmentComplete=true;window.mwAssessmentRequired=false;
     const seasonLength=Number(d.calendar?.seasonLengthWeeks||mwSeasonCalendar?.seasonLengthWeeks||0);
     const phaseName=d.calendar?.phaseCode==='pre_competition'?'Pre-Competition':d.calendar?.phaseCode==='competition'?'Competition':d.calendar?.phaseCode==='peak'?'Peak / Championship':'Foundation';
-    out.innerHTML=`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
+    out.innerHTML=seasonDeferred
+      ?`<div class="resultTop"><div><span class="badge">MW STANDARD CALENDAR ACTIVE</span><h3>Your training can begin now.</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>CURRENT PLACEMENT</small><b>WEEK ${d.assignedWeek||d.calendar?.week||1}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>You can train now without guessing a championship date. Add or update your real season dates later and MW Season Intelligence will rebuild around the confirmed calendar.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY TRAINING</button>`
+      :`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
   }catch(e){out.innerHTML='<div class="warning">'+(e.message||'MW Season Intelligence could not be saved. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON'}
 }
-$('#assess').onclick=assessEntry; initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
+$('#assess').onclick=assessEntry; $('#saveSeasonDatesOnly')?.addEventListener('click',saveSeasonDatesOnly); initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='MW SEASON PLAN · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
 
 setTimeout(()=>{renderSavedConversation();refreshPremiumStatus()},50);
@@ -2743,8 +2833,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 </script>
 <script id="mw-supabase-auth-v1">
 (() => {
-  const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-  const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SUPABASE_URL=window.MW_SUPABASE_URL+'';
+  const SUPABASE_KEY=window.MW_SUPABASE_KEY;
   const SESSION_KEY='mwSupabaseSession';
   let mwSession=null;
   let mwRemoteProfile={userId:'',name:'Athlete',coachType:'male',p60:'',p100:'',p200:'',p300:'',p400:'',week:'1',currentDay:'1',currentPhase:'1',programStatus:'not_started',startDate:'',startWeek:'1'};window.mwAssessmentComplete=false;window.mwAssessmentRequired=false;window.mwDobRequired=false;window.mwFeatureAccess={};
@@ -3372,8 +3462,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 <style>.mwUtilityModal{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.76);padding:18px;align-items:center;justify-content:center}.mwUtilityModal.open{display:flex}.mwUtilityBox{position:relative;width:min(620px,100%);max-height:85vh;overflow:auto;background:#07111a;border:1px solid #394857;border-radius:16px;padding:22px;color:#fff}.mwUtilityClose{position:absolute;right:12px;top:8px;border:0;background:transparent;color:#fff;font-size:28px}.mwUtilityBox p{color:#aab6c0;line-height:1.55}</style>
 <script id="mw-coach-connection-v249">
 (() => {
-  const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-  const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SUPABASE_URL=window.MW_SUPABASE_URL+'';
+  const SUPABASE_KEY=window.MW_SUPABASE_KEY;
   const $=s=>document.querySelector(s);
   let currentInvite=null;
   function session(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
@@ -3433,7 +3523,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 const m=document.getElementById('mwUtilityModal'),t=document.getElementById('mwUtilityTitle'),b=document.getElementById('mwUtilityBody');
 function o(x,h){t.textContent=x;b.innerHTML=h;m.classList.add('open')}function c(){m.classList.remove('open')}document.getElementById('mwUtilityClose')?.addEventListener('click',c);m?.addEventListener('click',e=>{if(e.target===m)c()});
 function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
-const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
 async function mwLoadPublicPricing(){try{const r=await fetch('/api/pricing',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.plans))throw new Error(d.error||'Pricing unavailable');const p=d.plans.find(x=>x.plan_code==='mw_athlete');if(!p)return;const monthly=Number(p.monthly_price_cents),annual=Number(p.annual_price_cents);window.__mwAthletePricing={monthly,annual,annualEnabled:!!p.annual_enabled};if(Number.isFinite(monthly)){const el=document.getElementById('mwAthleteMembershipPrice');if(el)el.textContent=`MW Athlete · $${(monthly/100).toFixed(monthly%100===0?0:2)}/month${Number.isFinite(annual)&&p.annual_enabled?` · $${(annual/100).toFixed(annual%100===0?0:2)}/year`:''}`;}}catch(e){console.warn('MW public pricing sync unavailable; using locked fallback price.',e)}}
 async function mwBillingRequest(method='GET',body=null){const s=sess();if(!s?.access_token)throw new Error('Sign in again to manage your membership.');const r=await fetch('/api/billing',{method,headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Membership request failed');return d}
 function mwMoney(c){const n=Number(c);return Number.isFinite(n)?'$'+(n/100).toFixed(n%100===0?0:2):''}
@@ -3452,7 +3542,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 
 <script id="mw-email-invite-session-v310">
 (()=>{
-  const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
   async function capture(){
     const h=new URLSearchParams(location.hash.replace(/^#/,''));
     const access=h.get('access_token'),refresh=h.get('refresh_token');
@@ -3479,7 +3569,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
     let ss=null;try{ss=JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{}
     if(!ss?.access_token)return;
     try{
-      const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
+      const r=await fetch(window.MW_SUPABASE_URL+'/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY,Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.details||'Invitation could not be accepted');
       q.delete('invite');q.delete('invite_token');const next=location.pathname+(q.toString()?'?'+q.toString():'');history.replaceState({},document.title,next);
       document.querySelector('#coachConnectedBadge')?.classList.add('show');
@@ -3493,7 +3583,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 
 <script id="mw-athlete-messages-v311">
 (()=>{
-  const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
   let coachRows=[],replyRows=[],coachIdentityRows=[],selectedCoachId=null;
   function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
   function headers(){const s=sess();return {apikey:PK,Authorization:'Bearer '+(s?.access_token||''),'Content-Type':'application/json'}}
@@ -3565,7 +3655,7 @@ function clearTimers(){timers.forEach(clearTimeout);timers=[]}
 function say(x){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(x));u.rate=1;u.pitch=.95;speechSynthesis.speak(u)}catch{}}
 function clock(){if(!running||paused)return;const s=(performance.now()-startedAt)/1000;$p('mwPracticeClock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')+'.'+Math.floor((s%1)*10);raf=requestAnimationFrame(clock)}
 function parsePrescription(){
- const raw=String(session?.tierWork?.[String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase()]||session?.work||'');
+ const raw=String(session?.prescribedWork||session?.tierWork?.[String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase()]||session?.work||session?.structure||'');
  const m=raw.match(/(\d+)\s*[x×]\s*(\d+)\s*m\b/i), reps=m?Number(m[1]):1, dist=m?Number(m[2]):null;
  const explicit=[session?.targetSeconds,session?.target_seconds,session?.paceTargetSeconds,session?.pace_target_seconds].map(Number).find(x=>x>2&&x<300);
  const times=[...raw.matchAll(/(\d+(?:\.\d+)?)\s*(?:s|sec|seconds?)\b/ig)].map(x=>Number(x[1])).filter(x=>x>2&&x<300);

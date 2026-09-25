@@ -1,13 +1,6 @@
 const {SUPABASE_URL,SUPABASE_KEY,authenticate,getAthleteContext}=require('../lib/mw-auth');
 const {effectiveCalendar}=require('../lib/mw-season-calendar');
-function ageOn(d){if(!d)return null;const dob=new Date(d),now=new Date();if(Number.isNaN(dob.getTime()))return null;let a=now.getUTCFullYear()-dob.getUTCFullYear();if(now.getUTCMonth()<dob.getUTCMonth()||(now.getUTCMonth()===dob.getUTCMonth()&&now.getUTCDate()<dob.getUTCDate()))a--;return a}
-function recommendedTiers(c,b){
-  const age=ageOn(b.dateOfBirth||c.athlete?.date_of_birth),years=Math.max(0,Number(b.trainingAge)||0),lifting=Math.max(0,Number(b.lifting)||0),continuity=Math.max(0,Number(b.continuity)||0),speed=Math.max(0,Number(b.speedExposure)||0),raced=Number(b.recentRace)===1;
-  const performanceReady=years>=5&&continuity>=3&&speed>=3&&raced;
-  const trackTier=(age!=null&&age<14)||years<2||continuity<=1||speed===0?'foundation':performanceReady?'performance':'development';
-  const strengthTier=(age!=null&&age<14)||lifting===0?'foundation':lifting===1||years<4?'development':'performance';
-  return {trackTier,strengthTier};
-}
+const {ageOn,recommendedTiers,developmentalLoadProfile}=require('../lib/mw-developmental-load');
 function cleanNumber(value,label){if(value==null||String(value).trim()==='')return null;const n=Number(value);if(!Number.isFinite(n)||n<=0)throw Object.assign(new Error(`Enter a valid ${label}.`),{status:400});return n}
 function validDate(value){const d=new Date(`${value}T00:00:00Z`);return Number.isNaN(d.getTime())?null:d}
 async function sj(path,token,opts={}){const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{...opts,headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',...(opts.headers||{})}});const d=await r.json().catch(()=>null);if(!r.ok)throw Object.assign(new Error(d?.message||d?.hint||`Supabase request failed (${r.status})`),{status:r.status});return d}
@@ -48,6 +41,12 @@ module.exports=async function handler(req,res){
     const d=await sj(`rpc/${seasonAware?'mw_submit_smart_entry_v2':'mw_submit_smart_entry'}`,token,{method:'POST',body:JSON.stringify(payload)});
     const result=(d&&typeof d==='object')?d:{};
     const tiers=recommendedTiers(c,b);
+    const developmentalLoad=developmentalLoadProfile({
+      dateOfBirth:b.dateOfBirth||c.athlete?.date_of_birth,
+      trainingYears:Number(b.trainingAge)||0,
+      trackTier:tiers.trackTier,
+      strengthTier:tiers.strengthTier
+    });
     const assignedWeek=Math.max(1,Math.min(41,Math.trunc(Number(result.assignedWeek||result.assigned_week||calendar.week||1))));
     const programVersion=seasonAware?'mw-season-intelligence-v1':'mw-41-tiered-v2.9';
     if(result.hold){
@@ -55,13 +54,13 @@ module.exports=async function handler(req,res){
       if(seasonAware){
         await sj('rpc/mw_refresh_own_season_program_state',token,{method:'POST',body:'{}'});
       }
-      return res.status(200).json({...result,trackTier:'foundation',strengthTier:'foundation',programVersion,calendar});
+      return res.status(200).json({...result,trackTier:'foundation',strengthTier:'foundation',programVersion,calendar,developmentalLoad:developmentalLoadProfile({dateOfBirth:b.dateOfBirth||c.athlete?.date_of_birth,trainingYears:Number(b.trainingAge)||0,trackTier:'foundation',strengthTier:'foundation'})});
     }
     await sj(`athlete_program_state?athlete_id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({track_tier:tiers.trackTier,strength_tier:tiers.strengthTier,program_version:programVersion,onboarding_assessment_completed_at:new Date().toISOString(),assignment_updated_at:new Date().toISOString(),assignment_updated_by:c.user.id})});
     if(seasonAware){
       await sj('rpc/mw_refresh_own_season_program_state',token,{method:'POST',body:'{}'});
     }
     await sj('athlete_program_assignment_history',token,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,track_tier:tiers.trackTier,strength_tier:tiers.strengthTier,week:assignedWeek,reason:'MW Smart Entry initial tier recommendation',changed_by:c.user.id})});
-    return res.status(200).json({...result,...tiers,programVersion,calendar});
+    return res.status(200).json({...result,...tiers,programVersion,calendar,developmentalLoad});
   }catch(e){return res.status(e.status||500).json({error:e.message||'Smart Entry could not be saved'})}
 };
