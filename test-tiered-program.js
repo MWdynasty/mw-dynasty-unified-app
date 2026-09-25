@@ -35,3 +35,17 @@ assert.equal(foundationWeek1.strength.sections[1].title.includes('1 round'),true
 assert.equal(performanceWeek1.strength.sections[1].title.includes('2 rounds'),true);
 
 console.log('PASS: developmental volume changes actual track reps and strength sets/rounds');
+
+
+const foundationWeek31=programWeek(31,'foundation','foundation');
+assert.equal(
+  foundationWeek31.track.sessions[0].prescribedWork.startsWith('2–3 x 30m'),
+  true,
+  'developmental range scaling should happen once and preserve a useful 2–3 range'
+);
+assert.equal(
+  foundationWeek31.track.sessions[0].prescribedWork.includes('2–2 x'),
+  false,
+  'collapsed/double-scaled rep ranges should never be shown to athletes'
+);
+console.log('PASS: developmental rep ranges are scaled once');
