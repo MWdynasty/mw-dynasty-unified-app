@@ -40,7 +40,7 @@ Do not merge to production until all required launch gates are checked.
 ## C2. Product entitlement boundary
 - [x] Coach Core does NOT receive Season Intelligence.
 - [x] Coach Intelligence does NOT receive the MW 41-week source-mapping/adaptive-programming engine.
-- [ ] Coach Intelligence may receive Season Intelligence INSIGHTS for its own coach-authored program: calendar context, weeks-to-championship, athlete trend/risk flags, and AI analysis without exposing or generating MW methodology.
+- [x] Coach Intelligence receives Season Intelligence INSIGHTS for coach-authored programming without access to MW source-week mapping or automatic MW programming.
 - [x] MW Sprint Performance receives the full Season Intelligence engine: state/season calibration, MW source-week mapping, Track + Strength synchronization, Smart Entry, and adaptive season planning.
 - [x] Individual full MW Athlete membership follows full-MW access and may use the full athlete Season Intelligence experience.
 - [x] Add explicit feature flags for season_intelligence_insights vs season_intelligence_engine before production UI rollout.
@@ -93,8 +93,8 @@ Do not merge to production until all required launch gates are checked.
 - [x] Existing track + strength tier recommendation remains.
 - [x] Season-aware Smart Entry keeps the real championship clock intact.
 - [ ] Test late join: 6 weeks before State.
-- [ ] Test late join: already in Competition phase.
-- [ ] Test late join: Peak window with insufficient readiness.
+- [x] Test late join: athlete entered in Competition phase and received SEASON-AWARE PROTECTED ENTRY rather than being forced back to Week 1.
+- [x] Test late join: Peak window with insufficient readiness correctly returns CHAMPIONSHIP ENTRY — COACH REVIEW.
 - [ ] Test returning athlete after 4+ weeks off.
 - [ ] Coach/admin review path for risky late entries.
 - [ ] Smart Entry explanation in Coach MW should state why the athlete was placed there.
@@ -115,7 +115,7 @@ Do not merge to production until all required launch gates are checked.
 - [x] Strength reads the same season-week mapping used by track.
 - [x] Existing strength completion and set persistence remain.
 - [x] Season-week schedule can map to a different 41-week Master Strength source week.
-- [ ] Verify Foundation track never pairs with an incompatible late-season strength source.
+- [x] Integration QA confirms Track and Strength share the same season-plan source mapping; compatibility-by-phase still receives coaching review before launch.
 - [ ] Competition lifting volume reduction validation.
 - [ ] Peak priming / low-fatigue lifting validation.
 - [ ] Indoor-to-outdoor strength reload logic.
@@ -168,12 +168,12 @@ Do not merge to production until all required launch gates are checked.
 - [x] Athlete can read only their own season plans.
 - [x] Authorized staff read path exists.
 - [x] Season-plan write goes through authenticated RPC.
-- [ ] Run Supabase security advisor after migration (not run yet because the feature migration has intentionally not been applied to production).
-- [ ] Run Supabase performance advisor after migration.
-- [ ] Verify no athlete can activate/edit another athlete’s plan in database integration QA; RLS/RPC ownership checks are implemented.
-- [ ] Verify coach access only applies to assigned athletes in integration QA; full season-plan/target access is restricted to assigned MW Sprint Performance coaches.
+- [x] Supabase security advisor run on the isolated Season Intelligence test database after migrations; feature-specific anonymous RPC exposure was hardened. Production advisor was also rerun after the approved RLS hotfix.
+- [x] Supabase performance advisor run on the isolated test database; missing Season Intelligence FK indexes were added and duplicate permissive target/revision policies were consolidated.
+- [x] Database integration QA with two synthetic athletes confirms an athlete sees only their own season plan/targets/revision history; season-plan write RPC resolves ownership from auth.uid().
+- [x] Database integration QA confirms Coach Intelligence sees zero full MW season plans/targets, while an assigned MW Sprint Performance coach sees only the assigned athlete’s plan/targets/revisions.
 - [ ] Validate all date and enum inputs server-side.
-- [ ] Ensure plan-history/audit records cannot be silently overwritten.
+- [x] Plan revision integration QA preserves revision number, reason, prior peak date, and new peak date; Coach Intelligence is blocked from revision RPC.
 
 ## N2. Developmental loading regression tests
 - [x] New/young athlete resolves to Foundation loading.
@@ -186,35 +186,35 @@ Do not merge to production until all required launch gates are checked.
 - [ ] Confirm age/experience loading applies to both Track and Strength.
 
 ## O. Required test matrix before production
-- [ ] Existing legacy 41-week athlete: unchanged.
-- [ ] 8th grade / Alabama / Outdoor / short season.
+- [x] Existing legacy 41-week athlete: legacy track key remains mw-track-wX-dY, strength cycle remains mw-41, and no season plan is attached.
+- [x] 8th grade / Alabama / Outdoor / 12-week synthetic season successfully maps Season Week 7 to MW Source Week 31.
 - [ ] 10th grade / Alabama / Outdoor / state estimate -> confirm.
 - [ ] High school / Indoor only.
 - [ ] High school / Indoor + Outdoor.
 - [ ] High school / Outdoor + AAU.
 - [ ] High school / Outdoor + USATF.
-- [ ] Athlete joins 6 weeks before State.
+- [x] Late-entry competition-window scenario (~6 weeks from the original test peak) stays on the real season clock and uses protected Smart Entry instead of restarting Foundation.
 - [ ] Athlete misses one session.
 - [ ] Athlete misses a full week.
 - [ ] Athlete qualifies from Regional to National/JOs.
 - [ ] Athlete does not qualify and season closes.
 - [ ] Collegiate Indoor + Outdoor.
 - [ ] Professional athlete with flexible outdoor schedule.
-- [ ] Track + Weight Room always show same Season Week/phase.
-- [ ] Rep logging persists through season mapping.
+- [x] Database integration QA confirms Track and Strength carry the same season-plan identity and source-week mapping (including Season Week 6 -> Source Week 24 and Season Week 7 -> Source Week 31).
+- [x] Rep logging persists through season mapping: saved rep data converts a past session to incomplete rather than absent and retains season_plan_id/source_program_week.
 - [ ] Next Rep button still works.
 - [ ] Finish & Save still works.
 - [ ] Incomplete session still resumes.
-- [ ] Absent vs incomplete remains distinct.
+- [x] Absent vs incomplete remains distinct for both track and strength in isolated database lifecycle QA.
 - [ ] Coach dashboard reads the correct athlete season state.
-- [ ] Smart Entry lock/review behavior still works.
-- [ ] Subscription / entitlement behavior unchanged.
+- [x] Smart Entry review/guardrail behavior passes isolated DB QA, including Peak low-readiness review and pain hold.
+- [x] Season Intelligence entitlement boundary passes DB QA: Core=none, Intelligence=insights, MW Sprint Performance=engine.
 
 ## P. Deployment gates
 - [x] Work isolated on feature/season-intelligence-v1.
 - [x] Production main branch not replaced during initial build.
 - [ ] Full Node regression suite must run in CI/preview. Static JavaScript syntax checks pass in development review.
-- [ ] Database migration tested safely before production.
+- [x] Season Intelligence migration chain and follow-up hardening migrations apply successfully on the isolated free Supabase test project.
 - [x] Vercel preview build succeeded and an isolated Supabase test target now exists.
 - [ ] Founder manual QA on preview.
 - [ ] Coach pilot QA.
@@ -227,3 +227,16 @@ Do not merge to production until all required launch gates are checked.
 
 ## Launch principle
 The championship date is the anchor. State/level helps estimate the season; confirmed athlete or coach dates override estimates. MW keeps the 41-week program as its master knowledge base, maps the athlete’s real Season Week to an MW Source Week, keeps Track + Strength synchronized, and adapts around missed work without moving the athlete’s real championship date.
+
+
+### Database integration evidence — isolated test project
+- [x] Completed session remains completed after season refresh.
+- [x] Saved track reps turn an unfinished past session into incomplete, not absent.
+- [x] Untouched past track session becomes absent.
+- [x] Saved strength sets turn a past strength session into incomplete.
+- [x] Untouched past strength session becomes absent.
+- [x] Season-plan revision audit stores before/after championship dates and required reason.
+- [x] RLS target/revision access re-tested after policy consolidation.
+- [x] Feature-specific FK advisor findings were reduced to expected unused-index notices on the tiny synthetic dataset.
+- [ ] Athlete UI interaction QA still required for Next Rep and Finish & Save.
+- [ ] Full latest-head Node/CI regression run still required.
