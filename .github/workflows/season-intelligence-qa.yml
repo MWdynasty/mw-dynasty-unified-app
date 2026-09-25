@@ -40,6 +40,7 @@ jobs:
           node --check server/api/season-plan.js
           node --check server/api/season-calendar.js
           node --check server/api/smart-entry.js
+          node --check server/api/chat.js
           node --check server/api/program.js
           node --check server/api/me.js
           node --check server/api/coach/access.js
