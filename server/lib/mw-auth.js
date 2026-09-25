@@ -1,5 +1,6 @@
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://keqgunlfwhjgcsurynef.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const MW_QA_PREVIEW = process.env.VERCEL_ENV==='preview' && process.env.VERCEL_GIT_COMMIT_REF==='feature/season-intelligence-v1';
+const SUPABASE_URL = MW_QA_PREVIEW ? 'https://nktemtmsfhjcgjvkavrm.supabase.co' : (process.env.SUPABASE_URL || 'https://keqgunlfwhjgcsurynef.supabase.co');
+const SUPABASE_KEY = MW_QA_PREVIEW ? 'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99' : (process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm');
 
 function bearer(req){
   const h=String(req.headers?.authorization||'');
