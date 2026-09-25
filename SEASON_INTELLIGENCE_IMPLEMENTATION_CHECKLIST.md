@@ -19,23 +19,23 @@ Do not merge to production until all required launch gates are checked.
 - [x] Competition path: School, AAU, USATF, NCAA, Professional/Open.
 - [x] Keep existing age/DOB, events, PRs, experience, goals, and strength maxes.
 - [x] Capture season start, first meet, primary championship/peak, and optional second peak.
-- [ ] Allow athlete to edit season information later without rerunning the entire onboarding unnecessarily.
-- [ ] Add clear “MW estimated these dates — Confirm / Edit” flow after state lookup.
-- [ ] Support athletes who do not know exact dates yet without trapping onboarding.
+- [x] Athlete can save/update season dates separately from Smart Entry without rerunning the full assessment.
+- [x] Verified state-calendar dates now require an explicit Confirm/Edit step before MW creates the athlete season plan.
+- [x] Athletes who do not know exact dates can defer season dates and continue temporarily on the standard MW calendar, then update dates later.
 
 ## C. State Season Registry
 - [x] State-season registry schema exists.
 - [x] Source URL, confidence, verified date, and season year are stored.
 - [x] Alabama high-school outdoor seed exists as first registry example.
-- [ ] Populate all supported states for high-school outdoor calendars.
+- [ ] Populate all supported states for high-school outdoor calendars. Alabama 2027 outdoor is now verified against AHSAA and tested in the isolated registry.
 - [ ] Populate states that sanction high-school indoor track.
 - [ ] Add middle-school calendar data where an official statewide calendar exists.
 - [ ] Fall back to MW estimated ranges when no authoritative state calendar exists.
 - [ ] Never present an estimate as an official state date.
 - [ ] Annual refresh process for new state association calendars.
-- [ ] State association / governing-body source review before each season.
+- [ ] State association / governing-body source review before each season. Alabama 2027 outdoor has now been source-verified as the first completed example.
 - [ ] Handle states where middle school schedules are district/local rather than statewide.
-- [ ] Coach/team dates and athlete-confirmed dates override state estimates.
+- [x] Athlete-confirmed dates override registry estimates; state-calendar dates are never silently locked without confirmation. Team/coach inheritance still pending.
 
 ## C2. Product entitlement boundary
 - [x] Coach Core does NOT receive Season Intelligence.
@@ -53,7 +53,7 @@ Do not merge to production until all required launch gates are checked.
 - [x] Phase allocations work for condensed seasons and still total the exact available weeks.
 - [x] Master-source mapping stays inside Weeks 1–41.
 - [x] Source-week mapping is monotonic.
-- [ ] Validate phase ratios for 6, 8, 10, 12, 16, 20, 24, and 41-week real coaching scenarios.
+- [ ] Coaching signoff still required, but the actual mapping engine has been executed across 4, 6, 8, 10, 12, 16, 20, 24, and 41 weeks and passed exact-count, monotonicity, and 1–41 source-range checks.
 - [x] Existing age + experience tier assignment remains active inside season-aware Smart Entry.
 - [x] Existing Foundation / Development / Performance volume factors remain active after a Season Week maps to an MW Master Source Week.
 - [x] Season-mapped program response carries a developmental load profile (age band, training years, track/strength tier, volume factor, recovery factor, RPE cap).
@@ -178,12 +178,12 @@ Do not merge to production until all required launch gates are checked.
 ## N2. Developmental loading regression tests
 - [x] New/young athlete resolves to Foundation loading.
 - [x] Experienced adult athlete can resolve to Performance loading.
-- [ ] 13-year-old / 100m / first season: condensed season + Foundation volume.
-- [ ] 15-year-old / 200m / 2 years experience: Development volume + correct source-week map.
-- [ ] 17-year-old / 400m / advanced: event-specific season mapping + appropriate tier volume.
-- [ ] Adult/pro athlete: Performance volume, no youth restrictions, flexible calendar.
-- [ ] Confirm age/experience affects HOW MUCH training is prescribed without changing the championship anchor.
-- [ ] Confirm age/experience loading applies to both Track and Strength.
+- [x] 13-year-old / first-season scenario resolves Foundation track + strength loading at 65% volume with higher recovery and lower RPE cap.
+- [x] 15-year-old / 2-years experience scenario resolves Development track + strength loading at 85% volume; source-week mapping remains independent of developmental volume.
+- [ ] 17-year-old advanced loading resolves Performance volume correctly; event-specific 400m mapping review is still pending.
+- [x] Adult/pro developmental-loading scenario resolves Performance volume with no youth age-band restrictions; flexible competition-calendar QA still pending.
+- [x] Actual program-service execution confirms age/experience changes displayed track reps and strength sets/RPE while the season/championship mapping stays unchanged.
+- [x] Actual program-service execution confirms developmental loading applies to both Track and Strength.
 
 ## O. Required test matrix before production
 - [x] Existing legacy 41-week athlete: legacy track key remains mw-track-wX-dY, strength cycle remains mw-41, and no season plan is attached.
@@ -238,5 +238,12 @@ The championship date is the anchor. State/level helps estimate the season; conf
 - [x] Season-plan revision audit stores before/after championship dates and required reason.
 - [x] RLS target/revision access re-tested after policy consolidation.
 - [x] Feature-specific FK advisor findings were reduced to expected unused-index notices on the tiny synthetic dataset.
-- [ ] Athlete UI interaction QA still required for Next Rep and Finish & Save.
+- [ ] Athlete UI interaction QA still required for Next Rep and Finish & Save. Practice Mode was hardened so it now uses the server-selected prescribedWork first, preventing developmental rep-count mismatches from hiding Finish & Save.
 - [ ] Full latest-head Node/CI regression run still required.
+
+
+### Registry verification evidence
+- [x] Alabama high-school outdoor 2027 verified against the AHSAA 2026-2031 Five-Year Calendar.
+- [x] Official AHSAA dates used by the registry: first spring practice Jan 18, Track first contest Feb 25, State Track & Field May 6-8.
+- [x] MW stores May 8 as the single peak anchor while the source label preserves the official May 6-8 championship range.
+- [x] Registry UI requires athlete confirmation/edit before a verified state calendar becomes the athlete's active season plan.
