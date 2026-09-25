@@ -1,6 +1,7 @@
 const {getAccountContext}=require('../lib/mw-auth');
 const {programWeek,PROGRAM_VERSION,normalizeTier}=require('../lib/mw-program-service');
 const {reconcileSeasonPlan,positionForPlan,uiPhaseForCode}=require('../lib/mw-season-intelligence');
+const {developmentalLoadProfile}=require('../lib/mw-developmental-load');
 
 function clampWeek(v){const n=Number(v);return Number.isFinite(n)?Math.max(1,Math.min(41,Math.trunc(n))):1}
 function planMap(plan){
@@ -57,6 +58,14 @@ module.exports=async function handler(req,res){
     const trackTier=normalizeTier(c.programState?.track_tier||c.athlete?.experience_level);
     const strengthTier=normalizeTier(c.programState?.strength_tier||c.athlete?.experience_level);
     let {track,strength}=programWeek(sourceWeek,trackTier,strengthTier);
+    const developmentalLoad=developmentalLoadProfile({
+      dateOfBirth:c.athlete?.date_of_birth,
+      trainingYears:c.athlete?.track_training_years,
+      trackTier,
+      strengthTier
+    });
+    if(track)track={...track,developmentalLoad};
+    if(strength)strength={...strength,developmentalLoad};
 
     if(plan?.id){
       track=presentMappedProgram(track,{seasonWeek:week,sourceWeek,phaseCode});
@@ -66,6 +75,7 @@ module.exports=async function handler(req,res){
     return res.status(200).json({
       week,officialWeek:official,officialDay:Number(c.programState?.current_day||1),
       trackTier,strengthTier,programVersion:plan?.id?'mw-season-intelligence-v1':(c.programState?.program_version||PROGRAM_VERSION),
+      developmentalLoad,
       seasonPlan:plan?.id?{
         id:plan.id,seasonType:plan.season_type,seasonLengthWeeks:Number(plan.season_length_weeks||0),
         phaseCode,peakDate:plan.primary_peak_date,sourceProgramWeek:sourceWeek
