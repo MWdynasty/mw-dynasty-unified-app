@@ -52,7 +52,7 @@ using (
     from public.coach_assignments ca
     join public.coach_access_entitlements cae
       on cae.coach_user_id=ca.coach_user_id and cae.status='active'
-    where ca.athlete_id=athlete_id
+    where ca.athlete_id=athlete_season_plans.athlete_id
       and ca.coach_user_id=(select auth.uid())
       and ca.status::text='active'
       and cae.access_tier='mw_sprint_performance'
