@@ -1,6 +1,334 @@
 'use strict';
 
-const HTML = "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>MW Dynasty — Memberships</title>\n<meta name=\"description\" content=\"MW Dynasty athlete and coach memberships — a connected sprint-performance ecosystem for training, strength, education, intelligence, scheduling, and development.\">\n<style>\n:root{\n  --ink:#03070b; --ink2:#06111a; --panel:#08151f; --panel2:#0b1a26;\n  --gold:#f0bd45; --gold2:#ffe08a; --blue:#28a9ff; --blue2:#76d4ff;\n  --text:#f6f8fb; --muted:#9eacb8; --line:rgba(255,255,255,.10);\n  --shadow:0 30px 90px rgba(0,0,0,.48);\n}\n*{box-sizing:border-box}\nhtml{scroll-behavior:smooth}\nbody{margin:0;background:\n  radial-gradient(circle at 12% 4%,rgba(40,169,255,.10),transparent 22%),\n  radial-gradient(circle at 88% 2%,rgba(240,189,69,.10),transparent 22%),\n  linear-gradient(180deg,#020609,#050b11 42%,#020609);\n  color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",Arial,sans-serif}\na{color:inherit;text-decoration:none}\n.wrap{width:min(1180px,calc(100% - 34px));margin:auto}\nnav{position:sticky;top:0;z-index:20;background:rgba(2,6,9,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}\n.navin{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:18px}\n.brand{display:flex;align-items:center;gap:11px;font-weight:950;letter-spacing:-.03em}\n.mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#05080b;font-weight:1000;font-size:17px;\nbackground:linear-gradient(145deg,#fff0a7,#c98b17);box-shadow:inset 0 1px 0 #fff,0 7px 20px rgba(240,189,69,.20)}\n.brand small{display:block;font-size:8px;letter-spacing:.18em;color:var(--gold);margin-top:2px}\n.navlinks{display:flex;gap:25px;color:#c7d0d8;font-size:13px;font-weight:800}\n.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:0 19px;border-radius:13px;font-weight:950;font-size:13px;border:1px solid rgba(255,255,255,.12);transition:.2s ease}\n.btn:hover{transform:translateY(-2px)}\n.btn.gold{color:#0b0d0e;background:linear-gradient(180deg,#ffe17d,#d99b21);border-color:#f6cf6d;box-shadow:0 12px 34px rgba(240,189,69,.17)}\n.btn.ghost{background:rgba(255,255,255,.035);color:#eef5fa}\n.hero{position:relative;overflow:hidden;padding:92px 0 58px}\n.hero:before{content:\"\";position:absolute;inset:8% -15% auto 50%;height:480px;background:radial-gradient(circle,rgba(40,169,255,.13),transparent 63%);pointer-events:none}\n.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--gold);font-size:11px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}\n.eyebrow:before{content:\"\";width:26px;height:2px;background:var(--gold)}\n.hero h1{font-size:clamp(49px,8.2vw,100px);line-height:.88;letter-spacing:-.065em;margin:24px 0 26px;max-width:980px;font-weight:1000}\n.hero h1 span{display:block;color:transparent;background:linear-gradient(90deg,#f7c957,#ffe9a8 43%,#69cbff);-webkit-background-clip:text;background-clip:text}\n.hero p{max-width:790px;color:#c7d1d9;font-size:clamp(17px,2vw,22px);line-height:1.55;margin:0}\n.hero p strong{color:#fff}\n.ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}\n.micro{margin-top:13px;color:#788895;font-size:11px;font-weight:700}\n.systembar{margin-top:54px;border:1px solid rgba(240,189,69,.22);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));box-shadow:var(--shadow);padding:13px}\n.systemgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}\n.step{position:relative;text-align:center;padding:18px 8px;border-radius:12px;background:#07121a;border:1px solid rgba(255,255,255,.06)}\n.step b{display:block;font-size:12px;letter-spacing:.08em;color:#f8d471}\n.step small{display:block;color:#7f919f;font-size:9px;margin-top:5px}\n.step:not(:last-child):after{content:\"→\";position:absolute;right:-11px;top:50%;transform:translateY(-50%);z-index:2;color:#527086;font-weight:900}\n.section{padding:86px 0}\n.kicker{color:var(--blue2);font-size:11px;font-weight:950;letter-spacing:.16em;text-transform:uppercase}\nh2{font-size:clamp(38px,5vw,68px);line-height:.96;letter-spacing:-.055em;margin:14px 0 19px;max-width:900px}\n.lead{font-size:18px;line-height:1.65;color:#aebbc5;max-width:820px;margin:0}\n.lead strong{color:#fff}\n.two{display:grid;grid-template-columns:1.03fr .97fr;gap:24px;align-items:stretch;margin-top:40px}\n.valuebox{padding:34px;border:1px solid rgba(240,189,69,.25);border-radius:24px;background:\n radial-gradient(circle at 100% 0%,rgba(240,189,69,.10),transparent 34%),linear-gradient(145deg,#0b1822,#050c12);box-shadow:var(--shadow)}\n.valuebox h3{font-size:29px;line-height:1.08;margin:0 0 13px;letter-spacing:-.04em}\n.valuebox p{color:#a9b7c1;line-height:1.6;margin:0}\n.quote{font-size:clamp(25px,3vw,39px);line-height:1.06;letter-spacing:-.04em;font-weight:950;margin-top:28px}\n.quote span{color:var(--gold)}\n.stack{display:grid;gap:10px}\n.mini{display:grid;grid-template-columns:42px 1fr;gap:14px;padding:18px;border-radius:16px;background:rgba(10,24,35,.8);border:1px solid var(--line)}\n.ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(40,169,255,.22),rgba(240,189,69,.10));border:1px solid rgba(118,212,255,.2);font-size:18px}\n.mini b{display:block;font-size:14px;margin-bottom:4px}.mini span{font-size:12px;line-height:1.45;color:#8fa0ad}\n.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:34px}\n.card{min-height:220px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#091721,#050c12);padding:25px;position:relative;overflow:hidden}\n.card:before{content:\"\";position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(40,169,255,.07);right:-50px;top:-55px}\n.card strong{display:block;font-size:17px;margin:15px 0 9px}\n.card p{font-size:13px;line-height:1.55;color:#91a2ae;margin:0}\n.num{font-size:11px;color:var(--gold);font-weight:950;letter-spacing:.12em}\n.pricingWrap{margin-top:42px;border:1px solid rgba(240,189,69,.28);border-radius:28px;padding:9px;background:linear-gradient(145deg,rgba(240,189,69,.07),rgba(40,169,255,.045));box-shadow:var(--shadow)}\n.athletePrice{border-radius:21px;padding:36px;background:#061019;display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center}\n.priceLabel{font-size:11px;font-weight:950;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}\n.price{font-size:68px;font-weight:1000;letter-spacing:-.07em;line-height:.92;margin:12px 0}.price small{font-size:17px;color:#8fa1ae;letter-spacing:0}\n.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin:22px 0 0;padding:0;list-style:none}\n.checks li{font-size:12px;color:#b5c0c9}\n.checks li:before{content:\"✓\";color:var(--gold);font-weight:950;margin-right:8px}\n.rightCall{border-left:1px solid var(--line);padding-left:28px}\n.rightCall b{display:block;font-size:24px;line-height:1.12;letter-spacing:-.035em;margin-bottom:12px}\n.rightCall p{font-size:13px;color:#91a3af;line-height:1.55}\n.coachIntro{padding-bottom:22px}\n.coachGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}\n.plan{position:relative;border:1px solid var(--line);border-radius:23px;background:linear-gradient(150deg,#0a1822,#050b10);padding:27px;display:flex;flex-direction:column;min-height:510px}\n.plan.featured{border-color:rgba(240,189,69,.58);box-shadow:0 0 0 1px rgba(240,189,69,.08),0 30px 80px rgba(0,0,0,.42);transform:translateY(-7px)}\n.ribbon{position:absolute;right:18px;top:18px;border-radius:999px;padding:7px 9px;font-size:8px;letter-spacing:.1em;font-weight:1000;background:rgba(240,189,69,.13);color:#f9cf69;border:1px solid rgba(240,189,69,.26)}\n.plan .tier{color:var(--blue2);font-size:10px;letter-spacing:.16em;font-weight:950;text-transform:uppercase}\n.plan h3{font-size:27px;margin:11px 0 4px;letter-spacing:-.045em}\n.plan .meaning{font-size:13px;color:#f7d06d;font-weight:850;margin-bottom:20px}\n.plan .amount{font-size:46px;font-weight:1000;letter-spacing:-.06em}.plan .amount small{font-size:14px;color:#8ea0ad;letter-spacing:0}\n.sponsor{font-size:11px;color:#91a1ad;margin:6px 0 20px}\n.plan p{color:#9cacb8;font-size:13px;line-height:1.55}\n.plan ul{padding:0;margin:17px 0 25px;list-style:none;display:grid;gap:9px}\n.plan li{font-size:12px;color:#c0cad1;line-height:1.4}\n.plan li:before{content:\"✓\";color:var(--gold);margin-right:8px;font-weight:950}\n.plan .btn{margin-top:auto}\n.progression{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#061018}\n.prog{padding:24px;border-right:1px solid var(--line)}.prog:last-child{border:0}\n.prog small{color:#718492;font-size:9px;font-weight:900;letter-spacing:.13em}.prog b{display:block;font-size:18px;margin:8px 0}.prog span{font-size:12px;color:#8ea0ad;line-height:1.5}\n.prog.feature{background:linear-gradient(145deg,rgba(240,189,69,.08),rgba(40,169,255,.04))}\n.parent{display:grid;grid-template-columns:.9fr 1.1fr;gap:28px;align-items:center}\n.bigline{font-size:clamp(38px,5vw,64px);font-weight:1000;letter-spacing:-.06em;line-height:.96}.bigline span{color:var(--gold)}\n.parentCopy{display:grid;gap:12px}\n.statement{padding:18px 19px;border-left:3px solid var(--gold);background:rgba(255,255,255,.026);border-radius:0 14px 14px 0}\n.statement b{display:block;font-size:14px;margin-bottom:5px}.statement span{color:#91a1ad;font-size:12px;line-height:1.5}\n.faq{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:32px}\ndetails{border:1px solid var(--line);border-radius:16px;background:#07121a;padding:18px 19px}\nsummary{cursor:pointer;font-weight:900;font-size:14px}\ndetails p{color:#93a4af;font-size:12px;line-height:1.6;margin:13px 0 0}\n.close{padding:80px 0 94px;text-align:center}\n.closebox{padding:58px 24px;border-radius:28px;border:1px solid rgba(240,189,69,.32);background:\nradial-gradient(circle at 50% 0%,rgba(240,189,69,.11),transparent 45%),linear-gradient(145deg,#091720,#040a0f);box-shadow:var(--shadow)}\n.close h2{margin-left:auto;margin-right:auto}.close p{max-width:700px;margin:0 auto 28px;color:#a3b0ba;line-height:1.6}\n.footer{border-top:1px solid var(--line);padding:28px 0;color:#71818c;font-size:11px}\n.footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}\n\n.tierTruth{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}\n.truthCard{border:1px solid var(--line);border-radius:18px;padding:22px;background:linear-gradient(145deg,#08151f,#050a0f)}\n.truthCard small{display:block;color:var(--blue2);font-size:9px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}\n.truthCard b{display:block;font-size:19px;line-height:1.15;margin-bottom:8px}\n.truthCard p{margin:0;color:#91a2ae;font-size:12px;line-height:1.55}\n.sponsorNote{margin-top:18px;padding:17px 19px;border:1px solid rgba(240,189,69,.24);border-radius:16px;background:rgba(240,189,69,.045);color:#9eacb8;font-size:12px;line-height:1.55}\n.sponsorNote b{color:#f6cf6d}\n.outcomeStrip{margin-top:28px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}\n.outcome{padding:18px;border:1px solid var(--line);border-radius:15px;background:rgba(7,18,26,.86)}\n.outcome small{display:block;color:#718492;font-size:8px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}\n.outcome b{display:block;margin:7px 0 5px;font-size:15px}\n.outcome span{display:block;color:#8fa0ad;font-size:11px;line-height:1.45}\n.buyingLine{margin:26px 0 0;padding:22px;border-left:3px solid var(--gold);background:rgba(255,255,255,.026);border-radius:0 16px 16px 0}\n.buyingLine b{display:block;font-size:19px;margin-bottom:7px}\n.buyingLine p{margin:0;color:#a2b0bb;font-size:13px;line-height:1.6}\n.membershipFit{margin-top:14px;padding:11px 12px;border-radius:12px;background:rgba(40,169,255,.06);border:1px solid rgba(118,212,255,.13);font-size:11px;color:#a8bac7;line-height:1.5}\n.membershipFit b{color:#dff4ff}\n.plan .explain{margin:15px 0 4px;padding:12px 13px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);color:#b7c3cc;font-size:11px;line-height:1.5}\n@media(max-width:900px){.tierTruth,.outcomeStrip{grid-template-columns:1fr 1fr}}\n@media(max-width:600px){.tierTruth,.outcomeStrip{grid-template-columns:1fr}}\n\n@media(max-width:900px){\n .navlinks{display:none}.two,.parent,.athletePrice{grid-template-columns:1fr}.rightCall{border-left:0;border-top:1px solid var(--line);padding:24px 0 0}\n .cards,.coachGrid,.progression{grid-template-columns:1fr}.plan.featured{transform:none}.prog{border-right:0;border-bottom:1px solid var(--line)}.prog:last-child{border-bottom:0}\n .systemgrid{grid-template-columns:repeat(3,1fr)}.step:nth-child(3):after{display:none}\n}\n@media(max-width:600px){\n .wrap{width:min(100% - 22px,1180px)}.hero{padding-top:62px}.hero h1{font-size:48px}.section{padding:62px 0}\n .systemgrid{grid-template-columns:1fr 1fr}.step:nth-child(3):after{display:block}.step:nth-child(even):after{display:none}\n .cards{grid-template-columns:1fr}.checks,.faq{grid-template-columns:1fr}.athletePrice,.valuebox,.plan{padding:23px}\n .price{font-size:58px}.navin>.btn{padding:0 12px;min-height:42px}.brand span{font-size:14px}\n}\n</style>\n</head>\n<body>\n<nav>\n  <div class=\"wrap navin\">\n    <a class=\"brand\" href=\"#top\"><span class=\"mark\">MW</span><span>MW DYNASTY<small>SPRINT PERFORMANCE SYSTEM</small></span></a>\n    <div class=\"navlinks\"><a href=\"#athletes\">ATHLETES</a><a href=\"#coaches\">COACHES</a><a href=\"#difference\">WHY MW</a><a href=\"#faq\">FAQ</a></div>\n    <a class=\"btn gold\" href=\"https://app.mwdynasty.com/athlete/start.html\">START TRAINING</a>\n  </div>\n</nav>\n\n<main id=\"top\">\n<section class=\"hero\">\n  <div class=\"wrap\">\n    <div class=\"eyebrow\">The MW Dynasty difference</div>\n    <h1>MORE THAN TRAINING.<span>A COMPLETE PERFORMANCE ECOSYSTEM.</span></h1>\n    <p>MW Dynasty brings <strong>sprint training, synchronized strength, education, intelligent coaching, performance tools, scheduling, accountability, and progress tracking</strong> into one connected system. The goal is simple: athletes should know what to do, why they're doing it, how it connects to the season, and what comes next.</p>\n    <div class=\"ctas\">\n      <a class=\"btn gold\" href=\"https://app.mwdynasty.com/athlete/start.html\">ATHLETE MEMBERSHIP · $19/MO</a>\n      <a class=\"btn ghost\" href=\"#coaches\">EXPLORE COACH MEMBERSHIPS →</a>\n    </div>\n    <div class=\"micro\">Built around sprint development for the 100m · 200m · 400m</div>\n\n    <div class=\"systembar\" aria-label=\"MW performance ecosystem\">\n      <div class=\"systemgrid\">\n        <div class=\"step\"><b>TRAIN</b><small>Sprint progression</small></div>\n        <div class=\"step\"><b>STRENGTHEN</b><small>Power development</small></div>\n        <div class=\"step\"><b>LEARN</b><small>Sprint School</small></div>\n        <div class=\"step\"><b>MEASURE</b><small>Paces + progress</small></div>\n        <div class=\"step\"><b>ADJUST</b><small>Schedule + context</small></div>\n        <div class=\"step\"><b>DEVELOP</b><small>Season after season</small></div>\n      </div>\n    </div>\n  </div>\n</section>\n\n<section class=\"section\" id=\"athletes\">\n  <div class=\"wrap\">\n    <div class=\"kicker\">For athletes & parents</div>\n    <h2>YOU'RE NOT BUYING A WORKOUT PLAN. YOU'RE BUILDING AN ATHLETE.</h2>\n    <p class=\"lead\">A workout tells an athlete what to do today. <strong>MW Dynasty connects today to a larger development plan.</strong> For a parent, that means you're not paying every month for another sheet of workouts. You're putting the athlete inside a system that combines training, education, accountability, scheduling, measurement, and support across the season.</p>\n    <div class=\"outcomeStrip\">\n      <div class=\"outcome\"><small>THE ATHLETE KNOWS</small><b>What to do</b><span>Training is organized instead of pieced together from random sources.</span></div>\n      <div class=\"outcome\"><small>THE ATHLETE UNDERSTANDS</small><b>Why it matters</b><span>Sprint School and Coach MW turn instructions into development knowledge.</span></div>\n      <div class=\"outcome\"><small>THE SYSTEM TRACKS</small><b>What is happening</b><span>PRs, completion, paces, scheduling context, and progress live together.</span></div>\n      <div class=\"outcome\"><small>THE PLAN PROTECTS</small><b>What comes next</b><span>Track, strength, recovery, and real-life availability stay connected to the season.</span></div>\n    </div>\n\n    <div class=\"two\">\n      <div class=\"valuebox\">\n        <h3>One athlete. One connected development environment.</h3>\n        <p>No bouncing between random workout PDFs, separate strength plans, pace calculators, coaching videos, and scattered advice. MW Dynasty brings the pieces together and gives each piece a job.</p>\n        <div class=\"quote\">The value isn't one feature.<br><span>It's how the whole system works together.</span></div>\n      </div>\n      <div class=\"stack\">\n        <div class=\"mini\"><div class=\"ico\">⚡</div><div><b>Training has progression</b><span>A 41-week sprint-development system moves through the season with purpose.</span></div></div>\n        <div class=\"mini\"><div class=\"ico\">◈</div><div><b>Strength supports speed</b><span>Track and weight-room development are synchronized instead of competing with each other.</span></div></div>\n        <div class=\"mini\"><div class=\"ico\">◎</div><div><b>Athletes understand the “why”</b><span>Sprint School and Coach MW help turn instructions into understanding.</span></div></div>\n        <div class=\"mini\"><div class=\"ico\">↗</div><div><b>Progress becomes visible</b><span>Paces, completion, compliance, PRs, and training context live in one place.</span></div></div>\n      </div>\n    </div>\n\n    <div class=\"cards\">\n      <div class=\"card\"><span class=\"num\">01 · SPRINT PERFORMANCE</span><strong>A season, not random sessions.</strong><p>Structured development across acceleration, maximum velocity, speed endurance, race execution, and competition preparation.</p></div>\n      <div class=\"card\"><span class=\"num\">02 · STRENGTH & POWER</span><strong>The weight room follows the mission.</strong><p>A synchronized strength system designed to complement the demands of the athlete's sprint progression.</p></div>\n      <div class=\"card\"><span class=\"num\">03 · COACH MW</span><strong>Guidance when questions happen.</strong><p>An intelligent coaching assistant that helps athletes understand training, terminology, and the purpose behind the work.</p></div>\n      <div class=\"card\"><span class=\"num\">04 · SPRINT SCHOOL</span><strong>Teach the athlete, not just the workout.</strong><p>Education around mechanics, starts, acceleration, max velocity, race strategy, and sprint development.</p></div>\n      <div class=\"card\"><span class=\"num\">05 · SMART ENTRY + TOOLS</span><strong>Meet the athlete where they are.</strong><p>Assessment, pacing, distance tools, PR information, and training context help make the system usable for the individual.</p></div>\n      <div class=\"card\"><span class=\"num\">06 · SCHEDULE + ACCOUNTABILITY</span><strong>Real athletes have real lives.</strong><p>Independent MW athletes can add school, exams, work, travel, and unavailable dates. Coach-managed athletes report conflicts while the coach remains in control of the official schedule.</p></div>\n    </div>\n\n    <div class=\"pricingWrap\" id=\"athlete-membership\">\n      <div class=\"athletePrice\">\n        <div>\n          <div class=\"priceLabel\">MW Dynasty Athlete Membership</div>\n          <div class=\"price\">$19<small>/month</small></div>\n          <h3 style=\"font-size:27px;margin:0;letter-spacing:-.04em\">Your complete sprint-development system.</h3>\n          <ul class=\"checks\">\n            <li>41-week sprint system</li><li>Strength & Power system</li>\n            <li>Coach MW</li><li>Sprint School</li>\n            <li>Performance pacing</li><li>Distance tools</li>\n            <li>Smart Entry assessment</li><li>Progress tracking</li>\n            <li>Schedule planning</li><li>PR + athlete profile</li>\n          </ul>\n        </div>\n        <div class=\"rightCall\">\n          <b>What are you actually purchasing?</b>\n          <p>Not access to a folder of workouts. You're giving the athlete a connected environment to <strong style=\"color:#fff\">train, learn, measure, plan, adjust, and develop</strong> throughout the season. The $19 membership is the independent athlete's complete MW Sprint Performance environment.</p>\n          <div class=\"membershipFit\"><b>Independent athlete?</b> You control your personal availability calendar and MW gives you schedule recommendations that protect the 41-week sequence. <b>Training under a coach?</b> Your coach remains the schedule authority and you report conflicts instead of overriding the program.</div>\n          <a class=\"btn gold\" href=\"https://app.mwdynasty.com/athlete/start.html\">START ATHLETE MEMBERSHIP</a>\n          <div class=\"micro\">One membership. One connected development environment.</div>\n        </div>\n      </div>\n    </div>\n    <div class=\"buyingLine\">\n      <b>What the $19 is really buying</b>\n      <p>A structured season, a synchronized strength system, education, an AI coaching layer, performance tools, schedule awareness, and a place to see the athlete's development in context. The value is not ten separate features. The value is that the pieces are designed to work together.</p>\n    </div>\n  </div>\n</section>\n\n<section class=\"section\" id=\"coaches\">\n  <div class=\"wrap\">\n    <div class=\"coachIntro\">\n      <div class=\"kicker\">For coaches & programs</div>\n      <h2>MORE THAN TEAM MANAGEMENT SOFTWARE. AN OPERATING SYSTEM FOR YOUR SPRINT PROGRAM.</h2>\n      <p class=\"lead\">Some platforms give you a place to enter workouts. MW Dynasty is built to help you <strong>operate the program, see what is happening around the athletes, and choose how much of the MW system you want beside you.</strong> The three coach memberships are not three versions of the same dashboard — they represent three different levels of partnership.</p>\n    </div>\n\n    <div class=\"tierTruth\">\n      <div class=\"truthCard\"><small>LEVEL 01 · CORE</small><b>“I already know how I coach.”</b><p>Use MW as the operating environment for your own program: roster, communication, attendance, completion, calendar, and athlete oversight.</p></div>\n      <div class=\"truthCard\"><small>LEVEL 02 · INTELLIGENCE</small><b>“Keep my program. Add better context.”</b><p>MW adds Coach MW, smart scheduling, school/exam context, availability reports, and deeper decision support around the program you already run.</p></div>\n      <div class=\"truthCard\"><small>LEVEL 03 · SPRINT PERFORMANCE</small><b>“Bring the full MW methodology.”</b><p>Use the complete 41-week sprint + synchronized Strength & Power system, Sprint School, smart placement, performance tools, and methodology-aware intelligence.</p></div>\n    </div>\n\n    <div class=\"progression\">\n      <div class=\"prog\"><small>CORE</small><b>INFRASTRUCTURE</b><span>Run your own program inside a more organized coaching environment.</span></div>\n      <div class=\"prog feature\"><small>INTELLIGENCE</small><b>INFRASTRUCTURE + INSIGHT</b><span>Keep your methodology while MW helps surface context that supports better coaching decisions.</span></div>\n      <div class=\"prog\"><small>SPRINT PERFORMANCE</small><b>COMPLETE METHODOLOGY</b><span>Bring the full MW Dynasty sprint-development ecosystem to your athletes.</span></div>\n    </div>\n\n    <div class=\"coachGrid\">\n      <article class=\"plan\">\n        <div class=\"tier\">Level 01</div>\n        <h3>MW COACH CORE</h3>\n        <div class=\"meaning\">RUN YOUR PROGRAM ON MW.</div>\n        <div class=\"amount\">$49<small>/month</small></div>\n        <div class=\"sponsor\">Sponsored athletes: +$5 each / month</div>\n        <p>For coaches who already have their methodology and want a professional operating environment to organize the team and keep athletes connected.</p>\n        <div class=\"explain\"><b>What changes for you:</b> MW becomes the place you run the program. You keep your coaching system; MW gives you the infrastructure around it.</div>\n        <ul>\n          <li>Roster + athlete organization</li>\n          <li>Attendance + workout completion oversight</li>\n          <li>Coach-to-athlete communication</li>\n          <li>Athlete notes + performance information</li>\n          <li>Practice, meet + testing calendar</li>\n          <li>Manual athlete availability review</li>\n        </ul>\n        <a class=\"btn ghost\" href=\"https://app.mwdynasty.com/coach/start.html\">CHOOSE CORE</a>\n      </article>\n\n      <article class=\"plan featured\">\n        <div class=\"ribbon\">COACHING INTELLIGENCE</div>\n        <div class=\"tier\">Level 02</div>\n        <h3>MW COACH INTELLIGENCE</h3>\n        <div class=\"meaning\">RUN YOUR PROGRAM WITH MW BESIDE YOU.</div>\n        <div class=\"amount\">$79<small>/month</small></div>\n        <div class=\"sponsor\">Sponsored athletes: +$6 each / month</div>\n        <p>For coaches who want to keep their own methodology while adding MW Dynasty's intelligence layer to the way they organize athletes, calendar pressure, and season decisions.</p>\n        <div class=\"explain\"><b>What changes for you:</b> MW does more than store information. It helps connect the information so you can see school demands, athlete conflicts, performance context, and scheduling pressure around your own program.</div>\n        <ul>\n          <li>Everything in Core</li>\n          <li>Coach MW coaching intelligence</li>\n          <li>School breaks + exam-week context</li>\n          <li>Smart schedule constraints</li>\n          <li>Calendar-aware season planning</li>\n          <li>Athlete availability + conflict context</li>\n          <li>Deeper training + performance oversight</li>\n        </ul>\n        <a class=\"btn gold\" href=\"https://app.mwdynasty.com/coach/start.html\">CHOOSE INTELLIGENCE</a>\n      </article>\n\n      <article class=\"plan\">\n        <div class=\"tier\">Level 03</div>\n        <h3>MW SPRINT PERFORMANCE</h3>\n        <div class=\"meaning\">RUN THE COMPLETE MW SYSTEM.</div>\n        <div class=\"amount\">$109<small>/month</small></div>\n        <div class=\"sponsor\">Sponsored athletes: +$7 each / month</div>\n        <p>For coaches and programs that don't just want the MW platform — they want the complete MW Dynasty sprint-development methodology operating through it.</p>\n        <div class=\"explain\"><b>What changes for you:</b> MW stops being only the environment around your program and becomes the training system itself. Calendar intelligence now protects the 41-week track + strength progression instead of working around a separate coach-authored plan.</div>\n        <ul>\n          <li>Everything in Intelligence</li>\n          <li>41-week MW sprint progression</li>\n          <li>Synchronized Strength & Power system</li>\n          <li>Sprint School ecosystem</li>\n          <li>MW pacing + performance tools</li>\n          <li>Smart athlete placement</li>\n          <li>41-week schedule intelligence</li>\n          <li>Methodology-aligned season planning</li>\n        </ul>\n        <a class=\"btn ghost\" href=\"https://app.mwdynasty.com/coach/start.html\">CHOOSE SPRINT PERFORMANCE</a>\n      </article>\n    </div>\n    <div class=\"sponsorNote\"><b>Sponsored athlete pricing:</b> Core +$5/athlete, Intelligence +$6/athlete, Sprint Performance +$7/athlete each month. A sponsored athlete does not also pay the separate $19 individual Athlete membership while covered by that coach sponsorship. Sponsorship affects access and billing; the active coach relationship controls the official training calendar.</div>\n  </div>\n</section>\n\n<section class=\"section\" id=\"difference\">\n  <div class=\"wrap parent\">\n    <div class=\"bigline\">THE DIFFERENCE ISN'T <span>MORE FEATURES.</span><br>IT'S CONNECTION.</div>\n    <div class=\"parentCopy\">\n      <div class=\"statement\"><b>For the parent</b><span>You can see what the monthly membership is building: structure, education, accountability, progression, and a connected performance environment — not another downloadable workout sheet.</span></div>\n      <div class=\"statement\"><b>For the athlete</b><span>The workout has context. The strength work has a reason. The tools measure something useful. Questions have somewhere to go. The season feels like one plan instead of disconnected pieces.</span></div>\n      <div class=\"statement\"><b>For the coach</b><span>You choose the relationship you want with MW: use the infrastructure, add the intelligence layer, or run the complete MW Dynasty methodology.</span></div>\n    </div>\n  </div>\n</section>\n\n<section class=\"section\" id=\"faq\">\n  <div class=\"wrap\">\n    <div class=\"kicker\">Before you join</div>\n    <h2>UNDERSTAND WHAT YOU'RE BUYING.</h2>\n    <div class=\"faq\">\n      <details open><summary>Is MW Dynasty just a workout program?</summary><p>No. Training is one part of the system. The athlete experience connects sprint development, synchronized strength, education, Coach MW, pacing and distance tools, assessment, scheduling, accountability, and progress tracking so the pieces reinforce one another.</p></details>\n      <details><summary>Can an individual athlete join without a sponsoring coach?</summary><p>Yes. The $19 Athlete membership is the independent athlete's complete MW Sprint Performance environment. Independent athletes can manage personal availability and receive MW schedule recommendations that protect the 41-week sequence.</p></details>\n      <details><summary>What happens if an athlete is under a coach?</summary><p>The coach remains the authority over the official team/program calendar. The athlete can see the coach calendar and report conflicts such as exams, work, travel, or appointments, but does not override the coach's schedule.</p></details>\n      <details><summary>Do coaches have to use the MW training methodology?</summary><p>No. Coach Core and Coach Intelligence are designed for coaches who want to keep their own program. MW Sprint Performance is the membership for coaches who want the complete 41-week MW sprint + synchronized Strength & Power methodology.</p></details>\n      <details><summary>Why are there three coach memberships?</summary><p>Because they solve three different needs: Core gives you infrastructure, Intelligence adds connected coaching intelligence around your program, and Sprint Performance adds the complete MW methodology.</p></details>\n      <details><summary>Does a sponsored athlete also pay $19/month?</summary><p>No. While the athlete is covered by a coach sponsorship, the sponsored-athlete add-on is the applicable athlete access price for that coach relationship.</p></details>\n    </div>\n  </div>\n</section>\n\n<section class=\"close\">\n  <div class=\"wrap closebox\">\n    <div class=\"eyebrow\" style=\"justify-content:center\">Welcome to the Dynasty</div>\n    <h2>TRAIN. LEARN. MEASURE.<br>ADJUST. DEVELOP.</h2>\n    <p>Great performance requires more than workouts. MW Dynasty connects the work, the education, the data, the schedule, and the decisions so athletes and coaches can operate with a clearer path forward.</p>\n    <div class=\"ctas\" style=\"justify-content:center\">\n      <a class=\"btn gold\" href=\"https://app.mwdynasty.com/athlete/start.html\">START AS AN ATHLETE · $19/MO</a>\n      <a class=\"btn ghost\" href=\"https://app.mwdynasty.com/coach/start.html\">START AS A COACH</a>\n    </div>\n  </div>\n</section>\n</main>\n\n<footer class=\"footer\">\n  <div class=\"wrap\"><span>MW DYNASTY · SPRINT PERFORMANCE SYSTEM</span><span>Athlete + Coach Memberships</span></div>\n</footer>\n</body>\n</html>";
+const HTML = String.raw`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MW Dynasty — Memberships</title>
+<meta name="description" content="Choose the MW Dynasty athlete or coach membership experience. One complete sprint-performance system for athletes, and three levels of coaching partnership for coaches and programs.">
+<style>
+:root{
+  --bg:#02060a;--bg2:#07111b;--panel:#081521;--panel2:#0c1d2c;
+  --gold:#e7b64d;--gold2:#ffd978;--text:#f8fafc;--muted:#aeb9c4;
+  --line:rgba(255,255,255,.09);--blue:#56b8ff;--shadow:0 28px 90px rgba(0,0,0,.48)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 15% 0%,rgba(64,155,255,.12),transparent 25%),
+    radial-gradient(circle at 85% 5%,rgba(231,182,77,.12),transparent 23%),
+    linear-gradient(180deg,#02060a,#06101a 46%,#02060a);
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+.wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+.site-nav{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--line);background:rgba(2,6,10,.83);backdrop-filter:blur(18px)}
+.nav-inner{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand img{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(231,182,77,.22))}
+.brand-copy b{display:block;font-size:15px;letter-spacing:.14em}.brand-copy small{display:block;margin-top:3px;color:var(--gold);font-size:8px;letter-spacing:.18em}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.btn{border:1px solid rgba(255,255,255,.14);border-radius:13px;min-height:46px;padding:0 17px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:950;letter-spacing:.03em;transition:.2s ease}
+.btn:hover{transform:translateY(-2px)}
+.btn.gold{color:#071018;background:linear-gradient(180deg,#ffe18a,#d59a26);border-color:#f5d16d;box-shadow:0 10px 32px rgba(231,182,77,.18)}
+.btn.dark{background:rgba(255,255,255,.035);color:#eef4f8}
+.hero{padding:58px 0 26px;text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--gold);font-weight:950;font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+.eyebrow:before,.eyebrow:after{content:"";width:28px;height:1px;background:rgba(231,182,77,.72)}
+.hero h1{margin:16px auto 14px;max-width:980px;font-size:clamp(38px,6vw,74px);line-height:.97;letter-spacing:-.055em}
+.hero h1 span{color:var(--gold2)}
+.hero p{max-width:760px;margin:0 auto;color:#b8c4ce;font-size:clamp(15px,1.8vw,19px);line-height:1.6}
+.role-switch{width:min(700px,100%);margin:32px auto 0;padding:7px;border-radius:18px;border:1px solid rgba(231,182,77,.24);background:rgba(255,255,255,.035);display:grid;grid-template-columns:1fr 1fr;gap:7px;box-shadow:var(--shadow)}
+.role-tab{border:0;cursor:pointer;min-height:58px;border-radius:13px;background:transparent;color:#9eacb7;font-weight:950;letter-spacing:.08em;font-size:12px;transition:.2s ease}
+.role-tab.active{background:linear-gradient(180deg,rgba(231,182,77,.20),rgba(231,182,77,.07));color:#fff;border:1px solid rgba(231,182,77,.46);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.role-tab small{display:block;margin-top:3px;color:#788a98;font-weight:750;letter-spacing:.02em;text-transform:none}
+.role-tab.active small{color:#d8c18b}
+.view{display:none}.view.active{display:block}
+.section{padding:34px 0 82px}
+.flagship{
+  position:relative;overflow:hidden;border:1px solid rgba(231,182,77,.38);border-radius:30px;
+  min-height:620px;background:#07121c;box-shadow:var(--shadow)
+}
+.flagship-bg{position:absolute;inset:0;background:
+  linear-gradient(90deg,rgba(3,8,13,.98) 0%,rgba(3,8,13,.91) 42%,rgba(3,8,13,.24) 70%,rgba(3,8,13,.48) 100%),
+  url('/assets/mw-v2-athlete-hero.jpg') center right/cover no-repeat}
+.flagship-glow{position:absolute;inset:auto -10% -40% 30%;height:420px;background:radial-gradient(circle,rgba(231,182,77,.22),transparent 68%)}
+.flagship-content{position:relative;z-index:2;padding:54px;max-width:720px}
+.label{color:var(--gold);font-size:11px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}
+.flagship h2{font-size:clamp(42px,6vw,75px);line-height:.92;letter-spacing:-.055em;margin:14px 0 12px}
+.flagship h2 span{display:block;color:var(--gold2)}
+.flagship-sub{color:#c4ced6;font-size:18px;line-height:1.55;max-width:610px;margin:0}
+.price-row{display:flex;align-items:flex-end;gap:12px;margin:28px 0 20px}
+.price{font-size:70px;line-height:.84;font-weight:1000;letter-spacing:-.075em}.price-meta{color:#a8b5bf;font-size:14px;padding-bottom:5px}
+.value-pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px}
+.value-pills span{border:1px solid rgba(255,255,255,.10);background:rgba(7,18,28,.76);border-radius:999px;padding:8px 10px;color:#c5d0d7;font-size:11px;font-weight:850}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+.promise{margin-top:18px;color:#8d9daa;font-size:11px;line-height:1.5}
+.value-section{margin-top:22px;border:1px solid rgba(231,182,77,.26);border-radius:26px;background:linear-gradient(145deg,#091722,#050c12);box-shadow:var(--shadow);overflow:hidden}
+.value-head{padding:31px 30px 24px;border-bottom:1px solid var(--line)}
+.value-head .label{margin-bottom:8px}.value-head h3{margin:0 0 8px;font-size:clamp(28px,4vw,46px);letter-spacing:-.045em}.value-head p{margin:0;color:#9fadb8;line-height:1.6;max-width:840px}
+.value-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line)}
+.value-item{padding:22px 23px;background:#07131d;display:grid;grid-template-columns:44px 1fr;gap:14px}
+.value-icon{width:44px;height:44px;border-radius:13px;border:1px solid rgba(231,182,77,.26);background:linear-gradient(145deg,rgba(231,182,77,.14),rgba(86,184,255,.07));display:grid;place-items:center;color:var(--gold2);font-weight:1000}
+.value-item b{display:block;margin-bottom:5px;font-size:15px}.value-item span{display:block;color:#93a3af;font-size:12px;line-height:1.5}
+.system-line{padding:24px 28px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+.system-line strong{display:block;font-size:20px;line-height:1.2;margin-bottom:7px}.system-line p{margin:0;color:#96a6b2;font-size:13px;line-height:1.6}.system-line strong span{color:var(--gold)}
+.coach-intro{padding:6px 0 24px;text-align:center}
+.coach-intro h2{font-size:clamp(36px,5vw,62px);line-height:.96;letter-spacing:-.052em;margin:13px auto;max-width:920px}
+.coach-intro p{max-width:780px;margin:0 auto;color:#9eacb7;font-size:16px;line-height:1.6}
+.coach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+.plan{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:25px;background:linear-gradient(160deg,#0a1823,#050b10);min-height:620px;display:flex;flex-direction:column;box-shadow:0 22px 68px rgba(0,0,0,.30)}
+.plan.featured{border-color:rgba(231,182,77,.56);box-shadow:0 0 0 1px rgba(231,182,77,.08),0 28px 80px rgba(0,0,0,.42);transform:translateY(-7px)}
+.plan-visual{height:190px;position:relative;background-position:center;background-size:cover}
+.plan-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,8,13,.08),#07121b 100%)}
+.plan.core .plan-visual{background-image:url('/coach/core-hero-clean.jpg')}
+.plan.intelligence .plan-visual{background-image:url('/coach/intelligence-hero-clean.jpg')}
+.plan.performance .plan-visual{background-image:url('/coach/performance-hero-clean.jpg')}
+.plan-body{padding:24px;display:flex;flex-direction:column;flex:1}
+.tier{color:#82ceff;font-size:9px;font-weight:950;letter-spacing:.17em;text-transform:uppercase}
+.plan.featured .tier,.plan.performance .tier{color:var(--gold2)}
+.plan h3{font-size:27px;line-height:1.02;letter-spacing:-.04em;margin:10px 0 5px}
+.meaning{font-size:11px;color:#f1ca69;font-weight:900;letter-spacing:.05em;margin-bottom:16px}
+.amount{font-size:48px;font-weight:1000;letter-spacing:-.06em;line-height:.95}.amount small{font-size:14px;color:#8797a4;letter-spacing:0}
+.sponsor{color:#8ea0ad;font-size:11px;margin:7px 0 15px}
+.plan-copy{color:#9faeb9;font-size:13px;line-height:1.55;min-height:80px}
+.plan ul{list-style:none;padding:0;margin:17px 0 24px;display:grid;gap:9px}
+.plan li{font-size:12px;color:#c3ccd3;line-height:1.42}.plan li:before{content:"✓";color:var(--gold);font-weight:1000;margin-right:8px}
+.plan .btn{margin-top:auto}
+.badge{position:absolute;z-index:3;top:14px;right:14px;border:1px solid rgba(231,182,77,.44);background:rgba(4,10,15,.82);color:#f7d573;border-radius:999px;padding:7px 9px;font-size:8px;font-weight:950;letter-spacing:.12em}
+.coach-path{margin-top:22px;border:1px solid rgba(231,182,77,.20);border-radius:20px;overflow:hidden;background:#061018;display:grid;grid-template-columns:repeat(3,1fr)}
+.path{padding:22px;border-right:1px solid var(--line)}.path:last-child{border-right:0}.path small{display:block;color:#728796;font-size:8px;font-weight:950;letter-spacing:.14em}.path b{display:block;font-size:17px;margin:7px 0}.path span{color:#8ea0ad;font-size:11px;line-height:1.45}
+.sponsor-note{margin-top:16px;padding:17px 18px;border-radius:15px;border:1px solid rgba(231,182,77,.20);background:rgba(231,182,77,.045);color:#9eacb8;font-size:12px;line-height:1.55}.sponsor-note b{color:#f5d06d}
+.final{padding:0 0 82px}
+.final-box{text-align:center;padding:48px 24px;border:1px solid rgba(231,182,77,.28);border-radius:27px;background:radial-gradient(circle at 50% 0%,rgba(231,182,77,.10),transparent 44%),linear-gradient(145deg,#091722,#040a0f);box-shadow:var(--shadow)}
+.final-box h2{font-size:clamp(34px,5vw,58px);letter-spacing:-.05em;margin:11px auto}.final-box p{max-width:690px;color:#9facb7;margin:0 auto 22px;line-height:1.6}
+footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:10px}.foot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+@media(max-width:900px){
+  .coach-grid{grid-template-columns:1fr}.plan.featured{transform:none}.plan{min-height:0}.coach-path{grid-template-columns:1fr}.path{border-right:0;border-bottom:1px solid var(--line)}.path:last-child{border-bottom:0}
+  .flagship{min-height:0}.flagship-bg{opacity:.40;background-position:65% center}.flagship-content{padding:42px 28px;max-width:none}.system-line{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .wrap{width:min(100% - 20px,1180px)}.site-nav .brand-copy small{display:none}.site-nav .brand img{width:40px;height:40px}.nav-actions .dark{display:none}
+  .hero{padding-top:38px}.role-switch{margin-top:24px}.role-tab{min-height:54px;font-size:11px}.role-tab small{font-size:9px}
+  .section{padding-top:22px}.flagship-content{padding:34px 20px}.flagship h2{font-size:43px}.price{font-size:60px}.flagship-sub{font-size:16px}
+  .value-grid{grid-template-columns:1fr}.value-head{padding:25px 20px}.value-item{padding:19px}.system-line{padding:22px 20px}
+  .coach-intro{padding-top:0}.plan-visual{height:170px}.plan-body{padding:21px}.hero-cta .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="https://mwdynasty.com">
+      <img src="/mw-official-crest.png" alt="MW Dynasty crest">
+      <span class="brand-copy"><b>MW DYNASTY</b><small>SPRINT PERFORMANCE SYSTEM</small></span>
+    </a>
+    <div class="nav-actions">
+      <a class="btn dark" href="https://mwdynasty.com">BACK TO SITE</a>
+      <a class="btn gold" href="https://app.mwdynasty.com">SIGN IN</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Choose your path</div>
+    <h1>ONE DYNASTY. <span>TWO EXPERIENCES.</span></h1>
+    <p>Athletes get one complete MW Sprint Performance membership. Coaches choose the level of MW partnership that fits the way they lead their program.</p>
+    <div class="role-switch" role="tablist" aria-label="Membership type">
+      <button class="role-tab active" type="button" data-role="athlete" role="tab" aria-selected="true">ATHLETE<small>One complete performance system</small></button>
+      <button class="role-tab" type="button" data-role="coach" role="tab" aria-selected="false">COACH<small>Three levels of coaching partnership</small></button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="view active" id="athlete-view" data-view="athlete">
+  <div class="section">
+    <div class="wrap">
+      <article class="flagship">
+        <div class="flagship-bg"></div><div class="flagship-glow"></div>
+        <div class="flagship-content">
+          <div class="label">Athlete Membership · One flagship system</div>
+          <h2>MW SPRINT <span>PERFORMANCE SYSTEM</span></h2>
+          <p class="flagship-sub">More than workouts. A connected environment that tells the athlete what to do, teaches them why, tracks what happened, and keeps the season moving with purpose.</p>
+          <div class="price-row"><div class="price">$19</div><div class="price-meta">/ month<br>complete athlete membership</div></div>
+          <div class="value-pills"><span>41-WEEK SPRINT SYSTEM</span><span>STRENGTH & POWER</span><span>SPRINT SCHOOL</span><span>COACH MW</span><span>PACE + DISTANCE TOOLS</span><span>PROGRESS TRACKING</span></div>
+          <div class="hero-cta">
+            <a class="btn gold" href="https://app.mwdynasty.com/athlete/start.html">START ATHLETE MEMBERSHIP →</a>
+            <a class="btn dark" href="#athlete-system">SEE THE COMPLETE SYSTEM</a>
+          </div>
+          <div class="promise">Built for 100m · 200m · 400m development. Ages 13+.</div>
+        </div>
+      </article>
+
+      <section class="value-section" id="athlete-system">
+        <div class="value-head">
+          <div class="label">Your complete sprint performance system</div>
+          <h3>Everything works together.</h3>
+          <p>The value is not a list of disconnected features. Track training, strength work, education, pacing, scheduling, accountability, and guidance are designed to operate as one athlete-development environment.</p>
+        </div>
+        <div class="value-grid">
+          <div class="value-item"><div class="value-icon">01</div><div><b>Start at the right place</b><span>Smart Entry evaluates the athlete and places them at the appropriate point in the system.</span></div></div>
+          <div class="value-item"><div class="value-icon">02</div><div><b>Complete 41-week sprint progression</b><span>Structured development for the 100m, 200m and 400m across the full training year.</span></div></div>
+          <div class="value-item"><div class="value-icon">03</div><div><b>Strength & Power integration</b><span>Weight-room development supports the demands of the athlete's current sprint phase.</span></div></div>
+          <div class="value-item"><div class="value-icon">04</div><div><b>Warm-ups, drills & recovery</b><span>Structured preparation and recovery with instruction on how and why each piece is performed.</span></div></div>
+          <div class="value-item"><div class="value-icon">05</div><div><b>MW Sprint School</b><span>Mechanics, acceleration, blocks, max velocity and race execution—not just workouts.</span></div></div>
+          <div class="value-item"><div class="value-icon">06</div><div><b>Know exactly what to do today</b><span>Daily training, lifting and training history live together in one place.</span></div></div>
+          <div class="value-item"><div class="value-icon">07</div><div><b>Train at the right intensity</b><span>MW Pace Calculator and Distance Pacer help turn prescriptions into executable targets.</span></div></div>
+          <div class="value-item"><div class="value-icon">08</div><div><b>Track the work that gets completed</b><span>Attendance, reps and pace execution provide accountability beyond simply opening a workout.</span></div></div>
+          <div class="value-item"><div class="value-icon">09</div><div><b>Follow development over time</b><span>PRs, strength numbers, goals and athlete progress stay connected to the training journey.</span></div></div>
+          <div class="value-item"><div class="value-icon">10</div><div><b>Coach MW guidance</b><span>Built-in guidance helps athletes understand terminology, purpose and the work in front of them.</span></div></div>
+        </div>
+        <div class="system-line">
+          <div><strong><span>You’re not buying a workout plan.</span> You’re entering a connected sprint-performance system.</strong><p>MW Dynasty is designed to guide the athlete from today's session to long-term development with structure, precision and purpose.</p></div>
+          <a class="btn gold" href="https://app.mwdynasty.com/athlete/start.html">BUILD YOUR DYNASTY →</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="coach-view" data-view="coach">
+  <div class="section">
+    <div class="wrap">
+      <div class="coach-intro">
+        <div class="label">Coach memberships</div>
+        <h2>CHOOSE HOW MUCH OF MW DYNASTY YOU WANT BESIDE YOU.</h2>
+        <p>All three options are built for coaches and programs. The difference is whether MW serves as your operating environment, your intelligence layer, or your complete sprint-development methodology.</p>
+      </div>
+
+      <div class="coach-grid">
+        <article class="plan core">
+          <div class="plan-visual"></div>
+          <div class="plan-body">
+            <div class="tier">Level 01 · Infrastructure</div>
+            <h3>MW COACH CORE</h3>
+            <div class="meaning">RUN YOUR PROGRAM ON MW.</div>
+            <div class="amount">$49<small>/month</small></div>
+            <div class="sponsor">Sponsored athletes: +$5 each / month</div>
+            <p class="plan-copy">For coaches who already have their methodology and want a professional operating environment around it.</p>
+            <ul>
+              <li>Roster + athlete organization</li>
+              <li>Attendance + completion oversight</li>
+              <li>Coach-to-athlete communication</li>
+              <li>Athlete notes + performance information</li>
+              <li>Practice, meet + testing calendar</li>
+              <li>Manual athlete availability review</li>
+            </ul>
+            <a class="btn dark" href="https://app.mwdynasty.com/coach/start.html">CHOOSE CORE →</a>
+          </div>
+        </article>
+
+        <article class="plan intelligence featured">
+          <div class="badge">COACHING INTELLIGENCE</div>
+          <div class="plan-visual"></div>
+          <div class="plan-body">
+            <div class="tier">Level 02 · Infrastructure + Insight</div>
+            <h3>MW COACH INTELLIGENCE</h3>
+            <div class="meaning">RUN YOUR PROGRAM WITH MW BESIDE YOU.</div>
+            <div class="amount">$79<small>/month</small></div>
+            <div class="sponsor">Sponsored athletes: +$6 each / month</div>
+            <p class="plan-copy">Keep your methodology while MW adds connected context around scheduling, athlete availability and season decisions.</p>
+            <ul>
+              <li>Everything in Core</li>
+              <li>Coach MW coaching intelligence</li>
+              <li>School breaks + exam-week context</li>
+              <li>Smart schedule constraints</li>
+              <li>Calendar-aware season planning</li>
+              <li>Athlete availability + conflict context</li>
+              <li>Deeper training + performance oversight</li>
+            </ul>
+            <a class="btn gold" href="https://app.mwdynasty.com/coach/start.html">CHOOSE INTELLIGENCE →</a>
+          </div>
+        </article>
+
+        <article class="plan performance">
+          <div class="badge">COMPLETE MW METHODOLOGY</div>
+          <div class="plan-visual"></div>
+          <div class="plan-body">
+            <div class="tier">Level 03 · Complete System</div>
+            <h3>MW SPRINT PERFORMANCE</h3>
+            <div class="meaning">RUN THE COMPLETE MW SYSTEM.</div>
+            <div class="amount">$109<small>/month</small></div>
+            <div class="sponsor">Sponsored athletes: +$7 each / month</div>
+            <p class="plan-copy">For coaches and programs that want the full MW Dynasty sprint-development methodology operating through the platform.</p>
+            <ul>
+              <li>Everything in Intelligence</li>
+              <li>41-week MW sprint progression</li>
+              <li>Synchronized Strength & Power system</li>
+              <li>MW Sprint School ecosystem</li>
+              <li>Pacing + performance tools</li>
+              <li>Smart athlete placement</li>
+              <li>41-week schedule intelligence</li>
+              <li>Methodology-aligned season planning</li>
+            </ul>
+            <a class="btn dark" href="https://app.mwdynasty.com/coach/start.html">CHOOSE SPRINT PERFORMANCE →</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="coach-path">
+        <div class="path"><small>CORE</small><b>INFRASTRUCTURE</b><span>Bring your own methodology. Use MW to operate the program around it.</span></div>
+        <div class="path"><small>INTELLIGENCE</small><b>INFRASTRUCTURE + INSIGHT</b><span>Keep your methodology while MW adds intelligence around the decisions.</span></div>
+        <div class="path"><small>SPRINT PERFORMANCE</small><b>COMPLETE METHODOLOGY</b><span>Use the full MW sprint, strength, education and intelligence ecosystem.</span></div>
+      </div>
+      <div class="sponsor-note"><b>Sponsored athlete pricing:</b> Core +$5/athlete, Intelligence +$6/athlete, Sprint Performance +$7/athlete each month. A sponsored athlete does not also pay the separate $19 individual Athlete membership while covered by that coach sponsorship.</div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap final-box">
+    <div class="eyebrow">More than sports</div>
+    <h2>BUILD THE ATHLETE. BUILD THE DYNASTY.</h2>
+    <p>Choose the path that fits you. Athletes enter one complete development system. Coaches choose the level of partnership they want with MW Dynasty.</p>
+    <div class="hero-cta" style="justify-content:center">
+      <button class="btn gold" type="button" data-jump-role="athlete">VIEW ATHLETE MEMBERSHIP</button>
+      <button class="btn dark" type="button" data-jump-role="coach">VIEW COACH MEMBERSHIPS</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap foot"><span>MW DYNASTY · SPRINT PERFORMANCE SYSTEM</span><span>Faster Athletes · Stronger People · Brighter Futures</span></div></footer>
+
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('.role-tab'));
+  var views=[].slice.call(document.querySelectorAll('.view'));
+
+  function setRole(role, updateUrl){
+    role = role === 'coach' ? 'coach' : 'athlete';
+    tabs.forEach(function(tab){
+      var on=tab.getAttribute('data-role')===role;
+      tab.classList.toggle('active',on);
+      tab.setAttribute('aria-selected',on?'true':'false');
+    });
+    views.forEach(function(view){view.classList.toggle('active',view.getAttribute('data-view')===role);});
+    if(updateUrl){
+      var u=new URL(window.location.href);
+      u.searchParams.set('role',role);
+      history.replaceState({},'',u.pathname+u.search+u.hash);
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  tabs.forEach(function(tab){tab.addEventListener('click',function(){setRole(tab.getAttribute('data-role'),true);});});
+  document.querySelectorAll('[data-jump-role]').forEach(function(btn){
+    btn.addEventListener('click',function(){setRole(btn.getAttribute('data-jump-role'),true);});
+  });
+
+  var initial=new URLSearchParams(window.location.search).get('role');
+  setRole(initial==='coach'?'coach':'athlete',false);
+})();
+</script>
+</body>
+</html>`;
 
 module.exports = async function handler(req, res) {
   res.statusCode = 200;
