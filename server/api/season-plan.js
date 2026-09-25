@@ -63,6 +63,23 @@ module.exports=async function handler(req,res){
       return res.status(400).json({error:'Choose the state where you compete.'});
     }
 
+    if(b.deferSeasonDates===true){
+      await rest(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{
+        method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({
+          competition_level:competitionLevel,
+          competition_state:competitionState||null,
+          season_preference:seasonPreference,
+          competition_paths:[competitionPath],
+          updated_at:new Date().toISOString()
+        })
+      });
+      const calendar=await effectiveCalendar(token);
+      return res.status(200).json({
+        ok:true,deferred:true,calendar,
+        message:'Season dates were deferred. MW will use the standard/current training calendar until the athlete confirms a competition calendar.'
+      });
+    }
+
     const seasonTypes=seasonPreference==='both'?['indoor','outdoor']:[seasonPreference];
     const baseYear=Number(b.seasonYear)||defaultSeasonYear();
     const built=[];
