@@ -2202,7 +2202,7 @@ async function loadWorkoutCompletions(){
 async function paceRepTotalForWorkout(w,d){
   try{
     const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===Number(d));
-    const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();const prescribed=session?.tierWork?.[tier]||session?.prescribedWork||session?.work||'';const m=String(prescribed).match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
+    const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'';const m=String(prescribed).match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
     return m?Math.max(1,Math.min(60,Number(m[1]))):null;
   }catch{return null}
 }
@@ -2289,7 +2289,7 @@ async function renderCompletion(){
   if(hint)hint.style.display='block';
   if(details){
     const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
-    const prescribed=session?.tierWork?.[tier]||session?.work||'Follow the MW prescription for today.';
+    const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'Follow the MW prescription for today.';
     details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WORK:</b> ${prescribed}<br><b>RECOVERY:</b> ${session.recovery||'Full quality recovery'}</div>`;
   }
   const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
@@ -3565,7 +3565,7 @@ function clearTimers(){timers.forEach(clearTimeout);timers=[]}
 function say(x){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(x));u.rate=1;u.pitch=.95;speechSynthesis.speak(u)}catch{}}
 function clock(){if(!running||paused)return;const s=(performance.now()-startedAt)/1000;$p('mwPracticeClock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')+'.'+Math.floor((s%1)*10);raf=requestAnimationFrame(clock)}
 function parsePrescription(){
- const raw=String(session?.tierWork?.[String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase()]||session?.work||'');
+ const raw=String(session?.prescribedWork||session?.tierWork?.[String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase()]||session?.work||session?.structure||'');
  const m=raw.match(/(\d+)\s*[x×]\s*(\d+)\s*m\b/i), reps=m?Number(m[1]):1, dist=m?Number(m[2]):null;
  const explicit=[session?.targetSeconds,session?.target_seconds,session?.paceTargetSeconds,session?.pace_target_seconds].map(Number).find(x=>x>2&&x<300);
  const times=[...raw.matchAll(/(\d+(?:\.\d+)?)\s*(?:s|sec|seconds?)\b/ig)].map(x=>Number(x[1])).filter(x=>x>2&&x<300);
