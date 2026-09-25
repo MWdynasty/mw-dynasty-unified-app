@@ -2257,7 +2257,7 @@ document.getElementById('paceAllYes')?.addEventListener('click',async()=>{const 
 document.getElementById('paceSomeNo')?.addEventListener('click',()=>{const p=mwPendingCompletion;if(!p)return;document.getElementById('paceYesNo').style.display='none';document.getElementById('paceRepStep').style.display='block';showPaceRepChoices(p.total)});
 document.getElementById('paceBack')?.addEventListener('click',()=>{document.getElementById('paceYesNo').style.display='grid';document.getElementById('paceRepStep').style.display='none'});
 document.getElementById('mwPaceModal')?.addEventListener('click',e=>{if(e.target?.id==='mwPaceModal')closePaceCheckin()});
-function weekDone(w){const c=getCompletion()[String(w)]||{};return [1,2,3,4].every(i=>!!c['s'+i])}
+function weekDone(w){const c=getCompletion()[String(w)]||{};return [1,2,3,4,5].every(i=>!!c['s'+i])}
 function completedCount(){const c=getCompletion();return Object.values(c).reduce((n,w)=>n+Object.values(w).filter(Boolean).length,0)}
 function weeksComplete(){let n=0;for(let w=1;w<=41;w++)if(weekDone(w))n++;return n}
 function scheduledWeek(){const p=getProfile();const start=Number(p.startWeek||p.entryAssessment?.assignedWeek||1);const d=p.startDate?new Date(p.startDate+'T00:00:00'):new Date();const days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));return Math.min(41,start+Math.floor(days/7))}
@@ -2265,7 +2265,7 @@ function unlockedThrough(){const p=getProfile();const seasonWeek=Number(mwSeason
 function advanceCurrentWeek(){const p=getProfile();const seasonWeek=Number(mwSeasonCalendar?.week);const current=Math.max(1,Math.min(41,Number.isFinite(seasonWeek)&&seasonWeek>0?seasonWeek:Number(p.week||scheduledWeek()||p.startWeek||1)));p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
 function mwTodayTrackSessionNumber(){
   const n=new Date().getDay();
-  return (n>=1&&n<=4)?n:null;
+  return (n>=1&&n<=5)?n:null;
 }
 async function renderCompletion(){
   const w=advanceCurrentWeek(),repEnabled=!!getProfile().repTracking;
@@ -2296,7 +2296,7 @@ async function renderCompletion(){
   if(details){
     const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
     const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'Follow the MW prescription for today.';
-    details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WORK:</b> ${prescribed}<br><b>RECOVERY:</b> ${session.recovery||'Full quality recovery'}</div>`;
+    const wk=session?.wickets||{};const wicketLine=[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · ');details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WARM-UP:</b> ${session.warmup||'Competition Warm-Up'}<br><b>WICKETS:</b> ${wicketLine||'Daily MW wicket progression'}<br><b>WORK:</b> ${prescribed}<br><b>RECOVERY / STRENGTH:</b> ${session.recovery||'Full quality recovery'}</div>`;
   }
   const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
   const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
@@ -2307,7 +2307,7 @@ async function renderCompletion(){
   if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':status==='incomplete'?'INCOMPLETE':status==='in_progress'?'IN PROGRESS':'SCHEDULED';
   if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Every finished rep is being saved automatically.':'Today’s session is scheduled and ready.';
 }
-function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*4)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/4';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=4;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}}
+function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}}
 function renderProfileIdentity(){const p=getProfile(),first=(document.getElementById('name')?.value||p.name||'Athlete').trim(),last=(document.getElementById('profileLastName')?.value||'').trim(),events=(document.getElementById('profileEvents')?.value||'SPRINT PERFORMANCE').trim();const nm=document.getElementById('mwProfileDisplayName'),ev=document.getElementById('mwProfileEventLine'),mo=document.getElementById('mwProfileMonogram');if(nm)nm.textContent=(first+' '+last).trim();if(ev)ev.textContent=events||'SPRINT PERFORMANCE';if(mo)mo.textContent=((first[0]||'M')+(last[0]||'W')).toUpperCase()}
 document.querySelectorAll('.mwProfileSaveAlias').forEach(b=>b.onclick=()=>document.getElementById('save')?.click());
 ['name','profileLastName','profileEvents'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProfileIdentity));
@@ -2379,11 +2379,11 @@ function activeMWWeek(q=''){
   const p=getProfile(), ep=p.entryAssessment;
   return Math.max(1,Math.min(41,Number(ep?.assignedWeek||p.week||1)));
 }
-function strengthQuestion(x){return /(lift|lifting|weight room|weights|strength|hang clean|hang snatch|front squat|back squat|hex bar|deadlift|push press|what.*monday|what.*wednesday|what.*friday)/i.test(x)}
+function strengthQuestion(x){return /(lift|lifting|weight room|weights|strength|hang clean|hang snatch|front squat|back squat|hex bar|deadlift|push press|what.*tuesday|what.*thursday|what.*championship primer)/i.test(x)}
 function strengthAnswer(q){
   const w=activeMWWeek(q), d=MW_STRENGTH[w]; if(!d)return "I don’t have a verified MW strength prescription for that week.";
   let day='';
-  if(/mon(day)?/i.test(q))day='MON'; else if(/wed(nesday)?/i.test(q))day='WED'; else if(/fri(day)?/i.test(q))day='FRI'; else if(/early week/i.test(q))day='EARLY WEEK';
+  if(/tue(sday)?/i.test(q))day='TUE'; else if(/thu(rsday)?/i.test(q))day='THU'; else if(/early week|championship primer/i.test(q))day='TUE';
   let secs=d.sections.filter(s=>!day||s.title.startsWith(day));
   if(!secs.length)secs=d.sections;
   let lines=secs.map(s=>`${s.title}: ${s.entries.map(e=>`${e[0]} ${e[1]}`.trim()).join('; ')}`);
@@ -3902,7 +3902,7 @@ async function openPracticeFor(w,d){
  if(!session){alert('This MW track session is not available yet.');return}
  try{results=await loadExistingReps(practiceWeek,practiceDay)}catch{results=[]}
  renderLog();const p=parsePrescription(),next=Math.min(p.reps,results.length+1);
- $p('mwPracticeTitle').textContent=session.title||'MW Track Session';$p('mwPracticeWork').textContent=p.raw||session.focus||'Follow today’s MW prescription.';
+ $p('mwPracticeTitle').textContent=session.title||'MW Track Session';const wk=session?.wickets||{};const prep=['WARM-UP: '+(session.warmup||'Competition Warm-Up'),'WICKETS: '+[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · '),'MAIN: '+(p.raw||session.focus||'Follow today’s MW prescription.'),'RECOVERY: '+(session.recovery||'Recover as prescribed.')];$p('mwPracticeWork').textContent=prep.join('  |  ');
  if(workoutSaved){
    $p('mwPracticeRep').textContent='WORKOUT COMPLETE';$p('mwPracticeClock').textContent='—';$p('mwPracticeCue').textContent='THIS SESSION IS ALREADY LOGGED';$p('mwPracticeStart').hidden=true;$p('mwPracticePause').hidden=true;$p('mwPracticeNext').hidden=true;$p('mwPracticeSave').hidden=true;showSummary();
  }else{

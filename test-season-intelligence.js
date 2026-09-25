@@ -77,8 +77,8 @@ const young=recommendedTiers({athlete:{date_of_birth:'2013-10-01'}},{dateOfBirth
 assert.equal(young.trackTier,'foundation');
 assert.equal(young.strengthTier,'foundation');
 const youngLoad=developmentalLoadProfile({dateOfBirth:'2013-10-01',trainingYears:0,trackTier:young.trackTier,strengthTier:young.strengthTier});
-assert.equal(youngLoad.track.volumeFactor,0.65);
-assert.equal(youngLoad.track.recoveryFactor,1.25);
+assert.equal(youngLoad.track.volumeFactor,0.75);
+assert.equal(youngLoad.track.recoveryFactor,1.20);
 assert.equal(youngLoad.strength.rpeCap,6);
 
 const experienced=recommendedTiers({athlete:{date_of_birth:'2004-01-01'}},{dateOfBirth:'2004-01-01',trainingAge:5,lifting:2,continuity:3,speedExposure:3,recentRace:1});

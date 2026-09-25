@@ -1,5 +1,6 @@
 const {SUPABASE_URL,SUPABASE_KEY,authenticate,getAthleteContext}=require('../lib/mw-auth');
 const {effectiveCalendar}=require('../lib/mw-season-calendar');
+const {PROGRAM_VERSION}=require('../lib/mw-program-service');
 const {ageOn,recommendedTiers,developmentalLoadProfile}=require('../lib/mw-developmental-load');
 function cleanNumber(value,label){if(value==null||String(value).trim()==='')return null;const n=Number(value);if(!Number.isFinite(n)||n<=0)throw Object.assign(new Error(`Enter a valid ${label}.`),{status:400});return n}
 function validDate(value){const d=new Date(`${value}T00:00:00Z`);return Number.isNaN(d.getTime())?null:d}
@@ -48,7 +49,7 @@ module.exports=async function handler(req,res){
       strengthTier:tiers.strengthTier
     });
     const assignedWeek=Math.max(1,Math.min(41,Math.trunc(Number(result.assignedWeek||result.assigned_week||calendar.week||1))));
-    const programVersion=seasonAware?'mw-season-intelligence-v1':'mw-41-tiered-v2.9';
+    const programVersion=seasonAware?`mw-season-intelligence-v1+${PROGRAM_VERSION}`:PROGRAM_VERSION;
     if(result.hold){
       await sj(`athlete_program_state?athlete_id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({program_status:'needs_review',track_tier:'foundation',strength_tier:'foundation',program_version:programVersion,assignment_updated_at:new Date().toISOString(),assignment_updated_by:c.user.id})});
       if(seasonAware){

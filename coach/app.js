@@ -1719,7 +1719,9 @@ function renderTrackSession(s){
   return `<section class="mw-session-card">
     <div class="mw-session-top"><div><small>DAY ${escapeHtml(s.day)}</small><h3>${escapeHtml(s.title||s.focus||'Session')}</h3></div>${s.intensity?`<span class="mw-chip">${escapeHtml(s.intensity)}</span>`:''}</div>
     ${mwDetailLine('Focus',s.focus)}
-    ${mwDetailLine('Work',s.work)}
+    ${mwDetailLine('Warm-Up',s.warmup)}
+    ${mwDetailLine('Daily Wickets',s.wickets?[s.wickets.type,s.wickets.passes?`${s.wickets.passes} passes`:'',s.wickets.spacing,s.wickets.intent].filter(Boolean).join(' · '):'')}
+    ${mwDetailLine('Work',s.prescribedWork||s.work)}
     ${mwDetailLine('Setup',s.setup)}
     ${mwDetailLine('Structure',structure)}
     ${Array.isArray(s.sequence)&&s.sequence.length?`<div class="mw-detail-block"><b>Sequence</b>${mwOrdered(s.sequence)}</div>`:''}
@@ -1760,16 +1762,19 @@ function renderStrengthWeek(x,week){
     ${x.coachNote?`<section class="mw-coach-note"><b>COACH MW NOTE</b><p>${escapeHtml(x.coachNote)}</p></section>`:''}
   </div>`;
 }
-async function mwProgramWeek(week,kind='track'){
+async function mwProgramWeek(week,kind='track',eventGroup='100_200'){
   try{
     const token=mwSessionToken();
-    const r=await fetch(`/api/coach/program?week=${week}`,{headers:{Authorization:`Bearer ${token}`}});
+    const qs=new URLSearchParams({week:String(week),trackTier:'performance',strengthTier:'performance',eventGroup:String(eventGroup||'100_200')});
+    const r=await fetch('/api/coach/program?'+qs.toString(),{headers:{Authorization:`Bearer ${token}`}});
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'Program unavailable');
     const x=kind==='strength'?d.strength:d.track;
     if(!x)return mwModal(`${kind==='strength'?'Strength & Power':'MW Track Program'} · Week ${week}`,'<div class="tile">No verified prescription is connected for this week.</div>');
-    const body=kind==='strength'?renderStrengthWeek(x,week):`<div class="mw-track-week"><div class="mw-week-banner"><small>MW TRACK PROGRAM</small><h3>Week ${week} · ${escapeHtml(x.phaseName||'MW Sprint Development')}</h3></div>${(x.sessions||[]).map(renderTrackSession).join('')}</div>`;
+    const branchControls=kind==='track'?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px"><button class="action mw-event-branch" data-event="100_200">100m / 200m</button><button class="back mw-event-branch" data-event="400">400m</button></div>':'';
+    const body=kind==='strength'?renderStrengthWeek(x,week):`<div class="mw-track-week">${branchControls}<div class="mw-week-banner"><small>MW TRACK PROGRAM · ${escapeHtml(d.eventLabel||x.eventLabel||'100m / 200m')}</small><h3>Week ${week} · ${escapeHtml(x.phaseName||'MW Sprint Development')}</h3><p>${escapeHtml(x.objective||'')}</p></div>${(x.sessions||[]).map(renderTrackSession).join('')}</div>`;
     mwModal(`${kind==='strength'?'Strength & Power':'MW Track Program'} · Week ${week}`,body);
+    if(kind==='track')document.querySelectorAll('.mw-event-branch').forEach(b=>b.onclick=()=>{document.getElementById('mwModal')?.remove();mwProgramWeek(week,'track',b.dataset.event)});
   }catch(e){toast(e.message)}
 }
 function mwTrackPage(){pageBase('MW Track Program','Protected 41-week MW training system — every session opens with the full prescription, recovery, cues and circuit order.',`<div class="panel-grid">${Array.from({length:41},(_,i)=>i+1).map(w=>`<div class="tile"><h3>Week ${w}</h3><p>MW progressive sprint development</p><button class="action mw-week" data-week="${w}">Open Week</button></div>`).join('')}</div>`);document.querySelectorAll('.mw-week').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'track'))}

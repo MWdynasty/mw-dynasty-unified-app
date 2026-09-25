@@ -1,5 +1,5 @@
 const {getAccountContext}=require('../lib/mw-auth');
-const {programWeek,PROGRAM_VERSION,normalizeTier}=require('../lib/mw-program-service');
+const {programWeek,PROGRAM_VERSION,normalizeTier,normalizeEventGroup}=require('../lib/mw-program-service');
 const {reconcileSeasonPlan,positionForPlan,uiPhaseForCode}=require('../lib/mw-season-intelligence');
 const {developmentalLoadProfile}=require('../lib/mw-developmental-load');
 
@@ -57,7 +57,9 @@ module.exports=async function handler(req,res){
 
     const trackTier=normalizeTier(c.programState?.track_tier||c.athlete?.experience_level);
     const strengthTier=normalizeTier(c.programState?.strength_tier||c.athlete?.experience_level);
-    let {track,strength}=programWeek(sourceWeek,trackTier,strengthTier);
+    const athleteEvents=[...(Array.isArray(c.athlete?.selected_events)?c.athlete.selected_events:[]),c.athlete?.primary_event,c.athlete?.secondary_event].filter(Boolean);
+    const eventGroup=normalizeEventGroup(athleteEvents);
+    let {track,strength}=programWeek(sourceWeek,trackTier,strengthTier,eventGroup);
     const developmentalLoad=developmentalLoadProfile({
       dateOfBirth:c.athlete?.date_of_birth,
       trainingYears:c.athlete?.track_training_years,
@@ -74,7 +76,7 @@ module.exports=async function handler(req,res){
 
     return res.status(200).json({
       week,officialWeek:official,officialDay:Number(c.programState?.current_day||1),
-      trackTier,strengthTier,programVersion:plan?.id?'mw-season-intelligence-v1':(c.programState?.program_version||PROGRAM_VERSION),
+      trackTier,strengthTier,eventGroup,eventLabel:eventGroup==='400'?'400m':'100m / 200m',programVersion:plan?.id?`mw-season-intelligence-v1+${PROGRAM_VERSION}`:PROGRAM_VERSION,
       developmentalLoad,
       seasonPlan:plan?.id?{
         id:plan.id,seasonType:plan.season_type,seasonLengthWeeks:Number(plan.season_length_weeks||0),
