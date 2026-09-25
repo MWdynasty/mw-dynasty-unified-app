@@ -12,6 +12,6 @@
     "xlsx": "0.18.5"
   },
   "scripts": {
-    "test": "node test-tiered-program.js && node test-season-intelligence.js && node test-season-intelligence-authority.js && node test-athlete-button-wiring.js && node test-distance-pacer.js && node test-season-registry.js && node test-launch-integrity.js && node test-security-controls.js"
+    "test": "node test-tiered-program.js && node test-season-intelligence.js && node test-season-intelligence-authority.js && node test-athlete-button-wiring.js && node test-distance-pacer.js && node test-pace-ai-today.js && node test-season-registry.js && node test-launch-integrity.js && node test-security-controls.js"
   }
 }

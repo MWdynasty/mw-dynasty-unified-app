@@ -72,7 +72,7 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
     <p class="muted" id="todayFocus">Choose your current week and day. Pace AI will pull the MW workout and calculate any paceable reps from your saved PRs.</p>
     <div class="row" style="margin-top:12px">
       <label>MW Week<select id="week"></select></label>
-      <label>Day<select id="day"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+      <label>Day<select id="day"><option value="1">1 · MON</option><option value="2">2 · TUE</option><option value="3">3 · WED</option><option value="4">4 · THU</option><option value="5">5 · FRI</option></select></label>
     </div>
     <button class="full" id="loadWorkout">⚡ Load Today's Workout</button>
   </div>
@@ -168,13 +168,25 @@ function parseWorkout(work){
  if(!m)return null;
  return {reps:+m[1],distance:+m[2],intensity:+m[3]/100}
 }
+function sessionWorkText(session){
+ return String(session?.prescribedWork||session?.work||session?.structure||'').trim();
+}
+function buildPacePlan(parsed){
+ if(!parsed)return null;
+ const p=profile();
+ if(!(p.p100>0&&p.p200>0&&p.p400>0))return null;
+ const x=calc(parsed.distance,parsed.intensity);
+ return Number.isFinite(x?.target)?{...parsed,...x}:null;
+}
 function savePrefs(){const p=profile();localStorage.setItem(KEY,JSON.stringify(p))}
 async function init(){
  TRACK={weeks:{}};
  for(let i=1;i<=41;i++)$('#week').insertAdjacentHTML('beforeend',`<option value="${i}">Week ${i}</option>`);
  ['p100','p200','p400'].forEach(k=>$('#'+k).value=saved[k]||'');
- $('#week').value=saved.week||1; $('#day').value=saved.day||1;
- syncManual(); loadWorkout();
+ $('#week').value=saved.week||1;
+ $('#day').value=Math.max(1,Math.min(5,Number(saved.day||1)));
+ syncManual();
+ renderPaceSummary();
 }
 async function loadTrackWeek(week){week=Number(week)||1;if(TRACK?.weeks?.[String(week)])return TRACK.weeks[String(week)];const tok=window.MW_SESSION?.access_token||'';if(!tok)return null;const r=await fetch('/api/program?week='+week,{headers:{Authorization:'Bearer '+tok},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'This MW week is locked');if(d.track)TRACK.weeks[String(week)]=d.track;return d.track||null}
 function mwPaceCompact(v,max=58){const s=String(v||'').replace(/\s+/g,' ').trim();return s.length>max?s.slice(0,max-1).trimEnd()+'…':s}
@@ -183,25 +195,82 @@ function renderPaceSummary(state='ready'){
  if(!title||!work||!target||!recovery||!quality)return;
  if(!currentSession){title.textContent=state==='locked'?'MW session unavailable':'Loading today’s MW session…';work.textContent='—';target.textContent='—';recovery.textContent='—';quality.textContent=state==='locked'?'Check your program access.':'MW will load today’s focus.';return}
  title.textContent=currentSession.title||'Today’s MW session';
- work.textContent=currentPlan?currentPlan.reps+' × '+currentPlan.distance+'m @ '+Math.round(currentPlan.intensity*100)+'%':mwPaceCompact(currentSession.work||currentSession.title,44);
+ work.textContent=currentPlan?currentPlan.reps+' × '+currentPlan.distance+'m @ '+Math.round(currentPlan.intensity*100)+'%':mwPaceCompact(sessionWorkText(currentSession)||currentSession.title,44);
  target.textContent=currentPlan&&Number.isFinite(currentPlan.target)?currentPlan.target.toFixed(2)+' sec':mwPaceCompact(currentSession.intensity||'Quality first',34);
  recovery.textContent=mwPaceCompact(currentSession.recovery||'As prescribed',38);
  const cue=Array.isArray(currentSession.cues)&&currentSession.cues.length?currentSession.cues[0]:(currentSession.focus||'Execute the prescription with quality');
  quality.textContent=mwPaceCompact(cue,48);
 }
-async function loadWorkout(){
- const selected=Number($('#week').value)||1;let w=null;try{w=await loadTrackWeek(selected)}catch(e){$('#todayTitle').textContent='MW PROGRAM LOCKED';$('#todayFocus').textContent=e.message||'This week is not available yet.';currentSession=null;currentPlan=null;renderTargets();renderRecorder();renderPaceSummary('locked');return}if(!w){renderPaceSummary();return;}
- const d=+$('#day').value;
- currentSession=w?.sessions?.find(x=>+x.day===d)||null; savePrefs();
- if(!currentSession){currentPlan=null;renderPaceSummary();return}
- $('#todayTitle').textContent=`Week ${w.week} • Day ${d} — ${currentSession.title}`;
+function renderLoadedSession(w,d){
+ currentSession=w?.sessions?.find(x=>+x.day===+d)||null;
+ savePrefs();
+ if(!currentSession){
+   currentPlan=null;
+   $('#todayTitle').textContent=`Week ${Number($('#week').value)||'—'} • Day ${d||'—'}`;
+   $('#todayFocus').textContent='No MW track session is scheduled for this day.';
+   $('#sessionName').textContent='RECOVERY / NO TRACK SESSION';
+   $('#sessionWork').textContent='Recover and follow the MW schedule.';
+   $('#sessionMeta').innerHTML='';
+   renderTargets();renderRecorder();renderPaceSummary();
+   return false;
+ }
+ const workText=sessionWorkText(currentSession);
+ $('#todayTitle').textContent=`Week ${Number($('#week').value)||w?.week||'—'} • Day ${d} — ${currentSession.title||'MW Track Session'}`;
  $('#todayFocus').textContent=currentSession.focus||'';
- $('#sessionName').textContent=currentSession.title;
- $('#sessionWork').textContent=currentSession.work;
+ $('#sessionName').textContent=currentSession.title||'MW Track Session';
+ $('#sessionWork').textContent=workText||'Follow today’s MW prescription.';
  $('#sessionMeta').innerHTML=`<span class="pill">${currentSession.recovery||'Recovery as prescribed'}</span><span class="pill">${currentSession.intensity||'MW intensity'}</span>`+(currentSession.cues||[]).map(c=>`<span class="pill">${c}</span>`).join('');
- const parsed=parseWorkout(currentSession.work);
- currentPlan=parsed?{...parsed,...calc(parsed.distance,parsed.intensity)}:null;
- renderTargets(); renderRecorder(); renderPaceSummary();
+ const parsed=parseWorkout(workText);
+ currentPlan=buildPacePlan(parsed);
+ renderTargets();renderRecorder();renderPaceSummary();
+ return true;
+}
+async function loadWorkout(){
+ const selected=Number($('#week').value)||1;
+ let w=null;
+ try{w=await loadTrackWeek(selected)}
+ catch(e){
+   $('#todayTitle').textContent='MW PROGRAM LOCKED';
+   $('#todayFocus').textContent=e.message||'This week is not available yet.';
+   currentSession=null;currentPlan=null;renderTargets();renderRecorder();renderPaceSummary('locked');return false;
+ }
+ if(!w){renderPaceSummary('locked');return false}
+ return renderLoadedSession(w,Number($('#day').value)||1);
+}
+async function loadTodayWorkout(){
+ const button=$('#loadWorkout'),original=button?.textContent||"⚡ Load Today's Workout";
+ if(button){button.disabled=true;button.textContent='LOADING TODAY…'}
+ try{
+   const tok=window.MW_SESSION?.access_token||'';
+   if(!tok)throw new Error('Your MW athlete session is still syncing.');
+   const r=await fetch('/api/program',{headers:{Authorization:'Bearer '+tok},cache:'no-store'});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok)throw new Error(d.error||'Today’s MW workout is unavailable.');
+   const officialWeek=Math.max(1,Math.min(41,Number(d.seasonIntelligence?.week||d.officialWeek||d.week||1)));
+   const officialDay=Math.max(1,Math.min(7,Number(d.seasonIntelligence?.day||d.officialDay||1)));
+   $('#week').value=String(officialWeek);
+   if(officialDay<=5)$('#day').value=String(officialDay);
+   if(d.track)TRACK.weeks[String(officialWeek)]=d.track;
+   if(officialDay>5){
+     currentSession=null;currentPlan=null;
+     $('#todayTitle').textContent=`Week ${officialWeek} • Recovery Day`;
+     $('#todayFocus').textContent='No track workout is scheduled today. Recover and be ready for the next MW session.';
+     $('#sessionName').textContent='RECOVERY DAY';
+     $('#sessionWork').textContent='No track session scheduled.';
+     $('#sessionMeta').innerHTML='';
+     renderTargets();renderRecorder();renderPaceSummary();
+     savePrefs();
+     return true;
+   }
+   return renderLoadedSession(d.track,officialDay);
+ }catch(e){
+   $('#todayTitle').textContent='TODAY’S WORKOUT UNAVAILABLE';
+   $('#todayFocus').textContent=e.message||'Could not load today’s MW session.';
+   currentSession=null;currentPlan=null;renderTargets();renderRecorder();renderPaceSummary('locked');
+   return false;
+ }finally{
+   if(button){button.disabled=false;button.textContent=original}
+ }
 }
 function renderTargets(){
  const box=$('#targets'),empty=$('#targetsEmpty');box.innerHTML='';
@@ -244,7 +313,7 @@ function parseWeekDayQuestion(q){
  const dm=s.match(new RegExp('\\bday\\s+('+num+')\\b','i'));
  const week=wm?wordsToNumberWord(wm[1]):null;
  const day=dm?wordsToNumberWord(dm[1]):null;
- return {week:week&&week>=1&&week<=41?week:null,day:day&&day>=1&&day<=4?day:null};
+ return {week:week&&week>=1&&week<=41?week:null,day:day&&day>=1&&day<=5?day:null};
 }
 function getSessionByWeekDay(week,day){
  const w=TRACK?.weeks?.[String(week)]||null;
@@ -254,9 +323,10 @@ function getSessionByWeekDay(week,day){
 function describeSession(week,day){
  const {w,session}=getSessionByWeekDay(week,day);
  if(!session)return null;
- const parsed=parseWorkout(session.work);
- const plan=parsed?{...parsed,...calc(parsed.distance,parsed.intensity)}:null;
- let out=`<b>Week ${week} • Day ${day} — ${session.title}</b><br>${session.work}`;
+ const workText=sessionWorkText(session);
+ const parsed=parseWorkout(workText);
+ const plan=buildPacePlan(parsed);
+ let out=`<b>Week ${week} • Day ${day} — ${session.title}</b><br>${workText||'Follow the MW prescription.'}`;
  if(session.recovery) out+=`<br>Recovery: ${session.recovery}`;
  if(session.intensity) out+=`<br>Intensity: ${session.intensity}`;
  if(plan) out+=`<br>Your MW target: <b>${plan.target.toFixed(2)} sec</b> each rep (${plan.low.toFixed(2)}–${plan.high.toFixed(2)} sec zone).`;
@@ -274,7 +344,7 @@ function localAnswer(q){
  if(!currentSession)return 'Load your MW week and day first so I can use the actual session.';
  if(l.includes('recovery')||l.includes('rest'))return `Today’s recovery is <b>${currentSession.recovery||'as prescribed'}</b>.`;
  if(l.includes('which pr')||l.includes('anchor')||l.includes('based on'))return currentPlan?`I’m using your <b>${currentPlan.anchor}</b> for this ${currentPlan.distance}m target.`:'This session does not have an automatic pace target loaded.';
- if(l.includes('today')||l.includes('hit')||l.includes('target')||l.includes('pace')||l.includes('workout')||l.includes('what do i have'))return currentPlan?`<b>${currentSession.title}</b><br>${currentSession.work}<br>Your target is <b>${currentPlan.target.toFixed(2)} sec</b> each rep, with an MW zone of ${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)}. Recovery: ${currentSession.recovery}.`:`<b>${currentSession.title}</b><br>${currentSession.work}<br>Recovery: ${currentSession.recovery||'as prescribed'}. This session is not a simple distance + percentage prescription, so I won’t invent a pace target.`;
+ if(l.includes('today')||l.includes('hit')||l.includes('target')||l.includes('pace')||l.includes('workout')||l.includes('what do i have')){const workText=sessionWorkText(currentSession);return currentPlan?`<b>${currentSession.title}</b><br>${workText}<br>Your target is <b>${currentPlan.target.toFixed(2)} sec</b> each rep, with an MW zone of ${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)}. Recovery: ${currentSession.recovery}.`:`<b>${currentSession.title}</b><br>${workText||'Follow the MW prescription.'}<br>Recovery: ${currentSession.recovery||'as prescribed'}. This session does not have a complete automatic pace target from the available PR data, so I won’t invent one.`}
  if(l.includes('intensity')&&currentPlan)return `${Math.round(currentPlan.intensity*100)}% means the calculator applies the prescribed training intensity to your MW best-equivalent for ${currentPlan.distance}m. The goal is execution—not turning every rep into a race.`;
  return null;
 }
@@ -297,7 +367,7 @@ async function askAI(q){
  }catch(e){addBubble('I can still calculate your pace here, but open-ended Pace AI is temporarily unavailable.','ai')}
  $('#aiStatus').textContent='● READY';
 }
-$('#loadWorkout').onclick=loadWorkout;$('#calculate').onclick=manualCalc;$('#saveProfile').onclick=()=>{savePrefs();syncManual();loadWorkout();$('#saveProfile').textContent='✓ SAVED';setTimeout(()=>$('#saveProfile').textContent='SAVE PROFILE',900)};
+$('#loadWorkout').onclick=loadTodayWorkout;$('#calculate').onclick=manualCalc;$('#saveProfile').onclick=()=>{savePrefs();syncManual();loadWorkout();$('#saveProfile').textContent='✓ SAVED';setTimeout(()=>$('#saveProfile').textContent='SAVE PROFILE',900)};
 $('#week').onchange=loadWorkout;$('#day').onchange=loadWorkout;['distance','intensity','pr100','pr200','pr400'].forEach(id=>$('#'+id).addEventListener('change',manualCalc));
 $('#send').onclick=()=>askAI($('#ask').value);$('#ask').addEventListener('keydown',e=>{if(e.key==='Enter')askAI(e.target.value)});$$('.quick button').forEach(b=>b.onclick=()=>askAI(b.dataset.q));
 $('#sendPacer').onclick=()=>{
@@ -306,7 +376,7 @@ $('#sendPacer').onclick=()=>{
    distance:currentPlan.distance,reps:currentPlan.reps,targetTime:+currentPlan.target.toFixed(2),
    recovery:currentSession?.recovery||'',
    restSeconds:(()=>{const m=String(currentSession?.recovery||'').match(/(\d+(?:\.\d+)?)\s*min/i);return m?Math.round(+m[1]*60):0})(),
-   week:+$('#week').value,day:+$('#day').value,title:currentSession?.title||'MW Workout',work:currentSession?.work||''
+   week:+$('#week').value,day:+$('#day').value,title:currentSession?.title||'MW Workout',work:sessionWorkText(currentSession)
  };
  localStorage.setItem('mwPacerHandoff',JSON.stringify(payload));
  $('#handoffProof').style.display='block';
@@ -338,10 +408,10 @@ document.addEventListener('mw-athlete-ready',e=>{
  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v){el.value=v;el.dispatchEvent(new Event('change'))}};
  set('p100',p100);set('p200',p200);set('p400',p400);set('pr100',p100);set('pr200',p200);set('pr400',p400);
  if(s.current_week){set('week',s.current_week);const w=document.getElementById('week');if(w)w.disabled=true}
- if(s.current_day){set('day',Math.min(4,s.current_day));const d=document.getElementById('day');if(d)d.disabled=true}
+ if(s.current_day&&Number(s.current_day)<=5){set('day',Math.max(1,Math.min(5,Number(s.current_day))));const d=document.getElementById('day');if(d)d.disabled=true}
  ['p100','p200','p400'].forEach(id=>{const el=document.getElementById(id);if(el)el.readOnly=true});
  const save=document.getElementById('saveProfile');if(save){save.disabled=true;save.textContent='PRs SYNCED FROM MW PROFILE'}
- setTimeout(()=>{document.getElementById('loadWorkout')?.click()},100);
+ setTimeout(()=>{loadTodayWorkout()},100);
 });
 </script>
 
