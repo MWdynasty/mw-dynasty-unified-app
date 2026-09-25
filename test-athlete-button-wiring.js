@@ -109,8 +109,17 @@ console.log('PASS: athlete Home secondary actions are consolidated into the drop
 
 
 assert(html.includes('id="mw-home-stationary-v1"'),'Stationary Athlete Home stylesheet must exist');
-assert(html.includes("document.body.classList.toggle('mw-home-locked',homeLocked)"),'Home view must lock body scrolling');
-assert(html.includes("document.documentElement.classList.toggle('mw-home-locked',homeLocked)"),'Home view must lock document scrolling');
+assert(html.includes("document.body.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle body scrolling state');
+assert(html.includes("document.documentElement.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle document scrolling state');
 assert(html.includes('body.mw-auth-ready.mw-home-locked'),'Stationary Home CSS must override normal authenticated scrolling');
 assert(html.includes('#home .mwHomeMenu{\n    max-height:min(70dvh,520px);'),'Home dropdown must remain internally usable on short screens');
 console.log('PASS: Athlete Home is stationary on phone-sized screens while secondary views retain scrolling.');
+
+
+assert(html.includes('position:fixed!important;'),'Stationary Home must hard-lock the body on iOS');
+assert(html.includes('touch-action:none!important;'),'Stationary Home must disable viewport panning');
+assert(html.includes("document.addEventListener('touchmove'"),'Stationary Home must block iOS touchmove rubber-banding');
+assert(html.includes("e.preventDefault();"),'Stationary Home touchmove handler must cancel viewport movement');
+assert(html.includes("if(e.target.closest('#mwHomeMenu'))return;"),'Home dropdown must remain independently scrollable');
+assert(html.includes('mwSetHomeScrollLock(homeLocked);'),'View navigation must use the hard Home scroll lock helper');
+console.log('PASS: iOS Athlete Home hard scroll lock prevents viewport panning while preserving menu scroll.');
