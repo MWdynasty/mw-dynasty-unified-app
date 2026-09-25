@@ -13,7 +13,7 @@ const US_STATES=[
 ].sort();
 
 function registryCodes(sql,season){
-  const re=new RegExp("\\('([A-Z]{2})','high_school','"+season+"','school',2027","g");
+  const re=new RegExp("\\(\\s*'([A-Z]{2})'\\s*,\\s*'high_school'\\s*,\\s*'"+season+"'\\s*,\\s*'school'\\s*,\\s*2027","g");
   return [...sql.matchAll(re)].map(m=>m[1]).sort();
 }
 
