@@ -27,7 +27,7 @@ Do not merge to production until all required launch gates are checked.
 - [x] State-season registry schema exists.
 - [x] Source URL, confidence, verified date, and season year are stored.
 - [x] Alabama high-school outdoor seed exists as first registry example.
-- [x] All 50 states now have 2027 high-school outdoor registry coverage in the isolated test database: 19 official, 13 official-peak/estimated-start, and 18 explicitly estimated pending fuller association calendars.
+- [x] All 50 states now have 2027 high-school outdoor registry coverage in the isolated test database: 22 official, 14 official-peak/estimated-start, and 14 explicitly estimated pending fuller association calendars.
 - [ ] Populate states that sanction high-school indoor track.
 - [ ] Add middle-school calendar data where an official statewide calendar exists.
 - [ ] Fall back to MW estimated ranges when no authoritative state calendar exists.
@@ -217,7 +217,7 @@ Do not merge to production until all required launch gates are checked.
 - [x] Registry date integrity check: 0 missing anchors, 0 reversed anchors, 0 first-meet-before-start errors.
 - [x] All 50 derived season lengths fall inside the Season Intelligence engine range (11–20 weeks).
 - [x] State-calendar proposals still require Confirm/Edit before activation.
-- [ ] Upgrade remaining estimated/partial records when governing associations publish fuller 2027 dates.
+- [ ] Upgrade remaining estimated/partial records when governing associations publish fuller 2027 dates. Arkansas, South Carolina, and West Virginia were upgraded to official after source verification; Missouri was upgraded to official-peak/estimated-start.
 - [ ] Build indoor-state registry coverage after outdoor national QA is locked.
 - [ ] Begin interactive preview QA only after the national registry behavior is signed off.
 
