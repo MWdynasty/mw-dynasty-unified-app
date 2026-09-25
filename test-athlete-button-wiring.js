@@ -117,7 +117,7 @@ console.log('PASS: Athlete Home is stationary on phone-sized screens while secon
 
 
 assert(html.includes('position:fixed!important;'),'Stationary Home must hard-lock the body on iOS');
-assert(html.includes('touch-action:none!important;'),'Stationary Home must disable viewport panning');
+assert(html.includes('touch-action:manipulation!important;'),'Stationary Home must preserve taps while the body lock and touchmove guard prevent scrolling');
 assert(html.includes("document.addEventListener('touchmove'"),'Stationary Home must block iOS touchmove rubber-banding');
 assert(html.includes("e.preventDefault();"),'Stationary Home touchmove handler must cancel viewport movement');
 assert(html.includes("if(e.target.closest('#mwHomeMenu'))return;"),'Home dropdown must remain independently scrollable');
