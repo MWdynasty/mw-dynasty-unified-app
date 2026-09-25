@@ -2127,6 +2127,7 @@ let mwSessionRpeCache={};
 let mwPaceCheckCache={};
 let mwCompletionLoaded=false;
 let mwPendingCompletion=null;
+let mwSeasonCalendar=null;
 function getCompletion(){return mwCompletionCache}
 function completionHeaders(extra={}){
   const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
@@ -2689,7 +2690,6 @@ function renderSeasonPhaseStrip(c){
     strip.innerHTML='<div class="phasePill" data-phase="1"><span>1</span>FOUNDATION</div><div class="phasePill" data-phase="3"><span>2</span>PRE-COMP</div><div class="phasePill" data-phase="4"><span>3</span>COMPETE</div><div class="phasePill" data-phase="5"><span>4</span>PEAK</div>';
   }
 }
-let mwSeasonCalendar=null;
 function mwCalendarDate(iso){if(!iso)return '—';try{return new Date(iso+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}catch{return iso}}
 function renderSeasonCalendarSummary(){
   const box=$('#seasonCalendarSummary'),home=$('#homeTrainingYear'),c=mwSeasonCalendar;
