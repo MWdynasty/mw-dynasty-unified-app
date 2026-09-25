@@ -106,3 +106,11 @@ assert(html.includes('data-open-settings'),'Athlete Home menu must include Setti
 assert(html.includes("window.mwCloseAthleteHomeMenu=close"),'Athlete Home menu must close after navigation');
 assert(html.includes('#home .mwHomeShortcuts{display:none!important}'),'Legacy Home shortcut grid must stay hidden');
 console.log('PASS: athlete Home secondary actions are consolidated into the dropdown menu.');
+
+
+assert(html.includes('id="mw-home-stationary-v1"'),'Stationary Athlete Home stylesheet must exist');
+assert(html.includes("document.body.classList.toggle('mw-home-locked',homeLocked)"),'Home view must lock body scrolling');
+assert(html.includes("document.documentElement.classList.toggle('mw-home-locked',homeLocked)"),'Home view must lock document scrolling');
+assert(html.includes('body.mw-auth-ready.mw-home-locked'),'Stationary Home CSS must override normal authenticated scrolling');
+assert(html.includes('#home .mwHomeMenu{\n    max-height:min(70dvh,520px);'),'Home dropdown must remain internally usable on short screens');
+console.log('PASS: Athlete Home is stationary on phone-sized screens while secondary views retain scrolling.');
