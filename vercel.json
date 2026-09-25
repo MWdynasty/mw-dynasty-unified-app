@@ -191,6 +191,10 @@
       "destination": "/api/mw?route=coach/progression"
     },
     {
+      "source": "/api/coach/season-intelligence",
+      "destination": "/api/mw?route=coach/season-intelligence"
+    },
+    {
       "source": "/api/coach/roster",
       "destination": "/api/mw?route=coach/roster"
     }
