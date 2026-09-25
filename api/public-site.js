@@ -42,6 +42,75 @@ function enhancementScript() {
     }
   }
 
+  function rewriteAthleteMembershipCopy() {
+    const replacements = new Map([
+      ['WHAT YOU GET', 'YOUR COMPLETE SPRINT PERFORMANCE SYSTEM'],
+      ['Smart Entry Assessment + personalized starting week', 'Start at the right place — MW evaluates the athlete and places them at the appropriate point in the training system.'],
+      ['41-week sprint progression for 100m, 200m + 400m', 'A complete 41-week sprint progression built for the 100m, 200m and 400m.'],
+      ['MW Strength & Power sessions', 'Strength & Power training integrated with sprint work so the weight room supports what happens on the track.'],
+      ['Big Warm-Up, sprint drills + cool-down teaching', 'Structured warm-ups, sprint drills and recovery with instruction on how and why each piece is performed.'],
+      ['Sprint School: mechanics, blocks, acceleration + race execution', 'MW Sprint School teaches mechanics, acceleration, block starts and race execution—not just workouts.'],
+      [\`Today’s workout + complete training history\`, \`Know exactly what to do today with daily training, lifting and a complete training history in one place.\`],
+      ['Pace Calculator + Distance Pacer', 'Train at the right intensity using the MW Pace Calculator and Distance Pacer.'],
+      ['Attendance, pace compliance + reps-completed tracking', 'Track the work that actually gets completed including attendance, reps and pace execution.'],
+      ['PRs, maxes, goals + athlete progress profile', 'Follow your development over time with PRs, strength numbers, goals and athlete progress.'],
+      ['Coach MW guidance whenever you need it', 'Coach MW is built into the system to help athletes understand their training whenever they need guidance.'],
+      ['iPhone + Android athlete-app access', 'Train anywhere with access through the MW Dynasty athlete platform.']
+    ]);
+
+    let changed = 0;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    for (const node of nodes) {
+      const raw = node.nodeValue || '';
+      const normalized = raw.replace(/\\s+/g, ' ').trim();
+      if (!normalized) continue;
+      for (const [from, to] of replacements) {
+        if (normalized === from) {
+          node.nodeValue = raw.replace(from, to);
+          changed += 1;
+          break;
+        }
+      }
+    }
+
+    const all = [...document.querySelectorAll('div,section,article')];
+    const membershipCard = all.find(el => {
+      const t = (el.innerText || '').replace(/\\s+/g, ' ').trim();
+      return t.includes('YOUR COMPLETE SPRINT PERFORMANCE SYSTEM') &&
+             t.includes('A complete 41-week sprint progression') &&
+             t.includes('Coach MW is built into the system');
+    });
+
+    if (membershipCard && !membershipCard.querySelector('.mw-membership-value-line')) {
+      if (!document.getElementById('mw-membership-copy-style')) {
+        const style = document.createElement('style');
+        style.id = 'mw-membership-copy-style';
+        style.textContent = `
+          .mw-membership-value-line{
+            margin:18px 0 4px;
+            padding:16px 18px;
+            border-top:1px solid rgba(226,181,72,.28);
+            color:#d8e0e6;
+            font-size:14px;
+            line-height:1.55
+          }
+          .mw-membership-value-line strong{color:#f0bd45}
+        `;
+        document.head.appendChild(style);
+      }
+      const line = document.createElement('div');
+      line.className = 'mw-membership-value-line';
+      line.innerHTML = '<strong>You’re not buying a workout plan.</strong> You’re getting a connected sprint-performance system that guides the athlete from today’s session to long-term development.';
+      membershipCard.appendChild(line);
+      changed += 1;
+    }
+
+    return changed;
+  }
+
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
@@ -120,10 +189,12 @@ function enhancementScript() {
   }
 
   wireMembershipLinks();
+  rewriteAthleteMembershipCopy();
 
   if (!enhance()) {
     const observer = new MutationObserver(() => {
       wireMembershipLinks();
+      rewriteAthleteMembershipCopy();
       if (enhance()) observer.disconnect();
     });
     observer.observe(document.documentElement,{subtree:true,childList:true});
@@ -131,6 +202,9 @@ function enhancementScript() {
   }
 
   document.addEventListener('click', e => {
+    setTimeout(rewriteAthleteMembershipCopy, 40);
+    setTimeout(rewriteAthleteMembershipCopy, 180);
+    setTimeout(rewriteAthleteMembershipCopy, 500);
     const a = e.target.closest?.('a');
     if (!a) return;
     const label = (a.textContent || '').toLowerCase();
