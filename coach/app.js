@@ -1,6 +1,7 @@
 const app=document.getElementById('app');
-const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
+const SUPABASE_URL=MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':'https://keqgunlfwhjgcsurynef.supabase.co';
+const SUPABASE_KEY=MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
 const SESSION_KEY='mwCoachSupabaseSession';
 const MW_APP_VERSION='3.0.16';
 const MW_IOS_BUILD='13';
