@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+window.MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
+window.MW_SUPABASE_URL=window.MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':window.MW_SUPABASE_URL+'';
+window.MW_SUPABASE_KEY=window.MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':window.MW_SUPABASE_KEY;
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#02060b">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1778,8 +1783,8 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <nav class="nav mwDepthNav mwImageNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b class="mwNavArt mwNavHome" aria-hidden="true"></b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b class="mwNavArt mwNavCoach" aria-hidden="true"></b><span>COACH MW</span></button><button data-v="workouts"><b class="mwNavArt mwNavTrain" aria-hidden="true"></b><span>TRAIN</span></button><button data-v="progress"><b class="mwNavArt mwNavProgram" aria-hidden="true"></b><span>PROGRESS</span></button><button data-v="athlete"><b class="mwNavArt mwNavProfile" aria-hidden="true"></b><span>PROFILE</span></button></nav>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const MW_SB_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-const MW_SB_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const MW_SB_URL=window.MW_SUPABASE_URL+'';
+const MW_SB_KEY=window.MW_SUPABASE_KEY;
 const saved=JSON.parse(localStorage.getItem('mwPremiumProfile')||'{}');
 const LIFT_MAX_KEY='mwLiftMaxes';
 function getLiftMaxes(){return JSON.parse(localStorage.getItem(LIFT_MAX_KEY)||'{}')}
@@ -1826,7 +1831,7 @@ function mwPromptDobVerification(){
     btn.disabled=true;btn.textContent='VERIFYING…';state.style.display='block';state.textContent='';
     try{
       const s=sess();if(!s?.access_token)throw new Error('Sign in again to verify your age.');
-      const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_set_athlete_date_of_birth',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_date_of_birth:dob})});
+      const r=await fetch(window.MW_SUPABASE_URL+'/rest/v1/rpc/mw_set_athlete_date_of_birth',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_date_of_birth:dob})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.error||'Age verification failed.');
       window.mwDobRequired=false;if(window.mwRemoteProfile)window.mwRemoteProfile.dateOfBirth=dob;
       state.textContent='✓ Age verified.';setTimeout(()=>c(),450)
@@ -2828,8 +2833,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 </script>
 <script id="mw-supabase-auth-v1">
 (() => {
-  const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-  const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SUPABASE_URL=window.MW_SUPABASE_URL+'';
+  const SUPABASE_KEY=window.MW_SUPABASE_KEY;
   const SESSION_KEY='mwSupabaseSession';
   let mwSession=null;
   let mwRemoteProfile={userId:'',name:'Athlete',coachType:'male',p60:'',p100:'',p200:'',p300:'',p400:'',week:'1',currentDay:'1',currentPhase:'1',programStatus:'not_started',startDate:'',startWeek:'1'};window.mwAssessmentComplete=false;window.mwAssessmentRequired=false;window.mwDobRequired=false;window.mwFeatureAccess={};
@@ -3457,8 +3462,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 <style>.mwUtilityModal{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.76);padding:18px;align-items:center;justify-content:center}.mwUtilityModal.open{display:flex}.mwUtilityBox{position:relative;width:min(620px,100%);max-height:85vh;overflow:auto;background:#07111a;border:1px solid #394857;border-radius:16px;padding:22px;color:#fff}.mwUtilityClose{position:absolute;right:12px;top:8px;border:0;background:transparent;color:#fff;font-size:28px}.mwUtilityBox p{color:#aab6c0;line-height:1.55}</style>
 <script id="mw-coach-connection-v249">
 (() => {
-  const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
-  const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SUPABASE_URL=window.MW_SUPABASE_URL+'';
+  const SUPABASE_KEY=window.MW_SUPABASE_KEY;
   const $=s=>document.querySelector(s);
   let currentInvite=null;
   function session(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
@@ -3518,7 +3523,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 const m=document.getElementById('mwUtilityModal'),t=document.getElementById('mwUtilityTitle'),b=document.getElementById('mwUtilityBody');
 function o(x,h){t.textContent=x;b.innerHTML=h;m.classList.add('open')}function c(){m.classList.remove('open')}document.getElementById('mwUtilityClose')?.addEventListener('click',c);m?.addEventListener('click',e=>{if(e.target===m)c()});
 function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
-const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
 async function mwLoadPublicPricing(){try{const r=await fetch('/api/pricing',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.plans))throw new Error(d.error||'Pricing unavailable');const p=d.plans.find(x=>x.plan_code==='mw_athlete');if(!p)return;const monthly=Number(p.monthly_price_cents),annual=Number(p.annual_price_cents);window.__mwAthletePricing={monthly,annual,annualEnabled:!!p.annual_enabled};if(Number.isFinite(monthly)){const el=document.getElementById('mwAthleteMembershipPrice');if(el)el.textContent=`MW Athlete · $${(monthly/100).toFixed(monthly%100===0?0:2)}/month${Number.isFinite(annual)&&p.annual_enabled?` · $${(annual/100).toFixed(annual%100===0?0:2)}/year`:''}`;}}catch(e){console.warn('MW public pricing sync unavailable; using locked fallback price.',e)}}
 async function mwBillingRequest(method='GET',body=null){const s=sess();if(!s?.access_token)throw new Error('Sign in again to manage your membership.');const r=await fetch('/api/billing',{method,headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Membership request failed');return d}
 function mwMoney(c){const n=Number(c);return Number.isFinite(n)?'$'+(n/100).toFixed(n%100===0?0:2):''}
@@ -3537,7 +3542,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 
 <script id="mw-email-invite-session-v310">
 (()=>{
-  const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
   async function capture(){
     const h=new URLSearchParams(location.hash.replace(/^#/,''));
     const access=h.get('access_token'),refresh=h.get('refresh_token');
@@ -3564,7 +3569,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
     let ss=null;try{ss=JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{}
     if(!ss?.access_token)return;
     try{
-      const r=await fetch('https://keqgunlfwhjgcsurynef.supabase.co/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
+      const r=await fetch(window.MW_SUPABASE_URL+'/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY,Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.details||'Invitation could not be accepted');
       q.delete('invite');q.delete('invite_token');const next=location.pathname+(q.toString()?'?'+q.toString():'');history.replaceState({},document.title,next);
       document.querySelector('#coachConnectedBadge')?.classList.add('show');
@@ -3578,7 +3583,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 
 <script id="mw-athlete-messages-v311">
 (()=>{
-  const SB='https://keqgunlfwhjgcsurynef.supabase.co',PK='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
   let coachRows=[],replyRows=[],coachIdentityRows=[],selectedCoachId=null;
   function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
   function headers(){const s=sess();return {apikey:PK,Authorization:'Bearer '+(s?.access_token||''),'Content-Type':'application/json'}}
