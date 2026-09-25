@@ -2,6 +2,9 @@ const assert=require('assert');
 const {
   phaseAllocation,sourceWeekMap,derivePlan,positionForPlan,levelGroup
 }=require('./server/lib/mw-season-intelligence');
+const {recommendedTiers,developmentalLoadProfile}=require('./server/lib/mw-developmental-load');
+const {coachSeasonMode,coachSeasonCapabilities,athleteSeasonEngineEnabled}=require('./server/lib/mw-season-entitlements');
+const {adaptationRecommendation}=require('./server/lib/mw-season-adaptation');
 
 function counts(plan){return ['foundation','pre_competition','competition','peak'].map(k=>plan[k].count)}
 function sum(xs){return xs.reduce((a,b)=>a+b,0)}
@@ -68,3 +71,50 @@ const continuationMap=sourceWeekMap(continuationPhases,{continuation:true});
 assert(Number(continuationMap['1'].sourceWeek)>=7);
 
 console.log('MW Season Intelligence tests passed');
+
+
+const young=recommendedTiers({athlete:{date_of_birth:'2013-10-01'}},{dateOfBirth:'2013-10-01',trainingAge:0,lifting:0,continuity:3,speedExposure:3,recentRace:1});
+assert.equal(young.trackTier,'foundation');
+assert.equal(young.strengthTier,'foundation');
+const youngLoad=developmentalLoadProfile({dateOfBirth:'2013-10-01',trainingYears:0,trackTier:young.trackTier,strengthTier:young.strengthTier});
+assert.equal(youngLoad.track.volumeFactor,0.65);
+assert.equal(youngLoad.track.recoveryFactor,1.25);
+assert.equal(youngLoad.strength.rpeCap,6);
+
+const experienced=recommendedTiers({athlete:{date_of_birth:'2004-01-01'}},{dateOfBirth:'2004-01-01',trainingAge:5,lifting:2,continuity:3,speedExposure:3,recentRace:1});
+assert.equal(experienced.trackTier,'performance');
+assert.equal(experienced.strengthTier,'performance');
+const experiencedLoad=developmentalLoadProfile({dateOfBirth:'2004-01-01',trainingYears:5,trackTier:experienced.trackTier,strengthTier:experienced.strengthTier});
+assert.equal(experiencedLoad.track.volumeFactor,1);
+assert.equal(experiencedLoad.strength.rpeCap,8);
+
+
+assert.equal(coachSeasonMode('core','coach'),'none');
+assert.equal(coachSeasonMode('intelligence','coach'),'insights');
+assert.equal(coachSeasonMode('mw_sprint_performance','coach'),'engine');
+assert.equal(coachSeasonMode(null,'founder_owner'),'engine');
+assert.equal(coachSeasonCapabilities('intelligence','coach').season_intelligence_engine,false);
+assert.equal(coachSeasonCapabilities('intelligence','coach').season_intelligence_insights,true);
+assert.equal(coachSeasonCapabilities('mw_sprint_performance','coach').season_intelligence_engine,true);
+assert.equal(athleteSeasonEngineEnabled({mw_training_system:true,smart_entry:true}),true);
+assert.equal(athleteSeasonEngineEnabled({mw_training_system:false,smart_entry:false}),false);
+
+console.log('MW Season Intelligence entitlement boundaries passed');
+
+
+const oneMiss=adaptationRecommendation({phaseCode:'competition',daysToPrimaryPeak:21,missedSessions7d:1,nextMeetPriority:'C'});
+assert.equal(oneMiss.action,'continue_no_makeup');
+assert.equal(oneMiss.taper,'none');
+
+const peakMiss=adaptationRecommendation({phaseCode:'peak',daysToPrimaryPeak:5,missedSessions7d:2,nextMeetPriority:'A',nextMeetIsPrimary:true});
+assert.equal(peakMiss.action,'protect_peak');
+assert.equal(peakMiss.loadAdjustment,'reduce_low_priority_volume');
+assert.equal(peakMiss.taper,'primary_peak');
+
+const qualifier=adaptationRecommendation({phaseCode:'competition',daysToPrimaryPeak:28,nextMeetPriority:'A',nextMeetIsPrimary:false});
+assert.equal(qualifier.taper,'qualifier_freshness');
+
+const youthDisruption=adaptationRecommendation({phaseCode:'pre_competition',daysToPrimaryPeak:35,missedSessions7d:2,ageBand:'mid_adolescent',trainingTier:'foundation'});
+assert.equal(youthDisruption.coachReview,true);
+
+console.log('MW Season Intelligence adaptation guardrails passed');
