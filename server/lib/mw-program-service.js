@@ -28,14 +28,14 @@ function scaleTrackWork(work,tier){
   // Scale explicit repetition ranges such as "6–8 x 100m".
   out=out.replace(/\b(\d+)\s*[–-]\s*(\d+)\s*x\b/gi,(m,a,b)=>{
     const lo=scaledCount(a,factor),hi=Math.max(lo,scaledCount(b,factor));
-    return `${lo}–${hi} x`;
+    return lo===hi?`${lo} x`:`${lo}–${hi} x`;
   });
   // Scale explicit "N x ..." prescriptions. Percentages and distances are untouched.
   out=out.replace(/\b(\d+)\s*x\b/gi,(m,n)=>`${scaledCount(n,factor)} x`);
   // Scale ranges written without x only when they clearly describe rep counts.
   out=out.replace(/\b(\d+)\s*[–-]\s*(\d+)\s+(?=(?:fly|flies|reps?|starts?|sprints?|build-ups?|accelerations?)\b)/gi,(m,a,b)=>{
     const lo=scaledCount(a,factor),hi=Math.max(lo,scaledCount(b,factor));
-    return `${lo}–${hi} `;
+    return lo===hi?`${lo} `:`${lo}–${hi} `;
   });
   return out;
 }
