@@ -258,3 +258,18 @@ The championship date is the anchor. State/level helps estimate the season; conf
 - [x] Official AHSAA dates used by the registry: first spring practice Jan 18, Track first contest Feb 25, State Track & Field May 6-8.
 - [x] MW stores May 8 as the single peak anchor while the source label preserves the official May 6-8 championship range.
 - [x] Registry UI requires athlete confirmation/edit before a verified state calendar becomes the athlete's active season plan.
+
+
+### Interactive preview QA — active
+- [x] Latest Vercel preview deployment reports Ready for the Season Intelligence feature branch.
+- [x] Static preflight confirms Practice Mode buttons are wired: Start Practice -> beginRep, Finish Rep -> finishRep, Save & Finish -> saveWorkout.
+- [x] Practice Mode restores existing rep rows and keeps Finish & Save hidden until timed rep requirements are satisfied.
+- [x] Practice Mode now reads server-selected prescribedWork before local tier fallback.
+- [ ] LIVE CLICK QA: Start Practice -> Finish Rep -> next rep -> saved rep restoration.
+- [ ] LIVE CLICK QA: Save & Finish workout persists completion and reloads correctly.
+- [ ] LIVE CLICK QA: strength set logging persists and completed/incomplete/absent states render correctly.
+- [ ] LIVE CLICK QA: athlete Confirm/Edit state-calendar flow.
+- [ ] LIVE CLICK QA: athlete "I don't know yet" season-date deferral.
+- [ ] LIVE CLICK QA: Coach Core / Intelligence / MW Sprint Performance season views.
+- [ ] LIVE CLICK QA: phone-width and desktop-width rendering.
+- [ ] BLOCKER: current ChatGPT Vercel connection is not authorized for the mw-sprint team, so the protected preview cannot yet be opened for actual click-through QA from this session.
