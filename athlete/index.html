@@ -2261,8 +2261,8 @@ function weekDone(w){const c=getCompletion()[String(w)]||{};return [1,2,3,4].eve
 function completedCount(){const c=getCompletion();return Object.values(c).reduce((n,w)=>n+Object.values(w).filter(Boolean).length,0)}
 function weeksComplete(){let n=0;for(let w=1;w<=41;w++)if(weekDone(w))n++;return n}
 function scheduledWeek(){const p=getProfile();const start=Number(p.startWeek||p.entryAssessment?.assignedWeek||1);const d=p.startDate?new Date(p.startDate+'T00:00:00'):new Date();const days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));return Math.min(41,start+Math.floor(days/7))}
-function unlockedThrough(){const p=getProfile();return Math.max(1,Math.min(41,Number(p.week||scheduledWeek()||p.startWeek||1)))}
-function advanceCurrentWeek(){const p=getProfile();const current=Math.max(1,Math.min(41,Number(p.week||scheduledWeek()||p.startWeek||1)));p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
+function unlockedThrough(){const p=getProfile();const seasonWeek=Number(mwSeasonCalendar?.week);return Math.max(1,Math.min(41,Number.isFinite(seasonWeek)&&seasonWeek>0?seasonWeek:Number(p.week||scheduledWeek()||p.startWeek||1)))}
+function advanceCurrentWeek(){const p=getProfile();const seasonWeek=Number(mwSeasonCalendar?.week);const current=Math.max(1,Math.min(41,Number.isFinite(seasonWeek)&&seasonWeek>0?seasonWeek:Number(p.week||scheduledWeek()||p.startWeek||1)));p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
 function mwTodayTrackSessionNumber(){
   const n=new Date().getDay();
   return (n>=1&&n<=4)?n:null;
@@ -2374,6 +2374,8 @@ function intentOf(x){for(const i of MW.intents)if(i.keys.some(k=>x.includes(k)))
 function activeMWWeek(q=''){
   const m=String(q).match(/week\s*(\d{1,2})/i);
   if(m){const w=Math.max(1,Math.min(41,Number(m[1])));return w}
+  const seasonWeek=Number(mwSeasonCalendar?.week);
+  if(Number.isFinite(seasonWeek)&&seasonWeek>0)return Math.max(1,Math.min(41,seasonWeek));
   const p=getProfile(), ep=p.entryAssessment;
   return Math.max(1,Math.min(41,Number(ep?.assignedWeek||p.week||1)));
 }
@@ -2713,7 +2715,7 @@ function renderSeasonCalendarSummary(){
     }
     return;
   }
-  const custom=c.mode==='custom';const title=custom?'Coach Custom Training Calendar':'MW Standard Training Year';
+  const custom=c.mode==='custom';const title=custom?'MW Season Intelligence · Coach-Managed':'MW Season Intelligence';
   let main='';
   if(c.status==='active')main=`Current position: <strong>Week ${c.week}</strong> · Phase ${c.phase} — ${PHASES[c.phase]?.name||'MW Progression'}`;
   else if(c.status==='preseason')main=`Preseason · Week 1 entry logic is active until ${mwCalendarDate(c.nextStartDate||c.startDate)}`;
@@ -2722,18 +2724,31 @@ function renderSeasonCalendarSummary(){
   if(box)box.innerHTML=`<b>${title}</b><span>${main}</span><small>${foot}</small>`;
   if(home){
     let headline='Smart Entry protected';
-    let detail=custom?'Your assigned coach controls the training calendar.':'MW Standard calendar · starts the day after Labor Day';
+    let detail=custom?'Season Intelligence is synced to your coach-controlled training calendar.':'MW Season Intelligence · standard calendar starts the day after Labor Day';
     if(c.status==='active')headline=`Week ${c.week} of 41 · ${PHASES[c.phase]?.name||`Phase ${c.phase}`}`;
     else if(c.status==='preseason')headline='Preseason · Week 1 entry protected';
     else headline='Between MW training years · Foundation entry protected';
-    home.innerHTML=`<span class="mwTyKicker">${custom?'COACH TRAINING CALENDAR':'MW TRAINING YEAR'}</span><strong>${headline}</strong><small>${detail}</small><em>WHY AM I ON THIS WEEK? →</em>`;
+    home.innerHTML=`<span class="mwTyKicker">${custom?'MW SEASON INTELLIGENCE · COACH-MANAGED':'MW SEASON INTELLIGENCE'}</span><strong>${headline}</strong><small>${detail}</small><em>WHY AM I ON THIS WEEK? →</em>`;
   }
 }
 async function loadSeasonCalendar(){
   try{
     const tok=window.mwGetSessionToken?.()||'';if(!tok){renderSeasonCalendarSummary();return null}
     const r=await fetch('/api/season-calendar',{cache:'no-store',headers:{Authorization:'Bearer '+tok}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Calendar unavailable');
-    mwSeasonCalendar=d.calendar||null;if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}renderSeasonCalendarSummary();syncEntrySeason();return mwSeasonCalendar;
+    mwSeasonCalendar=d.calendar||null;
+    if(mwSeasonCalendar){
+      const seasonWeek=Math.max(1,Math.min(41,Number(mwSeasonCalendar.week||1)));
+      $('#seasonWeek').value=seasonWeek;
+      const p=getProfile();p.week=String(seasonWeek);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));
+      if($('#week'))$('#week').value=String(seasonWeek);
+      if($('#homeWeek'))$('#homeWeek').textContent=String(seasonWeek);
+      if($('#completionWeek'))$('#completionWeek').textContent=String(seasonWeek);
+      if($('#weekBadge'))$('#weekBadge').textContent=String(seasonWeek);
+      if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+seasonWeek;
+      if($('#strengthWeek'))$('#strengthWeek').value=String(seasonWeek);
+      try{sync()}catch{}
+    }
+    renderSeasonCalendarSummary();syncEntrySeason();return mwSeasonCalendar;
   }catch(e){renderSeasonCalendarSummary();return null}
 }
 function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=mwSeasonCalendar?.mode==='season_plan'?Number(mwSeasonCalendar.phase||1):phaseFromWeek(w);$('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
