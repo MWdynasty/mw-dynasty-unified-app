@@ -31,13 +31,7 @@ function isoDay(now=new Date()){
  * - storedWeek is retained only for diagnostics; it must not override the
  *   Season Intelligence week in athlete-facing code.
  */
-async function resolveAuthoritativeState(c,{now=new Date()}={}){
-  const stored=c?.programState||{};
-  let calendar=null;
-  try{
-    if(c?.token)calendar=await effectiveCalendar(c.token);
-  }catch{}
-
+function resolveFromCalendar(stored={},calendar=null,{now=new Date()}={}){
   const hasCalendar=calendar&&Number.isFinite(Number(calendar.week));
   const week=hasCalendar?clampWeek(calendar.week):clampWeek(stored.current_week||1);
   const phase=hasCalendar
@@ -65,6 +59,15 @@ async function resolveAuthoritativeState(c,{now=new Date()}={}){
   };
 }
 
+async function resolveAuthoritativeState(c,{now=new Date()}={}){
+  const stored=c?.programState||{};
+  let calendar=null;
+  try{
+    if(c?.token)calendar=await effectiveCalendar(c.token);
+  }catch{}
+  return resolveFromCalendar(stored,calendar,{now});
+}
+
 function applyAuthoritativeState(programState,authority){
   if(!authority)return programState||null;
   const s={...(programState||{})};
@@ -83,4 +86,4 @@ function applyAuthoritativeState(programState,authority){
   };
 }
 
-module.exports={resolveAuthoritativeState,applyAuthoritativeState,clampWeek,clampDay,phaseFromWeek,isoDay};
+module.exports={resolveAuthoritativeState,resolveFromCalendar,applyAuthoritativeState,clampWeek,clampDay,phaseFromWeek,isoDay};
