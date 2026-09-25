@@ -9,6 +9,7 @@ on:
       - 'server/**'
       - 'supabase/migrations/**'
       - 'test-season-intelligence.js'
+      - 'test-season-intelligence-authority.js'
       - 'package.json'
       - 'vercel.json'
       - '.github/workflows/season-intelligence-qa.yml'
@@ -34,6 +35,8 @@ jobs:
           node --check server/lib/mw-season-adaptation.js
           node --check server/lib/mw-season-entitlements.js
           node --check server/lib/mw-developmental-load.js
+          node --check server/lib/mw-authoritative-state.js
+          node --check server/lib/mw-performance-intelligence.js
           node --check server/lib/mw-sprint-system-v3.js
           node --check server/lib/mw-program-service.js
           node --check server/lib/mw-auth.js
