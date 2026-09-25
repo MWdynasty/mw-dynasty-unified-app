@@ -1,6 +1,8 @@
 const {SUPABASE_URL,SUPABASE_KEY,authenticate,getAccountContext}=require('../lib/mw-auth');
 const {programWeek}=require('../lib/mw-program-service');
 const {reconcileSeasonPlan,positionForPlan}=require('../lib/mw-season-intelligence');
+const {resolveAuthoritativeState,applyAuthoritativeState}=require('../lib/mw-authoritative-state');
+const {loadPerformanceContext,evaluatePerformance}=require('../lib/mw-performance-intelligence');
 
 function strengthDayFromTitle(title=''){
   const x=String(title).trim().toUpperCase();
@@ -66,8 +68,37 @@ module.exports=async function handler(req,res){
     await refresh(req);
     const c=await getAccountContext(req);
     if(c.athlete&&c.token){
+      const authority=await resolveAuthoritativeState(c);
+      const storedProgramState=c.programState?{...c.programState}:null;
+      c.programState=applyAuthoritativeState(c.programState,authority);
+      c.authoritativeProgram={
+        authority:authority.authority,
+        week:authority.week,
+        day:authority.day,
+        phase:authority.phase,
+        sourceWeek:authority.sourceWeek,
+        phaseCode:authority.phaseCode,
+        seasonLengthWeeks:authority.seasonLengthWeeks,
+        programStatus:authority.programStatus,
+        diverged:authority.diverged,
+        storedWeek:authority.storedWeek
+      };
+      c.seasonCalendar=authority.calendar||null;
+      if(authority.diverged)c.programState.week_reconciled_from=storedProgramState?.current_week||null;
+
       const plan=await reconcileSeasonPlan(c.token);
       if(plan?.id)c.seasonPlan={...plan,position:positionForPlan(plan)};
+
+      const access=c.features?.access||{};
+      if(access.mw_training_system===true||access.ai_intelligence===true){
+        const perfContext=await loadPerformanceContext(c);
+        const coachManaged=/^coach_/i.test(String(access.access_mode||''));
+        c.performanceIntelligence=evaluatePerformance(perfContext,{
+          coachManaged,
+          officialWeek:authority.week,
+          officialDay:authority.day
+        });
+      }
     }
     return res.status(200).json(c)
   }catch(e){return res.status(e.status||500).json({error:e.message||'MW athlete lookup failed'})}
