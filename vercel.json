@@ -37,6 +37,10 @@
   ],
   "rewrites": [
     {
+      "source": "/preview-public",
+      "destination": "/api/public-site?path="
+    },
+    {
       "source": "/memberships",
       "destination": "/api/membership"
     },
