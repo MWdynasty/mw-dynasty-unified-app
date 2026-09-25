@@ -1384,12 +1384,16 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     overscroll-behavior:none!important;
   }
   body.mw-auth-ready.mw-home-locked{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
     height:100dvh!important;
     min-height:100dvh!important;
     overflow:hidden!important;
     overscroll-behavior:none!important;
     padding-bottom:0!important;
-    touch-action:manipulation!important;
+    touch-action:none!important;
+    -webkit-overflow-scrolling:auto!important;
   }
   body.mw-auth-ready.mw-home-locked .app{
     height:100dvh!important;
@@ -1407,6 +1411,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     overflow-y:auto;
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
+    touch-action:pan-y!important;
   }
 }
 </style>
@@ -1986,8 +1991,7 @@ function openView(id,pushHistory=false){
   if(id==='workouts'&&!coachAssigned&&access.mw_training_system!==true&&access.athlete_app===true){mwFeatureLock('Training Access','Your account is active, but no training source is currently available.');return}
   if(id==='workouts'&&!coachAssigned&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Assessment required.</b><br>Complete your Athlete Profile Assessment to receive your MW training assignment.</div>'}}
   const homeLocked=id==='home';
-  document.body.classList.toggle('mw-home-locked',homeLocked);
-  document.documentElement.classList.toggle('mw-home-locked',homeLocked);
+  mwSetHomeScrollLock(homeLocked);
   $('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));$('.view').forEach(x=>x.classList.toggle('active',x.id===id));
   if(id==='entry')syncEntrySeason();
   if(id==='workouts'&&coachAssigned){mwRenderCoachAssignedTraining();}
@@ -1999,9 +2003,33 @@ function openView(id,pushHistory=false){
   if(pushHistory&&history.state?.mwView!==id)history.pushState({...history.state,mwView:id},'',location.href);
 }
 if(!history.state?.mwView)history.replaceState({...history.state,mwView:'home'},'',location.href);
+
+function mwSetHomeScrollLock(locked){
+  const mobile=window.matchMedia('(max-width:599px)').matches;
+  document.body.classList.toggle('mw-home-locked',locked);
+  document.documentElement.classList.toggle('mw-home-locked',locked);
+  if(locked&&mobile){
+    try{
+      document.documentElement.scrollTop=0;
+      document.body.scrollTop=0;
+      window.scrollTo(0,0);
+      requestAnimationFrame(()=>{
+        document.documentElement.scrollTop=0;
+        document.body.scrollTop=0;
+        window.scrollTo(0,0);
+      });
+    }catch{}
+  }
+}
+document.addEventListener('touchmove',e=>{
+  if(!window.matchMedia('(max-width:599px)').matches)return;
+  if(!document.body.classList.contains('mw-home-locked'))return;
+  if(e.target.closest('#mwHomeMenu'))return;
+  e.preventDefault();
+},{passive:false,capture:true});
+
 const mwInitialHomeLocked=document.querySelector('#home.view.active')!==null;
-document.body.classList.toggle('mw-home-locked',mwInitialHomeLocked);
-document.documentElement.classList.toggle('mw-home-locked',mwInitialHomeLocked);
+mwSetHomeScrollLock(mwInitialHomeLocked);
 window.addEventListener('popstate',e=>openView(e.state?.mwView||'home',false));
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v,true));
 
