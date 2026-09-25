@@ -5,7 +5,7 @@ const html=fs.readFileSync('athlete/index.html','utf8');
 const buttons=[...html.matchAll(/<button\b([^>]*)>/gi)].map((m,i)=>({i,attrs:m[1],tag:m[0]}));
 
 function attr(tag,name){
-  const m=tag.match(new RegExp('\\b'+name+'\\s*=\\s*["\\']([^"\\']*)["\\']','i'));
+  const m=tag.match(new RegExp("\\b"+name+"\\s*=\\s*[\\"\']([^\\"\']*)[\\"\']","i"));
   return m?m[1]:null;
 }
 function hasAttr(tag,name){return new RegExp('\\b'+name+'(?:\\s*=|\\b)','i').test(tag)}
