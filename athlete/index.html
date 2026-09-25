@@ -1992,7 +1992,7 @@ function openView(id,pushHistory=false){
   if(id==='workouts'&&!coachAssigned&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Assessment required.</b><br>Complete your Athlete Profile Assessment to receive your MW training assignment.</div>'}}
   const homeLocked=id==='home';
   mwSetHomeScrollLock(homeLocked);
-  $('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));$('.view').forEach(x=>x.classList.toggle('active',x.id===id));
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));
   if(id==='entry')syncEntrySeason();
   if(id==='workouts'&&coachAssigned){mwRenderCoachAssignedTraining();}
   else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
