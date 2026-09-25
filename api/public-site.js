@@ -28,16 +28,31 @@ function enhancementScript() {
   const STYLE_ID = 'mw-system-detail-style';
   const MEMBERSHIPS = '/memberships';
 
+  function roleFromLabel(value) {
+    const label = String(value || '').replace(/\\s+/g,' ').trim().toUpperCase();
+    if (label === 'ATHLETES' || label === 'ATHLETE' || label.includes("I'M AN ATHLETE") || label.includes('I’M AN ATHLETE')) return 'athlete';
+    if (label === 'COACHES' || label === 'COACH' || label.includes("I'M A COACH") || label.includes('I’M A COACH')) return 'coach';
+    return null;
+  }
+
   function wireMembershipLinks() {
     const links = [...document.querySelectorAll('a')];
     for (const a of links) {
-      const label = (a.textContent || '').replace(/\\s+/g,' ').trim().toUpperCase();
-      if (label === 'ATHLETES' || label.includes("I'M AN ATHLETE") || label.includes('I’M AN ATHLETE')) {
-        a.href = MEMBERSHIPS + '#athletes';
-      } else if (label === 'COACHES' || label.includes("I'M A COACH") || label.includes('I’M A COACH')) {
-        a.href = MEMBERSHIPS + '#coaches';
-      } else if (label.includes('MEMBERSHIP UPDATES')) {
+      const label = (a.textContent || '').replace(/\\s+/g,' ').trim();
+      const role = roleFromLabel(label);
+      if (role) {
+        a.href = MEMBERSHIPS + '?role=' + role;
+      } else if (label.toUpperCase().includes('MEMBERSHIP UPDATES')) {
         a.href = MEMBERSHIPS;
+      }
+    }
+
+    const buttons = [...document.querySelectorAll('button')];
+    for (const button of buttons) {
+      const role = roleFromLabel(button.textContent || '');
+      if (role) {
+        button.dataset.mwMembershipRole = role;
+        button.setAttribute('aria-label', role === 'athlete' ? 'View athlete membership' : 'View coach memberships');
       }
     }
   }
@@ -202,6 +217,14 @@ function enhancementScript() {
   }
 
   document.addEventListener('click', e => {
+    const roleButton = e.target.closest?.('button[data-mw-membership-role]');
+    if (roleButton) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.location.href = MEMBERSHIPS + '?role=' + roleButton.dataset.mwMembershipRole;
+      return;
+    }
+
     setTimeout(rewriteAthleteMembershipCopy, 40);
     setTimeout(rewriteAthleteMembershipCopy, 180);
     setTimeout(rewriteAthleteMembershipCopy, 500);
