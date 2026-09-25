@@ -193,8 +193,8 @@ function enhancementScript() {
             <p>The athlete should know what to do, why it matters, how fast to do it, what is happening around the training, and what comes next.</p>
           </div>
           <div class="mw-detail-actions">
-            <a class="mw-detail-btn primary" href="/memberships#athletes">VIEW ATHLETE MEMBERSHIP</a>
-            <a class="mw-detail-btn secondary" href="/memberships#coaches">VIEW COACH MEMBERSHIPS</a>
+            <a class="mw-detail-btn primary" href="/memberships?role=athlete">VIEW ATHLETE MEMBERSHIP</a>
+            <a class="mw-detail-btn secondary" href="/memberships?role=coach">VIEW COACH MEMBERSHIPS</a>
           </div>
         </div>
       </div>
