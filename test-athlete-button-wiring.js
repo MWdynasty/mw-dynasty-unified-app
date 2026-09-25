@@ -60,7 +60,7 @@ assert(html.includes("if(e.target.closest('#mwPracticeNext'))"),'Practice finish
 assert(html.includes("if(e.target.closest('#mwPracticeSave'))"),'Practice save delegated handler missing');
 assert(html.includes("if(e.target.closest('#mwPracticeExit'))"),'Practice exit delegated handler missing');
 assert(html.includes("[data-practice-coach]"),'Practice Ask Coach handler missing');
-assert(html.includes("querySelectorAll('[data-submit-checkin]')"),'Coach-assigned check-in handler missing');
+assert(html.includes("querySelector('[data-submit-checkin]')?.addEventListener('click'"),'Coach-assigned check-in handler missing');
 assert(html.includes("querySelectorAll('[data-sday]')"),'Strength quick-check button wiring missing');
 assert(html.includes("querySelectorAll('[data-resume-strength]')"),'Strength resume button wiring missing');
 assert(html.includes("querySelectorAll('[data-mw-notification]')"),'Notification row button wiring missing');
