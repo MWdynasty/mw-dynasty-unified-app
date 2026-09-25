@@ -359,8 +359,8 @@ function wicketFor(week,day,work){
 
 function recoveryFor(day,week){
   if(day===4 && Number(week)>=25)return 'Protect race readiness. Thursday lifting is optional and meet-dependent; no fatigue-producing extras.';
-  if(day===2 && Number(week)>=25)return 'Reduced strength maintenance only after track; preserve Friday/Saturday race readiness.';
   if(day===2 && Number(week)>=34)return 'Optional neural maintenance only. Stop while bar speed and technique are crisp.';
+  if(day===2 && Number(week)>=25)return 'Reduced strength maintenance only after track; preserve Friday/Saturday race readiness.';
   return DEFAULT_RECOVERY[day]||'Recover as prescribed.';
 }
 
