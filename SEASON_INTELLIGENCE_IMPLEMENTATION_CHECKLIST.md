@@ -215,7 +215,7 @@ Do not merge to production until all required launch gates are checked.
 - [x] Production main branch not replaced during initial build.
 - [ ] Full Node regression suite must run in CI/preview. Static JavaScript syntax checks pass in development review.
 - [ ] Database migration tested safely before production.
-- [ ] Preview deployment created (held until the database migrations have a safe test target).
+- [x] Vercel preview build succeeded and an isolated Supabase test target now exists.
 - [ ] Founder manual QA on preview.
 - [ ] Coach pilot QA.
 - [ ] Athlete pilot QA.
