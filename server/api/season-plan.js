@@ -131,7 +131,7 @@ module.exports=async function handler(req,res){
     }
     if(confirmations.length){
       return res.status(409).json({
-        error:'MW found a verified calendar. Confirm or edit the proposed dates before the season plan is created.',
+        error:'MW found a state calendar record. Review the source/confidence and confirm or edit the proposed dates before the season plan is created.',
         confirmationRequired:true,
         estimates:confirmations
       });
