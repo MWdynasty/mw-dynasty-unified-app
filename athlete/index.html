@@ -1373,6 +1373,43 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 @media(max-width:430px){.mwEnteringOrb{width:174px;height:174px}.mwEnteringOrb img{width:132px;height:132px;border-radius:28px}.mwEnteringCopy b{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.mwEnteringOrb:before,.mwEnteringOrb:after,.mwEnteringOrb img,.mwEnteringLine i{animation:none}}
 </style>
+<style id="mw-home-stationary-v1">
+/* Athlete Home is a command center, not a feed. On phone-sized screens it stays
+   pinned to one viewport while every other Athlete view keeps normal scrolling. */
+@media (max-width:599px){
+  html.mw-home-locked{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+  }
+  body.mw-auth-ready.mw-home-locked{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    padding-bottom:0!important;
+    touch-action:manipulation!important;
+  }
+  body.mw-auth-ready.mw-home-locked .app{
+    height:100dvh!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding-bottom:calc(92px + env(safe-area-inset-bottom))!important;
+  }
+  body.mw-auth-ready.mw-home-locked #home.view.active{
+    max-height:100%!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+  }
+  body.mw-auth-ready.mw-home-locked #home .mwHomeMenu{
+    max-height:min(70dvh,520px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+}
+</style>
 </head>
 <body class="mw-auth-pending">
 <script>
@@ -1948,7 +1985,10 @@ function openView(id,pushHistory=false){
   const coachAssigned=id==='workouts'&&access.mw_training_system!==true&&access.coach_assigned_training===true;
   if(id==='workouts'&&!coachAssigned&&access.mw_training_system!==true&&access.athlete_app===true){mwFeatureLock('Training Access','Your account is active, but no training source is currently available.');return}
   if(id==='workouts'&&!coachAssigned&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Assessment required.</b><br>Complete your Athlete Profile Assessment to receive your MW training assignment.</div>'}}
-  $$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));$$('.view').forEach(x=>x.classList.toggle('active',x.id===id));
+  const homeLocked=id==='home';
+  document.body.classList.toggle('mw-home-locked',homeLocked);
+  document.documentElement.classList.toggle('mw-home-locked',homeLocked);
+  $('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));$('.view').forEach(x=>x.classList.toggle('active',x.id===id));
   if(id==='entry')syncEntrySeason();
   if(id==='workouts'&&coachAssigned){mwRenderCoachAssignedTraining();}
   else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
@@ -1959,6 +1999,9 @@ function openView(id,pushHistory=false){
   if(pushHistory&&history.state?.mwView!==id)history.pushState({...history.state,mwView:id},'',location.href);
 }
 if(!history.state?.mwView)history.replaceState({...history.state,mwView:'home'},'',location.href);
+const mwInitialHomeLocked=document.querySelector('#home.view.active')!==null;
+document.body.classList.toggle('mw-home-locked',mwInitialHomeLocked);
+document.documentElement.classList.toggle('mw-home-locked',mwInitialHomeLocked);
 window.addEventListener('popstate',e=>openView(e.state?.mwView||'home',false));
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v,true));
 
