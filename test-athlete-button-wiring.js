@@ -125,8 +125,8 @@ assert(html.includes('mwSetHomeScrollLock(homeLocked);'),'View navigation must u
 console.log('PASS: iOS Athlete Home hard scroll lock prevents viewport panning while preserving menu scroll.');
 
 
-assert(html.includes("$$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id))"),'openView must update all bottom-nav buttons without throwing');
-assert(html.includes("$$('.view').forEach(x=>x.classList.toggle('active',x.id===id))"),'openView must update all Athlete views without throwing');
+assert(html.includes("document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id))"),'openView must update all bottom-nav buttons without throwing');
+assert(html.includes("document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id))"),'openView must update all Athlete views without throwing');
 assert(!html.includes("$('.nav button').forEach(x=>x.classList.toggle"),'Single-element selector must never be used with forEach for nav state');
 assert(!html.includes("$('.view').forEach(x=>x.classList.toggle"),'Single-element selector must never be used with forEach for view state');
 assert(!html.includes('touch-action:none!important'),'Stationary Home must not disable tap interactions');
