@@ -124,7 +124,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
 <nav class="site-nav">
   <div class="wrap nav-inner">
     <a class="brand" href="https://mwdynasty.com">
-      <img src="/mw-official-crest.png" alt="MW Dynasty crest">
+      <img src="/coach/mw-mark.png" alt="MW Dynasty crest">
       <span class="brand-copy"><b>MW DYNASTY</b><small>SPRINT PERFORMANCE SYSTEM</small></span>
     </a>
     <div class="nav-actions">
