@@ -2,19 +2,19 @@ const fs=require('fs');
 const assert=require('assert');
 
 const html=fs.readFileSync('athlete/index.html','utf8');
-const buttons=[...html.matchAll(/<button\\b([^>]*)>/gi)].map((m,i)=>({i,attrs:m[1],tag:m[0]}));
+const buttons=[...html.matchAll(/<button\b([^>]*)>/gi)].map((m,i)=>({i,attrs:m[1],tag:m[0]}));
 
 function attr(tag,name){
-  const m=tag.match(new RegExp('\\\\b'+name+'\\\\s*=\\\\s*["\\\\\']([^"\\\\\']*)["\\\\\']','i'));
+  const m=tag.match(new RegExp('\\b'+name+'\\s*=\\s*["\\']([^"\\']*)["\\']','i'));
   return m?m[1]:null;
 }
-function hasAttr(tag,name){return new RegExp('\\\\b'+name+'(?:\\\\s*=|\\\\b)','i').test(tag)}
+function hasAttr(tag,name){return new RegExp('\\b'+name+'(?:\\s*=|\\b)','i').test(tag)}
 function textNearButton(index){
   const start=html.indexOf(buttons[index].tag);
   const end=html.indexOf('</button>',start);
-  return end>=0?html.slice(start,end+9).replace(/<[^>]+>/g,' ').replace(/\\s+/g,' ').trim():'';
+  return end>=0?html.slice(start,end+9).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim():'';
 }
-function escRegex(s){return String(s).replace(/[.*+?^$()|[\\]\\\\{}]/g,'\\\\$&')}
+function escRegex(s){return String(s).replace(/[.*+?^$()|[\]\\{}]/g,'\\$&')}
 
 assert(buttons.length>=100,'Athlete UI unexpectedly lost a large number of buttons');
 
@@ -66,12 +66,12 @@ assert(html.includes("querySelectorAll('[data-resume-strength]')"),'Strength res
 assert(html.includes("querySelectorAll('[data-mw-notification]')"),'Notification row button wiring missing');
 assert(html.includes("querySelectorAll('[data-athlete-search-open]')"),'Athlete search result button wiring missing');
 
-const inlineCalls=[...html.matchAll(/onclick\\s*=\\s*["']([^"']+)["']/gi)]
-  .flatMap(m=>[...m[1].matchAll(/\\b([A-Za-z_$][\\w$]*)\\s*\\(/g)].map(x=>x[1]))
+const inlineCalls=[...html.matchAll(/onclick\s*=\s*["']([^"']+)["']/gi)]
+  .flatMap(m=>[...m[1].matchAll(/\b([A-Za-z_$][\w$]*)\s*\(/g)].map(x=>x[1]))
   .filter(x=>!['querySelector','getElementById'].includes(x));
 for(const name of [...new Set(inlineCalls)]){
   const escaped=escRegex(name);
-  const defined=new RegExp('(?:function\\\\s+'+escaped+'\\\\s*\\\\(|(?:const|let|var)\\\\s+'+escaped+'\\\\s*=|window\\\\.'+escaped+'\\\\s*=)').test(html);
+  const defined=new RegExp('(?:function\\s+'+escaped+'\\s*\\(|(?:const|let|var)\\s+'+escaped+'\\s*=|window\\.'+escaped+'\\s*=)').test(html);
   assert(defined,'Inline click handler calls undefined function '+name);
 }
 
@@ -80,7 +80,7 @@ for(const [i,b] of buttons.entries()){
   const isGeneric=genericFamilies.some(a=>hasAttr(b.tag,a));
   const inline=hasAttr(b.tag,'onclick');
   const className=attr(b.tag,'class')||'';
-  const classWired=className.split(/\\s+/).includes('mwProfileSaveAlias');
+  const classWired=className.split(/\s+/).includes('mwProfileSaveAlias');
   const knownDirect=id&&directIds.includes(id);
   const intentionallyInert=/No results/i.test(textNearButton(i));
   assert(
