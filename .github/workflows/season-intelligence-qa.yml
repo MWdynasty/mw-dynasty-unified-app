@@ -34,6 +34,7 @@ jobs:
           node --check server/lib/mw-season-adaptation.js
           node --check server/lib/mw-season-entitlements.js
           node --check server/lib/mw-developmental-load.js
+          node --check server/lib/mw-sprint-system-v3.js
           node --check server/lib/mw-program-service.js
           node --check server/lib/mw-auth.js
           node --check server/api/season-plan.js
@@ -42,6 +43,7 @@ jobs:
           node --check server/api/program.js
           node --check server/api/me.js
           node --check server/api/coach/access.js
+          node --check server/api/coach/program.js
           node --check server/api/coach/season-intelligence.js
           node --check server/api/coach/coach-mw.js
           node --check coach/app.js
