@@ -10,8 +10,8 @@ function outputText(data){
 }
 function prText(prs){return (prs||[]).map(x=>`${x.event}: ${x.time_seconds}s${x.verified?' (verified)':''}`).join(', ')||'No PRs on file'}
 function clampWeek(n){const x=Number(n);return Number.isFinite(x)?Math.max(1,Math.min(41,Math.trunc(x))):null}
-function clampDay(n){const x=Number(n);return Number.isFinite(x)?Math.max(1,Math.min(5,Math.trunc(x))):null}
-function requestedState(messages,officialWeek,officialDay){const lastUser=[...messages].reverse().find(m=>m?.role!=='assistant');const text=String(lastUser?.content||'');const wm=text.match(/\bweek\s*#?\s*(\d{1,2})\b/i);const dm=text.match(/\bday\s*#?\s*([1-5])\b/i);return {text,week:clampWeek(wm?.[1])||officialWeek,day:clampDay(dm?.[1])||officialDay,explicitlyRequestedWeek:!!wm,explicitlyRequestedDay:!!dm}}
+function clampDay(n){const x=Number(n);return Number.isFinite(x)?Math.max(1,Math.min(7,Math.trunc(x))):null}
+function requestedState(messages,officialWeek,officialDay){const lastUser=[...messages].reverse().find(m=>m?.role!=='assistant');const text=String(lastUser?.content||'');const wm=text.match(/\bweek\s*#?\s*(\d{1,2})\b/i);const dm=text.match(/\bday\s*#?\s*([1-7])\b/i);return {text,week:clampWeek(wm?.[1])||officialWeek,day:clampDay(dm?.[1])||officialDay,explicitlyRequestedWeek:!!wm,explicitlyRequestedDay:!!dm}}
 function getStrengthWeek(week){return STRENGTH?.[String(week)]||null}
 function compactTrackWeek(week,tier,eventGroup){return compactTrack(week,tier,eventGroup)}
 function getTrackSession(week,day,tier,eventGroup){const w=compactTrackWeek(week,tier,eventGroup);return w?.sessions?.find(s=>Number(s.day)===Number(day))||null}
