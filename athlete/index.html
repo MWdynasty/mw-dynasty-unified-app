@@ -2606,6 +2606,7 @@ function seasonDatesPayload(){
   return dates;
 }
 let mwSeasonEstimateConfirmationPending=false;
+let mwDeferSeasonDates=false;
 function seasonPlanRequestFromFields(){
   return {
     competitionLevel:$('#entryCompetitionLevel')?.value||'',
@@ -2776,7 +2777,7 @@ async function assessEntry(){
   btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';
   try{
     const tok=window.mwGetSessionToken?.()||'';
-    const seasonRequest={...seasonPlanRequestFromFields(),competitionLevel,competitionState,seasonPreference,competitionPath};
+    const seasonRequest={...seasonPlanRequestFromFields(),competitionLevel,competitionState,seasonPreference,competitionPath,deferSeasonDates:mwDeferSeasonDates};
     const sr=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(seasonRequest)});
     const sd=await sr.json().catch(()=>({}));
     if(!sr.ok){
@@ -2787,14 +2788,18 @@ async function assessEntry(){
         return;
       }
       if(sd.needsDates){
+        applySeasonEstimateFields(sd.estimates||[]);
         const estimates=(sd.estimates||[]).map(x=>`${String(x.seasonType||'season').toUpperCase()}: MW expects about ${x.targetWeeks||'—'} weeks${x.estimatedPeakDate?` · estimated peak ${mwCalendarDate(x.estimatedPeakDate)}`:''}`).join('<br>');
-        out.innerHTML=`<div class="warning"><b>One more season detail.</b><br>${sd.error||'Enter your championship date.'}<br><br>${estimates}<br><br>Enter the championship / peak date above, then tap the button again.</div>`;
+        out.innerHTML=`<div class="warning"><b>One more season detail.</b><br>${sd.error||'Enter your championship date.'}<br><br>${estimates}<br><br>Enter the championship / peak date above and try again, or continue temporarily on the standard MW calendar and update your season dates later.<br><button type="button" class="entryGhost" id="mwDeferSeasonDates" style="margin-top:12px">I DON'T KNOW YET — CONTINUE FOR NOW</button></div>`;
+        document.getElementById('mwDeferSeasonDates')?.addEventListener('click',()=>{mwDeferSeasonDates=true;assessEntry()});
         return;
       }
       throw new Error(sd.error||'MW Season Intelligence could not build your season.');
     }
 
+    const seasonDeferred=sd.deferred===true;
     mwSeasonEstimateConfirmationPending=false;
+    mwDeferSeasonDates=false;
     mwSeasonCalendar=sd.calendar||null;
     if(mwSeasonCalendar){$('#seasonWeek').value=Number(mwSeasonCalendar.week||1)}
     renderSeasonCalendarSummary();syncEntrySeason();
@@ -2808,7 +2813,9 @@ async function assessEntry(){
     window.mwAssessmentComplete=true;window.mwAssessmentRequired=false;
     const seasonLength=Number(d.calendar?.seasonLengthWeeks||mwSeasonCalendar?.seasonLengthWeeks||0);
     const phaseName=d.calendar?.phaseCode==='pre_competition'?'Pre-Competition':d.calendar?.phaseCode==='competition'?'Competition':d.calendar?.phaseCode==='peak'?'Peak / Championship':'Foundation';
-    out.innerHTML=`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
+    out.innerHTML=seasonDeferred
+      ?`<div class="resultTop"><div><span class="badge">MW STANDARD CALENDAR ACTIVE</span><h3>Your training can begin now.</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>CURRENT PLACEMENT</small><b>WEEK ${d.assignedWeek||d.calendar?.week||1}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>You can train now without guessing a championship date. Add or update your real season dates later and MW Season Intelligence will rebuild around the confirmed calendar.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY TRAINING</button>`
+      :`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
   }catch(e){out.innerHTML='<div class="warning">'+(e.message||'MW Season Intelligence could not be saved. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON'}
 }
