@@ -27,13 +27,13 @@ Do not merge to production until all required launch gates are checked.
 - [x] State-season registry schema exists.
 - [x] Source URL, confidence, verified date, and season year are stored.
 - [x] Alabama high-school outdoor seed exists as first registry example.
-- [ ] Populate all supported states for high-school outdoor calendars. Alabama 2027 outdoor is now verified against AHSAA and tested in the isolated registry.
+- [x] All 50 states now have 2027 high-school outdoor registry coverage in the isolated test database: 19 official, 13 official-peak/estimated-start, and 18 explicitly estimated pending fuller association calendars.
 - [ ] Populate states that sanction high-school indoor track.
 - [ ] Add middle-school calendar data where an official statewide calendar exists.
 - [ ] Fall back to MW estimated ranges when no authoritative state calendar exists.
 - [ ] Never present an estimate as an official state date.
 - [ ] Annual refresh process for new state association calendars.
-- [ ] State association / governing-body source review before each season. Alabama 2027 outdoor has now been source-verified as the first completed example.
+- [ ] Continue source upgrades as associations publish/finalize dates. The 50-state registry records source URL, confidence, season year, and verification timestamp; estimated rows must never be presented as official.
 - [ ] Handle states where middle school schedules are district/local rather than statewide.
 - [x] Athlete-confirmed dates override registry estimates; state-calendar dates are never silently locked without confirmation. Team/coach inheritance still pending.
 
@@ -209,6 +209,17 @@ Do not merge to production until all required launch gates are checked.
 - [ ] Coach dashboard reads the correct athlete season state.
 - [x] Smart Entry review/guardrail behavior passes isolated DB QA, including Peak low-readiness review and pain hold.
 - [x] Season Intelligence entitlement boundary passes DB QA: Core=none, Intelligence=insights, MW Sprint Performance=engine.
+
+## P0. National outdoor registry gate
+- [x] Founder made nationwide high-school outdoor coverage a prerequisite to interactive preview QA.
+- [x] 50 distinct states are present for high-school outdoor 2027.
+- [x] All 50 records have start/peak anchors, provenance, confidence, and verification timestamps.
+- [x] Registry date integrity check: 0 missing anchors, 0 reversed anchors, 0 first-meet-before-start errors.
+- [x] All 50 derived season lengths fall inside the Season Intelligence engine range (11–20 weeks).
+- [x] State-calendar proposals still require Confirm/Edit before activation.
+- [ ] Upgrade remaining estimated/partial records when governing associations publish fuller 2027 dates.
+- [ ] Build indoor-state registry coverage after outdoor national QA is locked.
+- [ ] Begin interactive preview QA only after the national registry behavior is signed off.
 
 ## P. Deployment gates
 - [x] Work isolated on feature/season-intelligence-v1.
