@@ -49,12 +49,20 @@ create unique index athlete_strength_session_logs_cycle_set_unique
 
 create index if not exists workout_completions_season_plan_idx
   on public.workout_completions(athlete_id,season_plan_id,program_week,program_day);
+create index if not exists workout_completions_season_fk_idx
+  on public.workout_completions(season_plan_id) where season_plan_id is not null;
 create index if not exists practice_rep_results_season_plan_idx
   on public.athlete_practice_rep_results(athlete_id,season_plan_id,program_week,program_day);
+create index if not exists practice_rep_results_season_fk_idx
+  on public.athlete_practice_rep_results(season_plan_id) where season_plan_id is not null;
 create index if not exists strength_checkins_cycle_idx
   on public.athlete_strength_checkins(athlete_id,training_cycle_key,program_week,strength_day);
+create index if not exists strength_checkins_season_fk_idx
+  on public.athlete_strength_checkins(season_plan_id) where season_plan_id is not null;
 create index if not exists strength_logs_cycle_idx
   on public.athlete_strength_session_logs(athlete_id,training_cycle_key,program_week,program_day);
+create index if not exists strength_logs_season_fk_idx
+  on public.athlete_strength_session_logs(season_plan_id) where season_plan_id is not null;
 
 grant update (season_plan_id,source_program_week) on public.workout_completions to authenticated;
 
