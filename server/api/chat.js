@@ -1,7 +1,6 @@
 const {getAthleteContext,SUPABASE_URL,SUPABASE_KEY,rpc}=require('../lib/mw-auth');
-const {PROGRAM,compactTrack,compactStrength,normalizeTier,PROGRAM_VERSION}=require('../lib/mw-program-service');
+const {PROGRAM,compactTrack,compactStrength,normalizeTier,normalizeEventGroup,PROGRAM_VERSION}=require('../lib/mw-program-service');
 const SUPPORTING_KNOWLEDGE=require('../knowledge/coach-mw-book-knowledge.json');
-const TRACK=PROGRAM.TRACK;
 const STRENGTH=PROGRAM.STRENGTH;
 
 function outputText(data){
@@ -11,12 +10,11 @@ function outputText(data){
 }
 function prText(prs){return (prs||[]).map(x=>`${x.event}: ${x.time_seconds}s${x.verified?' (verified)':''}`).join(', ')||'No PRs on file'}
 function clampWeek(n){const x=Number(n);return Number.isFinite(x)?Math.max(1,Math.min(41,Math.trunc(x))):null}
-function clampDay(n){const x=Number(n);return Number.isFinite(x)?Math.max(1,Math.min(4,Math.trunc(x))):null}
-function requestedState(messages,officialWeek,officialDay){const lastUser=[...messages].reverse().find(m=>m?.role!=='assistant');const text=String(lastUser?.content||'');const wm=text.match(/\bweek\s*#?\s*(\d{1,2})\b/i);const dm=text.match(/\bday\s*#?\s*([1-4])\b/i);return {text,week:clampWeek(wm?.[1])||officialWeek,day:clampDay(dm?.[1])||officialDay,explicitlyRequestedWeek:!!wm,explicitlyRequestedDay:!!dm}}
-function getTrackWeek(week){return TRACK?.weeks?.[String(week)]||null}
-function getTrackSession(week,day){const w=getTrackWeek(week);return w?.sessions?.find(s=>Number(s.day)===Number(day))||null}
+function clampDay(n){const x=Number(n);return Number.isFinite(x)?Math.max(1,Math.min(5,Math.trunc(x))):null}
+function requestedState(messages,officialWeek,officialDay){const lastUser=[...messages].reverse().find(m=>m?.role!=='assistant');const text=String(lastUser?.content||'');const wm=text.match(/\bweek\s*#?\s*(\d{1,2})\b/i);const dm=text.match(/\bday\s*#?\s*([1-5])\b/i);return {text,week:clampWeek(wm?.[1])||officialWeek,day:clampDay(dm?.[1])||officialDay,explicitlyRequestedWeek:!!wm,explicitlyRequestedDay:!!dm}}
 function getStrengthWeek(week){return STRENGTH?.[String(week)]||null}
-function compactTrackWeek(week,tier){return compactTrack(week,tier)}
+function compactTrackWeek(week,tier,eventGroup){return compactTrack(week,tier,eventGroup)}
+function getTrackSession(week,day,tier,eventGroup){const w=compactTrackWeek(week,tier,eventGroup);return w?.sessions?.find(s=>Number(s.day)===Number(day))||null}
 function compactStrengthWeek(week,tier){return compactStrength(week,tier)}
 
 async function restRows(path,token){
@@ -64,13 +62,15 @@ module.exports=async function handler(req,res){
       if(!ps.onboarding_assessment_completed_at)return res.status(403).json({error:'Complete your Athlete Profile Assessment before Coach MW provides individualized MW workouts.',assessmentRequired:true});
       const officialWeek=clampWeek(ps.current_week)||1,officialDay=clampDay(ps.current_day)||1;
       const trackTier=normalizeTier(ps.track_tier||c.athlete?.experience_level),strengthTier=normalizeTier(ps.strength_tier||c.athlete?.experience_level);
+      const athleteEvents=[...(Array.isArray(c.athlete?.selected_events)?c.athlete.selected_events:[]),c.athlete?.primary_event,c.athlete?.secondary_event].filter(Boolean);
+      const eventGroup=normalizeEventGroup(athleteEvents),eventLabel=eventGroup==='400'?'400m':'100m / 200m';
       const asked=requestedState(messages,officialWeek,officialDay);
-      const officialSession=getTrackSession(officialWeek,officialDay),officialTrackWeek=compactTrackWeek(officialWeek,trackTier),officialStrengthWeek=compactStrengthWeek(officialWeek,strengthTier);
+      const officialTrackWeek=compactTrackWeek(officialWeek,trackTier,eventGroup),officialSession=getTrackSession(officialWeek,officialDay,trackTier,eventGroup),officialStrengthWeek=compactStrengthWeek(officialWeek,strengthTier);
       const futureLocked=asked.week>officialWeek,browseWeek=futureLocked?officialWeek:asked.week;
-      const requestedTrackWeek=browseWeek!==officialWeek?compactTrackWeek(browseWeek,trackTier):null;
-      const requestedSession=(browseWeek!==officialWeek||asked.day!==officialDay)?getTrackSession(browseWeek,asked.day):null;
+      const requestedTrackWeek=browseWeek!==officialWeek?compactTrackWeek(browseWeek,trackTier,eventGroup):null;
+      const requestedSession=(browseWeek!==officialWeek||asked.day!==officialDay)?getTrackSession(browseWeek,asked.day,trackTier,eventGroup):null;
       const requestedStrengthWeek=browseWeek!==officialWeek?compactStrengthWeek(browseWeek,strengthTier):null;
-      const programContext={library:{trackProduct:TRACK.product,trackCoverage:TRACK.coverage,trackComplete:TRACK.complete,trackProvenance:TRACK.provenance_note,globalRules:TRACK.global_rules,supportingKnowledgeVersion:SUPPORTING_KNOWLEDGE.knowledgeVersion},official:{week:officialWeek,day:officialDay,trackTier,strengthTier,programVersion:ps.program_version||PROGRAM_VERSION,trackSession:officialSession,trackWeek:officialTrackWeek,strengthWeek:officialStrengthWeek},browsing:(asked.explicitlyRequestedWeek||asked.explicitlyRequestedDay)?{requestedWeek:asked.week,requestedDay:asked.day,futureLocked,requestedTrackSession:futureLocked?null:(requestedSession||getTrackSession(browseWeek,asked.day)),requestedTrackWeek,requestedStrengthWeek}:null};
+      const programContext={library:{trackProduct:'MW Dynasty Sprint Performance System V3',trackCoverage:'41 weeks · Monday-Friday · 100/200 and 400 event branches',trackComplete:true,trackProvenance:'Founder-approved MW Sprint System V3',supportingKnowledgeVersion:SUPPORTING_KNOWLEDGE.knowledgeVersion},official:{week:officialWeek,day:officialDay,trackTier,strengthTier,eventGroup,eventLabel,programVersion:PROGRAM_VERSION,trackSession:officialSession,trackWeek:officialTrackWeek,strengthWeek:officialStrengthWeek},browsing:(asked.explicitlyRequestedWeek||asked.explicitlyRequestedDay)?{requestedWeek:asked.week,requestedDay:asked.day,futureLocked,requestedTrackSession:futureLocked?null:(requestedSession||getTrackSession(browseWeek,asked.day,trackTier,eventGroup)),requestedTrackWeek,requestedStrengthWeek}:null};
       instructions=`You are Coach MW AI inside MW Dynasty for an athlete with FULL MW SPRINT PERFORMANCE access. You help the athlete execute Coach Mustaqeem Williams' approved MW system.\n\nAUTHORITATIVE ATHLETE STATE\nAthlete: ${athleteName}\nOfficial current week: ${officialWeek}\nOfficial current day: ${officialDay}\nTrack tier: ${trackTier}\nStrength tier: ${strengthTier}\nProgram version: ${ps.program_version||PROGRAM_VERSION}\nPRs: ${prText(c.prs)}\n\nFULL MW ACCESS RULES\n- The 41-week track program, synchronized Strength & Power system, Sprint School logic, Smart Entry, and advanced performance tools are authorized for this athlete.\n- Use PROGRAM_CONTEXT as authoritative for exact MW prescriptions.\n- Never reveal a future locked week's prescriptions.\n- Never replace an exact MW prescription with a generic workout.\n- Preserve exact distances, reps, percentages, recovery, circuit order, and other prescription details that are present.\n- Supporting science strengthens explanation but never overrides the approved MW program.\n${sharedSafety()}\n\nPROGRAM_CONTEXT:\n${JSON.stringify(programContext,null,2)}\n\nMW_SUPPORTING_SCIENCE:\n${JSON.stringify(SUPPORTING_KNOWLEDGE)}`;
     }else if(intelligence){
       const perf=await performanceContext(c);
