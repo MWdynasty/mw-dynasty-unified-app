@@ -34,12 +34,25 @@ module.exports=async function handler(req,res){
     ]);
     for(const pr of prRows)await sj('athlete_prs?on_conflict=athlete_id,event',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...pr,verified:false})});
     const calendar=await effectiveCalendar(token);
-    const seasonAware=calendar.mode==='season_plan'&&calendar.planId;
     const rawTrainingAge=Math.max(0,Number(b.trainingAge)||0);
-    const payload=seasonAware
-      ? {p_season_week:Number(calendar.week||1),p_season_phase:String(calendar.phaseCode||'foundation'),p_event_group:String(b.eventGroup||''),p_training_age:Math.min(5,rawTrainingAge),p_continuity:Number(b.continuity),p_speed_exposure:Number(b.speedExposure),p_recent_race:Number(b.recentRace),p_lifting:Number(b.lifting),p_health:String(b.health||'')}
-      : {p_season_week:Number(calendar.week||1),p_event_group:String(b.eventGroup||''),p_training_age:Math.min(2,rawTrainingAge),p_continuity:Number(b.continuity),p_speed_exposure:Number(b.speedExposure),p_recent_race:Number(b.recentRace),p_lifting:Number(b.lifting),p_health:String(b.health||'')};
-    const d=await sj(`rpc/${seasonAware?'mw_submit_smart_entry_v2':'mw_submit_smart_entry'}`,token,{method:'POST',body:JSON.stringify(payload)});
+    const phaseCode=calendar.mode==='season_plan'
+      ? String(calendar.phaseCode||'foundation')
+      : Number(calendar.phase||1)===1?'foundation'
+        : Number(calendar.phase||1)===2?'strength_speed'
+          : Number(calendar.phase||1)===3?'pre_competition'
+            : Number(calendar.phase||1)===4?'competition':'peak';
+    const payload={
+      p_season_week:Number(calendar.week||1),
+      p_season_phase:phaseCode,
+      p_event_group:String(b.eventGroup||''),
+      p_training_age:Math.min(5,rawTrainingAge),
+      p_continuity:Number(b.continuity),
+      p_speed_exposure:Number(b.speedExposure),
+      p_recent_race:Number(b.recentRace),
+      p_lifting:Number(b.lifting),
+      p_health:String(b.health||'')
+    };
+    const d=await sj('rpc/mw_submit_smart_entry_v3',token,{method:'POST',body:JSON.stringify(payload)});
     const result=(d&&typeof d==='object')?d:{};
     const tiers=recommendedTiers(c,b);
     const developmentalLoad=developmentalLoadProfile({
@@ -49,16 +62,16 @@ module.exports=async function handler(req,res){
       strengthTier:tiers.strengthTier
     });
     const assignedWeek=Math.max(1,Math.min(41,Math.trunc(Number(result.assignedWeek||result.assigned_week||calendar.week||1))));
-    const programVersion=seasonAware?`mw-season-intelligence-v1+${PROGRAM_VERSION}`:PROGRAM_VERSION;
+    const programVersion=`mw-season-intelligence-v2+${PROGRAM_VERSION}`;
     if(result.hold){
       await sj(`athlete_program_state?athlete_id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({program_status:'needs_review',track_tier:'foundation',strength_tier:'foundation',program_version:programVersion,assignment_updated_at:new Date().toISOString(),assignment_updated_by:c.user.id})});
-      if(seasonAware){
+      if(calendar.mode==='season_plan'&&calendar.planId){
         await sj('rpc/mw_refresh_own_season_program_state',token,{method:'POST',body:'{}'});
       }
       return res.status(200).json({...result,trackTier:'foundation',strengthTier:'foundation',programVersion,calendar,developmentalLoad:developmentalLoadProfile({dateOfBirth:b.dateOfBirth||c.athlete?.date_of_birth,trainingYears:Number(b.trainingAge)||0,trackTier:'foundation',strengthTier:'foundation'})});
     }
     await sj(`athlete_program_state?athlete_id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({track_tier:tiers.trackTier,strength_tier:tiers.strengthTier,program_version:programVersion,onboarding_assessment_completed_at:new Date().toISOString(),assignment_updated_at:new Date().toISOString(),assignment_updated_by:c.user.id})});
-    if(seasonAware){
+    if(calendar.mode==='season_plan'&&calendar.planId){
       await sj('rpc/mw_refresh_own_season_program_state',token,{method:'POST',body:'{}'});
     }
     await sj('athlete_program_assignment_history',token,{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,track_tier:tiers.trackTier,strength_tier:tiers.strengthTier,week:assignedWeek,reason:'MW Smart Entry initial tier recommendation',changed_by:c.user.id})});
