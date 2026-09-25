@@ -103,7 +103,7 @@ using (
     select 1
     from public.coach_assignments ca
     join public.coach_access_entitlements cae on cae.coach_user_id=ca.coach_user_id and cae.status='active'
-    where ca.athlete_id=athlete_id and ca.coach_user_id=(select auth.uid())
+    where ca.athlete_id=athlete_season_targets.athlete_id and ca.coach_user_id=(select auth.uid())
       and ca.status='active' and cae.access_tier='mw_sprint_performance'
   )
   or exists(
@@ -117,7 +117,7 @@ with check (
     select 1
     from public.coach_assignments ca
     join public.coach_access_entitlements cae on cae.coach_user_id=ca.coach_user_id and cae.status='active'
-    where ca.athlete_id=athlete_id and ca.coach_user_id=(select auth.uid())
+    where ca.athlete_id=athlete_season_targets.athlete_id and ca.coach_user_id=(select auth.uid())
       and ca.status='active' and cae.access_tier='mw_sprint_performance'
   )
   or exists(
@@ -140,7 +140,7 @@ using (
     select 1
     from public.coach_assignments ca
     join public.coach_access_entitlements cae on cae.coach_user_id=ca.coach_user_id and cae.status='active'
-    where ca.athlete_id=athlete_id and ca.coach_user_id=(select auth.uid()) and ca.status='active'
+    where ca.athlete_id=athlete_season_plan_revisions.athlete_id and ca.coach_user_id=(select auth.uid()) and ca.status='active'
       and cae.access_tier='mw_sprint_performance'
   )
   or exists(select 1 from public.profiles p where p.user_id=(select auth.uid()) and p.account_status='active'::public.mw_account_status and p.role in ('founder_owner','admin'))
