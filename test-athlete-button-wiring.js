@@ -40,7 +40,7 @@ const directIds=[
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
   'mwPracticeNext','mwPracticeSave','mwDobVerifySave','mwScSave','mwDeferSeasonDates',
   'mwAssessmentDeferDates','mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
-  'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend'
+  'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton'
 ];
 
 for(const id of directIds){
@@ -95,3 +95,14 @@ assert(
 );
 
 console.log('PASS: audited '+buttons.length+' athlete button definitions across navigation, Coach MW, Smart Entry, track, strength, profile, settings, notifications, schedule and support.');
+
+
+assert(html.includes('id="mwHomeMenuButton"'),'Athlete Home menu button must exist');
+assert(html.includes('id="mwHomeMenu"'),'Athlete Home dropdown must exist');
+for(const id of ['coach','messages','schedule','pacer']){
+  assert(html.includes('data-open="'+id+'"'),'Athlete Home menu missing '+id+' destination');
+}
+assert(html.includes('data-open-settings'),'Athlete Home menu must include Settings');
+assert(html.includes("window.mwCloseAthleteHomeMenu=close"),'Athlete Home menu must close after navigation');
+assert(html.includes('#home .mwHomeShortcuts{display:none!important}'),'Legacy Home shortcut grid must stay hidden');
+console.log('PASS: athlete Home secondary actions are consolidated into the dropdown menu.');
