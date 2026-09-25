@@ -43,8 +43,9 @@ function adaptationRecommendation({
     reasons.push('SINGLE_MISSED_OR_INCOMPLETE');
     if(action==='continue')action='continue_no_makeup';
   }else if(totalDisruption>=2&&totalDisruption<=3){
-    action=action==='protect_peak'?'protect_peak':'resequence_review';
-    loadAdjustment='drop_low_priority_volume';
+    const protectingPeak=action==='protect_peak';
+    action=protectingPeak?'protect_peak':'resequence_review';
+    loadAdjustment=protectingPeak?'reduce_low_priority_volume':'drop_low_priority_volume';
     reasons.push('MULTIPLE_MISSED_OR_INCOMPLETE');
   }else if(totalDisruption>=4||Number(consecutiveMissedDays)>=5){
     action=action==='protect_peak'?'protect_peak':'coach_review';
