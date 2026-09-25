@@ -1548,9 +1548,9 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="question"><label>Have you competed in a sprint/hurdle race in the last 30 days?</label><select id="recentRace"><option value="1">Yes</option><option value="0">No</option></select></div>
 <div class="question"><label>How consistently are you currently lifting?</label><select id="lifting"><option value="2">2–3+ sessions per week</option><option value="1">About 1 session per week</option><option value="0">Not currently lifting</option></select></div>
 <div class="question"><label>How do you feel right now?</label><select id="health"><option value="clear">Normal training soreness / I feel ready</option><option value="tight">Some mild tightness or unusual soreness</option><option value="pain">Pain, recent injury, or something that changes how I run</option></select></div>
-<button class="entryAction" id="assess">COMPLETE ASSESSMENT & ASSIGN MY PROGRAM</button><button class="entryGhost" id="backCoach">← BACK TO COACH AI</button>
-</div>
 <div class="result" id="entryResult" aria-live="polite"></div>
+<button type="button" class="entryAction" id="assess">COMPLETE ASSESSMENT & BUILD MY SEASON</button><button type="button" class="entryGhost" id="backCoach">← BACK TO COACH AI</button>
+</div>
 </section>
 
 <section class="view" id="workouts">
@@ -2781,20 +2781,29 @@ function renderEntryStatus(){
   box.classList.add('show');
   box.innerHTML=`<small>⚡ MW SMART ENTRY ACTIVE</small><b>Phase ${ep.assignedPhase} • Week ${ep.assignedWeek} — ${PHASES[ep.assignedPhase].name}</b><span class="syncTag">TRACK + STRENGTH SYNCHRONIZED</span><span>Season calendar: Phase ${ep.seasonPhase} • Week ${ep.seasonWeek}. Next MW gate/checkpoint: after Week ${ep.nextCheckpoint}.</span>`;
 }
+function showEntryFeedback(message,bad=true,focusId=''){
+  const out=$('#entryResult');if(!out)return;
+  out.classList.add('show');
+  out.innerHTML=bad?`<div class="warning">${message}</div>`:`<div class="reason">${message}</div>`;
+  requestAnimationFrame(()=>out.scrollIntoView({behavior:'smooth',block:'center'}));
+  if(focusId)setTimeout(()=>document.getElementById(focusId)?.focus({preventScroll:true}),350);
+}
 async function assessEntry(){
-  const btn=$('#assess'),out=$('#entryResult');out.classList.add('show');
+  const btn=$('#assess'),out=$('#entryResult');
+  if(!btn||!out)return;
+  showEntryFeedback('<b>Checking your assessment…</b> MW is validating your profile and season information.',false);
   const events=['100m','200m','400m'].filter(e=>$('#event'+e.replace('m',''))?.checked);
   const competitionLevel=$('#entryCompetitionLevel')?.value||'';
   const competitionState=$('#entryCompetitionState')?.value||'';
   const seasonPreference=$('#entrySeasonPreference')?.value||'';
   const competitionPath=$('#entryCompetitionPath')?.value||'school';
   const payload={firstName:$('#entryFirstName').value.trim(),lastName:$('#entryLastName').value.trim(),dateOfBirth:$('#entryDob').value,events,trainingGoal:($('#entryGoal')?.value||'').trim().slice(0,500),prs:{'100m':$('#entryPr100').value,'200m':$('#entryPr200').value,'400m':$('#entryPr400').value},prTiming:{'100m':$('#entryPr100Timing').value,'200m':$('#entryPr200Timing').value,'400m':$('#entryPr400Timing').value},weightUnit:$('#entryWeightUnit').value,maxes:{powerClean:$('#entryPowerClean').value,frontSquat:$('#entryFrontSquat').value,backSquat:$('#entryBackSquat').value,deadlift:$('#entryDeadlift').value,deadliftType:$('#entryDeadliftType').value},eventGroup:events.includes('400m')?(events.includes('100m')?'multi':'long'):'short',trainingAge:Number($('#trainingAge').value),continuity:Number($('#continuity').value),speedExposure:Number($('#speedExposure').value),recentRace:Number($('#recentRace').value),lifting:Number($('#lifting').value),health:$('#health').value};
-  if(!payload.firstName||!payload.lastName||!payload.dateOfBirth||!events.length){out.innerHTML='<div class="warning">First name, last name, date of birth, and at least one event are required.</div>';return}
-  if(!competitionLevel||!seasonPreference){out.innerHTML='<div class="warning">Choose your competition level and whether you are preparing for Indoor, Outdoor, or Both.</div>';return}
-  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&competitionPath==='school'&&!competitionState){out.innerHTML='<div class="warning">Choose the state where you compete so MW can use the right school-season calendar.</div>';return}
-  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&['ncaa','professional_open'].includes(competitionPath)){out.innerHTML='<div class="warning">Choose School Track, AAU, or USATF for a middle/high-school athlete.</div>';return}
+  if(!payload.firstName||!payload.lastName||!payload.dateOfBirth||!events.length){const missing=[];if(!payload.firstName)missing.push('first name');if(!payload.lastName)missing.push('last name');if(!payload.dateOfBirth)missing.push('date of birth');if(!events.length)missing.push('at least one event');showEntryFeedback('Before MW can build your season, complete: <b>'+missing.join(', ')+'</b>.',true,!payload.firstName?'entryFirstName':!payload.lastName?'entryLastName':!payload.dateOfBirth?'entryDob':'event100');return}
+  if(!competitionLevel||!seasonPreference){showEntryFeedback('Choose your <b>competition level</b> and whether you are preparing for <b>Indoor, Outdoor, or Both</b>.',true,!competitionLevel?'entryCompetitionLevel':'entrySeasonPreference');return}
+  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&competitionPath==='school'&&!competitionState){showEntryFeedback('Choose the <b>state where you compete</b> so MW can use the correct school-season calendar.',true,'entryCompetitionState');return}
+  if(['6','7','8','9','10','11','12'].includes(competitionLevel)&&['ncaa','professional_open'].includes(competitionPath)){showEntryFeedback('For a middle/high-school athlete, choose <b>School Track, AAU, or USATF</b> as the competition path.',true,'entryCompetitionPath');return}
 
-  btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';
+  btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';showEntryFeedback('<b>Building your MW season…</b> Checking your competition calendar, readiness, and synchronized Track + Strength placement.',false);
   try{
     const tok=window.mwGetSessionToken?.()||'';
     const seasonRequest={...seasonPlanRequestFromFields(),competitionLevel,competitionState,seasonPreference,competitionPath,deferSeasonDates:mwDeferSeasonDates};
@@ -2837,9 +2846,9 @@ async function assessEntry(){
       ?`<div class="resultTop"><div><span class="badge">MW STANDARD CALENDAR ACTIVE</span><h3>Your training can begin now.</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>CURRENT PLACEMENT</small><b>WEEK ${d.assignedWeek||d.calendar?.week||1}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>You can train now without guessing a championship date. Add or update your real season dates later and MW Season Intelligence will rebuild around the confirmed calendar.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY TRAINING</button>`
       :`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
-  }catch(e){out.innerHTML='<div class="warning">'+(e.message||'MW Season Intelligence could not be saved. Please try again.')+'</div>'}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON'}
+  }catch(e){showEntryFeedback(e.message||'MW Season Intelligence could not be saved. Please try again.',true)}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON'}
 }
-$('#assess').onclick=assessEntry; $('#saveSeasonDatesOnly')?.addEventListener('click',saveSeasonDatesOnly); initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
+$('#assess')?.addEventListener('click',assessEntry); $('#saveSeasonDatesOnly')?.addEventListener('click',saveSeasonDatesOnly); initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='MW SEASON PLAN · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
 
 setTimeout(()=>{renderSavedConversation();refreshPremiumStatus()},50);
