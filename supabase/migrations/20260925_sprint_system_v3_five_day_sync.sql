@@ -99,6 +99,8 @@ begin
         cross join lateral (
           select (v_state.start_date + ((w-v_start_week)*7))::date as anchor_date
         ) a
+        where d<=4
+           or (anchor_date + ((d-extract(isodow from anchor_date)::integer+7)%7))::date >= date '2026-09-25'
       )
       update public.workout_completions wc
       set scheduled_date=s.scheduled_date,
@@ -135,6 +137,8 @@ begin
         cross join lateral (
           select (v_state.start_date + ((w-v_start_week)*7))::date as anchor_date
         ) a
+        where d<=4
+           or (anchor_date + ((d-extract(isodow from anchor_date)::integer+7)%7))::date >= date '2026-09-25'
       )
       insert into public.workout_completions(
         athlete_id,program_week,program_day,workout_key,completion_status,
@@ -170,6 +174,8 @@ begin
         cross join lateral (
           select (v_state.start_date + ((w-v_start_week)*7))::date as anchor_date
         ) a
+        where d<=4
+           or (anchor_date + ((d-extract(isodow from anchor_date)::integer+7)%7))::date >= date '2026-09-25'
       )
       insert into public.workout_completions(
         athlete_id,program_week,program_day,workout_key,completion_status,
@@ -296,6 +302,8 @@ begin
     from generate_series(1,v_week) w
     cross join generate_series(1,5) d
     cross join lateral (select (v_plan.season_start_date+((w-1)*7))::date as anchor_date) a
+    where d<=4
+       or (anchor_date+((d-extract(isodow from anchor_date)::integer+7)%7))::date >= date '2026-09-25'
   )
   update public.workout_completions wc
   set scheduled_date=s.scheduled_date,
@@ -321,6 +329,8 @@ begin
     from generate_series(1,v_week) w
     cross join generate_series(1,5) d
     cross join lateral (select (v_plan.season_start_date+((w-1)*7))::date as anchor_date) a
+    where d<=4
+       or (anchor_date+((d-extract(isodow from anchor_date)::integer+7)%7))::date >= date '2026-09-25'
   )
   insert into public.workout_completions(
     athlete_id,program_week,program_day,workout_key,completion_status,scheduled_date,
@@ -346,6 +356,8 @@ begin
     from generate_series(1,v_week) w
     cross join generate_series(1,5) d
     cross join lateral (select (v_plan.season_start_date+((w-1)*7))::date as anchor_date) a
+    where d<=4
+       or (anchor_date+((d-extract(isodow from anchor_date)::integer+7)%7))::date >= date '2026-09-25'
   )
   insert into public.workout_completions(
     athlete_id,program_week,program_day,workout_key,completion_status,scheduled_date,
