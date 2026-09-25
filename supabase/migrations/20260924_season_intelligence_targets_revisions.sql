@@ -43,6 +43,15 @@ create unique index if not exists athlete_season_one_primary_target_idx
 
 create index if not exists athlete_season_targets_timeline_idx
   on public.athlete_season_targets(athlete_id,target_date,status);
+create index if not exists athlete_season_targets_dependency_idx
+  on public.athlete_season_targets(qualification_dependency_target_id) where qualification_dependency_target_id is not null;
+create index if not exists athlete_season_targets_calendar_event_idx
+  on public.athlete_season_targets(coach_calendar_event_id) where coach_calendar_event_id is not null;
+
+create index if not exists athlete_season_plans_continuation_idx
+  on public.athlete_season_plans(continuation_from_plan_id) where continuation_from_plan_id is not null;
+create index if not exists athlete_season_plans_coach_context_idx
+  on public.athlete_season_plans(coach_context_id) where coach_context_id is not null;
 
 create table if not exists public.athlete_season_plan_revisions (
   id uuid primary key default gen_random_uuid(),
@@ -64,6 +73,11 @@ create table if not exists public.athlete_season_plan_revisions (
   created_at timestamptz not null default now(),
   unique(season_plan_id,revision_number)
 );
+
+create index if not exists athlete_season_revisions_athlete_idx
+  on public.athlete_season_plan_revisions(athlete_id);
+create index if not exists athlete_season_revisions_changed_by_idx
+  on public.athlete_season_plan_revisions(changed_by) where changed_by is not null;
 
 alter table public.athlete_season_targets enable row level security;
 alter table public.athlete_season_plan_revisions enable row level security;
@@ -201,4 +215,5 @@ begin
 end;
 $function$;
 
+revoke execute on function public.mw_record_season_plan_revision(uuid,text,date,date,integer,jsonb,jsonb) from public, anon;
 grant execute on function public.mw_record_season_plan_revision(uuid,text,date,date,integer,jsonb,jsonb) to authenticated;
