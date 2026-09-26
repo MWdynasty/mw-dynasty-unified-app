@@ -2868,7 +2868,7 @@ async function loadSeasonCalendar(){
     renderSeasonCalendarSummary();syncEntrySeason();return mwSeasonCalendar;
   }catch(e){renderSeasonCalendarSummary();return null}
 }
-function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=mwSeasonCalendar?.mode==='season_plan'?Number(mwSeasonCalendar.phase||1):phaseFromWeek(w);$('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
+function syncEntrySeason(){let w=Math.max(1,Math.min(41,Number($('#seasonWeek').value||$('#week').value)||1));$('#seasonWeek').value=w;let ph=mwSeasonCalendar?.mode==='season_plan'?Number(mwSeasonCalendar.phase||1):phaseFromWeek(w);document.querySelectorAll('#phaseStrip .phasePill').forEach(x=>x.classList.toggle('active',Number(x.dataset.phase)===ph))}
 $('#openEntry').onclick=()=>{openView('entry');loadSeasonCalendar()}; $('#backCoach').onclick=()=>openView('coach');
 function readinessPhase(){
   const trainingAge=Number($('#trainingAge').value), continuity=Number($('#continuity').value), speed=Number($('#speedExposure').value), race=Number($('#recentRace').value), lift=Number($('#lifting').value), health=$('#health').value;
