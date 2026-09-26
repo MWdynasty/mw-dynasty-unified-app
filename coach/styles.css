@@ -2768,7 +2768,7 @@ img,svg,video,canvas{max-width:100%}
 /* V26.09 Use generated crest-style 3D Menu artwork */
 @media(max-width:820px){
   .coach-mobile-nav .coachMobileMenuArt{
-    background-image:url('/assets/coach-menu-3d.svg')!important;
+    background-image:url('/assets/4480BE43-D4E2-4998-9CF0-06F69489F085.PNG')!important;
     background-size:cover!important;
     background-position:center!important;
     background-repeat:no-repeat!important;
@@ -2783,7 +2783,7 @@ img,svg,video,canvas{max-width:100%}
     content:none!important;
   }
   .coach-mobile-nav button[data-page="more"].active .coachMobileMenuArt{
-    background-image:url('/assets/coach-menu-3d.svg')!important;
+    background-image:url('/assets/4480BE43-D4E2-4998-9CF0-06F69489F085.PNG')!important;
     transform:translateY(-3px) scale(1.06)!important;
     filter:brightness(1.10) saturate(1.08)!important;
     box-shadow:0 0 20px rgba(0,139,255,.30),0 0 18px rgba(255,201,72,.22)!important;
