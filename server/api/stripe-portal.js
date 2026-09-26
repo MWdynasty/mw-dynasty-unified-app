@@ -9,7 +9,8 @@ function appUrl(req) {
 
 function stripeHeaders() {
   const secret = String(process.env.STRIPE_SECRET_KEY || '').trim();
-  if (!secret.startsWith('sk_')) {
+  const isStripeServerKey = secret.startsWith('sk_') || secret.startsWith('rk_');
+  if (!isStripeServerKey) {
     throw Object.assign(new Error('Stripe is not configured yet.'), { status: 503 });
   }
   return {
