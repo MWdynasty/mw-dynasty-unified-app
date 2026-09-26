@@ -34,7 +34,9 @@ module.exports=async function handler(req,res){
   try{
     const c=await getAthleteContext(req);
     const access=c.features?.access||{};
-    if(access.basic_coach_mw!==true)return res.status(403).json({error:'Coach MW is not available for this account right now.',feature:'basic_coach_mw'});
+    // Every active Athlete entitlement includes at least basic Coach MW.
+    // Fail closed only when the underlying Athlete access itself is inactive.
+    if(access.has_access!==true)return res.status(403).json({error:'An active MW Athlete membership is required for Coach MW.',feature:'basic_coach_mw',code:'ATHLETE_ACCESS_REQUIRED'});
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const messages=Array.isArray(body.messages)?body.messages.slice(-40):[];
     const ps=c.programState||{};
@@ -52,7 +54,18 @@ module.exports=async function handler(req,res){
     let instructions='';
 
     if(fullMW){
-      if(!ps.onboarding_assessment_completed_at)return res.status(403).json({error:'Complete your Athlete Profile Assessment before Coach MW provides individualized MW workouts.',assessmentRequired:true});
+      if(!ps.onboarding_assessment_completed_at){
+        instructions=`You are Coach MW AI inside MW Dynasty for an athlete whose MW Athlete Evaluation is not finished yet.
+Athlete: ${athleteName}
+PRs: ${prText(c.prs)}
+
+PRE-EVALUATION MODE
+- Stay fully conversational and connected.
+- Help with general sprint mechanics, warm-up concepts, recovery basics, race concepts, app navigation, and safe training questions.
+- Do not prescribe or reveal an individualized MW 41-week workout, placement tier, source week, synchronized strength prescription, or performance adjustment until the Athlete Evaluation is completed.
+- If the athlete asks for today's individualized workout, explain that the Athlete Evaluation must be completed first so MW can place the athlete correctly.
+${sharedSafety()}`;
+      }else{
       const authority=await resolveAuthoritativeState(c);
       const officialWeek=clampWeek(authority.week)||1,officialDay=clampDay(authority.day)||1,officialSourceWeek=clampWeek(authority.sourceWeek)||officialWeek;
       const trackTier=normalizeTier(ps.track_tier||c.athlete?.experience_level),strengthTier=normalizeTier(ps.strength_tier||c.athlete?.experience_level);
@@ -69,6 +82,8 @@ module.exports=async function handler(req,res){
       const perf=evaluatePerformance(perfContext,{coachManaged:scheduleMode==='coach_managed',officialWeek,officialDay});
       const programContext={library:{trackProduct:'MW Dynasty Sprint Performance System V3',trackCoverage:'41 weeks · Monday-Friday · 100/200 and 400 event branches',trackComplete:true,trackProvenance:'Founder-approved MW Sprint System V3',supportingKnowledgeVersion:SUPPORTING_KNOWLEDGE.knowledgeVersion},official:{week:officialWeek,sourceWeek:officialSourceWeek,day:officialDay,trackTier,strengthTier,eventGroup,eventLabel,programVersion:PROGRAM_VERSION,seasonAuthority:authority.authority,trackSession:officialSession,trackWeek:officialTrackWeek,strengthWeek:officialStrengthWeek},performanceIntelligence:perf,browsing:(asked.explicitlyRequestedWeek||asked.explicitlyRequestedDay)?{requestedWeek:asked.week,requestedDay:asked.day,futureLocked,requestedTrackSession:futureLocked?null:(requestedSession||getTrackSession(requestedSourceWeek,asked.day,trackTier,eventGroup)),requestedTrackWeek,requestedStrengthWeek}:null};
       instructions=`You are Coach MW AI inside MW Dynasty for an athlete with FULL MW SPRINT PERFORMANCE access. You help the athlete execute Coach Mustaqeem Williams' approved MW system.\n\nAUTHORITATIVE ATHLETE STATE\nAthlete: ${athleteName}\nOfficial Season Intelligence week: ${officialWeek}\nMaster source week used internally: ${officialSourceWeek}\nOfficial current day: ${officialDay}\nTrack tier: ${trackTier}\nStrength tier: ${strengthTier}\nProgram version: ${ps.program_version||PROGRAM_VERSION}\nPRs: ${prText(c.prs)}\n\nFULL MW ACCESS RULES\n- The 41-week track program, synchronized Strength & Power system, Sprint School logic, Smart Entry, and advanced performance tools are authorized for this athlete.\n- Use PROGRAM_CONTEXT as authoritative for exact MW prescriptions.\n- Never reveal a future locked week's prescriptions.\n- Never replace an exact MW prescription with a generic workout.\n- Preserve exact distances, reps, percentages, recovery, circuit order, and other prescription details that are present.\n- PERFORMANCE_INTELLIGENCE is a deterministic MW workload-response layer. Use it to explain whether the athlete is ready, should be monitored, or needs review.\n- If PERFORMANCE_INTELLIGENCE says monitor, protect quality first: no extra/make-up sprint volume, use full recovery, and remove optional/accessory lifting before changing core sprint work.\n- If it says coach_review, do not encourage workload progression. If the athlete is coach-managed, meaningful program changes require the human coach.\n- Do not let one poor rep silently rewrite the 41-week system; use trends and logged evidence.\n- Supporting science strengthens explanation but never overrides the approved MW program.\n${sharedSafety()}\n\nPROGRAM_CONTEXT:\n${JSON.stringify(programContext,null,2)}\n\nMW_SUPPORTING_SCIENCE:\n${JSON.stringify(SUPPORTING_KNOWLEDGE)}`;
+      }
+
     }else if(intelligence){
       const perfContext=await loadPerformanceContext(c);
       const authority=await resolveAuthoritativeState(c);
@@ -85,5 +100,10 @@ module.exports=async function handler(req,res){
     const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data?.error?.message||'Coach MW AI request failed.'});
     const text=outputText(data);if(!text)return res.status(502).json({error:'Coach MW received an empty AI response. Please try again.'});
     return res.status(200).json({text,accessMode:access.access_mode||'limited',capabilities:{aiIntelligence:intelligence,mwTrainingSystem:fullMW}});
-  }catch(e){return res.status(e.status||500).json({error:e?.message||'Coach MW server error.'})}
+  }catch(e){
+    const status=e.status||500;
+    const message=e?.message||'Coach MW server error.';
+    console.warn('MW_CHAT_REQUEST_FAILED',{status,category:status===401?'auth':status===403?'access':'server',message});
+    return res.status(status).json({error:message,code:status===401?'SESSION_REQUIRED':status===403?'ATHLETE_ACCESS_CONTEXT':'COACH_MW_SERVER'});
+  }
 };
