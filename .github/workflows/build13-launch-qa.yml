@@ -6,8 +6,7 @@ on:
     paths:
       - 'ios_v3_0_16_patch/**'
       - 'codemagic.yaml'
-      - 'test-launch-integrity.js'
-      - 'test-security-controls.js'
+      - 'test-*.js'
       - 'package.json'
       - 'vercel.json'
       - 'api/**'
