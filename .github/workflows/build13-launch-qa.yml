@@ -1,4 +1,4 @@
-name: MW Dynasty Build 13 Launch QA
+name: MW Dynasty Build 14 Launch QA
 
 on:
   push:
@@ -50,12 +50,12 @@ jobs:
           PY
           node --check /tmp/mw-founder-inline.js
 
-  ios-build-13-compile:
+  ios-build-14-compile:
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare Build 13 native source
+      - name: Prepare Build 14 native source
         run: |
           set -euo pipefail
           rm -rf ios_build
@@ -71,7 +71,7 @@ jobs:
           set -euo pipefail
           plutil -lint ios_build/MWDynasty/Info.plist
           grep -q 'MARKETING_VERSION = 3.0.16' ios_build/Config/Release.xcconfig
-          grep -q 'CURRENT_PROJECT_VERSION = 13' ios_build/Config/Release.xcconfig
+          grep -q 'CURRENT_PROJECT_VERSION = 14' ios_build/Config/Release.xcconfig
           grep -q 'PRODUCT_BUNDLE_IDENTIFIER = com.mwdynasty.app' ios_build/Config/Release.xcconfig
           grep -q 'com.mwdynasty.app.athlete.monthly' ios_build/MWDynasty/WebViewController.swift
           grep -q 'com.mwdynasty.app.coach.core.monthly' ios_build/MWDynasty/WebViewController.swift
@@ -83,7 +83,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Print :NSCameraUsageDescription" ios_build/MWDynasty/Info.plist >/dev/null
           /usr/libexec/PlistBuddy -c "Print :NSPhotoLibraryUsageDescription" ios_build/MWDynasty/Info.plist >/dev/null
 
-      - name: Compile Build 13 for iOS Simulator
+      - name: Compile Build 14 for iOS Simulator
         run: |
           set -o pipefail
           xcodebuild \
