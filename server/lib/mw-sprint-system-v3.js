@@ -364,14 +364,60 @@ function recoveryFor(day,week){
   return DEFAULT_RECOVERY[day]||'Recover as prescribed.';
 }
 
+function extend400Volume(work,week,day){
+  const src=String(work||'').trim(),w=Number(week)||1,d=Number(day)||1;
+  if(!src||![1,5].includes(d))return src;
+
+  // Keep pure speed, meet and championship work from being padded just to create fatigue.
+  if(/\bMEET\b|CHAMPIONSHIP|priority competition/i.test(src))return src;
+  if(w>=34)return src;
+
+  // During competition phase, preserve a small 400m volume edge on Monday only.
+  if(w>=25&&w<=33&&d!==1)return src;
+
+  // A few split-run weeks use one additional set rather than changing the rep distance/intensity.
+  if(w===18&&d===1&&/^2\s+sets?\s+of\s+\d+m\s*\+\s*\d+m/i.test(src)){
+    return src.replace(/^2\s+sets?/i,'3 sets');
+  }
+
+  // Set-based sessions: keep the same rep distance/intensity and add volume inside the set.
+  const setMatch=src.match(/^(\d+)\s+sets?\s+of\s+(\d+)\s*x\s*(\d+)m/i);
+  if(setMatch){
+    const sets=Number(setMatch[1]),reps=Number(setMatch[2]),dist=Number(setMatch[3]);
+    if(sets===2&&reps<=2&&w<=16){
+      return src.replace(/^2\s+sets?/i,'3 sets'); // +2 total reps when each set has 2 reps.
+    }
+    const extraPerSet=(w<=16&&dist<=300)?1:0;
+    if(extraPerSet){
+      return src.replace(/^(\d+)\s+sets?\s+of\s+(\d+)\s*x\s*(\d+)m/i,
+        (_m,a,b,c)=>`${a} sets of ${Number(b)+extraPerSet} x ${c}m`);
+    }
+    return src;
+  }
+
+  // Single-distance main work: same workout, slightly more volume for 400m athletes.
+  const repMatch=src.match(/^(\d+)\s*x\s*(\d+)m/i);
+  if(repMatch){
+    const reps=Number(repMatch[1]),dist=Number(repMatch[2]);
+    let add=1;
+    if(w<=8&&dist<=200)add=2;
+    else if(w<=8&&dist>200)add=1;
+    else if(w<=16&&dist<=200)add=2;
+    else add=1;
+    return src.replace(/^(\d+)\s*x\s*(\d+)m/i,(_m,a,b)=>`${Number(a)+add} x ${b}m`);
+  }
+
+  return src;
+}
+
 function getTrackWeek(week,eventGroup='100_200'){
   const n=Math.max(1,Math.min(41,Math.trunc(Number(week)||1)));
   const base=WEEKS[n];
   if(!base)return null;
   const eg=normalizeEventGroup(eventGroup);
-  const override=EVENT_400[n]||{};
   const sessions=[1,2,3,4,5].map(day=>{
-    const work=(eg==='400'&&override[day])?override[day]:base.w[day-1];
+    const baseWork=base.w[day-1];
+    const work=eg==='400'?extend400Volume(baseWork,n,day):baseWork;
     return {
       day,
       role:DAY_ROLES[day],
@@ -392,8 +438,11 @@ function getTrackWeek(week,eventGroup='100_200'){
     objective:base.o,
     eventGroup:eg,
     eventLabel:eg==='400'?'400m':'100m / 200m',
+    eventVolumeStrategy:eg==='400'
+      ?'Same MW session design as the 100m/200m group with a controlled endurance-volume extension on major stress days. Speed-quality, meet and championship taper work are protected from unnecessary extra volume.'
+      :'Base MW sprint prescription.',
     sessions
   };
 }
 
-module.exports={WEEKS,EVENT_400,normalizeEventGroup,getTrackWeek,warmupFor,wicketFor};
+module.exports={WEEKS,EVENT_400,normalizeEventGroup,getTrackWeek,warmupFor,wicketFor,extend400Volume};
