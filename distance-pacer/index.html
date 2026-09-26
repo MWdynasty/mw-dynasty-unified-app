@@ -38,8 +38,17 @@ footer{padding:24px 4px 4px;color:#5f747f;font-size:8px}
  .meter>strong{font-size:56px}
 }
 </style><link rel="icon" href="/favicon.png" type="image/png"><script src="/assets/mw-native.js"></script>
-</head><body><script>function mwBackToAthlete(view){const target=(view==='workouts'||view==='pacer')?view:'pacer';location.replace('/athlete/?returnView='+encodeURIComponent(target)+'&toolReturn=1')}</script><div class="shell">
-<header class="brand"><div class="brandCopy"><span>MW PERFORMANCE LAB™</span><h1>MW DISTANCE PACER™</h1><p>ONE METER TRACKER. ANY SURFACE.</p></div><button type="button" class="backToApp" onclick="mwBackToAthlete('pacer')">← PERFORMANCE TOOLS</button></header>
+</head><body><script>
+function mwBackFromDistancePacer(){
+  const coach=new URLSearchParams(location.search).get('coach')==='1'||window.MW_COACH_TOOL;
+  if(coach){
+    try{if(document.referrer&&new URL(document.referrer).origin===location.origin&&history.length>1){history.back();return}}catch{}
+    location.replace('/coach/');return;
+  }
+  location.replace('/athlete/?returnView=pacer&toolReturn=1');
+}
+</script><div class="shell">
+<header class="brand"><div class="brandCopy"><span>MW PERFORMANCE LAB™</span><h1>MW DISTANCE PACER™</h1><p>ONE METER TRACKER. ANY SURFACE.</p></div><button type="button" class="backToApp" onclick="mwBackFromDistancePacer()">← PERFORMANCE TOOLS</button></header>
 <section id="handoff" class="handoff hidden"><div><strong id="handoffTitle">Workout connected</strong><small id="handoffText"></small></div><b>READY</b></section>
 <main><section class="panel universal">
 <div class="sectionHead"><div><span class="eyebrow">UNIVERSAL DISTANCE METER</span><h2>How far do you need to measure?</h2><p>Set your target, let MW calibrate your starting point, then walk the exact path you plan to run.</p></div><span id="gpsBadge" class="accuracy">◎ GPS CHECK</span></div>
