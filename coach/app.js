@@ -441,6 +441,12 @@ function coachMWPage(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(SR){const recognition=new SR();recognition.lang='en-US';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{mic.classList.add('listening');mic.textContent='●';state.textContent='Listening…'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';if(text){q.value=text;state.textContent='Voice captured. Tap Ask when ready.'}};recognition.onerror=()=>{state.textContent='Voice input could not start. You can still type your question.'};recognition.onend=()=>{mic.classList.remove('listening');mic.textContent='🎙'};mic.onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}try{recognition.start()}catch{}}}else{mic.onclick=()=>toast('Voice input is not available in this browser yet.')}
   let coachMWInFlight=false;
+  const traceCoachStage=(stage)=>{
+    try{
+      const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
+      fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({clientStage:stage}),keepalive:true}).catch(()=>{});
+    }catch{}
+  };
   const appendCoachBubble=(role,content)=>{
     const bubble=document.createElement('div');
     bubble.className='tile mw-coach-message '+(role==='user'?'mw-coach-user':'mw-coach-assistant');
@@ -461,24 +467,30 @@ function coachMWPage(){
     q.value='';q.blur();
     const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
     history.push(userMsg);
+    traceCoachStage('tap_received');
     appendCoachBubble('user',text);
+    traceCoachStage('user_bubble_appended');
     state.textContent='Coach MW is thinking…';
     const request=()=>{
       const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
       return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history})});
     };
     request().then(async r=>{
+      traceCoachStage('response_headers_received');
       if(r.status===401&&authSession?.refresh_token){
         const refreshed=await refreshCoachSession(authSession);
         if(refreshed?.access_token)r=await request();
       }
       const d=await r.json().catch(()=>({}));
+      traceCoachStage('response_json_parsed');
       if(!r.ok)throw new Error(d.error||'Coach MW request failed');
       const answer=String(d.answer||'').trim();
       if(!answer)throw new Error('Coach MW returned an empty response. Please try again.');
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
+      traceCoachStage('before_assistant_append');
       appendCoachBubble('assistant',answer);
+      traceCoachStage('assistant_appended');
       state.textContent='';
       pendingImage='';pick.value='';
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
@@ -486,6 +498,7 @@ function coachMWPage(){
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
       state.textContent='Coach MW: '+(e?.message||'Please try again.');
     }).finally(()=>{
+      traceCoachStage('request_finally');
       coachMWInFlight=false;
       if(state.textContent==='Coach MW is thinking…')state.textContent='';
     });
