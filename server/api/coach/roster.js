@@ -33,6 +33,20 @@ module.exports=async(req,res)=>{
 
     if(!athletes.length)return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
 
+    const initialUserIds=athletes.map(a=>a.user_id).filter(Boolean);
+    const entitlements=initialUserIds.length
+      ? await get(`membership_entitlements?select=user_id,status,access_starts_at,access_ends_at&user_id=in.${inList(initialUserIds)}&status=eq.active`,c.token)
+      : [];
+    const now=Date.now();
+    const activeUsers=new Set(entitlements.filter(e=>{
+      const starts=e.access_starts_at?new Date(e.access_starts_at).getTime():0;
+      const ends=e.access_ends_at?new Date(e.access_ends_at).getTime():Infinity;
+      return (!Number.isFinite(starts)||starts<=now)&&(!Number.isFinite(ends)||ends>now);
+    }).map(e=>e.user_id));
+    athletes=athletes.filter(a=>a.user_id&&activeUsers.has(a.user_id));
+
+    if(!athletes.length)return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
+
     const athleteIds=athletes.map(a=>a.id);
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
     const [profiles,states,prs]=await Promise.all([
