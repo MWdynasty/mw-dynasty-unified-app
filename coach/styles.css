@@ -2701,3 +2701,65 @@ img,svg,video,canvas{max-width:100%}
   color:#05070a!important;
   text-shadow:none!important;
 }
+
+
+/* V26.09 Coach mobile nav — dimensional Menu icon parity */
+@media(max-width:820px){
+  .coach-mobile-nav .coachMobileMenuArt{
+    position:relative!important;
+    display:grid!important;
+    place-items:center!important;
+    width:46px!important;
+    height:46px!important;
+    flex:0 0 46px!important;
+    margin:0 auto 2px!important;
+    border-radius:14px!important;
+    border:1px solid rgba(255,207,82,.50)!important;
+    background:
+      radial-gradient(circle at 32% 22%,rgba(60,118,176,.28),transparent 28%),
+      linear-gradient(145deg,#0d2130 0%,#07131e 46%,#02070c 100%)!important;
+    color:#f2c957!important;
+    font-size:0!important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.22),
+      inset 0 -6px 11px rgba(0,0,0,.48),
+      0 5px 0 rgba(4,8,12,.90),
+      0 9px 16px rgba(0,0,0,.56),
+      0 0 12px rgba(55,124,190,.12)!important;
+    overflow:hidden!important;
+  }
+  .coach-mobile-nav .coachMobileMenuArt::before{
+    content:""!important;
+    width:22px!important;
+    height:15px!important;
+    display:block!important;
+    background:
+      linear-gradient(#f2c957,#f2c957) 0 0/22px 3px no-repeat,
+      linear-gradient(#f2c957,#f2c957) 0 6px/22px 3px no-repeat,
+      linear-gradient(#f2c957,#f2c957) 0 12px/22px 3px no-repeat!important;
+    border-radius:2px!important;
+    filter:drop-shadow(0 1px 0 rgba(255,255,255,.18)) drop-shadow(0 2px 2px rgba(0,0,0,.55))!important;
+  }
+  .coach-mobile-nav button[data-page="more"].active .coachMobileMenuArt{
+    transform:translateY(-3px) scale(1.05)!important;
+    border-color:rgba(255,220,112,.82)!important;
+    background:
+      radial-gradient(circle at 34% 20%,rgba(91,157,220,.38),transparent 30%),
+      linear-gradient(145deg,#17334a 0%,#0a1c2b 46%,#040a10 100%)!important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.30),
+      inset 0 -6px 11px rgba(0,0,0,.42),
+      0 6px 0 #5a3c08,
+      0 11px 20px rgba(0,0,0,.60),
+      0 0 22px rgba(255,206,65,.35),
+      0 0 28px rgba(46,130,214,.18)!important;
+  }
+
+  /* With Practice Mode already promoted above, keep the remaining tools clean and even. */
+  .coach-train-tool-grid-three{
+    grid-template-columns:1fr!important;
+  }
+  .coach-train-tool-grid-three .coach-train-tool{
+    min-height:126px!important;
+  }
+}
