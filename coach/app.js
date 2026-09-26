@@ -33,11 +33,21 @@ async function loadPricingCatalog(){
 }
 let experience='core';
 const nav={
- core:[['dashboard','⌂','Home'],['athletes','♟','Team'],['programs','🏃','Training'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']],
- intelligence:[['dashboard','⌂','Home'],['athletes','♟','Team'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']],
- performance:[['dashboard','⌂','Home'],['athletes','♟','Team'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']]
+ core:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']],
+ intelligence:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']],
+ performance:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']]
 };
-function sideNav(){const items=[...nav[experience]],artById={dashboard:'mwNavHome',athletes:'mwNavProfile',programs:'mwNavTrain',coachmw:'mwNavTrain',messages:'mwNavProgram',account:'mwNavCoach'};return items.map(([id,ic,label])=>`<button class="nav-btn ${id==='dashboard'?'active':''}" data-page="${id}">${id==='calendar'?'<span class="nav-icon mwCalendarNav" aria-hidden="true">📅</span>':`<span class="nav-icon mwNavArt ${artById[id]||''}" aria-hidden="true"></span>`}<span>${label}</span></button>`).join('')}
+function sideNav(){
+  const items=[...nav[experience]];
+  const artById={dashboard:'mwNavHome',athletes:'mwNavProfile',train:'mwNavTrain',programs:'mwNavTrain',coachmw:'mwNavCoach',messages:'mwNavProgram',account:'mwNavCoach'};
+  return items.map(([id,ic,label],idx)=>{
+    const divider=(experience!=='core'&&id==='calendar')|| (experience==='core'&&id==='calendar');
+    const icon=id==='calendar'
+      ?'<span class="nav-icon mwCalendarNav" aria-hidden="true">📅</span>'
+      :`<span class="nav-icon mwNavArt ${artById[id]||''}" aria-hidden="true"></span>`;
+    return `${divider?'<span class="side-nav-divider" aria-hidden="true"></span>':''}<button class="nav-btn ${id==='dashboard'?'active':''}" data-page="${id}">${icon}<span>${label}</span></button>`;
+  }).join('');
+}
 function mobileCoachNav(activePage){
   const active=String(activePage||history.state?.mwCoachPage||'dashboard');
   const trainPages=new Set(['train','practice','programs','mwtrack','strength','pacing','grouppacing']);
