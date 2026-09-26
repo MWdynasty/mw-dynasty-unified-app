@@ -2789,3 +2789,27 @@ img,svg,video,canvas{max-width:100%}
     box-shadow:0 0 20px rgba(0,139,255,.30),0 0 18px rgba(255,201,72,.22)!important;
   }
 }
+
+
+/* V26.09 Coach mobile cleanup — bottom HOME replaces duplicate Dashboard button */
+@media(max-width:820px){
+  .page:not(.coach-mw-athlete-page) .page-top{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:
+      "title bell"!important;
+    align-items:start!important;
+    gap:10px 12px!important;
+  }
+  .page:not(.coach-mw-athlete-page) .page-top>.back:first-child{
+    display:none!important;
+  }
+  .page:not(.coach-mw-athlete-page) .page-top>div[style*="flex:1"]{
+    grid-area:title!important;
+    min-width:0!important;
+  }
+  .page:not(.coach-mw-athlete-page) .page-top .mw-notification-btn{
+    grid-area:bell!important;
+    justify-self:end!important;
+    align-self:start!important;
+  }
+}
