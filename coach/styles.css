@@ -2884,3 +2884,187 @@ img,svg,video,canvas{max-width:100%}
 @media(max-width:820px){
   .side-nav-divider{display:none!important}
 }
+
+
+/* V26.09 Desktop Coach MW workspace — app hierarchy inside the existing website shell */
+@media(min-width:821px){
+  .coach-mw-athlete-page .page-wrap{
+    max-width:1480px!important;
+  }
+  .coach-mw-athlete-page>.page-wrap>.panel{
+    padding:22px!important;
+    overflow:visible!important;
+  }
+  .coach-mw-athlete-match{
+    width:100%!important;
+  }
+  .coach-mw-athlete-shell{
+    display:grid!important;
+    grid-template-columns:220px minmax(0,1fr)!important;
+    grid-template-areas:
+      "presence thread"
+      "presence composer"
+      "presence attach"
+      "presence suggestions"!important;
+    column-gap:24px!important;
+    row-gap:10px!important;
+    align-items:start!important;
+    min-height:540px!important;
+    padding:24px!important;
+    border:1px solid rgba(218,171,74,.38)!important;
+    border-radius:24px!important;
+    background:
+      radial-gradient(circle at 8% 18%,rgba(36,118,194,.10),transparent 28%),
+      linear-gradient(150deg,#07131c 0%,#03090e 62%,#020609 100%)!important;
+    box-shadow:0 24px 58px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.035)!important;
+    overflow:hidden!important;
+  }
+
+  .coach-mw-athlete-presence{
+    grid-area:presence!important;
+    position:sticky!important;
+    top:24px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    text-align:center!important;
+    min-width:0!important;
+    padding:18px 14px!important;
+    border:1px solid rgba(218,171,74,.24)!important;
+    border-radius:20px!important;
+    background:linear-gradient(165deg,#081722,#03090e)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+  }
+  .coach-mw-athlete-presence img{
+    display:block!important;
+    width:132px!important;
+    height:132px!important;
+    max-width:132px!important;
+    max-height:132px!important;
+    object-fit:cover!important;
+    border-radius:28px!important;
+    border:1px solid rgba(239,198,89,.58)!important;
+    box-shadow:0 0 0 4px rgba(218,171,74,.05),0 0 26px rgba(34,128,225,.18),0 16px 32px rgba(0,0,0,.42)!important;
+  }
+  .coach-mw-athlete-presence>b{
+    margin-top:16px!important;
+    color:var(--mwd-gold2,#efc659)!important;
+    font-size:16px!important;
+    line-height:1.1!important;
+    letter-spacing:.14em!important;
+  }
+  .coach-mw-athlete-presence>span{
+    margin-top:7px!important;
+    color:#a8b3bb!important;
+    font-size:10px!important;
+    line-height:1.35!important;
+    letter-spacing:.10em!important;
+  }
+  .coach-mw-athlete-presence>small{
+    margin-top:9px!important;
+    color:#c8b172!important;
+    font-size:8px!important;
+    line-height:1.4!important;
+    letter-spacing:.07em!important;
+  }
+
+  .coach-mw-athlete-thread{
+    grid-area:thread!important;
+    min-height:330px!important;
+    max-height:52vh!important;
+    overflow:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:12px!important;
+    padding:18px!important;
+    border:1px solid rgba(121,151,170,.22)!important;
+    border-radius:20px!important;
+    background:linear-gradient(180deg,#050d13,#03080c)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;
+  }
+  .coach-mw-athlete-thread:empty::before{
+    content:"Ask Coach MW about today’s practice, athlete performance, pacing, season planning, or team decisions."!important;
+    display:block!important;
+    margin:auto!important;
+    max-width:620px!important;
+    color:#7f929f!important;
+    text-align:center!important;
+    font-size:15px!important;
+    line-height:1.55!important;
+  }
+  .coach-mw-athlete-thread .mw-coach-message{
+    max-width:78%!important;
+    padding:13px 15px!important;
+    border-radius:17px!important;
+  }
+
+  .coach-mw-athlete-composer{
+    grid-area:composer!important;
+    display:grid!important;
+    grid-template-columns:48px 48px minmax(0,1fr) 52px!important;
+    gap:9px!important;
+    align-items:center!important;
+    margin:0!important;
+  }
+  .coach-mw-athlete-composer #mwmic,
+  .coach-mw-athlete-composer #mwattach,
+  .coach-mw-athlete-composer #askmw{
+    width:48px!important;
+    height:48px!important;
+    min-width:48px!important;
+    min-height:48px!important;
+    margin:0!important;
+    display:grid!important;
+    place-items:center!important;
+    border-radius:15px!important;
+  }
+  .coach-mw-athlete-composer #askmw{
+    width:52px!important;
+    min-width:52px!important;
+    font-size:23px!important;
+  }
+  .coach-mw-athlete-composer #mwq{
+    width:100%!important;
+    min-width:0!important;
+    height:50px!important;
+    margin:0!important;
+    padding:0 17px!important;
+    border-radius:999px!important;
+    font-size:16px!important;
+  }
+
+  .coach-mw-athlete-shell>#mwattachstate{
+    grid-area:attach!important;
+    min-height:0!important;
+  }
+  .coach-mw-athlete-suggestions{
+    grid-area:suggestions!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:8px!important;
+    padding:2px 0 0!important;
+    overflow:visible!important;
+  }
+  .coach-mw-athlete-suggestions button{
+    min-height:38px!important;
+    padding:8px 12px!important;
+    border-radius:999px!important;
+    font-size:10px!important;
+    white-space:nowrap!important;
+  }
+}
+
+@media(min-width:821px) and (max-width:1080px){
+  .coach-mw-athlete-shell{
+    grid-template-columns:180px minmax(0,1fr)!important;
+    column-gap:16px!important;
+    padding:18px!important;
+  }
+  .coach-mw-athlete-presence img{
+    width:110px!important;
+    height:110px!important;
+    max-width:110px!important;
+    max-height:110px!important;
+  }
+}
