@@ -2693,3 +2693,11 @@ img,svg,video,canvas{max-width:100%}
   text-shadow:none!important;
   filter:none!important;
 }
+
+
+/* V26.09 Legacy WORK-strip fallback — keep text readable if an older cached Coach view still renders the gold strip */
+.coach-today-prescription.primary span,
+.coach-today-prescription.primary b{
+  color:#05070a!important;
+  text-shadow:none!important;
+}
