@@ -189,7 +189,7 @@ function coachTodaySessionHTML(session,label,week,day){
     <h3>${escapeHtml(session.title||session.focus||'Today’s Sprint Session')}</h3>
     ${session.focus?`<p class="coach-today-focus">${escapeHtml(session.focus)}</p>`:''}
     <div class="coach-today-prescription"><span>WARM-UP</span><b>${escapeHtml(warm)}</b></div>
-    <div class="coach-today-prescription primary"><span>WORK</span><b>${escapeHtml(work)}</b></div>
+    <div class="coach-today-prescription coach-today-work"><span>WORK</span><b>${escapeHtml(work)}</b></div>
     <div class="coach-today-prescription"><span>RECOVERY</span><b>${escapeHtml(recovery)}</b></div>
     ${Array.isArray(session.cues)&&session.cues.length?`<div class="coach-today-cues">${session.cues.slice(0,4).map(x=>`<span>✓ ${escapeHtml(x)}</span>`).join('')}</div>`:''}
   </article>`;
