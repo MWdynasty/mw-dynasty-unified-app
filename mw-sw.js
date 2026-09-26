@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v2';
+const CACHE='mw-dynasty-shell-v3';
 const CORE=[
   '/',
   '/athlete/',
