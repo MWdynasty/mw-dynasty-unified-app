@@ -477,12 +477,15 @@ function coachMWPage(){
       }
       if(requestSeq===coachMWRequestSeq)state.textContent='✓ Coach MW responded';
       setTimeout(()=>{if(requestSeq===coachMWRequestSeq&&state.textContent==='✓ Coach MW responded')state.textContent=''},1200);
-      if(coachMWPrefs().autoVoice==='on'){
-        try{
-          const buttons=chat.querySelectorAll('.mw-read-aloud');
-          const last=buttons[buttons.length-1];
-          if(last)readAloud(answer,last);
-        }catch(voiceErr){console.warn('MW_COACH_AUTOVOICE_FAILED',voiceErr)}
+      const nativeIOS=/MWDynasty-iOS\//i.test(navigator.userAgent||'');
+      if(coachMWPrefs().autoVoice==='on'&&!nativeIOS){
+        setTimeout(()=>{
+          try{
+            const buttons=chat.querySelectorAll('.mw-read-aloud');
+            const last=buttons[buttons.length-1];
+            if(last)readAloud(answer,last);
+          }catch(voiceErr){console.warn('MW_COACH_AUTOVOICE_FAILED',voiceErr)}
+        },0);
       }
     }catch(e){
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
