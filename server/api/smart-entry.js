@@ -23,6 +23,7 @@ module.exports=async function handler(req,res){
     if(!firstName||!lastName||!dob||!events.length)return res.status(400).json({error:'First name, last name, date of birth, and at least one event are required.'});
     const age=ageOn(b.dateOfBirth);if(age==null||age<13)return res.status(400).json({error:'MW Dynasty athlete accounts require age 13 or older.'});
     const trainingGoal=String(b.trainingGoal||'').trim().slice(0,500);
+    const competitionDivision=['boys','girls','open'].includes(String(b.competitionDivision||''))?String(b.competitionDivision):null;
     const timing=b.prTiming||{},prs=b.prs||{},maxes=b.maxes||{};
     const prRows=events.map(event=>({event,time_seconds:cleanNumber(prs[event],`${event} PR`),timing_method:['fat','hand','unknown'].includes(timing[event])?timing[event]:'unknown'})).filter(x=>x.time_seconds!=null);
     const weightUnit=['lb','kg'].includes(b.weightUnit)?b.weightUnit:'lb';
@@ -30,7 +31,8 @@ module.exports=async function handler(req,res){
     await Promise.all([
       sj('rpc/mw_update_athlete_identity',token,{method:'POST',body:JSON.stringify({p_first_name:firstName,p_last_name:lastName})}),
       sj('rpc/mw_update_own_athlete_assessment_profile',token,{method:'POST',body:JSON.stringify({p_date_of_birth:b.dateOfBirth,p_primary_event:events[0],p_secondary_event:events[1]||null,p_selected_events:events,p_track_training_years:Number(b.trainingAge)||0,p_experience_level:Number(b.trainingAge)>=5?'professional':Number(b.trainingAge)>=2?'intermediate':'beginner',p_training_goal:trainingGoal||null})}),
-      sj('athlete_strength_maxes?on_conflict=athlete_id',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...maxRow,updated_at:new Date().toISOString()})})
+      sj('athlete_strength_maxes?on_conflict=athlete_id',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...maxRow,updated_at:new Date().toISOString()})}),
+      ...(competitionDivision?[sj(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({competition_division:competitionDivision,updated_at:new Date().toISOString()})})]:[])
     ]);
     for(const pr of prRows)await sj('athlete_prs?on_conflict=athlete_id,event',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...pr,verified:false})});
     const calendar=await effectiveCalendar(token);
