@@ -41,6 +41,12 @@ module.exports=async function handler(req,res){
     if(!tr.ok||!['intelligence','mw_sprint_performance'].includes(coachTier))return res.status(403).json({error:'Coach Intelligence or MW Sprint Performance access required'});
   }
 
+  if(typeof req.body?.clientStage==='string'){
+    const stage=String(req.body.clientStage).replace(/[^a-zA-Z0-9_.:-]/g,'').slice(0,80);
+    console.info('MW_COACH_CLIENT_STAGE',{stage,userId:user.id,ua:String(req.headers['user-agent']||'').slice(0,120)});
+    return res.status(200).json({ok:true,stage});
+  }
+
   const repTrackingEnabled=coachTier==='mw_sprint_performance';
   const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions,calendarEvents,athleteAvailability,seasonContexts]=await Promise.all([
     sb(`coach_assignments?select=*&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=200`,token),
