@@ -1584,9 +1584,14 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="question"><label>Where do you compete?</label><select id="entryCompetitionState"><option value="">Choose state</option><option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="DC">District of Columbia</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option></select><small>For school athletes, MW uses your state to estimate the official track calendar when verified data is available.</small></div>
 <div class="question"><label>Which season are you preparing for?</label><select id="entrySeasonPreference"><option value="">Choose season</option><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option><option value="both">Both Indoor + Outdoor</option></select></div>
 <div class="question"><label>Main competition path</label><select id="entryCompetitionPath"><option value="school">School Track</option><option value="aau">AAU</option><option value="usatf">USATF</option><option value="ncaa">NCAA</option><option value="professional_open">Professional / Open</option></select><small>Choose the calendar that should control this plan. Additional seasons can be connected later.</small></div>
+<div class="question" id="mwSeasonCalendarSetup">
+  <label>Season calendar</label>
+  <div id="mwSeasonCalendarAutoNote" class="seasonCalendarSummary"><b>MW will help set this automatically.</b><span>Choose your grade, state, season, and competition path. You do not need to know exact dates.</span></div>
+  <button type="button" class="entryGhost" id="mwEditSeasonDates">I KNOW MY DATES — EDIT MANUALLY</button>
+</div>
 <div class="question seasonDateGroup" id="entryIndoorDates" hidden><label>Indoor season dates</label><input id="entryIndoorStart" type="date" aria-label="Indoor first practice date"><small>First practice</small><input id="entryIndoorFirstMeet" type="date" aria-label="Indoor first meet date"><small>First meet</small><input id="entryIndoorPeak" type="date" aria-label="Indoor championship or peak date"><small>Primary championship / peak date</small><input id="entryIndoorSecondPeak" type="date" aria-label="Indoor second championship date"><small>Second championship / peak (optional)</small></div>
 <div class="question seasonDateGroup" id="entryOutdoorDates" hidden><label>Outdoor season dates</label><input id="entryOutdoorStart" type="date" aria-label="Outdoor first practice date"><small>First practice</small><input id="entryOutdoorFirstMeet" type="date" aria-label="Outdoor first meet date"><small>First meet</small><input id="entryOutdoorPeak" type="date" aria-label="Outdoor championship or peak date"><small>Primary championship / peak date</small><input id="entryOutdoorSecondPeak" type="date" aria-label="Outdoor second championship date"><small>Second championship / peak (optional)</small></div>
-<div class="question"><label>Season calendar</label><button type="button" class="entryGhost" id="saveSeasonDatesOnly">SAVE / UPDATE SEASON DATES</button><small id="seasonDatesState">You can update your competition calendar later without repeating Smart Entry.</small></div>
+<div class="question" id="mwSeasonDatesSaveCard" hidden><label>Manual season dates</label><button type="button" class="entryGhost" id="saveSeasonDatesOnly">SAVE / UPDATE SEASON DATES</button><small id="seasonDatesState">Exact dates are optional. MW can build a safe starting calendar and you can update them later.</small></div>
 <div class="question"><label>Which events do you run?</label><div class="checkList"><label><input id="event100" type="checkbox" value="100m"> 100m</label><label><input id="event200" type="checkbox" value="200m"> 200m</label><label><input id="event400" type="checkbox" value="400m"> 400m</label></div><small>Select at least one event.</small></div><div class="question"><label>What are you working toward? (optional)</label><textarea id="entryGoal" maxlength="500" rows="3" placeholder="Tell Coach MW your main performance goal for this training year."></textarea><small>This becomes your Athlete Goal and can be updated later from your profile.</small></div>
 <div class="question"><label>100m PR (optional)</label><input id="entryPr100" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr100Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
 <div class="question"><label>200m PR (optional)</label><input id="entryPr200" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr200Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
@@ -2700,24 +2705,44 @@ const PHASES={
 };
 function phaseFromWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(w<=8)return 1;if(w<=16)return 2;if(w<=24)return 3;if(w<=33)return 4;return 5}
 const MW_US_STATES=[['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']];
+window.mwManualSeasonDates=false;
 function initSeasonIntelligenceFields(){
   const state=$('#entryCompetitionState');
   if(state&&state.options.length<=1)for(const [code,name] of MW_US_STATES){const o=document.createElement('option');o.value=code;o.textContent=name;state.appendChild(o)}
   const season=$('#entrySeasonPreference'),level=$('#entryCompetitionLevel'),path=$('#entryCompetitionPath');
   const sync=()=>{
     const v=season?.value||'';
-    const indoor=$('#entryIndoorDates'),outdoor=$('#entryOutdoorDates');
-    if(indoor)indoor.hidden=!(v==='indoor'||v==='both');
-    if(outdoor)outdoor.hidden=!(v==='outdoor'||v==='both');
+    const connected=window.mwCoachConnected===true;
+    const manual=window.mwManualSeasonDates===true&&!connected;
+    const indoor=$('#entryIndoorDates'),outdoor=$('#entryOutdoorDates'),saveCard=$('#mwSeasonDatesSaveCard'),edit=$('#mwEditSeasonDates'),note=$('#mwSeasonCalendarAutoNote');
+    if(indoor)indoor.hidden=!(manual&&(v==='indoor'||v==='both'));
+    if(outdoor)outdoor.hidden=!(manual&&(v==='outdoor'||v==='both'));
+    if(saveCard)saveCard.hidden=!manual;
+    if(edit){edit.hidden=connected;edit.textContent=manual?'HIDE MANUAL DATES':'I KNOW MY DATES — EDIT MANUALLY'}
+    if(note){
+      if(connected)note.innerHTML='<b>✓ Coach / team calendar connected</b><span>MW will use your coach or team calendar automatically. You do not need to enter practice, meet, or championship dates.</span>';
+      else if(manual)note.innerHTML='<b>Manual dates are open</b><span>Enter only the dates you actually know. Leave anything else blank and MW will safely estimate or use its recommended calendar.</span>';
+      else note.innerHTML='<b>MW will build your recommended calendar</b><span>Use your grade, state, season, and competition path. Exact dates are optional and can be updated later.</span>';
+    }
   };
+  window.mwSyncSeasonCalendarUX=sync;
   if(season){season.addEventListener('change',sync);sync()}
   if(level&&path)level.addEventListener('change',()=>{
     if(level.value==='collegiate')path.value='ncaa';
     else if(level.value==='professional')path.value='professional_open';
     else if(['ncaa','professional_open'].includes(path.value))path.value='school';
+    sync();
+  });
+  path?.addEventListener('change',sync);
+  state?.addEventListener('change',sync);
+  $('#mwEditSeasonDates')?.addEventListener('click',()=>{
+    window.mwManualSeasonDates=!window.mwManualSeasonDates;
+    sync();
+    if(window.mwManualSeasonDates)document.getElementById('entryIndoorDates')?.scrollIntoView({behavior:'smooth',block:'center'});
   });
 }
 function seasonDatesPayload(){
+  if(window.mwCoachConnected===true||window.mwManualSeasonDates!==true)return {};
   const dates={};
   const pref=$('#entrySeasonPreference')?.value||'';
   if(pref==='indoor'||pref==='both')dates.indoor={startDate:$('#entryIndoorStart')?.value||null,firstMeetDate:$('#entryIndoorFirstMeet')?.value||null,primaryPeakDate:$('#entryIndoorPeak')?.value||null,secondaryPeakDate:$('#entryIndoorSecondPeak')?.value||null};
@@ -2733,7 +2758,8 @@ function seasonPlanRequestFromFields(){
     seasonPreference:$('#entrySeasonPreference')?.value||'',
     competitionPath:$('#entryCompetitionPath')?.value||'school',
     dates:seasonDatesPayload(),
-    confirmEstimatedDates:mwSeasonEstimateConfirmationPending
+    confirmEstimatedDates:mwSeasonEstimateConfirmationPending,
+    deferSeasonDates:window.mwCoachConnected===true||mwDeferSeasonDates
   };
 }
 function applySeasonEstimateFields(estimates=[]){
@@ -2771,14 +2797,14 @@ async function saveSeasonDatesOnly(){
     const d=await r.json().catch(()=>({}));
     if(!r.ok){
       if(d.confirmationRequired){
-        applySeasonEstimateFields(d.estimates||[]);mwSeasonEstimateConfirmationPending=true;
-        if(state)state.innerHTML=seasonEstimateMessage(d.estimates||[])+'<br><b>Review or edit these dates, then tap Confirm Dates.</b>';
-        if(btn)btn.textContent='CONFIRM THESE DATES';return;
+        mwSeasonEstimateConfirmationPending=true;
+        if(state)state.innerHTML=seasonEstimateMessage(d.estimates||[])+'<br><b>MW found a recommended calendar. Tap below to use it, or open manual dates if you know something different.</b>';
+        if(btn)btn.textContent='USE MW RECOMMENDED CALENDAR';return;
       }
       if(d.needsDates){
-        applySeasonEstimateFields(d.estimates||[]);
-        if(state)state.innerHTML=(seasonEstimateMessage(d.estimates||[])||mwEscape(d.error||''))+'<br>Add at least your championship / peak date, then save again.';
-        return;
+        mwDeferSeasonDates=true;
+        if(state)state.innerHTML='<b>Exact dates are not required.</b> MW will use the safest recommended calendar for now. You can update real dates later.';
+        return saveSeasonDatesOnly();
       }
       throw new Error(d.error||'Season dates could not be saved.');
     }
@@ -2923,22 +2949,21 @@ async function assessEntry(){
   btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';showEntryFeedback('<b>Building your MW season…</b> Checking your competition calendar, readiness, and synchronized Track + Strength placement.',false);
   try{
     const tok=window.mwGetSessionToken?.()||'';
-    const seasonRequest={...seasonPlanRequestFromFields(),competitionLevel,competitionState,seasonPreference,competitionPath,deferSeasonDates:mwDeferSeasonDates};
+    const seasonRequest={...seasonPlanRequestFromFields(),competitionLevel,competitionState,seasonPreference,competitionPath,deferSeasonDates:(window.mwCoachConnected===true||mwDeferSeasonDates)};
     const sr=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(seasonRequest)});
     const sd=await sr.json().catch(()=>({}));
     if(!sr.ok){
       if(sd.confirmationRequired){
-        applySeasonEstimateFields(sd.estimates||[]);mwSeasonEstimateConfirmationPending=true;
-        out.innerHTML=`<div class="warning"><b>Confirm your competition calendar.</b><br>${seasonEstimateMessage(sd.estimates||[])}<br><br>MW found verified calendar dates, but it will not lock them into your plan without you. Review or edit the dates above, then tap <b>Confirm Dates & Build My Season</b>.</div>`;
-        btn.textContent='CONFIRM DATES & BUILD MY SEASON';
+        mwSeasonEstimateConfirmationPending=true;
+        out.innerHTML=`<div class="reason"><b>MW found your recommended competition calendar.</b><br>${seasonEstimateMessage(sd.estimates||[])}<br><br>You do not need to know these dates from memory. Tap below to use MW's recommendation. If you know different dates, use <b>I KNOW MY DATES — EDIT MANUALLY</b> above.</div>`;
+        btn.textContent='USE MW CALENDAR & BUILD MY SEASON';
         return;
       }
       if(sd.needsDates){
-        applySeasonEstimateFields(sd.estimates||[]);
-        const estimates=(sd.estimates||[]).map(x=>`${String(x.seasonType||'season').toUpperCase()}: MW expects about ${x.targetWeeks||'—'} weeks${x.estimatedPeakDate?` · estimated peak ${mwCalendarDate(x.estimatedPeakDate)}`:''}`).join('<br>');
-        out.innerHTML=`<div class="warning"><b>One more season detail.</b><br>${sd.error||'Enter your championship date.'}<br><br>${estimates}<br><br>Enter the championship / peak date above and try again, or continue temporarily on the standard MW calendar and update your season dates later.<br><button type="button" class="entryGhost" id="mwDeferSeasonDates" style="margin-top:12px">I DON'T KNOW YET — CONTINUE FOR NOW</button></div>`;
-        document.getElementById('mwDeferSeasonDates')?.addEventListener('click',()=>{mwDeferSeasonDates=true;assessEntry()});
-        return;
+        mwDeferSeasonDates=true;
+        out.innerHTML='<div class="reason"><b>MW will handle the calendar for now.</b><br>Exact competition dates are not required. MW is using the safest recommended starting calendar and you can update real dates later.</div>';
+        btn.disabled=false;
+        return assessEntry();
       }
       throw new Error(sd.error||'MW Season Intelligence could not build your season.');
     }
@@ -2996,6 +3021,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     ids.forEach((id,i)=>{const el=q(id);if(el&&values[i]&&!el.value)el.value=String(values[i])});
   };
   const dateFields=()=>{
+    if(window.mwCoachConnected===true||window.mwManualSeasonDates!==true)return {};
     const pref=val('entrySeasonPreference'),dates={};
     if(pref==='indoor'||pref==='both')dates.indoor={startDate:val('entryIndoorStart')||null,firstMeetDate:val('entryIndoorFirstMeet')||null,primaryPeakDate:val('entryIndoorPeak')||null,secondaryPeakDate:val('entryIndoorSecondPeak')||null};
     if(pref==='outdoor'||pref==='both')dates.outdoor={startDate:val('entryOutdoorStart')||null,firstMeetDate:val('entryOutdoorFirstMeet')||null,primaryPeakDate:val('entryOutdoorPeak')||null,secondaryPeakDate:val('entryOutdoorSecondPeak')||null};
@@ -3032,21 +3058,22 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 
     busy=true;btn.disabled=true;btn.textContent='BUILDING MY MW SEASON…';
     try{
-      const seasonRequest={competitionLevel,competitionState,seasonPreference,competitionPath,dates:dateFields(),confirmEstimatedDates:confirmationPending,deferSeasonDates:deferDates};
+      const seasonRequest={competitionLevel,competitionState,seasonPreference,competitionPath,dates:dateFields(),confirmEstimatedDates:confirmationPending,deferSeasonDates:(window.mwCoachConnected===true||deferDates)};
       const sr=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(seasonRequest)});
       const sd=await sr.json().catch(()=>({}));
       if(!sr.ok){
         if(sd.confirmationRequired){
-          (sd.estimates||[]).forEach(fillEstimate); confirmationPending=true;
-          show('<b>Confirm your competition calendar.</b> MW found season dates and filled them in above. Review them, then tap <b>CONFIRM DATES & BUILD MY SEASON</b>.',true);
-          btn.textContent='CONFIRM DATES & BUILD MY SEASON';
+          confirmationPending=true;
+          const summary=(sd.estimates||[]).map(x=>'<b>'+esc(String(x.seasonType||'season').toUpperCase())+'</b>: '+esc(x.sourceLabel||'MW recommended calendar')+(x.estimatedPeakDate?' · peak '+esc(x.estimatedPeakDate):'')).join('<br>');
+          show('<b>MW found your recommended competition calendar.</b><br>'+summary+'<br><br>You do not need to know the exact dates from memory. Tap below to use MW\'s recommendation.',false);
+          btn.textContent='USE MW CALENDAR & BUILD MY SEASON';
           return;
         }
         if(sd.needsDates){
-          (sd.estimates||[]).forEach(fillEstimate);
-          show('<b>One more season detail.</b> '+esc(sd.error||'Enter your championship / peak date above and try again.')+'<br><button type="button" class="entryGhost" id="mwAssessmentDeferDates" style="margin-top:10px">I DON\'T KNOW YET — CONTINUE FOR NOW</button>',true);
-          setTimeout(()=>{const d=q('mwAssessmentDeferDates');if(d)d.onclick=()=>{deferDates=true;runAssessment()};},0);
-          return;
+          deferDates=true;
+          show('<b>MW will handle your calendar for now.</b><br>Exact dates are not required. MW will use the safest recommended starting calendar and you can update real dates later.',false);
+          busy=false;btn.disabled=false;
+          return runAssessment();
         }
         throw new Error(sd.error||'MW Season Intelligence could not build your season.');
       }
@@ -3224,6 +3251,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const map={name:mwRemoteProfile.name,profileLastName:profile.last_name||'',profileEvents:(Array.isArray(d.athlete?.selected_events)?d.athlete.selected_events:[d.athlete?.primary_event,d.athlete?.secondary_event].filter(Boolean)).join(', '),profileDob:d.athlete?.date_of_birth||'',trainingGoal:d.athlete?.training_goal||'',entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',entryGoal:d.athlete?.training_goal||'',entryCompetitionLevel:d.athlete?.competition_level||'',entryCompetitionState:d.athlete?.competition_state||'',entrySeasonPreference:d.athlete?.season_preference||'',entryCompetitionPath:Array.isArray(d.athlete?.competition_paths)?(d.athlete.competition_paths[0]||'school'):'school',entryIndoorStart:activeType==='indoor'?(activeSeason?.season_start_date||''):'',entryIndoorFirstMeet:activeType==='indoor'?(activeSeason?.first_meet_date||''):'',entryIndoorPeak:activeType==='indoor'?(activeSeason?.primary_peak_date||''):'',entryIndoorSecondPeak:activeType==='indoor'?(activeSeason?.secondary_peak_date||''):'',entryOutdoorStart:activeType==='outdoor'?(activeSeason?.season_start_date||''):'',entryOutdoorFirstMeet:activeType==='outdoor'?(activeSeason?.first_meet_date||''):'',entryOutdoorPeak:activeType==='outdoor'?(activeSeason?.primary_peak_date||''):'',entryOutdoorSecondPeak:activeType==='outdoor'?(activeSeason?.secondary_peak_date||''):'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,entryPr100:mwRemoteProfile.p100,entryPr200:mwRemoteProfile.p200,entryPr400:mwRemoteProfile.p400,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
     for(const [id,val] of Object.entries(map)){const el=document.querySelector('#'+id);if(el)el.value=val||''}
     document.querySelector('#entrySeasonPreference')?.dispatchEvent(new Event('change'));
+    window.mwSyncSeasonCalendarUX?.();
 
     ['week','startDate','startWeek'].forEach(id=>{
       const el=document.querySelector('#'+id);
