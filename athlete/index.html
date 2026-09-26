@@ -2710,6 +2710,10 @@ let mwSeasonPreviewTimer=null;
 let mwSeasonPreviewSeq=0;
 async function previewSeasonCalendar(){
   const note=$('#mwSeasonCalendarAutoNote');
+  if(window.mwCoachConnected===true){
+    if(note)note.innerHTML='<b>✓ Coach / team calendar connected</b><span>Your coach or team controls the official season calendar for this plan. MW will use that calendar automatically.</span><small>If something conflicts with school, travel, exams, or availability, use the Calendar conflict tools instead of changing the coach\'s dates.</small>';
+    return;
+  }
   const level=$('#entryCompetitionLevel')?.value||'';
   const state=$('#entryCompetitionState')?.value||'';
   const season=$('#entrySeasonPreference')?.value||'';
@@ -2749,7 +2753,7 @@ async function previewSeasonCalendar(){
         const source=mwEscape(x.sourceLabel||'MW state estimate');
         return '<span><strong>'+name+':</strong> First practice '+start+' · First meet '+meet+' · Championship/peak '+peak+'</span><small>'+source+'</small>';
       }).join('');
-      note.innerHTML='<b>✓ MW estimated your season dates</b>'+lines+'<small>These are estimates, not something you need to memorize. Complete the evaluation to use them, or edit manually if your team gave you different dates.</small>';
+      note.innerHTML='<b>✓ MW estimated your season dates</b>'+lines+'<small>These are estimates, not something you need to memorize. Complete the evaluation to use them, or tap <b>I KNOW MY DATES — EDIT MANUALLY</b> below if you have more exact dates.</small>';
       return;
     }
     if(r.status===422&&d.needsDates){
