@@ -53,18 +53,9 @@ function appUrl(req) {
 }
 
 function stripeHeaders() {
-  const rawSecret = process.env.STRIPE_SECRET_KEY;
-  const secret = String(rawSecret || '').trim();
-  console.error('MW Stripe env diagnostic', {
-    present: typeof rawSecret === 'string' && rawSecret.length > 0,
-    rawLength: typeof rawSecret === 'string' ? rawSecret.length : 0,
-    trimmedLength: secret.length,
-    startsWithSk: secret.startsWith('sk_'),
-    startsWithLive: secret.startsWith('sk_live_'),
-    hadOuterWhitespace: typeof rawSecret === 'string' ? rawSecret !== secret : false,
-    vercelEnv: process.env.VERCEL_ENV || null,
-  });
-  if (!secret.startsWith('sk_')) {
+  const secret = String(process.env.STRIPE_SECRET_KEY || '').trim();
+  const isStripeServerKey = secret.startsWith('sk_') || secret.startsWith('rk_');
+  if (!isStripeServerKey) {
     throw Object.assign(new Error('Stripe is not configured yet.'), { status: 503 });
   }
   return { Authorization: `Basic ${Buffer.from(`${secret}:`).toString('base64')}` };
