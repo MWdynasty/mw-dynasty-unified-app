@@ -38,8 +38,8 @@ const directIds=[
   'helpCenterBtn','reportIssueBtn','privacyBtn','termsBtn','deleteAccountBtn','mwDiagnosticsSend',
   'saveSettings','replayTour','mwSignOut','tourSkip','tourBack','tourNext','qsSkip','qsBack','qsNext',
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
-  'mwPracticeNext','mwPracticeSave','mwDobVerifySave','mwScSave','mwDeferSeasonDates',
-  'mwAssessmentDeferDates','mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
+  'mwPracticeNext','mwPracticeSave','mwDobVerifySave','mwScSave',
+  'mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
   'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton'
 ];
 
@@ -131,3 +131,8 @@ assert(!html.includes("$('.nav button').forEach(x=>x.classList.toggle"),'Single-
 assert(!html.includes("$('.view').forEach(x=>x.classList.toggle"),'Single-element selector must never be used with forEach for view state');
 assert(!html.includes('touch-action:none!important'),'Stationary Home must not disable tap interactions');
 console.log('PASS: stationary Home preserves bottom navigation taps.');
+
+assert(html.includes('let mwDeferSeasonDates=false;'),'Season date deferral state must exist');
+assert(html.includes('deferSeasonDates:window.mwCoachConnected===true||mwDeferSeasonDates'),'Season plan must support automatic safe-date deferral without a legacy button');
+assert(html.includes("if(sd.needsDates){"),'Season plan must handle unavailable exact dates');
+console.log('PASS: Season Intelligence uses automatic date deferral instead of retired defer buttons.');
