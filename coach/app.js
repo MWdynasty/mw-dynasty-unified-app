@@ -458,14 +458,37 @@ function coachMWPage(){
       if(!r.ok)throw new Error(d.error||'Coach MW request failed');
       const answer=String(d.answer||'').trim();
       if(!answer)throw new Error('Coach MW returned an empty response. Please try again.');
-      history.push({role:'assistant',content:answer});history=history.slice(-40).map(m=>({role:m.role,content:m.content}));sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history));pendingImage='';pick.value='';state.textContent='';render();if(coachMWPrefs().autoVoice==='on'){const buttons=chat.querySelectorAll('.mw-read-aloud');const last=buttons[buttons.length-1];if(last)readAloud(answer,last)}
-    }catch(e){state.textContent='Coach MW: '+e.message}
+      history.push({role:'assistant',content:answer});
+      history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
+      sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history));
+      pendingImage='';pick.value='';
+      // Render the answer before any optional voice work so a voice/browser issue
+      // can never hide a successful Coach MW response.
+      try{render()}catch(renderErr){
+        console.warn('MW_COACH_RENDER_FALLBACK',renderErr);
+        chat.insertAdjacentHTML('beforeend',`<div class="tile mw-coach-message mw-coach-assistant"><b>Coach MW</b><p style="white-space:pre-wrap">${escapeHtml(answer)}</p></div>`);
+        chat.scrollTop=chat.scrollHeight;
+      }
+      state.textContent='✓ Coach MW responded';
+      setTimeout(()=>{if(state.textContent==='✓ Coach MW responded')state.textContent=''},1200);
+      if(coachMWPrefs().autoVoice==='on'){
+        try{
+          const buttons=chat.querySelectorAll('.mw-read-aloud');
+          const last=buttons[buttons.length-1];
+          if(last)readAloud(answer,last);
+        }catch(voiceErr){console.warn('MW_COACH_AUTOVOICE_FAILED',voiceErr)}
+      }
+    }catch(e){
+      console.warn('MW_COACH_UI_REQUEST_FAILED',e);
+      state.textContent='Coach MW: '+e.message
+    }
   };
   const sendButton=document.getElementById('askmw');
   if(sendButton){
     sendButton.type='button';
+    // One event path only. Using both click and pointerup on iPhone/WebView can
+    // double-fire the sender and leave the UI in an inconsistent state.
     sendButton.onclick=e=>{e.preventDefault();e.stopPropagation();send()};
-    sendButton.addEventListener('pointerup',e=>{if(e.pointerType==='touch'){e.preventDefault();send()}},{passive:false});
   }
   q.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();send()}};
   // Make the live sender available for diagnostics and as a safe fallback in WebView/Safari.
