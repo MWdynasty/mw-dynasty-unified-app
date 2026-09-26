@@ -44,7 +44,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   // This keeps sign-in from paying three network round trips in sequence.
   const [profile,athlete,membershipAccess]=await Promise.all([
     one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${userId}&limit=1`,token),
-    one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal,competition_level,competition_state,season_preference,competition_paths,training_context&user_id=eq.${userId}&limit=1`,token),
+    one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal,competition_level,competition_state,competition_division,season_preference,competition_paths,training_context&user_id=eq.${userId}&limit=1`,token),
     athleteFeatureAccess(token)
   ]);
   if(!profile) throw Object.assign(new Error('MW profile not found for this login.'),{status:403});
