@@ -1574,12 +1574,12 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 </section>
 
 <section class="view" id="entry">
-<div class="top"><div><div class="logo"><b>MW</b> SMART ENTRY</div><div class="sub">ATHLETE PLACEMENT ASSESSMENT</div></div><div class="online"><span class="dot">●</span> MW SYSTEM</div></div>
+<div class="top"><div><div class="logo"><b>MW</b> ATHLETE EVALUATION</div><div class="sub">SEASON INTELLIGENCE • PERFORMANCE PLACEMENT</div></div><div class="online"><span class="dot">●</span> MW SYSTEM</div></div>
 <div class="entryHero"><h2>Train for the season you <strong>actually have</strong>.</h2><p>MW Season Intelligence uses your level, state, Indoor/Outdoor calendar, championship date, and Smart Entry readiness to build a condensed MW season from the 41-week master system. Track and strength stay synchronized to the same peak.</p><div class="phaseStrip" id="phaseStrip"><div class="phasePill" data-phase="1"><span>1</span>W1–8</div><div class="phasePill" data-phase="2"><span>2</span>W9–16</div><div class="phasePill" data-phase="3"><span>3</span>W17–24</div><div class="phasePill" data-phase="4"><span>4</span>W25–33</div><div class="phasePill" data-phase="5"><span>5</span>W34–41</div></div></div>
 <div class="assessment">
-<div class="question"><label>First name</label><input id="entryFirstName" autocomplete="given-name" maxlength="80" placeholder="First name"></div>
-<div class="question"><label>Last name</label><input id="entryLastName" autocomplete="family-name" maxlength="80" placeholder="Last name"></div>
-<div class="question"><label>Date of birth</label><input id="entryDob" type="date"></div>
+<input id="entryFirstName" type="hidden">
+<input id="entryLastName" type="hidden">
+<input id="entryDob" type="hidden">
 <div class="question"><label>Competition level</label><select id="entryCompetitionLevel"><option value="">Choose your level</option><option value="6">6th Grade</option><option value="7">7th Grade</option><option value="8">8th Grade</option><option value="9">9th Grade</option><option value="10">10th Grade</option><option value="11">11th Grade</option><option value="12">12th Grade</option><option value="collegiate">Collegiate</option><option value="professional">Professional</option></select><small>MW uses your level to choose development rules and the right season model.</small></div>
 <div class="question"><label>Where do you compete?</label><select id="entryCompetitionState"><option value="">Choose state</option><option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="DC">District of Columbia</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option></select><small>For school athletes, MW uses your state to estimate the official track calendar when verified data is available.</small></div>
 <div class="question"><label>Which season are you preparing for?</label><select id="entrySeasonPreference"><option value="">Choose season</option><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option><option value="both">Both Indoor + Outdoor</option></select></div>
@@ -1604,7 +1604,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="question"><label>How consistently are you currently lifting?</label><select id="lifting"><option value="2">2–3+ sessions per week</option><option value="1">About 1 session per week</option><option value="0">Not currently lifting</option></select></div>
 <div class="question"><label>How do you feel right now?</label><select id="health"><option value="clear">Normal training soreness / I feel ready</option><option value="tight">Some mild tightness or unusual soreness</option><option value="pain">Pain, recent injury, or something that changes how I run</option></select></div>
 <div class="result" id="entryResult" aria-live="polite"></div>
-<button type="button" class="entryAction" id="assess">COMPLETE ASSESSMENT & BUILD MY SEASON</button><button type="button" class="entryGhost" id="backCoach">← BACK TO COACH AI</button>
+<button type="button" class="entryAction" id="assess">COMPLETE EVALUATION & BUILD MY SEASON</button><button type="button" class="entryGhost" id="backCoach">← BACK TO COACH AI</button>
 </div>
 </section>
 
@@ -1985,11 +1985,12 @@ function openView(id,pushHistory=false){
   window.mwCloseAthleteHomeMenu?.();
   const access=window.mwFeatureAccess||{};
   if(window.mwDobRequired){mwPromptDobVerification();return}
+  if(id==='messages'&&window.mwCoachConnected!==true){openView('home',pushHistory);return}
   if(id==='entry'&&access.smart_entry!==true){mwFeatureLock('MW Smart Entry','Smart Entry is part of the complete MW Sprint Performance athlete experience. Your current sponsored access follows your coach’s assigned program.');return}
   if(id==='pacer'&&access.advanced_performance_tools!==true){mwFeatureLock('MW Performance Tools','The full MW pacing and advanced performance-tool suite is unlocked with MW Sprint Performance. Your coach-sponsored plan still supports training check-ins inside your assigned program.');return}
   const coachAssigned=id==='workouts'&&access.mw_training_system!==true&&access.coach_assigned_training===true;
   if(id==='workouts'&&!coachAssigned&&access.mw_training_system!==true&&access.athlete_app===true){mwFeatureLock('Training Access','Your account is active, but no training source is currently available.');return}
-  if(id==='workouts'&&!coachAssigned&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Assessment required.</b><br>Complete your Athlete Profile Assessment to receive your MW training assignment.</div>'}}
+  if(id==='workouts'&&!coachAssigned&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Evaluation required.</b><br>Complete your MW Athlete Evaluation to receive your MW training assignment.</div>'}}
   const homeLocked=id==='home';
   mwSetHomeScrollLock(homeLocked);
   document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));
@@ -2044,7 +2045,7 @@ const TOUR_STEPS=[
   {view:'home',art:'/assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG',title:'Profile',body:'PROFILE keeps your athlete information, PRs, weight-room maxes, Coach MW preference and settings current.',hint:'Accurate profile data helps MW give you the right training targets.',target:'.nav button[data-v="athlete"]',label:'PROFILE',anchor:'icon'}
 ]
 let tourIndex=0,tourFocusEl=null,tourResizeTimer=null;
-function tourStorageKey(){return 'mwOnboardingCompleteV28:'+String(mwOnboardingUserKey||'local')}
+function tourStorageKey(){return 'mwOnboardingCompleteV29:'+String(mwOnboardingUserKey||'local')}
 function clearTourFocus(){
   tourFocusEl=null;
   const s=$('#tourSpotlight'),a=$('#tourArrow'),l=$('#tourTargetLabel');
@@ -2152,16 +2153,29 @@ window.addEventListener('resize',()=>{
 if($('#replayTour'))$('#replayTour').onclick=()=>startTour(true);
 
 
-const QS_STEPS=[
-  {art:'/assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG',eyebrow:'1. HOME',title:'Your Home Button',body:'HOME brings you back to today’s MW command center — your current week, today’s training status, progress and quick actions.',previewTitle:'HOME',previewBody:'Start here whenever you want to see what matters today.'},
-  {art:'/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG',eyebrow:'2. COACH MW',title:'Your Coach MW Button',body:'Tap the pulsing MW crest whenever you need help with training, technique, recovery, race strategy, strength or pacing.',previewTitle:'COACH MW',previewBody:'Ask a coaching question without leaving your MW experience.'},
-  {art:'/assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG',eyebrow:'3. TRAIN',title:'Your Training Button',body:'TRAIN opens the work you need to execute. Follow the session, complete the workout and use the connected pace and distance tools when needed.',previewTitle:'TRAIN',previewBody:'Your current MW week, track work and synchronized strength plan.'},
-  {art:'/assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG',eyebrow:'4. PROGRESS',title:'Your Progress Button',body:'PROGRESS shows what you have completed and where you are in the 41-week MW journey without changing your protected training week.',previewTitle:'PROGRESS',previewBody:'See completed work, weekly progress and your MW journey.'},
-  {art:'/assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG',eyebrow:'5. PROFILE',title:'Your Profile Button',body:'PROFILE is where your athlete information, PRs, weight-room maxes, Coach MW preference and account settings stay current.',previewTitle:'PROFILE',previewBody:'Keep your athlete data accurate so MW can coach you correctly.'},
-  {art:'/mw-dynasty-app-icon-512.png',eyebrow:'6. READY',title:'You Know the New Buttons',body:'HOME. COACH MW. TRAIN. PROGRESS. PROFILE. Those five buttons are your fastest way around MW Dynasty.',previewTitle:'MW DYNASTY',previewBody:'TRAIN • UNDERSTAND • EXECUTE',ready:true,tagline:'LET’S WORK. 🔥'}
-];
+let QS_STEPS=[];
+function buildQuickStartSteps(){
+  const connected=window.mwCoachConnected===true;
+  const calendarBody=connected
+    ? 'CALENDAR shows the schedule your coach controls. Use it to see meets, training dates, and report conflicts without changing the coach’s plan.'
+    : 'CALENDAR is where you manage your availability, meets, school breaks, travel, and conflicts so MW can protect the season you actually have.';
+  const steps=[
+    {art:'/mw-dynasty-app-icon-512.png',eyebrow:'1. SEASON INTELLIGENCE',title:'Your Season Is Built Around You',body:'Your MW Athlete Evaluation gave Season Intelligence the information it needs to place your track and strength work on the same timeline.',previewTitle:'SEASON INTELLIGENCE',previewBody:'Your level, state, competition calendar, readiness, events and performance data work together to set your training placement.'},
+    {art:'/assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG',eyebrow:'2. HOME',title:'Your Command Center',body:'HOME shows what matters today — your current training week, today’s status, progress and quick access to the rest of MW Dynasty.',previewTitle:'HOME',previewBody:'When you are unsure where to start, come back here.'},
+    {art:'/assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG',eyebrow:'3. TRAIN',title:'Today’s Track + Strength',body:'TRAIN opens the work you need to execute. Your track session and Strength & Power work stay synchronized to your MW season.',previewTitle:'TRAIN',previewBody:'Follow today’s prescription, then record what happened.'},
+    {art:'/mw-dynasty-app-icon-512.png',eyebrow:'4. PRACTICE MODE',title:'Run the Session Hands-Free',body:'Practice Mode walks you through the workout with start cues, timing, pace calls and rep logging so you can train without constantly touching your phone.',previewTitle:'PRACTICE MODE',previewBody:'Start the session from Today’s Track Workout. Your saved reps feed your MW progress data.'},
+    {art:'/mw-dynasty-app-icon-512.png',eyebrow:'5. CALENDAR',title:connected?'Your Coach-Connected Calendar':'Your Training Calendar',body:calendarBody,previewTitle:'CALENDAR',previewBody:connected?'Your coach stays in control while you can report scheduling conflicts.':'Keep MW aware of the dates that can affect your training plan.'},
+    {art:'/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG',eyebrow:'6. COACH MW',title:'Your MW Coaching Assistant',body:'Tap the pulsing MW crest whenever you need help understanding training, technique, recovery, race strategy, strength or pacing.',previewTitle:'COACH MW',previewBody:'Ask questions without leaving your MW training experience.'},
+    {art:'/assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG',eyebrow:'7. PROGRESS',title:'See the Work Add Up',body:'PROGRESS shows completed training, Practice Mode results and where you are in your MW season without manually changing your protected training week.',previewTitle:'PROGRESS',previewBody:'Your logs and consistency stay connected to the plan.'},
+    {art:'/assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG',eyebrow:'8. PROFILE',title:'Keep Performance Data Current',body:'PROFILE is where your PRs, weight-room maxes, Athlete Goal and coach connection stay current. Your identity was already created during signup.',previewTitle:'PROFILE',previewBody:'Update performance information here — you do not create a second profile.'}
+  ];
+  if(connected)steps.push({art:'/mw-dynasty-app-icon-512.png',eyebrow:'9. MESSAGES',title:'Stay Connected With Your Coach',body:'MESSAGES appears because you are connected to a coach or team. Coach conversations, replies and unread messages stay inside MW Dynasty.',previewTitle:'MESSAGES',previewBody:'If your coach connection ends, this tool leaves the active Athlete experience until you connect again.'});
+  const readyNumber=steps.length+1;
+  steps.push({art:'/mw-dynasty-app-icon-512.png',eyebrow:readyNumber+'. READY',title:'Your MW System Is Ready',body:'Season Intelligence has placed you. You know where to train, how to use Practice Mode, where your calendar lives and how the rest of your Athlete experience works.',previewTitle:'MW DYNASTY',previewBody:'TRAIN • UNDERSTAND • EXECUTE',ready:true,tagline:'LET’S WORK. 🔥'});
+  return steps;
+}
 let qsIndex=0;
-function qsStorageKey(){return 'mwOnboardingCompleteV28:'+String(mwOnboardingUserKey||'local')}
+function qsStorageKey(){return 'mwOnboardingCompleteV29:'+String(mwOnboardingUserKey||'local')}
 function renderQuickStart(){
   const s=QS_STEPS[qsIndex];
   const main=$('#qsMain');
@@ -2192,6 +2206,7 @@ function finishQuickStart(){
 }
 function startQuickStart(force=false){
   if(!force&&localStorage.getItem(qsStorageKey())==='1')return;
+  QS_STEPS=buildQuickStartSteps();
   qsIndex=0;
   $('#mwQuickStart').classList.add('show');
   renderQuickStart();
@@ -2948,7 +2963,7 @@ async function assessEntry(){
       ?`<div class="resultTop"><div><span class="badge">MW STANDARD CALENDAR ACTIVE</span><h3>Your training can begin now.</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>CURRENT PLACEMENT</small><b>WEEK ${d.assignedWeek||d.calendar?.week||1}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>You can train now without guessing a championship date. Add or update your real season dates later and MW Season Intelligence will rebuild around the confirmed calendar.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY TRAINING</button>`
       :`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
-  }catch(e){showEntryFeedback(e.message||'MW Season Intelligence could not be saved. Please try again.',true)}finally{btn.disabled=false;btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON'}
+  }catch(e){showEntryFeedback(e.message||'MW Season Intelligence could not be saved. Please try again.',true)}finally{btn.disabled=false;btn.textContent='COMPLETE EVALUATION & BUILD MY SEASON'}
 }
 $('#assess')?.addEventListener('click',assessEntry); $('#saveSeasonDatesOnly')?.addEventListener('click',saveSeasonDatesOnly); initSeasonIntelligenceFields(); syncEntrySeason(); setTimeout(loadSeasonCalendar,650);
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){let r=new SR();r.lang='en-US';r.onstart=()=>{$('#voiceState').textContent='LISTENING…';$('#coachAvatar')?.classList.add('listening');$('#coach')?.classList.add('mwListening');$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='I’M LISTENING…')};r.onresult=e=>{let t=e.results[0][0].transcript;$('#q').value=t;send(t)};r.onend=()=>{$('#voiceState').textContent='TAP MIC TO SPEAK';$('#coachAvatar')?.classList.remove('listening');$('#coach')?.classList.remove('mwListening');if(!$('#coachAvatar')?.classList.contains('speaking'))$('#premiumVoiceState')&&($('#premiumVoiceState').textContent='MW SEASON PLAN · TRACK + WEIGHT ROOM SYNCED')};$('#mic').onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}r.start()}}else $('#mic').onclick=()=>$('#voiceState').textContent='MIC INPUT NOT SUPPORTED HERE';
@@ -3070,7 +3085,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       show('<b>Season Intelligence could not finish.</b><br>'+esc(err?.message||'Please try again.'),true);
     }finally{
       busy=false;btn.disabled=false;
-      if(!confirmationPending)btn.textContent='COMPLETE ASSESSMENT & BUILD MY SEASON';
+      if(!confirmationPending)btn.textContent='COMPLETE EVALUATION & BUILD MY SEASON';
     }
   }
 
@@ -3114,6 +3129,10 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const trainingYear=document.querySelector('#homeTrainingYear');
     const progressBtn=document.querySelector('.nav button[data-v="progress"]');
     const entryBtn=document.querySelector('#openEntry');
+    const coachConnected=window.mwCoachConnected===true;
+    const messageMenu=home?.querySelector('[data-open="messages"]');
+    if(messageMenu)messageMenu.style.display=coachConnected?'':'none';
+    document.body.classList.toggle('mw-coach-connected',coachConnected);
     if(trainingYear)trainingYear.style.display=a.smart_entry===true?'':'none';
     if(entryBtn)entryBtn.style.display=a.smart_entry===true?'':'none';
     if(toolsCard)toolsCard.style.display=a.advanced_performance_tools===true?'':'none';
@@ -3154,7 +3173,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const privileged=['founder_owner','admin','coach'].includes(role);
     const hasAthlete=!!d.athlete;
     const featureAccess=d.features?.access||{};window.mwFeatureAccess=featureAccess;
-    window.MWDiag?.snapshot({audience:'athlete',role,access_mode:String(featureAccess.access_mode||''),has_access:featureAccess.has_access===true,current_week:Number(ps.current_week||1),program_status:String(ps.program_status||''),assessment_complete:Boolean(ps.onboarding_assessment_completed_at)});
+    window.mwCoachConnected=d.coachRelationship?.connected===true;
+    window.MWDiag?.snapshot({audience:'athlete',role,access_mode:String(featureAccess.access_mode||''),has_access:featureAccess.has_access===true,current_week:Number(ps.current_week||1),program_status:String(ps.program_status||''),evaluation_complete:Boolean(ps.onboarding_assessment_completed_at)});
     window.mwAssessmentComplete=Boolean(ps.onboarding_assessment_completed_at);
     window.mwAssessmentRequired=hasAthlete&&featureAccess.smart_entry===true&&!window.mwAssessmentComplete;
     window.mwDobRequired=hasAthlete&&!d.athlete?.date_of_birth&&featureAccess.access_mode!=='internal_test';
@@ -3182,6 +3202,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       competitionLevel:d.athlete?.competition_level||'',
       competitionState:d.athlete?.competition_state||'',
       seasonPreference:d.athlete?.season_preference||'',
+      trainingContext:d.athlete?.training_context||'independent',
+      coachConnected:window.mwCoachConnected===true,
       competitionPath:Array.isArray(d.athlete?.competition_paths)?(d.athlete.competition_paths[0]||'school'):'school',
       seasonPlan:d.seasonPlan||null,
       email:d.user?.email||'',
@@ -3331,11 +3353,16 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       restoredToolView=true;
     }
 
-    // Athletes get the first-login tutorial. Founder/staff accounts bypass athlete onboarding.
+    // First paid entry: identity is already created. Evaluation comes before the tutorial.
     if(!restoredToolView){
-      if(hasAthlete&&featureAccess.mw_training_system===true)setTimeout(()=>{startQuickStart(false);if(window.mwDobRequired)mwPromptDobVerification();else if(window.mwAssessmentRequired&&localStorage.getItem(qsStorageKey())==='1')openView('entry')},350);
-      else if(hasAthlete&&window.mwDobRequired)setTimeout(()=>mwPromptDobVerification(),350);
-      else openView('home');
+      if(hasAthlete&&window.mwDobRequired)setTimeout(()=>mwPromptDobVerification(),350);
+      else if(hasAthlete&&featureAccess.mw_training_system===true&&window.mwAssessmentRequired){
+        openView('entry');
+        setTimeout(()=>loadSeasonCalendar(),80);
+      }else if(hasAthlete&&featureAccess.mw_training_system===true){
+        openView('home');
+        setTimeout(()=>startQuickStart(false),350);
+      }else openView('home');
     }
   }
   const STRENGTH_FIELD_MAP={maxPowerClean:'power_clean_max',maxFrontSquat:'front_squat_max',maxBackSquat:'back_squat_max',maxDeadlift:'deadlift_max',profileDeadliftType:'deadlift_type',profileWeightUnit:'weight_unit'};
@@ -3479,12 +3506,12 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const card=document.querySelector('.mwLoginCard');if(!card)return;
     const isNative=document.documentElement.classList.contains('mw-native-app');
     card.innerHTML=`<a class="mwLoginBack" href="https://mwdynasty.com/" aria-label="Open MW Dynasty website">← MW WEBSITE</a>
-      <div class="mwLoginCardHead"><div class="mwAthleteOnboardProgress">ACCOUNT ✓ &nbsp;•&nbsp; <b>MEMBERSHIP</b> &nbsp;•&nbsp; PROFILE &nbsp;•&nbsp; ASSESSMENT</div><h2>One membership. Everything you need.</h2><p>Your account is ready. Complete membership, then we’ll build your athlete profile and place you in the right starting point.</p></div>
+      <div class="mwLoginCardHead"><div class="mwAthleteOnboardProgress">PROFILE ✓ &nbsp;•&nbsp; <b>MEMBERSHIP</b> &nbsp;•&nbsp; EVALUATION &nbsp;•&nbsp; TUTORIAL</div><h2>One membership. Everything you need.</h2><p>Your MW Athlete profile is already created. Complete membership, then Season Intelligence will evaluate your training needs and build your starting point.</p></div>
       <div class="mwAthleteMembershipPlan"><span>MW ATHLETE</span><b>&#36;19<small>/month</small></b><p>Track + strength programming, Sprint School, performance tools, progress tracking, and Coach MW.</p><em>Cancel anytime.</em></div>
       <button id="mwAthleteMembershipContinue" class="mwLoginButton" type="button">${isNative?'Continue to App Purchase':'Continue to Secure Payment'} <span>→</span></button>
       ${isNative?'<button id="mwAthleteRestorePurchase" class="mwLoginLink" type="button" style="width:100%;margin-top:10px">Restore App Store Purchase</button>':''}
       <div id="mwAuthStatus" class="mwAuthStatus"></div>
-      <div class="mwLoginAccessNote">After payment, you’ll continue directly to your Athlete Profile and Entry Assessment.</div>`;
+      <div class="mwLoginAccessNote">After payment, you’ll continue directly to your MW Athlete Evaluation. Your personalized tutorial comes after your season is built.</div>`;
     document.getElementById('mwAthleteMembershipContinue').onclick=async()=>{
       const btn=document.getElementById('mwAthleteMembershipContinue');btn.disabled=true;authStatus('Preparing your membership…');
       try{
@@ -3889,7 +3916,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   ['workouts','Training','Today’s MW track + strength program'],['coach','Coach MW','Ask your MW AI coach'],['messages','Messages','Coach conversations'],['progress','Progress','Program completion and progress'],['athlete','Athlete Profile','PRs, events and maxes'],['settings','Settings','Voice, notifications and membership'],['notifications','Notifications','Coach messages and athlete alerts'],['pacer','Training Tools','Pace AI and Distance Pacer'],['entry','Training Year','Smart Entry and official week']
  ];
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
- function bind(){const input=document.getElementById('mwAthleteSearch'),box=document.getElementById('mwAthleteSearchResults');if(!input||!box)return;const render=()=>{const q=input.value.trim().toLowerCase();if(!q){box.hidden=true;box.innerHTML='';return}const r=items.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q));box.innerHTML=r.length?r.map(x=>`<button type="button" data-athlete-search-open="${x[0]}"><b>${esc(x[1])}</b><small>${esc(x[2])}</small></button>`).join(''):'<button type="button"><b>No results</b><small>Try training, messages, Coach MW, progress, or settings.</small></button>';box.hidden=false;box.querySelectorAll('[data-athlete-search-open]').forEach(b=>b.onclick=()=>{box.hidden=true;input.value='';openView(b.dataset.athleteSearchOpen)})};input.addEventListener('input',render);input.addEventListener('focus',render);document.addEventListener('click',e=>{if(!e.target.closest('.mwAthleteSearchWrap'))box.hidden=true})}
+ function bind(){const input=document.getElementById('mwAthleteSearch'),box=document.getElementById('mwAthleteSearchResults');if(!input||!box)return;const render=()=>{const q=input.value.trim().toLowerCase();if(!q){box.hidden=true;box.innerHTML='';return}const available=items.filter(x=>x[0]!=='messages'||window.mwCoachConnected===true);const r=available.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q));box.innerHTML=r.length?r.map(x=>`<button type="button" data-athlete-search-open="${x[0]}"><b>${esc(x[1])}</b><small>${esc(x[2])}</small></button>`).join(''):'<button type="button"><b>No results</b><small>Try training, Coach MW, progress, calendar, or settings.</small></button>';box.hidden=false;box.querySelectorAll('[data-athlete-search-open]').forEach(b=>b.onclick=()=>{box.hidden=true;input.value='';openView(b.dataset.athleteSearchOpen)})};input.addEventListener('input',render);input.addEventListener('focus',render);document.addEventListener('click',e=>{if(!e.target.closest('.mwAthleteSearchWrap'))box.hidden=true})}
  document.addEventListener('DOMContentLoaded',bind);
 })();
 </script>
