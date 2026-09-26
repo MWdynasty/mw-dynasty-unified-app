@@ -28,10 +28,13 @@ module.exports=async(req,res)=>{
       if(!ids.length)return res.status(200).json({ok:true,scope:'assigned',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
       athletes=await get(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date,created_at&id=in.${inList(ids)}&order=created_at.asc`,c.token);
     }else{
-      athletes=await get('athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date,created_at&order=created_at.asc',c.token);
+      assignments=await get('coach_assignments?select=athlete_id,assigned_at,status,coach_user_id&status=eq.active&order=assigned_at.asc',c.token);
+      const ids=[...new Set(assignments.map(x=>x.athlete_id).filter(Boolean))];
+      if(!ids.length)return res.status(200).json({ok:true,scope:'assigned_all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
+      athletes=await get(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date,created_at&id=in.${inList(ids)}&order=created_at.asc`,c.token);
     }
 
-    if(!athletes.length)return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
+    if(!athletes.length)return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'assigned_all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
 
     const initialUserIds=athletes.map(a=>a.user_id).filter(Boolean);
     const entitlements=initialUserIds.length
@@ -45,7 +48,7 @@ module.exports=async(req,res)=>{
     }).map(e=>e.user_id));
     athletes=athletes.filter(a=>a.user_id&&activeUsers.has(a.user_id));
 
-    if(!athletes.length)return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
+    if(!athletes.length)return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'assigned_all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
 
     const athleteIds=athletes.map(a=>a.id);
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
@@ -82,6 +85,6 @@ module.exports=async(req,res)=>{
         pr:athletePrs.map(x=>`${x.event} ${x.time_seconds}`).join(' · ')||'—'
       };
     });
-    return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'all',coach:{name:c.profile.first_name,role},count:out.length,athletes:out,pendingInvitations});
+    return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'assigned_all',coach:{name:c.profile.first_name,role},count:out.length,athletes:out,pendingInvitations});
   }catch(e){return res.status(e.status||500).json({error:e.message||'Roster request failed'})}
 };
