@@ -3068,3 +3068,11 @@ img,svg,video,canvas{max-width:100%}
     max-height:110px!important;
   }
 }
+
+@media(max-width:820px){
+  .coach-mw-athlete-thread{touch-action:pan-y!important;pointer-events:auto!important;position:relative!important;z-index:1!important}
+  .coach-mw-athlete-composer{position:relative!important;z-index:1201!important;pointer-events:auto!important}
+  .coach-mw-athlete-composer *{pointer-events:auto!important}
+  .coach-mobile-nav{pointer-events:auto!important}
+  .coach-mobile-nav *{pointer-events:auto!important}
+}
