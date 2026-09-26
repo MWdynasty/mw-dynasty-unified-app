@@ -415,7 +415,15 @@ function coachMWPage(){
   let pendingImage='',activeAudio=null,activeVoiceButton=null,activeVoiceURL='',voiceRun=0;
   const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate');
   const draftPrompt=sessionStorage.getItem('mwCoachDraftPrompt')||'';if(draftPrompt){q.value=draftPrompt;sessionStorage.removeItem('mwCoachDraftPrompt')}
-  let history=[];try{history=JSON.parse(sessionStorage.getItem('mwCoachProConversation')||'[]')}catch{}
+  let history=[];
+  try{
+    const saved=JSON.parse(sessionStorage.getItem('mwCoachProConversation')||'[]');
+    history=Array.isArray(saved)?saved.filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40):[];
+    if(!Array.isArray(saved))sessionStorage.removeItem('mwCoachProConversation');
+  }catch{
+    history=[];
+    sessionStorage.removeItem('mwCoachProConversation');
+  }
   const voiceChunks=(text,mode)=>{if(mode==='standard')return [text];const parts=String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text],chunks=[];let current='';for(const part of parts){if((current+part).length>360&&current){chunks.push(current.trim());current=''}current+=part}if(current.trim())chunks.push(current.trim());return chunks.slice(0,8)};
   const resetVoice=()=>{voiceRun++;if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch{}}if(activeVoiceURL)URL.revokeObjectURL(activeVoiceURL);if(activeVoiceButton){activeVoiceButton.textContent='▶ Start Voice';activeVoiceButton.disabled=false;activeVoiceButton=null}activeAudio=null;activeVoiceURL=''};
   const readAloud=async(text,button)=>{
@@ -453,7 +461,15 @@ function coachMWPage(){
       history.push({role:'assistant',content:answer});history=history.slice(-40).map(m=>({role:m.role,content:m.content}));sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history));pendingImage='';pick.value='';state.textContent='';render();if(coachMWPrefs().autoVoice==='on'){const buttons=chat.querySelectorAll('.mw-read-aloud');const last=buttons[buttons.length-1];if(last)readAloud(answer,last)}
     }catch(e){state.textContent='Coach MW: '+e.message}
   };
-  document.getElementById('askmw').onclick=send;q.onkeydown=e=>{if(e.key==='Enter')send()};
+  const sendButton=document.getElementById('askmw');
+  if(sendButton){
+    sendButton.type='button';
+    sendButton.onclick=e=>{e.preventDefault();e.stopPropagation();send()};
+    sendButton.addEventListener('pointerup',e=>{if(e.pointerType==='touch'){e.preventDefault();send()}},{passive:false});
+  }
+  q.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();send()}};
+  // Make the live sender available for diagnostics and as a safe fallback in WebView/Safari.
+  window.mwCoachSend=send;
 }
 function membershipPage(){return coachAccountPage()}
 function founderPreviewPage(){
