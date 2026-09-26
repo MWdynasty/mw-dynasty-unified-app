@@ -2298,3 +2298,41 @@ img,svg,video,canvas{max-width:100%}
   .coach-mw-athlete-top{display:none!important}
   .coach-mw-athlete-page .coach-mw-athlete-shell{margin-top:0}
 }
+
+
+/* V26.09 iPhone safe-area correction — keep coach header controls below the status bar */
+@media(max-width:820px){
+  .page:not(.coach-mw-athlete-page) .page-wrap{
+    padding:
+      calc(env(safe-area-inset-top) + 24px)
+      max(14px,env(safe-area-inset-right))
+      14px
+      max(14px,env(safe-area-inset-left))!important;
+  }
+  .page:not(.coach-mw-athlete-page) .page-top{
+    position:relative!important;
+    z-index:20!important;
+    min-height:64px!important;
+    padding-top:0!important;
+  }
+  .page:not(.coach-mw-athlete-page) .page-top>.back:first-child{
+    min-height:48px!important;
+    padding:11px 16px!important;
+    touch-action:manipulation!important;
+  }
+  .page:not(.coach-mw-athlete-page) .page-top .mw-notification-btn{
+    min-width:48px!important;
+    min-height:48px!important;
+    touch-action:manipulation!important;
+  }
+
+  /* Dashboard/home screen uses its own header, so give it the same iPhone clearance. */
+  .app .brand-head{
+    padding-top:calc(env(safe-area-inset-top) + 22px)!important;
+  }
+
+  /* Coach MW already owns its own safe-area header; avoid double padding there. */
+  .coach-mw-athlete-page .page-wrap{
+    padding-top:0!important;
+  }
+}
