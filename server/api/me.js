@@ -79,7 +79,10 @@ module.exports=async function handler(req,res){
   if(req.method!=='GET')return res.status(405).json({error:'GET only'});
   try{
     await refresh(req);
-    const c=await getAccountContext(req);
+    // /api/me is the Athlete-app identity endpoint. Do not let a Coach/Admin/Founder
+    // session masquerade as an Athlete session, because Athlete-only services such as
+    // Coach MW then fail later with a confusing 403.
+    const c=await getAccountContext(req,{requireAthlete:true});
     if(c.athlete&&c.token){
       const authority=await resolveAuthoritativeState(c);
       const storedProgramState=c.programState?{...c.programState}:null;
