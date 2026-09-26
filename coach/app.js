@@ -491,6 +491,7 @@ function coachMWPage(){
       traceCoachStage('before_assistant_append');
       appendCoachBubble('assistant',answer);
       traceCoachStage('assistant_appended');
+      return;
       state.textContent='';
       pendingImage='';pick.value='';
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
