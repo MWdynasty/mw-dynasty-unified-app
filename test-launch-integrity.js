@@ -14,6 +14,7 @@ includes('assets/mw-native.js',"MW_APP_VERSION='3.0.16'",'web native bridge vers
 includes('athlete/index.html','MW Dynasty 3.0.16 · iOS Build 14','athlete visible app version mismatch');
 includes('ios_v3_0_16_patch/Config/Release.xcconfig','MARKETING_VERSION = 3.0.16','iOS marketing version mismatch');
 includes('ios_v3_0_16_patch/Config/Release.xcconfig','CURRENT_PROJECT_VERSION = 14','iOS build number mismatch');
+includes('ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj','CURRENT_PROJECT_VERSION = 14;','effective Xcode build number mismatch');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','MWDynasty-iOS/3.0.16','iOS user agent version mismatch');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.athlete.monthly','Athlete App Store product ID missing');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.coach.core.monthly','Coach Core App Store product ID missing');
