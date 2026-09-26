@@ -49,6 +49,14 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 60
 
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'testflight-*'
+          include: true
+          source: true
+
     integrations:
       app_store_connect: codemagic
 
