@@ -38,6 +38,15 @@ body{min-height:100dvh;overflow-x:hidden}
 .mwSignupField input{display:block;width:100%;height:54px;border:1px solid rgba(235,190,75,.38);border-radius:14px;background:rgba(2,9,14,.92);color:#fff;padding:0 14px;font-size:16px;outline:none}
 .mwSignupField input::placeholder{color:#788692}
 .mwSignupField input:focus{border-color:var(--gold2);box-shadow:0 0 0 3px rgba(239,189,67,.09)}
+.mwTrainingChoice{grid-column:1/-1;border:1px solid rgba(235,190,75,.24);border-radius:16px;background:rgba(2,9,14,.68);padding:13px}
+.mwTrainingChoice>span{display:block;margin-bottom:9px;color:#d9dee2;font-size:9px;font-weight:900;letter-spacing:.08em}
+.mwTrainingOptions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mwTrainingOption{position:relative;display:flex;align-items:center;gap:9px;min-height:58px;border:1px solid #31414c;border-radius:13px;background:#06101a;padding:11px;color:#dce5eb;font-size:11px;font-weight:850;line-height:1.3;cursor:pointer}
+.mwTrainingOption input{position:absolute;opacity:0;pointer-events:none}
+.mwTrainingOption:has(input:checked){border-color:var(--gold2);background:linear-gradient(145deg,#171207,#071019);color:#fff;box-shadow:0 0 0 2px rgba(239,189,67,.08)}
+.mwTrainingOption i{width:30px;height:30px;display:grid;place-items:center;border:1px solid #3a4a55;border-radius:9px;background:#07131c;font-style:normal;font-size:15px}
+.mwTrainingHint{display:block;margin-top:8px;color:#7f909c;font-size:9px;line-height:1.4}
+@media(max-width:390px){.mwTrainingOptions{grid-template-columns:1fr}}
 .mwSignupCheck{display:flex;gap:10px;align-items:flex-start;margin:17px 0;color:#b9c4cc;font-size:11px;line-height:1.5}
 .mwSignupCheck input{flex:0 0 auto;width:19px;height:19px;margin:1px 0 0;accent-color:var(--gold)}
 .mwSignupCheck a{color:#75c9f1}
@@ -65,12 +74,20 @@ body{min-height:100dvh;overflow-x:hidden}
       <a class="mwSignupBack" href="/athlete/">← ATHLETE SIGN IN</a>
       <div class="mwSignupStep">STEP 1 OF 4 • ACCOUNT</div>
       <h1>Create Athlete Account</h1>
-      <p class="mwSignupLead">Create your MW Dynasty account first. Membership comes next, followed by your Athlete Profile and Entry Assessment.</p>
+      <p class="mwSignupLead">Create your MW Dynasty Athlete profile once. After membership, MW will evaluate your performance and build your training.</p>
 
       <div class="mwSignupGrid">
         <label class="mwSignupField"><span>FIRST NAME</span><input id="first" autocomplete="given-name" maxlength="80" placeholder="First name"></label>
         <label class="mwSignupField"><span>LAST NAME</span><input id="last" autocomplete="family-name" maxlength="80" placeholder="Last name"></label>
         <label class="mwSignupField full"><span>DATE OF BIRTH • 13+</span><input id="dob" type="date" autocomplete="bday"></label>
+        <div class="mwTrainingChoice">
+          <span>HOW WILL YOU TRAIN WITH MW DYNASTY?</span>
+          <div class="mwTrainingOptions">
+            <label class="mwTrainingOption"><input type="radio" name="trainingContext" value="independent"><i>⚡</i><b>Training Independently</b></label>
+            <label class="mwTrainingOption"><input type="radio" name="trainingContext" value="coach_team"><i>👥</i><b>With a Coach or Team</b></label>
+          </div>
+          <small class="mwTrainingHint">This tells MW which onboarding path to prepare. Choosing coach/team does not place you on a roster until a coach connection is confirmed.</small>
+        </div>
         <label class="mwSignupField full"><span>EMAIL</span><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></label>
         <label class="mwSignupField"><span>PASSWORD</span><input id="password" type="password" autocomplete="new-password" placeholder="8+ characters"></label>
         <label class="mwSignupField"><span>CONFIRM PASSWORD</span><input id="confirm" type="password" autocomplete="new-password" placeholder="Repeat password"></label>
@@ -83,7 +100,7 @@ body{min-height:100dvh;overflow-x:hidden}
 
       <button id="create" class="mwSignupSubmit" type="button">CREATE ACCOUNT &amp; CONTINUE →</button>
       <div id="status" class="mwSignupStatus"></div>
-      <div class="mwSignupNote">Next: Membership → Payment → Athlete Profile → Entry Assessment</div>
+      <div class="mwSignupNote">Next: Membership → Payment → MW Athlete Evaluation → Personalized Tutorial</div>
     </section>
 
     <div class="mwSignupFooter">Already have an Athlete account? <a href="/athlete/">Sign In</a></div>
@@ -105,7 +122,9 @@ btn.onclick=async()=>{
   const email=document.getElementById('email').value.trim().toLowerCase();
   const password=document.getElementById('password').value;
   const confirm=document.getElementById('confirm').value;
+  const trainingContext=document.querySelector('input[name="trainingContext"]:checked')?.value||'';
   if(!first||!last||!dob||!email||!password)return msg('Complete your name, date of birth, email, and password.',true);
+  if(!trainingContext)return msg('Choose whether you are training independently or with a coach/team.',true);
   if(!ageAtLeast13(dob))return msg('MW Dynasty Athlete accounts require age 13 or older.',true);
   if(password.length<8)return msg('Use at least 8 characters for your password.',true);
   if(password!==confirm)return msg('The passwords do not match.',true);
@@ -117,7 +136,7 @@ btn.onclick=async()=>{
     const u=SUPABASE_URL+'/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+continueUrl);
     const r=await fetch(u,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({
       email,password,
-      data:{first_name:first,last_name:last,date_of_birth:dob,account_type:'athlete',signup_source:isNative?'ios':'website'}
+      data:{first_name:first,last_name:last,date_of_birth:dob,training_context:trainingContext,account_type:'athlete',signup_source:isNative?'ios':'website'}
     })});
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.msg||d.error_description||d.message||'Account could not be created.');
