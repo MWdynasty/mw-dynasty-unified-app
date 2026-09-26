@@ -1,0 +1,2 @@
+Retry trigger for corrected MW Dynasty TestFlight Build 14.
+Effective Xcode CURRENT_PROJECT_VERSION=14.
