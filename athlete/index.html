@@ -1414,6 +1414,16 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     touch-action:pan-y!important;
   }
 }
+
+<style id="mw-role-mismatch-v1">
+.mwRoleMismatch{margin:12px 0 4px;padding:14px;border:1px solid rgba(239,189,67,.46);border-radius:14px;background:linear-gradient(145deg,rgba(10,24,33,.94),rgba(3,9,14,.97));text-align:left}
+.mwRoleMismatch[hidden]{display:none!important}
+.mwRoleMismatch b{display:block;color:#efbd43;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.mwRoleMismatch p{margin:6px 0 12px;color:#d7e0e5;font-size:13px;line-height:1.45}
+.mwRoleMismatchActions{display:grid;gap:8px}
+.mwRoleMismatchActions button{width:100%;min-height:44px;border-radius:12px;border:1px solid rgba(239,189,67,.7);background:linear-gradient(135deg,#d99b21,#f0c54e 55%,#b77b13);color:#05090d;font-weight:950;letter-spacing:.04em;cursor:pointer}
+.mwRoleMismatchActions button.secondary{background:#07131c;color:#efbd43;border-color:rgba(239,189,67,.42)}
+</style>
 </style>
 </head>
 <body class="mw-auth-pending">
@@ -1484,6 +1494,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
         </div>
 
         <div id="mwAuthStatus" class="mwAuthStatus"></div>
+        <div id="mwRoleMismatch" class="mwRoleMismatch" hidden></div>
         <div class="mwLoginAccessNote"><b>MW Athlete requires an authorized MW Dynasty account.</b> Need account help? <a href="/support.html" target="_blank" rel="noopener">Contact MW Support</a>.</div>
         <div class="mwLoginAccessNote"><a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> • <a href="/terms.html" target="_blank" rel="noopener">Terms</a> • <a href="/support.html" target="_blank" rel="noopener">Support</a></div>
       </section>
@@ -3211,11 +3222,39 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 
   function authStatus(msg,bad=false){const el=document.querySelector('#mwAuthStatus');if(el){el.textContent=msg||'';el.style.color=bad?'#ff9caa':'#55c9ff'}}
   function transientProblem(error,status=0){return !navigator.onLine||error?.mwTransient===true||window.MWResilience?.isTransientStatus?.(status)===true||window.MWResilience?.isTransientError?.(error)===true}
-  function mwAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
+  function mwAccessError(message,status=0,data={}){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;Object.assign(e,data||{});return e}
+  function hideRoleMismatch(){const box=document.querySelector('#mwRoleMismatch');if(box){box.hidden=true;box.innerHTML=''}}
+  function handoffMWSession(path,key){
+    if(!mwSession?.access_token)return;
+    try{localStorage.setItem(key,JSON.stringify(mwSession))}catch{}
+    try{localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}catch{}
+    location.assign(path);
+  }
+  function showRoleMismatch(error){
+    const box=document.querySelector('#mwRoleMismatch');if(!box||error?.roleMismatch!==true)return false;
+    authStatus('');
+    const role=String(error?.role||'');
+    const isFounder=['founder_owner','admin'].includes(role);
+    const isCoach=role==='coach'||isFounder;
+    const actions=[];
+    if(error?.destinations?.founder)actions.push('<button type="button" data-mw-target="founder">OPEN FOUNDER OS →</button>');
+    if(error?.destinations?.coach)actions.push('<button type="button" class="'+(error?.destinations?.founder?'secondary':'')+'" data-mw-target="coach">OPEN COACH PLATFORM →</button>');
+    const title=isFounder?'Founder Account':isCoach?'Coach Account':'Different MW Account';
+    const copy=isFounder
+      ?'You signed in with your MW Dynasty Founder account. Choose the workspace you want to open.'
+      :isCoach
+        ?'You signed in with your MW Dynasty Coach account. Open the Coach platform instead of the Athlete platform.'
+        :'This login does not have an Athlete profile.';
+    box.innerHTML='<b>'+title+'</b><p>'+copy+'</p><div class="mwRoleMismatchActions">'+actions.join('')+'</div>';
+    box.hidden=false;
+    box.querySelector('[data-mw-target="founder"]')?.addEventListener('click',()=>handoffMWSession('/founder/','mwFounderSupabaseSession'));
+    box.querySelector('[data-mw-target="coach"]')?.addEventListener('click',()=>handoffMWSession('/coach/','mwCoachSupabaseSession'));
+    return true;
+  }
   function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
   function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
-  async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status);return d}
+  async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status,d);return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
   function applyAthleteAccessUI(){
     const a=window.mwFeatureAccess||{};
@@ -3658,6 +3697,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   async function login(){
     const email=document.querySelector('#mwAuthEmail').value.trim(),password=document.querySelector('#mwAuthPassword').value;
     if(!email||!password){authStatus('Enter your email and password.',true);return}
+    hideRoleMismatch();
     authStatus('Signing in…');
     try{
       const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
@@ -3681,8 +3721,9 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
         throw accessErr;
       }
     }catch(e){
+      document.body.classList.remove('mw-entering');
+      if(showRoleMismatch(e))return;
       if(transientProblem(e)&&mwSession?.access_token){
-        document.body.classList.remove('mw-entering');
         authStatus('Connection interrupted after sign-in. Your MW session is safe and will reconnect automatically.',true);
         return
       }
@@ -3822,6 +3863,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }
   }catch(e){
     console.warn('MW session restore failed:',e);
+    if(showRoleMismatch(e))return;
     if(transientProblem(e)){
       authStatus('MW is having a temporary connection issue. Your saved session is safe; we’ll reconnect automatically.',true);
       return
