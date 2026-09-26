@@ -10,8 +10,18 @@ async function sb(path,token){
   if(!r.ok)return null; return r.json();
 }
 function outputText(data){
-  if(data.output_text)return data.output_text;
-  return (data.output||[]).flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('\n').trim();
+  if(typeof data?.output_text==='string'&&data.output_text.trim())return data.output_text.trim();
+  const out=[];
+  for(const item of (data?.output||[])){
+    for(const part of (item?.content||[])){
+      const type=String(part?.type||'');
+      const value=typeof part?.text==='string'
+        ? part.text
+        : (typeof part?.text?.value==='string'?part.text.value:'');
+      if(value&&['output_text','text'].includes(type))out.push(value);
+    }
+  }
+  return out.join('\n').trim();
 }
 module.exports=async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
@@ -138,6 +148,16 @@ ${JSON.stringify(context).slice(0,70000)}`;
     max_output_tokens:2600
   })});
   const data=await r.json();
-  if(!r.ok)return res.status(r.status).json({error:data?.error?.message||'OpenAI request failed'});
-  return res.status(200).json({answer:outputText(data)});
+  if(!r.ok){
+    const message=data?.error?.message||'OpenAI request failed';
+    console.warn('MW_COACH_AI_UPSTREAM_FAILED',{status:r.status,message});
+    return res.status(r.status).json({error:message,code:'COACH_MW_UPSTREAM'});
+  }
+  const answer=outputText(data);
+  if(!answer){
+    console.warn('MW_COACH_AI_EMPTY_RESPONSE',{responseId:data?.id||null});
+    return res.status(502).json({error:'Coach MW received an empty AI response. Please try again.',code:'COACH_MW_EMPTY_RESPONSE'});
+  }
+  console.info('MW_COACH_AI_OK',{chars:answer.length,responseId:data?.id||null});
+  return res.status(200).json({answer});
 }
