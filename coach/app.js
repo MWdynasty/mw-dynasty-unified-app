@@ -449,16 +449,14 @@ function coachMWPage(){
   };
   const appendCoachBubble=(role,content)=>{
     const bubble=document.createElement('div');
-    bubble.className='tile mw-coach-message '+(role==='user'?'mw-coach-user':'mw-coach-assistant');
-    const label=document.createElement('b');label.textContent=role==='user'?'Coach':'Coach MW';
-    const body=document.createElement('p');body.style.whiteSpace='pre-wrap';body.textContent=content;
-    bubble.append(label,body);
-    if(role==='assistant'){
-      const voice=document.createElement('button');
-      voice.className='back mw-read-aloud';voice.type='button';voice.textContent='🔊 Read Aloud';
-      voice.onclick=()=>readAloud(content,voice);bubble.appendChild(voice);
-    }
-    chat.appendChild(bubble);chat.scrollTop=chat.scrollHeight;
+    bubble.className='mw-coach-message '+(role==='user'?'mw-coach-user':'mw-coach-assistant');
+    const label=document.createElement('b');
+    label.textContent=role==='user'?'Coach':'Coach MW';
+    const body=document.createElement('p');
+    body.textContent=content;
+    bubble.appendChild(label);
+    bubble.appendChild(body);
+    chat.appendChild(bubble);
   };
   const send=()=>{
     const text=q.value.trim();if(!text)return toast('Type or speak a question first');
@@ -491,7 +489,6 @@ function coachMWPage(){
       traceCoachStage('before_assistant_append');
       appendCoachBubble('assistant',answer);
       traceCoachStage('assistant_appended');
-      return;
       state.textContent='';
       pendingImage='';pick.value='';
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
@@ -499,7 +496,6 @@ function coachMWPage(){
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
       state.textContent='Coach MW: '+(e?.message||'Please try again.');
     }).finally(()=>{
-      traceCoachStage('request_finally');
       coachMWInFlight=false;
       if(state.textContent==='Coach MW is thinking…')state.textContent='';
     });
