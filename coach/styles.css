@@ -2813,3 +2813,37 @@ img,svg,video,canvas{max-width:100%}
     align-self:start!important;
   }
 }
+
+
+/* V26.09 Persistent Coach Menu artwork — active state cannot erase the icon */
+@media(max-width:820px){
+  .coach-mobile-nav .coachMobileMenuArt{
+    background:none!important;
+    background-image:none!important;
+    overflow:visible!important;
+  }
+  .coach-mobile-nav .coachMobileMenuArt>img{
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center!important;
+    border-radius:14px!important;
+    pointer-events:none!important;
+    user-select:none!important;
+    -webkit-user-drag:none!important;
+    filter:none!important;
+  }
+  .coach-mobile-nav button[data-page="more"].active .coachMobileMenuArt{
+    background:none!important;
+    background-image:none!important;
+    transform:translateY(-3px) scale(1.06)!important;
+    box-shadow:0 0 20px rgba(0,139,255,.30),0 0 18px rgba(255,201,72,.22)!important;
+  }
+  .coach-mobile-nav button[data-page="more"].active .coachMobileMenuArt>img{
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+    filter:brightness(1.10) saturate(1.08)!important;
+  }
+}
