@@ -440,14 +440,22 @@ function coachMWPage(){
   pick.onchange=()=>{const f=pick.files?.[0];if(!f)return;if(f.size>3*1024*1024){state.textContent='Photo too large. Use 3 MB or less.';pick.value='';return}const r=new FileReader();r.onload=()=>{pendingImage=String(r.result||'');state.textContent='Photo attached.'};r.readAsDataURL(f)};
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(SR){const recognition=new SR();recognition.lang='en-US';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{mic.classList.add('listening');mic.textContent='●';state.textContent='Listening…'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';if(text){q.value=text;state.textContent='Voice captured. Tap Ask when ready.'}};recognition.onerror=()=>{state.textContent='Voice input could not start. You can still type your question.'};recognition.onend=()=>{mic.classList.remove('listening');mic.textContent='🎙'};mic.onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}try{recognition.start()}catch{}}}else{mic.onclick=()=>toast('Voice input is not available in this browser yet.')}
+  let coachMWInFlight=false,coachMWRequestSeq=0;
   const send=async()=>{
     const text=q.value.trim();if(!text)return toast('Type or speak a question first');
+    if(coachMWInFlight)return;
+    coachMWInFlight=true;
+    const requestSeq=++coachMWRequestSeq;
+    const sendButton=document.getElementById('askmw');
+    if(sendButton)sendButton.disabled=true;
     const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
     history.push(userMsg);q.value='';render();state.textContent='Coach MW is thinking…';
+    const ctl=new AbortController();
+    const timeout=setTimeout(()=>ctl.abort(),30000);
     try{
       const request=async()=>{
         const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
-        return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history})});
+        return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:ctl.signal,cache:'no-store'});
       };
       let r=await request();
       if(r.status===401&&authSession?.refresh_token){
@@ -462,15 +470,13 @@ function coachMWPage(){
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history));
       pendingImage='';pick.value='';
-      // Render the answer before any optional voice work so a voice/browser issue
-      // can never hide a successful Coach MW response.
       try{render()}catch(renderErr){
         console.warn('MW_COACH_RENDER_FALLBACK',renderErr);
         chat.insertAdjacentHTML('beforeend',`<div class="tile mw-coach-message mw-coach-assistant"><b>Coach MW</b><p style="white-space:pre-wrap">${escapeHtml(answer)}</p></div>`);
         chat.scrollTop=chat.scrollHeight;
       }
-      state.textContent='✓ Coach MW responded';
-      setTimeout(()=>{if(state.textContent==='✓ Coach MW responded')state.textContent=''},1200);
+      if(requestSeq===coachMWRequestSeq)state.textContent='✓ Coach MW responded';
+      setTimeout(()=>{if(requestSeq===coachMWRequestSeq&&state.textContent==='✓ Coach MW responded')state.textContent=''},1200);
       if(coachMWPrefs().autoVoice==='on'){
         try{
           const buttons=chat.querySelectorAll('.mw-read-aloud');
@@ -480,7 +486,14 @@ function coachMWPage(){
       }
     }catch(e){
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
-      state.textContent='Coach MW: '+e.message
+      if(requestSeq===coachMWRequestSeq)state.textContent=e?.name==='AbortError'?'Coach MW took too long to respond. Tap send to try again.':'Coach MW: '+e.message;
+    }finally{
+      clearTimeout(timeout);
+      if(requestSeq===coachMWRequestSeq){
+        coachMWInFlight=false;
+        if(sendButton)sendButton.disabled=false;
+        if(state.textContent==='Coach MW is thinking…')state.textContent='';
+      }
     }
   };
   const sendButton=document.getElementById('askmw');
