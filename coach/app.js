@@ -436,7 +436,22 @@ function coachMWPage(){
     const text=q.value.trim();if(!text)return toast('Type or speak a question first');
     const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
     history.push(userMsg);q.value='';render();state.textContent='Coach MW is thinking…';
-    try{const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;const r=await fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Coach MW request failed');history.push({role:'assistant',content:d.answer||'I could not produce a response.'});history=history.slice(-40).map(m=>({role:m.role,content:m.content}));sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history));pendingImage='';pick.value='';state.textContent='';render();if(coachMWPrefs().autoVoice==='on'){const buttons=chat.querySelectorAll('.mw-read-aloud');const last=buttons[buttons.length-1];if(last)readAloud(d.answer||'',last)}}catch(e){state.textContent='Coach MW connection error: '+e.message}
+    try{
+      const request=async()=>{
+        const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
+        return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history})});
+      };
+      let r=await request();
+      if(r.status===401&&authSession?.refresh_token){
+        const refreshed=await refreshCoachSession(authSession);
+        if(refreshed?.access_token)r=await request();
+      }
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(d.error||'Coach MW request failed');
+      const answer=String(d.answer||'').trim();
+      if(!answer)throw new Error('Coach MW returned an empty response. Please try again.');
+      history.push({role:'assistant',content:answer});history=history.slice(-40).map(m=>({role:m.role,content:m.content}));sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history));pendingImage='';pick.value='';state.textContent='';render();if(coachMWPrefs().autoVoice==='on'){const buttons=chat.querySelectorAll('.mw-read-aloud');const last=buttons[buttons.length-1];if(last)readAloud(answer,last)}
+    }catch(e){state.textContent='Coach MW: '+e.message}
   };
   document.getElementById('askmw').onclick=send;q.onkeydown=e=>{if(e.key==='Enter')send()};
 }
