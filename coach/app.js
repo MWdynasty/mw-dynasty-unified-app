@@ -440,24 +440,34 @@ function coachMWPage(){
   pick.onchange=()=>{const f=pick.files?.[0];if(!f)return;if(f.size>3*1024*1024){state.textContent='Photo too large. Use 3 MB or less.';pick.value='';return}const r=new FileReader();r.onload=()=>{pendingImage=String(r.result||'');state.textContent='Photo attached.'};r.readAsDataURL(f)};
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(SR){const recognition=new SR();recognition.lang='en-US';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{mic.classList.add('listening');mic.textContent='●';state.textContent='Listening…'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';if(text){q.value=text;state.textContent='Voice captured. Tap Ask when ready.'}};recognition.onerror=()=>{state.textContent='Voice input could not start. You can still type your question.'};recognition.onend=()=>{mic.classList.remove('listening');mic.textContent='🎙'};mic.onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}try{recognition.start()}catch{}}}else{mic.onclick=()=>toast('Voice input is not available in this browser yet.')}
-  let coachMWInFlight=false,coachMWRequestSeq=0;
-  const send=async()=>{
+  let coachMWInFlight=false;
+  const appendCoachBubble=(role,content)=>{
+    const bubble=document.createElement('div');
+    bubble.className='tile mw-coach-message '+(role==='user'?'mw-coach-user':'mw-coach-assistant');
+    const label=document.createElement('b');label.textContent=role==='user'?'Coach':'Coach MW';
+    const body=document.createElement('p');body.style.whiteSpace='pre-wrap';body.textContent=content;
+    bubble.append(label,body);
+    if(role==='assistant'){
+      const voice=document.createElement('button');
+      voice.className='back mw-read-aloud';voice.type='button';voice.textContent='🔊 Read Aloud';
+      voice.onclick=()=>readAloud(content,voice);bubble.appendChild(voice);
+    }
+    chat.appendChild(bubble);chat.scrollTop=chat.scrollHeight;
+  };
+  const send=()=>{
     const text=q.value.trim();if(!text)return toast('Type or speak a question first');
     if(coachMWInFlight)return;
     coachMWInFlight=true;
-    const requestSeq=++coachMWRequestSeq;
-    const sendButton=document.getElementById('askmw');
-    if(sendButton)sendButton.disabled=true;
+    q.value='';q.blur();
     const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
-    history.push(userMsg);q.value='';render();state.textContent='Coach MW is thinking…';
-    const ctl=new AbortController();
-    const timeout=setTimeout(()=>ctl.abort(),30000);
-    try{
-      const request=async()=>{
-        const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
-        return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:ctl.signal,cache:'no-store'});
-      };
-      let r=await request();
+    history.push(userMsg);
+    appendCoachBubble('user',text);
+    state.textContent='Coach MW is thinking…';
+    const request=()=>{
+      const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
+      return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history})});
+    };
+    request().then(async r=>{
       if(r.status===401&&authSession?.refresh_token){
         const refreshed=await refreshCoachSession(authSession);
         if(refreshed?.access_token)r=await request();
@@ -468,43 +478,22 @@ function coachMWPage(){
       if(!answer)throw new Error('Coach MW returned an empty response. Please try again.');
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
-      sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history));
+      appendCoachBubble('assistant',answer);
+      state.textContent='';
       pendingImage='';pick.value='';
-      try{render()}catch(renderErr){
-        console.warn('MW_COACH_RENDER_FALLBACK',renderErr);
-        chat.insertAdjacentHTML('beforeend',`<div class="tile mw-coach-message mw-coach-assistant"><b>Coach MW</b><p style="white-space:pre-wrap">${escapeHtml(answer)}</p></div>`);
-        chat.scrollTop=chat.scrollHeight;
-      }
-      if(requestSeq===coachMWRequestSeq)state.textContent='✓ Coach MW responded';
-      setTimeout(()=>{if(requestSeq===coachMWRequestSeq&&state.textContent==='✓ Coach MW responded')state.textContent=''},1200);
-      const nativeIOS=/MWDynasty-iOS\//i.test(navigator.userAgent||'');
-      if(coachMWPrefs().autoVoice==='on'&&!nativeIOS){
-        setTimeout(()=>{
-          try{
-            const buttons=chat.querySelectorAll('.mw-read-aloud');
-            const last=buttons[buttons.length-1];
-            if(last)readAloud(answer,last);
-          }catch(voiceErr){console.warn('MW_COACH_AUTOVOICE_FAILED',voiceErr)}
-        },0);
-      }
-    }catch(e){
+      setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
+    }).catch(e=>{
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
-      if(requestSeq===coachMWRequestSeq)state.textContent=e?.name==='AbortError'?'Coach MW took too long to respond. Tap send to try again.':'Coach MW: '+e.message;
-    }finally{
-      clearTimeout(timeout);
-      if(requestSeq===coachMWRequestSeq){
-        coachMWInFlight=false;
-        if(sendButton)sendButton.disabled=false;
-        if(state.textContent==='Coach MW is thinking…')state.textContent='';
-      }
-    }
+      state.textContent='Coach MW: '+(e?.message||'Please try again.');
+    }).finally(()=>{
+      coachMWInFlight=false;
+      if(state.textContent==='Coach MW is thinking…')state.textContent='';
+    });
   };
   const sendButton=document.getElementById('askmw');
   if(sendButton){
     sendButton.type='button';
-    // One event path only. Using both click and pointerup on iPhone/WebView can
-    // double-fire the sender and leave the UI in an inconsistent state.
-    sendButton.onclick=e=>{e.preventDefault();e.stopPropagation();send()};
+    sendButton.onclick=()=>send();
   }
   q.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();send()}};
   // Make the live sender available for diagnostics and as a safe fallback in WebView/Safari.
