@@ -417,7 +417,8 @@ function getTrackWeek(week,eventGroup='100_200'){
   const eg=normalizeEventGroup(eventGroup);
   const sessions=[1,2,3,4,5].map(day=>{
     const baseWork=base.w[day-1];
-    const work=eg==='400'?extend400Volume(baseWork,n,day):baseWork;
+    const eventOverride=eg==='400'?EVENT_400[n]?.[day]:null;
+    const work=eventOverride||((eg==='400')?extend400Volume(baseWork,n,day):baseWork);
     return {
       day,
       role:DAY_ROLES[day],
