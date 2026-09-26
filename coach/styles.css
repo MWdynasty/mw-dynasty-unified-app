@@ -2563,3 +2563,77 @@ img,svg,video,canvas{max-width:100%}
   .coach-pace-span{grid-column:auto!important}
   .coach-division-row{grid-template-columns:minmax(0,1fr) 118px!important}
 }
+
+
+/* V26.09 Coach Train hub — athlete-style daily training access */
+.coach-today-practice{display:grid;gap:14px}
+.coach-today-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:18px 20px;border:1px solid rgba(233,197,59,.38);border-radius:22px;
+  background:linear-gradient(145deg,#091821,#061018);box-shadow:inset 0 1px 0 rgba(255,255,255,.035)
+}
+.coach-today-banner h2{margin:5px 0 4px;font-size:28px;line-height:1.02}
+.coach-today-banner p{margin:0;color:#9eafb9;font-size:12px}
+.coach-today-banner .action{flex:0 0 auto}
+.coach-today-event-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.coach-today-session{
+  min-width:0;padding:17px;border:1px solid #314651;border-radius:20px;
+  background:linear-gradient(160deg,#07141d,#03090d);box-shadow:0 14px 34px rgba(0,0,0,.18)
+}
+.coach-today-session.strength{border-color:rgba(233,197,59,.30)}
+.coach-today-session.empty{opacity:.88}
+.coach-today-session-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+.coach-today-session-top span{color:#efc659;font-size:9px;font-weight:950;letter-spacing:.12em}
+.coach-today-session-top b{color:#91a4ae;font-size:9px;letter-spacing:.06em}
+.coach-today-session h3{margin:0 0 7px;font-size:21px;line-height:1.08}
+.coach-today-session>p{margin:0;color:#a7b4bc;font-size:11px;line-height:1.5}
+.coach-today-focus{margin-bottom:12px!important}
+.coach-today-prescription{
+  display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;align-items:start;
+  padding:9px 0;border-top:1px solid rgba(255,255,255,.055)
+}
+.coach-today-prescription span{color:#80939e;font-size:8px;font-weight:950;letter-spacing:.10em}
+.coach-today-prescription b{font-size:11px;line-height:1.4}
+.coach-today-prescription.primary b{color:#f0cf70}
+.coach-today-cues{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.coach-today-cues span{padding:6px 8px;border:1px solid rgba(233,197,59,.18);border-radius:999px;color:#cbd5da;font-size:8px}
+.coach-today-strength-list{display:grid;gap:10px}
+.coach-today-strength-list>div{display:grid;gap:6px;padding-top:8px;border-top:1px solid rgba(255,255,255,.055)}
+.coach-today-strength-list>div:first-child{padding-top:0;border-top:0}
+.coach-today-strength-list b{color:#efc659;font-size:10px}
+.coach-today-strength-list span{display:flex;justify-content:space-between;gap:12px;color:#dce3e6;font-size:10px}
+.coach-today-strength-list em{color:#94a6af;font-style:normal;text-align:right}
+.coach-today-actions{display:flex;gap:10px;flex-wrap:wrap}
+.coach-train-tools{margin-top:18px}
+.coach-train-tools-head{margin-bottom:14px}
+.coach-train-tools-head h2{margin:5px 0 5px;font-size:26px}
+.coach-train-tools-head p{margin:0;color:#9aabb4;line-height:1.45}
+.coach-train-tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.coach-train-tool{
+  display:grid;gap:8px;min-height:150px;padding:18px;text-align:left;
+  border:1px solid #304752;border-radius:20px;background:linear-gradient(155deg,#081722,#040a0f);
+  color:#f6f7f8;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+.coach-train-tool.primary{border-color:rgba(233,197,59,.55);background:linear-gradient(145deg,#171407,#071019)}
+.coach-train-tool b{font-size:15px;letter-spacing:.03em}
+.coach-train-tool span{color:#9fb0ba;font-size:11px;line-height:1.48}
+.coach-train-tool em{align-self:end;color:#efc659;font-size:10px;font-style:normal;font-weight:950;letter-spacing:.08em}
+.practice-inline{margin-bottom:16px}
+
+@media(max-width:820px){
+  .coach-today-banner{display:grid;padding:16px}
+  .coach-today-banner .action{width:100%}
+  .coach-today-event-grid{grid-template-columns:1fr}
+  .coach-today-session{padding:15px}
+  .coach-today-session h3{font-size:19px}
+  .coach-today-prescription{grid-template-columns:68px minmax(0,1fr)}
+  .coach-today-actions{display:grid;grid-template-columns:1fr 1fr}
+  .coach-today-actions button{width:100%}
+  .coach-train-tool-grid{grid-template-columns:1fr 1fr}
+  .coach-train-tool{min-height:142px;padding:15px}
+}
+@media(max-width:430px){
+  .coach-train-tool-grid{grid-template-columns:1fr}
+  .coach-train-tool{min-height:126px}
+  .coach-today-actions{grid-template-columns:1fr}
+}
