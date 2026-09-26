@@ -64,7 +64,7 @@
       code:cleanString(options.code,80),
       route:route(options.route),
       app_version:String(window.MW_APP_VERSION||'3.0.16'),
-      ios_build:native?'13':null,
+      ios_build:native?'14':null,
       platform:native?'ios-testflight/webview':'web',
       online:navigator.onLine!==false,
       context:scrub(options.context||{}),
