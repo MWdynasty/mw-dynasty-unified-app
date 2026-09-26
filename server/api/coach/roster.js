@@ -26,12 +26,12 @@ module.exports=async(req,res)=>{
       ]);
       const ids=[...new Set(assignments.map(x=>x.athlete_id).filter(Boolean))];
       if(!ids.length)return res.status(200).json({ok:true,scope:'assigned',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
-      athletes=await get(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date,created_at&id=in.${inList(ids)}&order=created_at.asc`,c.token);
+      athletes=await get(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date,competition_division,created_at&id=in.${inList(ids)}&order=created_at.asc`,c.token);
     }else{
       assignments=await get('coach_assignments?select=athlete_id,assigned_at,status,coach_user_id&status=eq.active&order=assigned_at.asc',c.token);
       const ids=[...new Set(assignments.map(x=>x.athlete_id).filter(Boolean))];
       if(!ids.length)return res.status(200).json({ok:true,scope:'assigned_all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
-      athletes=await get(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date,created_at&id=in.${inList(ids)}&order=created_at.asc`,c.token);
+      athletes=await get(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date,competition_division,created_at&id=in.${inList(ids)}&order=created_at.asc`,c.token);
     }
 
     if(!athletes.length)return res.status(200).json({ok:true,scope:role==='coach'?'assigned':'assigned_all',coach:{name:c.profile.first_name,role},count:0,athletes:[],pendingInvitations});
@@ -75,6 +75,7 @@ module.exports=async(req,res)=>{
         primary_event:a.primary_event||null,
         secondary_event:a.secondary_event||null,
         experience_level:a.experience_level||null,
+        competition_division:a.competition_division||null,
         current_week:st.current_week||1,
         current_day:st.current_day||1,
         current_phase:st.current_phase||null,
