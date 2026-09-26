@@ -2665,3 +2665,31 @@ img,svg,video,canvas{max-width:100%}
   text-shadow:none!important;
   filter:none!important;
 }
+
+
+/* V26.09 Work prescription — dedicated class prevents global .primary gold styling */
+.coach-today-prescription.coach-today-work{
+  background:transparent!important;
+  background-image:none!important;
+  border-radius:0!important;
+  border-left:0!important;
+  border-right:0!important;
+  border-bottom:0!important;
+  border-top:1px solid rgba(255,255,255,.075)!important;
+  box-shadow:none!important;
+  filter:none!important;
+  outline:0!important;
+}
+.coach-today-prescription.coach-today-work::before,
+.coach-today-prescription.coach-today-work::after{
+  display:none!important;
+  content:none!important;
+}
+.coach-today-prescription.coach-today-work span{
+  color:#efc659!important;
+}
+.coach-today-prescription.coach-today-work b{
+  color:#f7fbff!important;
+  text-shadow:none!important;
+  filter:none!important;
+}
