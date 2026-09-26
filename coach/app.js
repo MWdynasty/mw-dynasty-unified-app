@@ -235,8 +235,7 @@ async function coachTrainPage(){
     <section id="coachTodayPractice" class="coach-today-practice"><div class="tile">Loading today’s practice…</div></section>
     <section class="coach-train-tools">
       <div class="coach-train-tools-head"><span class="status-kicker">PRACTICE TOOLS</span><h2>Run practice from here.</h2><p>You should not have to hunt through the Coach app while athletes are standing on the track.</p></div>
-      <div class="coach-train-tool-grid">
-        <button class="coach-train-tool primary" data-page="practice"><b>🏃 PRACTICE MODE</b><span>Open today’s workout, time reps, record finishes and attendance.</span><em>START →</em></button>
+      <div class="coach-train-tool-grid coach-train-tool-grid-three">
         <button class="coach-train-tool" data-page="pacing"><b>⚡ SPRINT PACE AI</b><span>Calculate an individual athlete’s training target from their PR.</span><em>OPEN →</em></button>
         <button class="coach-train-tool" data-page="grouppacing"><b>👥 GROUP PACE AI</b><span>Split Boys / Girls first, then build groups from athletes with close PRs.</span><em>BUILD GROUPS →</em></button>
         <button class="coach-train-tool" id="coachTrainDistance"><b>◎ DISTANCE PACER</b><span>Measure the exact rep distance on a track, football field or open surface.</span><em>OPEN →</em></button>
