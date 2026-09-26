@@ -2637,3 +2637,31 @@ img,svg,video,canvas{max-width:100%}
   .coach-train-tool{min-height:126px}
   .coach-today-actions{grid-template-columns:1fr}
 }
+
+
+/* V26.09 Practice readability — remove gold WORK strip */
+.coach-today-prescription.primary{
+  background:transparent!important;
+  background-image:none!important;
+  border-radius:0!important;
+  border-left:0!important;
+  border-right:0!important;
+  border-bottom:0!important;
+  border-top:1px solid rgba(255,255,255,.075)!important;
+  box-shadow:none!important;
+  filter:none!important;
+  outline:0!important;
+}
+.coach-today-prescription.primary::before,
+.coach-today-prescription.primary::after{
+  display:none!important;
+  content:none!important;
+}
+.coach-today-prescription.primary span{
+  color:#efc659!important;
+}
+.coach-today-prescription.primary b{
+  color:#f7fbff!important;
+  text-shadow:none!important;
+  filter:none!important;
+}
