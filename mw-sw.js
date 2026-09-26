@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v4';
+const CACHE='mw-dynasty-shell-v5';
 const CORE=[
   '/',
   '/athlete/',
@@ -38,6 +38,7 @@ self.addEventListener('activate',event=>{
 
 function excluded(url){
   return url.pathname.startsWith('/api/')||
+    url.pathname.startsWith('/coach/')||
     url.pathname.startsWith('/founder/')||
     url.pathname.startsWith('/.well-known/');
 }
