@@ -1773,7 +1773,177 @@ async function insightsPage(){
   }catch(e){insightLive.innerHTML=`<div class="tile"><h3>Performance intelligence unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}
 }
 
-async function pacingPage(){pageBase('Pacing Tools','Choose a live athlete PR and calculate individualized training targets.',`<div class="form"><label>Athlete<select id="paceAthlete"></select></label><label>PR<select id="pacePr"></select></label><label>Rep Distance<input id="rd" type="number" value="150"></label><label>Intensity %<input id="pi" type="number" value="90" min="50" max="100"></label><button class="action" id="calc">Calculate Target</button><div id="paceout" class="tile">Loading athlete PRs…</div></div>`);try{const a=(await fetchCoachRoster()).athletes||[];paceAthlete.innerHTML=a.map((x,i)=>`<option value="${i}">${escapeHtml(x.name)}</option>`).join('');const sync=()=>{const x=a[+paceAthlete.value],prs=x?.prs||[];pacePr.innerHTML=prs.map((p,i)=>`<option value="${i}">${escapeHtml(p.event)} — ${Number(p.time_seconds).toFixed(2)}s</option>`).join('');paceout.textContent=prs.length?'Select distance and intensity.':'This athlete needs a recorded PR first.'};paceAthlete.onchange=sync;sync();calc.onclick=()=>{const x=a[+paceAthlete.value],p=x?.prs?.[+pacePr.value];if(!p)return toast('Select an athlete with a PR');const base=Number(String(p.event).replace(/[^0-9.]/g,'')),pr=Number(p.time_seconds),dist=+rd.value,int=+pi.value;if(!(base>0&&pr>0&&dist>0&&int>=50&&int<=100))return toast('Check pacing inputs');const t=dist/((base/pr)*(int/100));paceout.innerHTML=`<b>${escapeHtml(x.name)}</b><br>${dist}m at ${int}% → <b>${t.toFixed(2)}s</b><br><small>Based on ${escapeHtml(p.event)} PR of ${pr.toFixed(2)}s</small>`}}catch(e){paceout.textContent=e.message}}
+function mwCoachPaceTarget(event,timeSeconds,repDistance,intensityPct){
+  const base=Number(String(event||'').replace(/[^0-9.]/g,''));
+  const pr=Number(timeSeconds),dist=Number(repDistance),intensity=Number(intensityPct);
+  if(!(base>0&&pr>0&&dist>0&&intensity>=50&&intensity<=100))return null;
+  return dist/((base/pr)*(intensity/100));
+}
+function mwCoachEventPr(athlete,event){
+  const needle=String(event||'').replace(/[^0-9]/g,'');
+  return (athlete?.prs||[]).find(p=>String(p.event||'').replace(/[^0-9]/g,'')===needle)||null;
+}
+function mwCoachClusterByPr(rows,tolerancePct=3,maxSize=6){
+  const tol=Math.max(.25,Math.min(10,Number(tolerancePct)||3))/100;
+  const cap=Math.max(2,Math.min(12,Number(maxSize)||6));
+  const sorted=[...rows].sort((a,b)=>a.pr-b.pr),groups=[];
+  for(const row of sorted){
+    let g=groups[groups.length-1];
+    const avg=g?.length?g.reduce((s,x)=>s+x.pr,0)/g.length:0;
+    const close=!!g&&g.length<cap&&Math.abs(row.pr-avg)/avg<=tol;
+    if(!close){g=[];groups.push(g)}
+    g.push(row);
+  }
+  return groups;
+}
+async function pacingPage(){
+  pageBase('Pacing Tools','Sprint Pace AI + Distance Pacer + automatic PR-based practice groups.',`
+  <div class="coach-pacer-hub">
+    <article class="coach-pacer-card">
+      <div><span class="eyebrow">⚡ SPRINT PACE AI</span><h3>Individual + Group Pace Intelligence</h3><p>Use live athlete PRs to calculate targets and build boys/girls practice groups with similar speed.</p></div>
+      <button class="action" id="jumpSprintPace">OPEN SPRINT PACE AI</button>
+    </article>
+    <article class="coach-pacer-card">
+      <div><span class="eyebrow">◎ DISTANCE PACER</span><h3>Measure the Rep Anywhere</h3><p>Track, football field or open field — measure the exact distance your group needs to run.</p></div>
+      <button class="action" id="openCoachDistancePacer">OPEN DISTANCE PACER</button>
+    </article>
+  </div>
+
+  <section class="coach-pace-section" id="coachSprintPace">
+    <div class="coach-pace-section-head"><div><span class="eyebrow">INDIVIDUAL PACE AI</span><h2>Calculate one athlete.</h2><p>Choose the athlete and PR, then MW calculates the target for the rep.</p></div></div>
+    <div class="form coach-pace-grid">
+      <label>Athlete<select id="paceAthlete"></select></label>
+      <label>PR<select id="pacePr"></select></label>
+      <label>Rep Distance<input id="rd" type="number" value="150" min="10" max="1000"></label>
+      <label>Intensity %<input id="pi" type="number" value="90" min="50" max="100"></label>
+      <button class="action coach-pace-span" id="calc">CALCULATE INDIVIDUAL TARGET</button>
+      <div id="paceout" class="tile coach-pace-span">Loading athlete PRs…</div>
+    </div>
+  </section>
+
+  <section class="coach-pace-section">
+    <div class="coach-pace-section-head">
+      <div><span class="eyebrow">MW GROUP PACE AI</span><h2>Build today’s running groups.</h2><p>MW separates competition divisions first, then groups athletes whose PRs are close enough to train together.</p></div>
+      <span class="coach-ai-badge">AI GROUPING</span>
+    </div>
+    <div class="form coach-group-controls">
+      <label>Event<select id="groupPaceEvent"><option value="100m">100m</option><option value="200m">200m</option><option value="400m">400m</option></select></label>
+      <label>Rep Distance<input id="groupPaceDistance" type="number" min="10" max="1000" value="150"></label>
+      <label>Intensity %<input id="groupPaceIntensity" type="number" min="50" max="100" value="90"></label>
+      <label>PR Closeness<select id="groupPaceTolerance"><option value="1">Very tight · 1%</option><option value="2">Tight · 2%</option><option value="3" selected>Balanced · 3%</option><option value="5">Broad · 5%</option></select></label>
+      <label>Max per group<select id="groupPaceMax"><option value="4">4 athletes</option><option value="5">5 athletes</option><option value="6" selected>6 athletes</option><option value="8">8 athletes</option></select></label>
+      <button class="action coach-pace-span" id="buildPaceGroups">BUILD BOYS + GIRLS PACE GROUPS</button>
+    </div>
+
+    <div class="coach-division-panel">
+      <div class="coach-division-head"><div><b>Competition Division</b><span>MW never guesses from an athlete’s name. Set Boys, Girls, or Open once and the pace groups will use it automatically.</span></div></div>
+      <div id="paceDivisionRoster" class="coach-division-roster"><div class="tile">Loading roster…</div></div>
+    </div>
+
+    <div id="groupPaceResults" class="coach-group-results">
+      <div class="tile"><b>Ready when your roster is.</b><p>Choose an event, confirm divisions, then build the practice groups.</p></div>
+    </div>
+  </section>`);
+
+  document.getElementById('jumpSprintPace')?.addEventListener('click',()=>document.getElementById('coachSprintPace')?.scrollIntoView({behavior:'smooth',block:'start'}));
+  document.getElementById('openCoachDistancePacer')?.addEventListener('click',()=>{location.href='/distance-pacer/?coach=1'});
+
+  const paceout=document.getElementById('paceout'),divisionWrap=document.getElementById('paceDivisionRoster'),results=document.getElementById('groupPaceResults');
+  let athletes=[];
+  try{
+    athletes=(await fetchCoachRoster()).athletes||[];
+  }catch(e){
+    paceout.textContent=e.message;
+    divisionWrap.innerHTML=`<div class="tile"><h3>Roster unavailable</h3><p>${escapeHtml(e.message)}</p></div>`;
+    results.innerHTML=`<div class="tile"><h3>Group Pace AI unavailable</h3><p>${escapeHtml(e.message)}</p></div>`;
+    return;
+  }
+
+  const paceAthlete=document.getElementById('paceAthlete'),pacePr=document.getElementById('pacePr');
+  paceAthlete.innerHTML=athletes.length?athletes.map((x,i)=>`<option value="${i}">${escapeHtml(x.name)}</option>`).join(''):'<option value="">No athletes assigned</option>';
+  const syncIndividual=()=>{
+    const x=athletes[Number(paceAthlete.value)],prs=x?.prs||[];
+    pacePr.innerHTML=prs.length?prs.map((p,i)=>`<option value="${i}">${escapeHtml(p.event)} — ${Number(p.time_seconds).toFixed(2)}s</option>`).join(''):'<option value="">No PR recorded</option>';
+    paceout.innerHTML=prs.length?'<b>Ready.</b><br><small>Select distance and intensity, then calculate.</small>':'This athlete needs a recorded PR first.';
+  };
+  paceAthlete.onchange=syncIndividual;syncIndividual();
+  document.getElementById('calc').onclick=()=>{
+    const x=athletes[Number(paceAthlete.value)],p=x?.prs?.[Number(pacePr.value)];
+    if(!p)return toast('Select an athlete with a PR');
+    const dist=Number(document.getElementById('rd').value),intensity=Number(document.getElementById('pi').value),target=mwCoachPaceTarget(p.event,p.time_seconds,dist,intensity);
+    if(!target)return toast('Check pacing inputs');
+    paceout.innerHTML=`<b>${escapeHtml(x.name)}</b><br><strong style="font-size:28px;color:var(--accent)">${target.toFixed(2)}s</strong> for ${dist}m at ${intensity}%<br><small>Based on ${escapeHtml(p.event)} PR of ${Number(p.time_seconds).toFixed(2)}s.</small>`;
+  };
+
+  const divisionLabel=v=>v==='boys'?'Boys':v==='girls'?'Girls':v==='open'?'Open':'Not set';
+  function renderDivisionRoster(){
+    const event=document.getElementById('groupPaceEvent')?.value||'100m';
+    if(!athletes.length){divisionWrap.innerHTML='<div class="tile">No assigned athletes yet.</div>';return}
+    divisionWrap.innerHTML=athletes.map(a=>{
+      const pr=mwCoachEventPr(a,event);
+      const division=a.competition_division||'';
+      return `<div class="coach-division-row">
+        <span><b>${escapeHtml(a.name)}</b><small>${pr?`${escapeHtml(event)} PR · ${Number(pr.time_seconds).toFixed(2)}s`:'No '+escapeHtml(event)+' PR recorded'}</small></span>
+        <select data-pace-division="${escapeHtml(a.id)}" aria-label="Competition division for ${escapeHtml(a.name)}">
+          <option value="" ${!division?'selected':''}>Choose division</option>
+          <option value="boys" ${division==='boys'?'selected':''}>Boys</option>
+          <option value="girls" ${division==='girls'?'selected':''}>Girls</option>
+          <option value="open" ${division==='open'?'selected':''}>Open</option>
+        </select>
+      </div>`;
+    }).join('');
+    divisionWrap.querySelectorAll('[data-pace-division]').forEach(sel=>sel.onchange=async()=>{
+      const athlete=athletes.find(a=>a.id===sel.dataset.paceDivision),value=sel.value;
+      if(!athlete||!value){return}
+      sel.disabled=true;
+      try{
+        const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/mw_coach_set_competition_division',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+mwSessionToken(),'Content-Type':'application/json'},body:JSON.stringify({p_athlete_id:athlete.id,p_division:value})});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(d.message||d.hint||'Division could not be saved');
+        athlete.competition_division=value;toast(athlete.name+' → '+divisionLabel(value));
+      }catch(e){toast(e.message);sel.value=athlete.competition_division||''}finally{sel.disabled=false}
+    });
+  }
+  document.getElementById('groupPaceEvent').onchange=()=>{renderDivisionRoster();results.innerHTML='<div class="tile"><b>Event changed.</b><p>Build the groups again using the new PR event.</p></div>'};
+  renderDivisionRoster();
+
+  document.getElementById('buildPaceGroups').onclick=()=>{
+    const event=document.getElementById('groupPaceEvent').value;
+    const dist=Number(document.getElementById('groupPaceDistance').value);
+    const intensity=Number(document.getElementById('groupPaceIntensity').value);
+    const tolerance=Number(document.getElementById('groupPaceTolerance').value);
+    const maxSize=Number(document.getElementById('groupPaceMax').value);
+    const usable=[],missingDivision=[],missingPr=[];
+    for(const a of athletes){
+      if(!a.competition_division){missingDivision.push(a);continue}
+      const p=mwCoachEventPr(a,event);
+      if(!p){missingPr.push(a);continue}
+      const target=mwCoachPaceTarget(event,p.time_seconds,dist,intensity);
+      if(!target)continue;
+      usable.push({athlete:a,division:a.competition_division,pr:Number(p.time_seconds),target});
+    }
+    const sections=[];
+    for(const [division,title] of [['boys','BOYS'],['girls','GIRLS'],['open','OPEN']]){
+      const rows=usable.filter(x=>x.division===division);
+      if(!rows.length)continue;
+      const groups=mwCoachClusterByPr(rows,tolerance,maxSize);
+      sections.push(`<section class="coach-pace-division-result"><div class="coach-pace-result-title"><b>${title}</b><span>${rows.length} athlete${rows.length===1?'':'s'} · ${event}</span></div>
+        <div class="coach-pace-group-grid">${groups.map((g,i)=>{
+          const prs=g.map(x=>x.pr),targets=g.map(x=>x.target),minPr=Math.min(...prs),maxPr=Math.max(...prs),minT=Math.min(...targets),maxT=Math.max(...targets);
+          return `<article class="coach-pace-group-card"><div class="coach-pace-group-head"><span>GROUP ${i+1}</span><b>${minT.toFixed(2)}–${maxT.toFixed(2)}s</b></div><small>${dist}m @ ${intensity}% · PR range ${minPr.toFixed(2)}–${maxPr.toFixed(2)}s</small><div class="coach-pace-athletes">${g.map(x=>`<div><b>${escapeHtml(x.athlete.name)}</b><span>PR ${x.pr.toFixed(2)} · Target ${x.target.toFixed(2)}s</span></div>`).join('')}</div></article>`;
+        }).join('')}</div></section>`);
+    }
+    if(!sections.length){
+      results.innerHTML='<div class="tile"><h3>No pace groups could be built yet.</h3><p>Set competition divisions and make sure athletes have a PR for the selected event.</p></div>';
+      return;
+    }
+    const issues=[
+      missingDivision.length?`<div><b>Division needed:</b> ${missingDivision.map(x=>escapeHtml(x.name)).join(', ')}</div>`:'',
+      missingPr.length?`<div><b>${escapeHtml(event)} PR needed:</b> ${missingPr.map(x=>escapeHtml(x.name)).join(', ')}</div>`:''
+    ].filter(Boolean).join('');
+    results.innerHTML=`<div class="coach-group-summary"><b>MW GROUPING COMPLETE</b><span>Separated by competition division first, then clustered within ${tolerance}% PR closeness. Max ${maxSize} athletes per group.</span></div>${sections.join('')}${issues?`<div class="coach-group-issues">${issues}</div>`:''}`;
+  };
+}
 const MW_FIELD_CIRCUIT_REFERENCE={
   structure:'2 sets · 2 full-circuit reps per set · 4 full circuits total · 8 × 100m sprints',
   steps:[
