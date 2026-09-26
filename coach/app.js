@@ -40,19 +40,25 @@ const nav={
 function sideNav(){const items=[...nav[experience]],artById={dashboard:'mwNavHome',athletes:'mwNavProfile',programs:'mwNavTrain',coachmw:'mwNavTrain',messages:'mwNavProgram',account:'mwNavCoach'};return items.map(([id,ic,label])=>`<button class="nav-btn ${id==='dashboard'?'active':''}" data-page="${id}">${id==='calendar'?'<span class="nav-icon mwCalendarNav" aria-hidden="true">📅</span>':`<span class="nav-icon mwNavArt ${artById[id]||''}" aria-hidden="true"></span>`}<span>${label}</span></button>`).join('')}
 function mobileCoachNav(activePage){
   const active=String(activePage||history.state?.mwCoachPage||'dashboard');
-  const primary=experience==='core'
-    ?['programs','mwNavTrain','TRAINING']
-    :['coachmw','mwNavCoach','COACH MW'];
-  const items=[
-    ['dashboard','mwNavHome','HOME'],
-    ['athletes','mwNavProfile','TEAM'],
-    primary,
-    ['messages','mwNavProgram','MESSAGES']
-  ];
+  const trainPages=new Set(['train','practice','programs','mwtrack','strength','pacing','grouppacing']);
+  const shownActive=trainPages.has(active)?'train':active;
+  const items=experience==='core'
+    ?[
+      ['dashboard','mwNavHome','HOME'],
+      ['athletes','mwNavProfile','TEAM'],
+      ['train','mwNavTrain','TRAIN'],
+      ['messages','mwNavProgram','MESSAGES']
+    ]
+    :[
+      ['dashboard','mwNavHome','HOME'],
+      ['athletes','mwNavProfile','TEAM'],
+      ['train','mwNavTrain','TRAIN'],
+      ['coachmw','mwNavCoach','COACH MW']
+    ];
   const primaryIds=new Set(items.map(x=>x[0]));
-  const menuActive=!primaryIds.has(active);
+  const menuActive=!primaryIds.has(shownActive);
   return `<nav class="coach-mobile-nav mwDepthNav mwImageNav" aria-label="Coach navigation">
-    ${items.map(([id,art,label])=>`<button type="button" class="${active===id?'active':''}" data-page="${id}" aria-label="${label}"><b class="mwNavArt ${art}" aria-hidden="true"></b><span>${label}</span></button>`).join('')}
+    ${items.map(([id,art,label])=>`<button type="button" class="${shownActive===id?'active':''}" data-page="${id}" aria-label="${label}"><b class="mwNavArt ${art}" aria-hidden="true"></b><span>${label}</span></button>`).join('')}
     <button type="button" class="${menuActive?'active':''}" data-page="more" aria-label="Menu"><b class="mwNavArt coachMobileMenuArt" aria-hidden="true">☰</b><span>MENU</span></button>
   </nav>`;
 }
