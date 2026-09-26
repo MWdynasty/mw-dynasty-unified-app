@@ -10,11 +10,12 @@
 <link rel="stylesheet" href="/assets/mw-unified-theme.css">
 <link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
 <link rel="stylesheet" href="/assets/mw-responsive-v25.css">
-<script src="/assets/mw-diagnostics.js"></script>\n<script src="/assets/mw-web-analytics.js"></script>
+<script src="/assets/mw-diagnostics.js"></script>
+<script src="/assets/mw-web-analytics.js"></script>
 <style>
 :root{--gold:#efbd43;--gold2:#f7d87e;--bg:#050403;--panel:#0b0a08;--line:#34302a;--muted:#aaa49a;--text:#f7f3ea}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#1d1609 0,transparent 34%),linear-gradient(#060504,#020201);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:max(18px,env(safe-area-inset-top)) 16px max(30px,env(safe-area-inset-bottom))}
-.shell{width:min(980px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}.brand{font-weight:950;letter-spacing:.18em;color:var(--gold);font-size:14px}.link{color:#ddd3c2;text-decoration:none;border:1px solid var(--line);padding:10px 14px;border-radius:999px;font-weight:800;font-size:12px}
+.shell{width:min(980px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}.topLeft{display:flex;align-items:center;gap:10px;min-width:0}.brand{font-weight:950;letter-spacing:.18em;color:var(--gold);font-size:14px}.link{color:#ddd3c2;text-decoration:none;border:1px solid var(--line);padding:10px 14px;border-radius:999px;font-weight:800;font-size:12px;background:transparent;cursor:pointer}.backBtn{color:var(--gold2);border-color:rgba(239,189,67,.38);white-space:nowrap}
 .hero{padding:22px 0 12px}.hero h1{font-size:clamp(30px,6vw,54px);margin:0 0 8px}.hero p{margin:0;color:var(--muted);line-height:1.5}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:linear-gradient(155deg,rgba(19,17,13,.98),rgba(7,7,6,.99));border:1px solid rgba(239,189,67,.28);border-radius:22px;padding:20px;box-shadow:0 24px 70px rgba(0,0,0,.34)}.full{grid-column:1/-1}
 .eyebrow{font-size:11px;letter-spacing:.12em;color:var(--gold);font-weight:950;text-transform:uppercase}.title{font-size:24px;font-weight:950;margin:7px 0 4px}.muted{color:var(--muted);font-size:13px;line-height:1.5}.row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid rgba(255,255,255,.07);padding:12px 0}.row:first-of-type{margin-top:14px}.row span:first-child{color:#a9a39b}.row span:last-child{text-align:right;font-weight:850}
@@ -29,12 +30,12 @@ html.mw-native-app .nativeIapDisclosure{display:block}
 .nativeIapDisclosure .iapLinks a{color:var(--gold2);font-size:11px;font-weight:900}
 
 #accountView,#signedOutView{display:none}.center{width:min(600px,100%);margin:10vh auto 0}
-@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero h1{font-size:36px}}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero h1{font-size:36px}.top{align-items:flex-start;flex-wrap:wrap}.topLeft{width:100%}.top>a.link{margin-left:auto}}
 </style>
 </head>
 <body>
 <div class="shell">
-  <div class="top"><div class="brand">MW DYNASTY</div><a class="link" href="https://mwdynasty.com">Public Website</a></div>
+  <div class="top"><div class="topLeft"><button id="backBtn" type="button" class="link backBtn">← Back</button><div class="brand">MW DYNASTY</div></div><a class="link" href="https://mwdynasty.com">Public Website</a></div>
 
   <section id="signedOutView" class="center">
     <div class="card">
@@ -174,6 +175,13 @@ function nice(v){return String(v||'—').replaceAll('_',' ').replace(/\b\w/g,c=>
 function plan(v){return ({mw_athlete:'Athlete Membership',coach_core:'Coach Core',coach_intelligence:'Coach Intelligence',mw_sprint_performance:'MW Sprint Performance'})[v]||v||'Membership'}
 function dateText(v){if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}
 function coachRole(v){return ['coach','admin','founder_owner'].includes(String(v||''))}
+function goBackInsideMW(){
+  try{
+    const ref=document.referrer?new URL(document.referrer):null;
+    if(ref&&ref.origin===location.origin&&history.length>1){history.back();return}
+  }catch{}
+  location.href=coachRole(account?.user?.role)?'/coach':'/athlete/';
+}
 function render(data){
   account=data;const u=data.user||{},b=data.billing||{},name=[u.first_name,u.last_name].filter(Boolean).join(' ')||'MW Member';
   el('welcome').textContent='Welcome, '+(u.first_name||'MW Member');el('displayName').textContent=name;el('emailValue').textContent=u.email||'—';el('accountStatus').textContent=nice(u.account_status);el('roleBadge').textContent=nice(u.role);
@@ -499,6 +507,7 @@ async function load(){
   try{const data=await rpc('mw_account_profile',{});el('signedOutView').style.display='none';el('accountView').style.display='block';render(data)}
   catch(e){clearSession();el('signedOutView').style.display='block';el('accountView').style.display='none'}
 }
+el('backBtn').onclick=goBackInsideMW;
 el('saveBtn').onclick=async()=>{const btn=el('saveBtn');btn.disabled=true;btn.textContent='Saving…';message('');try{const data=await rpc('mw_update_account_profile',{p_first_name:el('firstName').value.trim(),p_last_name:el('lastName').value.trim()||null,p_organization:el('organization').value.trim()||null,p_coach_title:el('coachTitle').value.trim()||null});render(data);message('Profile saved.')}catch(e){message(e.message||'Could not save profile.',true)}finally{btn.disabled=false;btn.textContent='Save Profile'}};
 el('openPlatformBtn').onclick=()=>{location.href=coachRole(account?.user?.role)?'/coach':'/athlete/'};
 el('billingBtn').onclick=openBillingPortal;
