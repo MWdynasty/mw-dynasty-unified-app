@@ -26,13 +26,13 @@ assert.deepStrictEqual([...new Set(dupes)],[],'Duplicate static button IDs are n
 const genericFamilies=[
   'data-open','data-open-settings','data-v','data-practice-coach','data-submit-checkin',
   'data-athlete-search-open','data-coach-thread','data-mw-notification','data-resume-strength',
-  'data-sday','data-session','data-finish-previous','data-q'
+  'data-sday','data-session','data-finish-previous','data-q','data-mw-target'
 ];
 
 const directIds=[
   'mwTogglePassword','mwForgotPassword','mwAuthLogin','mwSavePassword','mwAthleteNotificationBell',
   'mwAthleteThreadBack','mwSendReply','mwAthleteMarkNotificationsRead','clearChat','mic','go',
-  'openEntry','encourageMe','faithTalk','saveSeasonDatesOnly','assess','backCoach','mwPracticeLaunch',
+  'openEntry','encourageMe','faithTalk','mwEditSeasonDates','saveSeasonDatesOnly','assess','backCoach','mwPracticeLaunch',
   'askStrength','saveStrengthPerformance','finishStrengthAsPrescribed','finishStrengthModified',
   'save','coachInviteReview','coachInviteAccept','saveLiftMaxes','profileEntry','mwContinueSelfPay',
   'helpCenterBtn','reportIssueBtn','privacyBtn','termsBtn','deleteAccountBtn','mwDiagnosticsSend',
