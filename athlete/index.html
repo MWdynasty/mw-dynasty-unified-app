@@ -2175,7 +2175,7 @@ function buildQuickStartSteps(){
   return steps;
 }
 let qsIndex=0;
-function qsStorageKey(){return 'mwOnboardingCompleteV29:'+String(mwOnboardingUserKey||'local')}
+function qsStorageKey(){const stamp=String(window.mwGetRemoteProfile?.().assessmentCompletedAt||'pending');return 'mwOnboardingCompleteV29:'+String(mwOnboardingUserKey||'local')+':'+stamp}
 function renderQuickStart(){
   const s=QS_STEPS[qsIndex];
   const main=$('#qsMain');
@@ -2960,8 +2960,8 @@ async function assessEntry(){
     const seasonLength=Number(d.calendar?.seasonLengthWeeks||mwSeasonCalendar?.seasonLengthWeeks||0);
     const phaseName=d.calendar?.phaseCode==='pre_competition'?'Pre-Competition':d.calendar?.phaseCode==='competition'?'Competition':d.calendar?.phaseCode==='peak'?'Peak / Championship':'Foundation';
     out.innerHTML=seasonDeferred
-      ?`<div class="resultTop"><div><span class="badge">MW STANDARD CALENDAR ACTIVE</span><h3>Your training can begin now.</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>CURRENT PLACEMENT</small><b>WEEK ${d.assignedWeek||d.calendar?.week||1}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>You can train now without guessing a championship date. Add or update your real season dates later and MW Season Intelligence will rebuild around the confirmed calendar.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY TRAINING</button>`
-      :`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="openView('workouts')">OPEN MY SEASON PLAN</button>`;
+      ?`<div class="resultTop"><div><span class="badge">MW STANDARD CALENDAR ACTIVE</span><h3>Your training can begin now.</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>CURRENT PLACEMENT</small><b>WEEK ${d.assignedWeek||d.calendar?.week||1}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>You can train now without guessing a championship date. Add or update your real season dates later and MW Season Intelligence will rebuild around the confirmed calendar.</div><button class="entryAction" onclick="startQuickStart(false)">START MY PERSONALIZED TUTORIAL</button>`
+      :`<div class="resultTop"><div><span class="badge">MW SEASON INTELLIGENCE ACTIVE</span><h3>Start at <em>Season Week ${d.assignedWeek}</em>${seasonLength?` of ${seasonLength}`:''}</h3></div></div><div class="decisionGrid"><div class="decisionBox"><small>TRACK TIER</small><b>${String(d.trackTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>STRENGTH TIER</small><b>${String(d.strengthTier||'foundation').toUpperCase()}</b></div><div class="decisionBox"><small>SEASON PHASE</small><b>${phaseName}<br>${d.status}</b></div><div class="decisionBox"><small>EVENTS</small><b>${events.join(' / ')}</b></div></div><div class="reason"><b>Coach MW decision:</b><br>${d.why||''}<br><br>Your track program and weight room are now synchronized to the same season week and championship peak.</div><button class="entryAction" onclick="startQuickStart(false)">START MY PERSONALIZED TUTORIAL</button>`;
     try{await window.mwReloadAccount?.()}catch(syncErr){console.warn('MW account refresh after Smart Entry save',syncErr)}
   }catch(e){showEntryFeedback(e.message||'MW Season Intelligence could not be saved. Please try again.',true)}finally{btn.disabled=false;btn.textContent='COMPLETE EVALUATION & BUILD MY SEASON'}
 }
@@ -3209,7 +3209,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       email:d.user?.email||'',
       mode:d.mode||(hasAthlete?'athlete':role),
       repTracking:d.features?.repTracking===true,
-      featureAccess
+      featureAccess,
+      assessmentCompletedAt:ps.onboarding_assessment_completed_at||''
     };
 
     if(window.getProfile) window.getProfile=()=>({...mwRemoteProfile});
