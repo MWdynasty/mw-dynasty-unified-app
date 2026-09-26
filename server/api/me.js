@@ -79,10 +79,28 @@ module.exports=async function handler(req,res){
   if(req.method!=='GET')return res.status(405).json({error:'GET only'});
   try{
     await refresh(req);
-    // /api/me is the Athlete-app identity endpoint. Do not let a Coach/Admin/Founder
-    // session masquerade as an Athlete session, because Athlete-only services such as
-    // Coach MW then fail later with a confusing 403.
-    const c=await getAccountContext(req,{requireAthlete:true});
+    // /api/me is the Athlete identity endpoint. Authenticate the MW account first,
+    // then provide a friendly handoff if it belongs to another MW workspace.
+    const c=await getAccountContext(req);
+    if(!c.athlete){
+      const role=String(c.profile?.role||'member');
+      const isFounder=['founder_owner','admin'].includes(role);
+      const isCoach=role==='coach'||isFounder;
+      return res.status(403).json({
+        error:isFounder
+          ? 'This is your MW Dynasty Founder account.'
+          : isCoach
+            ? 'This is your MW Dynasty Coach account.'
+            : 'This account is not connected to an MW Athlete profile.',
+        code:'ROLE_MISMATCH',
+        roleMismatch:true,
+        role,
+        destinations:{
+          founder:isFounder?'/founder/':null,
+          coach:isCoach?'/coach/':null
+        }
+      });
+    }
     if(c.athlete&&c.token){
       const authority=await resolveAuthoritativeState(c);
       const storedProgramState=c.programState?{...c.programState}:null;
