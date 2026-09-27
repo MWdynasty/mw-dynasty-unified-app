@@ -367,6 +367,20 @@ function mwSeasonStateOptions(selected=''){
   const s=String(selected||'').toUpperCase();
   return '<option value="">Select state</option>'+MW_US_STATES.map(([code,name])=>`<option value="${code}" ${s===code?'selected':''}>${name}</option>`).join('');
 }
+function mwPopulateStateSelect(select,selected=''){
+  if(!select)return;
+  const chosen=String(selected||'').toUpperCase();
+  select.replaceChildren();
+  const placeholder=document.createElement('option');
+  placeholder.value='';placeholder.textContent='Select state';select.appendChild(placeholder);
+  MW_US_STATES.forEach(([code,name])=>{
+    const option=document.createElement('option');
+    option.value=code;option.textContent=name;
+    if(chosen===code)option.selected=true;
+    select.appendChild(option);
+  });
+  if(chosen)select.value=chosen;
+}
 function mwCoachLevelLabel(v){
   return ({middle_school:'Middle School',high_school:'High School',collegiate:'College / University',club:'Club / AAU',private:'Private Coach',professional:'Professional'})[String(v||'')]||'Coaching level';
 }
@@ -388,7 +402,7 @@ function seasonCalendarSettingsHTML(){
         <option value="private">Private Coach</option>
         <option value="professional">Professional</option>
       </select></label>
-      <label>State<select id="seasonCoachState">${mwSeasonStateOptions()}</select></label>
+      <label>State<select id="seasonCoachState"><option value="">Select state</option></select></label>
       <label>Season<select id="seasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option><option value="both">Both Indoor + Outdoor</option></select></label>
       <label>Season Year<input id="seasonYear" type="number" min="2025" max="2035" inputmode="numeric" value="${defaultYear}"></label>
     </div>
@@ -414,6 +428,8 @@ function bindSeasonCalendarSettings(){
   const root=document.getElementById('seasonCalendarSettings');if(!root)return;
   const level=root.querySelector('#seasonCoachLevel'),state=root.querySelector('#seasonCoachState'),type=root.querySelector('#seasonType'),year=root.querySelector('#seasonYear');
   const start=root.querySelector('#seasonCalendarStart'),first=root.querySelector('#seasonFirstMeet'),peak=root.querySelector('#seasonPeakDate');
+  mwPopulateStateSelect(state);
+
   const summary=root.querySelector('#seasonCalendarSummary'),generate=root.querySelector('#generateSeasonEstimate'),save=root.querySelector('#saveSeasonCalendar');
   const token=mwSessionToken();
   let calendarSource='coach_edit',generatedSnapshot='';
@@ -426,7 +442,7 @@ function bindSeasonCalendarSettings(){
     const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year unavailable');
     const c=d.calendar||{};
     if(level&&c.coachingLevel)level.value=c.coachingLevel;
-    if(state&&c.competitionState)state.value=c.competitionState;
+    if(state){mwPopulateStateSelect(state,c.competitionState||'')};
     if(type&&c.seasonType)type.value=c.seasonType;
     if(year&&c.seasonYear)year.value=c.seasonYear;
     if(start&&c.startDate)start.value=c.startDate;
@@ -506,7 +522,7 @@ function renderCoachSeasonAssessment(existing={}){
             <option value="private">Private Coach</option>
             <option value="professional">Professional</option>
           </select></label>
-          <label>State<select id="firstSeasonState">${mwSeasonStateOptions(existing?.competitionState||'')}</select></label>
+          <label>State<select id="firstSeasonState"><option value="">Select state</option></select></label>
           <label>Season<select id="firstSeasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option><option value="both">Both Indoor + Outdoor</option></select></label>
           <label>Season Year<input id="firstSeasonYear" type="number" min="2025" max="2035" inputmode="numeric" value="${existing?.seasonYear||defaultYear}"></label>
         </div>
@@ -528,6 +544,8 @@ function renderCoachSeasonAssessment(existing={}){
 
   const level=el.querySelector('#firstSeasonLevel'),state=el.querySelector('#firstSeasonState'),type=el.querySelector('#firstSeasonType'),year=el.querySelector('#firstSeasonYear');
   const start=el.querySelector('#firstSeasonStart'),meet=el.querySelector('#firstSeasonMeet'),peak=el.querySelector('#firstSeasonPeak'),dates=el.querySelector('#firstSeasonDates'),summary=el.querySelector('#firstSeasonSummary'),msg=el.querySelector('#firstSeasonState');
+  mwPopulateStateSelect(state,existing?.competitionState||'');
+
   const gen=el.querySelector('#firstSeasonGenerate'),save=el.querySelector('#firstSeasonSave');
   if(existing?.coachingLevel)level.value=existing.coachingLevel;
   if(existing?.seasonType)type.value=existing.seasonType;
