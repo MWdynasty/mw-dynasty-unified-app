@@ -389,7 +389,7 @@ function seasonCalendarSettingsHTML(){
         <option value="professional">Professional</option>
       </select></label>
       <label>State<select id="seasonCoachState">${mwSeasonStateOptions()}</select></label>
-      <label>Season<select id="seasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option></select></label>
+      <label>Season<select id="seasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option><option value="both">Both Indoor + Outdoor</option></select></label>
       <label>Season Year<input id="seasonYear" type="number" min="2025" max="2035" inputmode="numeric" value="${defaultYear}"></label>
     </div>
     <button class="back" id="generateSeasonEstimate" type="button" style="margin-top:12px">Generate Estimated Dates</button>
@@ -449,7 +449,7 @@ function bindSeasonCalendarSettings(){
       if(first)first.value=e.firstMeetDate||'';
       if(peak)peak.value=e.primaryPeakDate||'';
       calendarSource=e.source||'mw_estimate';generatedSnapshot=snapshot();
-      if(summary)summary.innerHTML=seasonCalendarSummaryHTML({...e,status:'preseason',week:1,phase:1,calendarSource});
+      if(summary)summary.innerHTML=seasonCalendarSummaryHTML({...e,status:'preseason',week:1,phase:1,calendarSource})+(e.seasonType==='both'&&e.indoorPeakDate?`<br><small>Indoor championship estimate ${escapeHtml(e.indoorPeakDate)} · Outdoor championship estimate ${escapeHtml(e.outdoorPeakDate||e.primaryPeakDate||'')}</small>`:'');
       toast('Estimated dates generated — review and edit if needed');
     }catch(e){if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'MW could not generate the estimated dates.')}</small>`}
     finally{generate.disabled=false;generate.textContent=old}
@@ -507,7 +507,7 @@ function renderCoachSeasonAssessment(existing={}){
             <option value="professional">Professional</option>
           </select></label>
           <label>State<select id="firstSeasonState">${mwSeasonStateOptions(existing?.competitionState||'')}</select></label>
-          <label>Season<select id="firstSeasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option></select></label>
+          <label>Season<select id="firstSeasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option><option value="both">Both Indoor + Outdoor</option></select></label>
           <label>Season Year<input id="firstSeasonYear" type="number" min="2025" max="2035" inputmode="numeric" value="${existing?.seasonYear||defaultYear}"></label>
         </div>
         <button class="back" id="firstSeasonGenerate" type="button">Generate Estimated Dates</button>
@@ -548,7 +548,7 @@ function renderCoachSeasonAssessment(existing={}){
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW could not generate your season dates.');
       const e=d.estimate||{};start.value=e.startDate||'';meet.value=e.firstMeetDate||'';peak.value=e.primaryPeakDate||'';source=e.source||'mw_estimate';generated=snap();
       dates.style.display='block';save.disabled=!(start.value&&peak.value);
-      summary.innerHTML=`<b>${escapeHtml(mwCoachLevelLabel(level.value))} · ${escapeHtml(state.value)} · ${escapeHtml(type.value.replace(/^./,x=>x.toUpperCase()))}</b><br><small>${e.seasonLengthWeeks||'—'}-week estimated calendar · ${escapeHtml(mwCalendarSourceLabel(source))}</small><br><small>You can edit any date before saving.</small>`;
+      summary.innerHTML=`<b>${escapeHtml(mwCoachLevelLabel(level.value))} · ${escapeHtml(state.value)} · ${escapeHtml(type.value==='both'?'Indoor + Outdoor':type.value.replace(/^./,x=>x.toUpperCase()))}</b><br><small>${e.seasonLengthWeeks||'—'}-week estimated calendar · ${escapeHtml(mwCalendarSourceLabel(source))}</small>${e.seasonType==='both'&&e.indoorPeakDate?`<br><small>Indoor championship estimate ${escapeHtml(e.indoorPeakDate)} · Outdoor championship estimate ${escapeHtml(e.outdoorPeakDate||e.primaryPeakDate||'')}</small>`:''}<br><small>You can edit any date before saving.</small>`;
     }catch(e){msg.textContent=e.message||'MW could not generate your season dates.';msg.className='login-message show error'}
     finally{gen.disabled=false;gen.textContent=old}
   };
