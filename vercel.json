@@ -9,6 +9,50 @@
   },
   "redirects": [
     {
+      "source": "/founder",
+      "has": [
+        {
+          "type": "host",
+          "value": "mwdynasty.com"
+        }
+      ],
+      "destination": "https://founder.mwdynasty.com/founder/",
+      "permanent": false
+    },
+    {
+      "source": "/founder/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "mwdynasty.com"
+        }
+      ],
+      "destination": "https://founder.mwdynasty.com/founder/:path*",
+      "permanent": false
+    },
+    {
+      "source": "/founder",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.mwdynasty.com"
+        }
+      ],
+      "destination": "https://founder.mwdynasty.com/founder/",
+      "permanent": false
+    },
+    {
+      "source": "/founder/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.mwdynasty.com"
+        }
+      ],
+      "destination": "https://founder.mwdynasty.com/founder/:path*",
+      "permanent": false
+    },
+    {
       "source": "/:path*",
       "has": [
         {
