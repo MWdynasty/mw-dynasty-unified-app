@@ -66,6 +66,25 @@
 @media(max-width:1220px){.hqWingGrid.operating,.hqWingGrid.governance{grid-template-columns:repeat(2,1fr)}.hqWingGrid.executive{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.hqMode .main{padding-top:0}.hqPremiumHero{padding:22px 18px 145px}.hqWingGrid.executive,.hqWingGrid.operating,.hqWingGrid.governance{grid-template-columns:1fr}.hqWingGrid.executive .hqScene{padding-right:35%}.hqWingHead em{display:none}}
 @media(max-width:860px){.layout{display:block}.sidebar{display:none;position:fixed;z-index:80;left:0;top:0;width:min(300px,88vw);box-shadow:30px 0 80px #000}.sidebar.open{display:block}.main{padding:15px 14px 50px}.mobileNav{display:inline-flex}.grid2,.grid3,.agentGrid,.formGrid{grid-template-columns:1fr}.topTitle h1{font-size:22px}.identityHide{display:none}}
 @media(max-width:520px){.stats{grid-template-columns:1fr 1fr}.stat b{font-size:23px}.hero{padding:18px}.topActions .btn:not(.mobileNav){padding:9px 10px;font-size:10px}.row{display:block}.row .right{text-align:left;margin-top:9px}}
+
+/* Founder HQ cinematic live layer — approved uploaded command-center artwork */
+.hqPremium{position:relative}
+.hqPremiumHero{isolation:isolate;background:#06101a}
+.hqPremiumHero:before{content:"";position:absolute;z-index:-2;inset:0;background-image:linear-gradient(90deg,rgba(3,8,13,.96) 0%,rgba(3,8,13,.78) 46%,rgba(3,8,13,.28) 76%,rgba(3,8,13,.55) 100%),url("/88748CF3-FB88-4E11-8007-2BC9EF6847C7.PNG");background-size:cover;background-position:center 18%;filter:saturate(1.12) contrast(1.05);transform:scale(1.015)}
+.hqPremiumHero:after{z-index:-1;background:radial-gradient(circle at 76% 35%,rgba(239,189,67,.13),transparent 28%),linear-gradient(90deg,transparent 0 66%,rgba(239,189,67,.05) 66% 66.2%,transparent 66.2%)}
+.hqGlobe{backdrop-filter:blur(1px);background:radial-gradient(circle at 34% 30%,#f3c75f88 0 2%,transparent 3%),radial-gradient(circle at 54% 47%,#f3c75f99 0 3%,transparent 4%),radial-gradient(circle at 42% 62%,#c7963f77 0 4%,transparent 5%),radial-gradient(circle at 45% 45%,rgba(23,52,76,.88) 0 35%,rgba(8,18,28,.9) 65%,rgba(2,6,9,.92) 72%)}
+.hqScene{transform:translateZ(0);box-shadow:inset 0 1px 0 #ffffff12,0 14px 34px #0008;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.hqScene:hover{transform:translateY(-4px) scale(1.008);border-color:#9a7938;box-shadow:inset 0 1px 0 #ffffff16,0 20px 42px #000b,0 0 24px #efbd4312}
+.hqSceneArt{background-image:linear-gradient(90deg,rgba(4,10,15,.15),rgba(4,10,15,.02)),url("/88748CF3-FB88-4E11-8007-2BC9EF6847C7.PNG");background-size:760px auto;background-repeat:no-repeat;filter:saturate(1.08) contrast(1.08);opacity:.78}
+.hqSceneArt:before{background:linear-gradient(90deg,transparent 49%,#67c9ff12 50%,transparent 51%),linear-gradient(0deg,transparent 49%,#f1c75b12 50%,transparent 51%);box-shadow:inset 0 0 42px #000b}
+.scene-founder .hqSceneArt{background-position:14% 43%}.scene-boardroom .hqSceneArt{background-position:88% 43%}.scene-floor .hqSceneArt{background-position:38% 62%}.scene-execution .hqSceneArt{background-position:76% 62%}
+.scene-cfo .hqSceneArt{background-position:16% 77%}.scene-presentation .hqSceneArt{background-position:43% 77%}.scene-health .hqSceneArt{background-position:68% 77%}.scene-website .hqSceneArt{background-position:91% 77%}
+.scene-skool .hqSceneArt{background-position:14% 94%}.scene-program .hqSceneArt{background-position:40% 94%}.scene-audit .hqSceneArt{background-position:68% 94%}.scene-risk .hqSceneArt{background-position:92% 94%}
+.hqSceneArt span{background:rgba(4,10,15,.54);border:1px solid #efbd4338;border-radius:14px;padding:7px 10px;backdrop-filter:blur(6px)}
+.hqKpi{backdrop-filter:blur(12px);background:linear-gradient(155deg,rgba(11,23,33,.94),rgba(5,10,15,.92));box-shadow:inset 0 1px 0 #ffffff12,0 10px 24px #0006}
+.hqWing{backdrop-filter:blur(10px);background:linear-gradient(180deg,rgba(7,17,26,.94),rgba(3,8,12,.91))}
+@media(max-width:760px){.hqPremiumHero:before{background-position:58% center}.hqSceneArt{background-size:640px auto}}
+
 </style>
 <script src="/assets/mw-diagnostics.js"></script>
 </head>
