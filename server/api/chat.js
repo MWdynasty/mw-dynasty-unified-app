@@ -96,9 +96,20 @@ ${sharedSafety()}`;
     instructions+=`\n\nSCHEDULE AUTHORITY\n- ${scheduleAuthority}\n- Treat unavailable dates as real constraints, reduced-load dates as pressure/load-management context, and awareness-only dates as planning context rather than automatic cancellations.\n- Never skip ahead in the MW sequence just because a conflict exists. Preserve training order, recovery logic, and coach authority where applicable.\n\nSCHEDULE_CONTEXT:\n${JSON.stringify(schedule)}`;
 
     const input=messages.map(m=>{const assistant=m.role==='assistant';const content=[{type:assistant?'output_text':'input_text',text:String(m.content||'').slice(0,12000)}];if(!assistant&&typeof m.imageDataUrl==='string'&&/^data:image\/(png|jpeg|jpg|webp);base64,/i.test(m.imageDataUrl)&&m.imageDataUrl.length<8000000)content.push({type:'input_image',image_url:m.imageDataUrl});return {role:assistant?'assistant':'user',content}});
-    const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:process.env.OPENAI_MODEL||'gpt-5.6-sol',instructions,input,tools:[{type:'web_search'}],reasoning:{effort:process.env.OPENAI_REASONING_EFFORT||'medium'},max_output_tokens:2200})});
-    const data=await r.json();if(!r.ok)return res.status(r.status).json({error:data?.error?.message||'Coach MW AI request failed.'});
-    const text=outputText(data);if(!text)return res.status(502).json({error:'Coach MW received an empty AI response. Please try again.'});
+    const model=process.env.OPENAI_MODEL||'gpt-5.6-sol';
+    const upstreamStarted=Date.now();
+    const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model,instructions,input,reasoning:{effort:process.env.OPENAI_REASONING_EFFORT||'low'},max_output_tokens:1800})});
+    const data=await r.json();
+    if(!r.ok){
+      console.warn('MW_ATHLETE_AI_UPSTREAM_FAILED',{status:r.status,durationMs:Date.now()-upstreamStarted,model});
+      return res.status(r.status).json({error:data?.error?.message||'Coach MW AI request failed.'});
+    }
+    const text=outputText(data);
+    if(!text){
+      console.warn('MW_ATHLETE_AI_EMPTY_RESPONSE',{durationMs:Date.now()-upstreamStarted,model,responseId:data?.id||null});
+      return res.status(502).json({error:'Coach MW received an empty AI response. Please try again.'});
+    }
+    console.info('MW_ATHLETE_AI_OK',{durationMs:Date.now()-upstreamStarted,model,chars:text.length,responseId:data?.id||null});
     return res.status(200).json({text,accessMode:access.access_mode||'limited',capabilities:{aiIntelligence:intelligence,mwTrainingSystem:fullMW}});
   }catch(e){
     const status=e.status||500;
