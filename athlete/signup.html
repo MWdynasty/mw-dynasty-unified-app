@@ -3,30 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#02060b">
+<meta name="theme-color" content="#020407">
 <title>Create MW Athlete Account</title>
 <link rel="icon" href="/favicon.png" type="image/png">
 <script>if(/MWDynasty-iOS\//i.test(navigator.userAgent||'')){document.documentElement.classList.add('mw-native-app')}</script>
 <script src="/lib/mw-resilience.js"></script><script src="/assets/mw-diagnostics.js"></script>\n<script src="/assets/mw-web-analytics.js"></script>
 <style>
-:root{--gold:#efbd43;--gold2:#ffd76b;--ink:#02060b;--panel:#050e16;--muted:#9ba8b2;--line:rgba(235,190,75,.46)}
+:root{--gold:#e3b85b;--gold2:#fff0aa;--ink:#020407;--panel:#080d14;--muted:#a9b0ba;--line:rgba(227,184,91,.46)}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#02060b;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+html,body{margin:0;min-height:100%;background:var(--ink);color:#f5f6f7;font-family:Arial,Helvetica,sans-serif}
 body{min-height:100dvh;overflow-x:hidden}
 .mwSignupPage{position:relative;min-height:100dvh;padding:max(18px,env(safe-area-inset-top)) 14px max(28px,env(safe-area-inset-bottom));isolation:isolate}
-.mwSignupBackdrop{position:fixed;inset:0;z-index:-2;background:
-  linear-gradient(180deg,rgba(2,6,11,.18) 0%,rgba(2,6,11,.55) 36%,rgba(2,6,11,.94) 76%,#02060b 100%),
-  url('/assets/mw-athlete-login-v21.jpg') center 28%/cover no-repeat}
+.mwSignupBackdrop{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse at 75% 45%,#0b1d31,transparent 65%),var(--ink)}
+.mwSignupBackdrop img{display:block;width:100%;height:100%;object-fit:contain;object-position:right center}
 .mwSignupBackdrop:after{content:"";position:absolute;inset:0;background:
-  radial-gradient(circle at 50% 15%,rgba(29,108,161,.13),transparent 31%),
-  linear-gradient(90deg,rgba(2,6,11,.28),transparent 40%,rgba(2,6,11,.28))}
+  linear-gradient(90deg,rgba(2,4,7,.85),rgba(2,4,7,.38) 42%,transparent 68%),
+  linear-gradient(0deg,#020407,transparent 24%,transparent 86%,rgba(2,4,7,.35))}
 .mwSignupShell{width:min(500px,100%);margin:0 auto}
 .mwSignupBrand{display:flex;align-items:center;gap:11px;padding:2px 2px 16px}
-.mwSignupCrest{width:58px;height:58px;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.38)}
+.mwSignupCrest{width:58px;height:58px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(0,0,0,.38))}
 .mwSignupWord{line-height:.92}
 .mwSignupWord b{display:block;font-size:31px;letter-spacing:-.055em;font-weight:1000}
 .mwSignupWord span{display:block;margin-top:7px;color:var(--gold2);font-size:8px;font-weight:900;letter-spacing:.15em}
-.mwSignupCard{border:1px solid var(--line);border-radius:27px;background:linear-gradient(180deg,rgba(5,16,24,.955),rgba(2,8,13,.99));box-shadow:0 28px 85px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:22px}
+.mwSignupCard{border:1px solid var(--line);border-radius:24px;background:linear-gradient(155deg,rgba(11,29,49,.96),rgba(5,12,22,.97));box-shadow:0 28px 85px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,240,170,.09);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:22px}
 .mwSignupBack{display:inline-flex;align-items:center;gap:6px;color:#e8c565;text-decoration:none;font-size:10px;font-weight:900;letter-spacing:.05em;margin-bottom:17px}
 .mwSignupStep{color:#75c9f1;font-size:9px;font-weight:950;letter-spacing:.14em}
 .mwSignupCard h1{font-size:34px;line-height:1.01;letter-spacing:-.035em;margin:8px 0 8px}
@@ -50,7 +49,7 @@ body{min-height:100dvh;overflow-x:hidden}
 .mwSignupCheck{display:flex;gap:10px;align-items:flex-start;margin:17px 0;color:#b9c4cc;font-size:11px;line-height:1.5}
 .mwSignupCheck input{flex:0 0 auto;width:19px;height:19px;margin:1px 0 0;accent-color:var(--gold)}
 .mwSignupCheck a{color:#75c9f1}
-.mwSignupSubmit{width:100%;height:58px;border:0;border-radius:14px;background:linear-gradient(180deg,#ffdb69,#d89b24);color:#0a0907;font-size:14px;font-weight:1000;letter-spacing:.04em;box-shadow:0 12px 28px rgba(215,153,32,.18)}
+.mwSignupSubmit{width:100%;height:58px;border:1px solid #fff0aa;border-radius:14px;background:linear-gradient(135deg,#fff0aa,#e3b85b 55%,#bb8b31);color:#0a0907;font-size:14px;font-weight:1000;letter-spacing:.04em;box-shadow:0 12px 28px rgba(227,184,91,.18)}
 .mwSignupSubmit:disabled{opacity:.58}
 .mwSignupStatus{min-height:22px;margin-top:12px;text-align:center;color:#70cff7;font-size:11px;line-height:1.45}
 .mwSignupStatus.err{color:#ff9cab}
@@ -58,16 +57,17 @@ body{min-height:100dvh;overflow-x:hidden}
 .mwSignupFooter a{color:#efc75f;font-weight:900;text-decoration:none}
 .mwSignupNote{margin-top:12px;border-top:1px solid rgba(235,190,75,.18);padding-top:12px;color:#84929d;font-size:9px;line-height:1.45;text-align:center}
 @media(max-width:390px){.mwSignupGrid{grid-template-columns:1fr}.mwSignupField.full{grid-column:auto}.mwSignupCard{padding:19px}.mwSignupCard h1{font-size:31px}}
-@media(min-width:700px){.mwSignupPage{display:grid;place-items:center;padding:32px}.mwSignupShell{width:min(520px,100%)}}
+@media(min-width:1000px){.mwSignupPage{display:grid;align-items:center;padding:32px clamp(32px,6vw,120px)}.mwSignupShell{width:min(1280px,100%)}.mwSignupBrand,.mwSignupCard,.mwSignupFooter{width:min(520px,100%)}}
+@media(max-width:999px){.mwSignupBackdrop{position:absolute;height:clamp(290px,54vw,420px);top:76px}.mwSignupBackdrop img{object-position:top right}.mwSignupBackdrop:after{background:linear-gradient(0deg,#020407,transparent 45%),linear-gradient(90deg,rgba(2,4,7,.4),transparent 60%)}.mwSignupCard{margin-top:clamp(130px,28vw,230px)}.mwSignupBrand{min-height:64px}}
 </style>
 </head>
 <body>
 <div class="mwSignupPage">
-  <div class="mwSignupBackdrop" aria-hidden="true"></div>
+  <div class="mwSignupBackdrop" aria-hidden="true"><img src="/assets/mw-athlete-system-signup.png" alt="" fetchpriority="high" decoding="async"></div>
   <main class="mwSignupShell">
     <div class="mwSignupBrand">
-      <img class="mwSignupCrest" src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty crest">
-      <div class="mwSignupWord"><b>DYNASTY</b><span>ATHLETE • DISCIPLINE BUILDS FREEDOM</span></div>
+      <img class="mwSignupCrest" src="/assets/mw-official-crest.png" alt="MW Dynasty crest">
+      <div class="mwSignupWord"><b>MW DYNASTY</b><span>MORE THAN SPORTS</span></div>
     </div>
 
     <section class="mwSignupCard">
