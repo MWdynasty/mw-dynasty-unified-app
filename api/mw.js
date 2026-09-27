@@ -11,6 +11,7 @@ const handlers = {
   'founder': require('../server/api/founder'),
   'founder/ai': require('../server/api/founder-ai'),
   'stripe/checkout': require('../server/api/stripe-checkout'),
+  'stripe/health': require('../server/api/stripe-health'),
   'stripe/portal': require('../server/api/stripe-portal'),
   'profile': require('../server/api/profile'),
   'program': require('../server/api/program'),
