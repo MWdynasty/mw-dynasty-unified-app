@@ -115,11 +115,33 @@ module.exports = async function stripeHealth(req, res) {
 
     const webhookRows = Array.isArray(webhooks.data?.data) ? webhooks.data.data : [];
     const expectedWebhook = webhookRows.find((item) => String(item.url || '').includes('mw-stripe-webhook'));
-    const events = Array.isArray(expectedWebhook?.enabled_events) ? expectedWebhook.enabled_events : [];
-    const hasEvent = (name) => events.includes('*') || events.includes(name);
-    const webhookEventsReady = Boolean(expectedWebhook)
-      && ['customer.subscription.created','customer.subscription.updated','customer.subscription.deleted','invoice.payment_failed']
-        .every(hasEvent);
+    let events = Array.isArray(expectedWebhook?.enabled_events) ? expectedWebhook.enabled_events : [];
+    const requiredWebhookEvents = ['customer.subscription.created','customer.subscription.updated','customer.subscription.deleted','invoice.payment_failed'];
+    const eventChecks = Object.fromEntries(requiredWebhookEvents.map((name) => [name, events.includes('*') || events.includes(name)]));
+    let webhookEventsReady = Boolean(expectedWebhook) && Object.values(eventChecks).every(Boolean);
+    let webhookRepairAttempted = false;
+    let webhookRepairSucceeded = false;
+
+    if (expectedWebhook?.id && !webhookEventsReady) {
+      webhookRepairAttempted = true;
+      const mergedEvents = [...new Set([...events, ...requiredWebhookEvents])];
+      const body = new URLSearchParams();
+      for (const name of mergedEvents) body.append('enabled_events[]', name);
+      const repairResponse = await fetch(`https://api.stripe.com/v1/webhook_endpoints/${encodeURIComponent(expectedWebhook.id)}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${secret}:`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body.toString()
+      });
+      if (repairResponse.ok) {
+        const repaired = await repairResponse.json().catch(() => ({}));
+        events = Array.isArray(repaired?.enabled_events) ? repaired.enabled_events : mergedEvents;
+        webhookRepairSucceeded = true;
+        webhookEventsReady = requiredWebhookEvents.every((name) => events.includes('*') || events.includes(name));
+      }
+    }
 
     return res.status(200).json({
       ok: Boolean(allPricesMatched && checkoutCreated && checkoutExpired),
@@ -138,6 +160,9 @@ module.exports = async function stripeHealth(req, res) {
       webhookListReadable: webhooks.ok,
       webhookEndpointFound: Boolean(expectedWebhook),
       webhookEventsReady,
+      webhookEventChecks: Object.fromEntries(requiredWebhookEvents.map((name) => [name, events.includes('*') || events.includes(name)])),
+      webhookRepairAttempted,
+      webhookRepairSucceeded,
       payoutsReadable: payouts.ok
     });
   } catch {
