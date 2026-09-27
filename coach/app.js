@@ -1088,7 +1088,7 @@ function renderCoachApplication(){
   try{window.MWWebAnalytics?.track('signup_start',{audience:'coach',metadata:{flow:'coach_application'}})}catch{}
   const existing=document.getElementById('coachApplyModal');if(existing)existing.remove();
   const wrap=document.createElement('div');wrap.id='coachApplyModal';wrap.className='coach-apply-modal';
-  wrap.innerHTML=`<div class="coach-apply-backdrop" data-close="1"></div><section class="coach-apply-card coach-signup-wizard" role="dialog" aria-modal="true" aria-labelledby="coachApplyTitle">
+  wrap.innerHTML=`<div class="coach-apply-backdrop" data-close="1" aria-hidden="true"><img src="/assets/mw-coach-system-signup.png" alt="" fetchpriority="high" decoding="async"></div><div class="coach-apply-shell"><div class="coach-apply-brand"><img src="/assets/mw-official-crest.png" alt="MW Dynasty crest"><div><b>MW DYNASTY</b><span>MORE THAN SPORTS</span></div></div><section class="coach-apply-card coach-signup-wizard" role="dialog" aria-modal="true" aria-labelledby="coachApplyTitle">
     <div class="coach-apply-head">
       <div><div class="coach-apply-kicker">MW DYNASTY • COACH ACCESS</div><h2 id="coachApplyTitle">Apply for Coach Access</h2><p>Coach accounts are verified before access is activated. Complete the steps below to build your coach profile and verify your coaching role.</p></div>
       <button type="button" class="coach-apply-close" data-close="1" aria-label="Close">×</button>
@@ -1141,7 +1141,7 @@ function renderCoachApplication(){
       </section>
     </form>
     <p class="coach-apply-foot"><b>That's it.</b> We'll verify your coaching role first. If approved, you'll choose your membership, optionally add sponsored-athlete seats, and complete payment before Coach access is activated.</p>
-  </section>`;
+  </section></div>`;
   document.body.appendChild(wrap);
   wrap.querySelectorAll('[data-close="1"]').forEach(x=>x.addEventListener('click',()=>wrap.remove()));
   wrap.querySelectorAll('[data-next-step]').forEach(x=>x.addEventListener('click',()=>goCoachSignupStep(Number(x.dataset.nextStep))));

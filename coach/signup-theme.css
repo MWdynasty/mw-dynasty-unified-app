@@ -1,0 +1,102 @@
+/* Public coach registration shares the website's stadium artwork and palette. */
+#coachApplyModal {
+  --signup-gold: #e3b85b;
+  --signup-gold-light: #fff0aa;
+  padding: max(24px, env(safe-area-inset-top)) clamp(24px, 4vw, 100px) max(24px, env(safe-area-inset-bottom));
+  font-family: Arial, Helvetica, sans-serif;
+  color: #f5f6f7;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #020407;
+}
+#coachApplyModal .coach-apply-backdrop {
+  position: fixed;
+  background: radial-gradient(ellipse at 75% 45%, #0b1d31, transparent 65%), #020407;
+  backdrop-filter: none;
+}
+#coachApplyModal .coach-apply-backdrop img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: right center;
+}
+#coachApplyModal .coach-apply-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #020407de, #02040761 40%, transparent 62%),
+    linear-gradient(0deg, #020407, transparent 20%, transparent 88%, #02040755);
+  pointer-events: none;
+}
+#coachApplyModal .coach-apply-shell {
+  position: relative;
+  width: min(1360px, 100%);
+  margin: auto;
+  pointer-events: none;
+}
+#coachApplyModal .coach-apply-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 18px;
+}
+#coachApplyModal .coach-apply-brand img { width: 58px; height: 58px; object-fit: contain; }
+#coachApplyModal .coach-apply-brand b { display: block; font-size: 30px; letter-spacing: -.055em; }
+#coachApplyModal .coach-apply-brand span { display: block; margin-top: 7px; color: var(--signup-gold-light); font-size: 10px; font-weight: 800; letter-spacing: .15em; }
+#coachApplyModal .coach-apply-card {
+  width: min(620px, 48vw) !important;
+  max-height: calc(100dvh - 132px);
+  padding: 28px;
+  border: 1px solid #e3b85b75 !important;
+  border-radius: 24px;
+  background: linear-gradient(155deg, #0b1d31f5, #050c16fa) !important;
+  box-shadow: 0 28px 85px #0009, inset 0 1px 0 #fff0aa17 !important;
+  scrollbar-color: #e3b85b80 #050c16;
+  scrollbar-width: thin;
+  pointer-events: auto;
+}
+#coachApplyModal .coach-apply-head { gap: 12px; }
+#coachApplyModal .coach-apply-head > div { min-width: 0; }
+#coachApplyModal .coach-apply-head h2 { font-size: clamp(28px, 2.5vw, 34px); line-height: 1.1; }
+#coachApplyModal .coach-apply-head p { margin-bottom: 0; color: #c5ced5; font-size: 16px; line-height: 1.5; }
+#coachApplyModal .coach-apply-close { flex: 0 0 42px; }
+#coachApplyModal .coach-apply-kicker,
+#coachApplyModal .coach-signup-step-head > span { color: var(--signup-gold); font-size: 12px; }
+#coachApplyModal .coach-signup-step-head p,
+#coachApplyModal .coach-apply-form label { font-size: 14px; }
+#coachApplyModal .coach-apply-form input,
+#coachApplyModal .coach-apply-form select,
+#coachApplyModal .coach-apply-form textarea { min-width: 0; font-size: 16px; }
+#coachApplyModal .coach-apply-two > label { min-width: 0; }
+#coachApplyModal .coach-signup-progress > div { gap: 6px; font-size: 13px; }
+#coachApplyModal .coach-signup-progress > div.active { border-color: var(--signup-gold); background: #e3b85b14; }
+#coachApplyModal .coach-signup-progress > div.active b,
+#coachApplyModal .coach-signup-progress > div.done b { background: var(--signup-gold); border-color: var(--signup-gold); }
+#coachApplyModal .coach-login-submit {
+  min-height: 54px;
+  font-size: 14px;
+  letter-spacing: .02em;
+  border: 1px solid var(--signup-gold-light) !important;
+  background: linear-gradient(135deg, #fff0aa, #e3b85b 55%, #bb8b31) !important;
+  box-shadow: 0 12px 28px #e3b85b2e !important;
+}
+#coachApplyModal .coach-apply-foot { color: #a9b0ba; font-size: 13px; }
+@media (max-width: 999px) {
+  #coachApplyModal { padding: max(18px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); place-items: start center; }
+  #coachApplyModal .coach-apply-shell { width: min(600px, 100%); }
+  #coachApplyModal .coach-apply-backdrop { position: absolute; top: 82px; height: clamp(280px, 54vw, 420px); }
+  #coachApplyModal .coach-apply-backdrop img { object-position: top right; }
+  #coachApplyModal .coach-apply-backdrop::after { background: linear-gradient(0deg, #020407, transparent 40%), linear-gradient(90deg, #02040766, transparent 60%); }
+  #coachApplyModal .coach-apply-card { width: 100% !important; max-height: none; margin-top: clamp(130px, 28vw, 230px); padding: 22px; }
+}
+@media (max-width: 600px) {
+  #coachApplyModal .coach-signup-progress span { display: inline; }
+  #coachApplyModal .coach-signup-progress > div { gap: 5px; font-size: 12px; }
+  #coachApplyModal .coach-signup-progress b { width: 20px; height: 20px; flex: 0 0 20px; }
+  #coachApplyModal .coach-apply-card { padding: 20px 16px; }
+  #coachApplyModal .coach-apply-brand b { font-size: 28px; }
+}
+@media (max-width: 360px) {
+  #coachApplyModal .coach-signup-progress > div { flex-direction: column; padding: 8px 2px; }
+}
