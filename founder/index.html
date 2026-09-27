@@ -37,6 +37,18 @@
 @media(max-width:1150px){.stats{grid-template-columns:repeat(2,1fr)}.grid3,.agentGrid{grid-template-columns:1fr 1fr}.hqGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.hqStrip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:860px){.hqBrief{grid-template-columns:1fr}}
 @media(max-width:620px){.hqGrid,.hqStrip{grid-template-columns:1fr}.hqRoom{min-height:auto}.hqHero:after{font-size:100px;right:18px}}
+.hqPremium{--hqGold:#f3c75f;--hqBlue:#43b9ff;--hqEdge:#263a4a}
+.hqPremiumHero{position:relative;min-height:250px;padding:28px 300px 26px 28px;border:1px solid #6b5527;border-radius:22px;overflow:hidden;background:radial-gradient(circle at 80% 42%,rgba(44,120,174,.18),transparent 30%),linear-gradient(135deg,#07111b 0%,#03070b 70%);box-shadow:inset 0 1px 0 #ffffff0b,0 18px 50px #0008}
+.hqPremiumHero .brand{color:var(--hqGold)}.hqPremiumHero h2{font-size:clamp(34px,4.2vw,58px);line-height:.98;margin:9px 0 13px;letter-spacing:-.05em}.hqPremiumHero h2 em{font-style:normal;color:var(--hqGold)}
+.hqPremiumHero p{max-width:820px;color:#b4c0ca;line-height:1.55;margin:0}
+.hqGlobe{position:absolute;right:92px;top:-38px;width:245px;height:245px;border-radius:50%;border:1px solid #d7aa4f88;background:radial-gradient(circle at 34% 30%,#d5a84355 0 2%,transparent 3%),radial-gradient(circle at 54% 47%,#e1b55066 0 3%,transparent 4%),radial-gradient(circle at 65% 33%,#d7aa4f55 0 2%,transparent 3%),radial-gradient(circle at 42% 62%,#c7963f55 0 4%,transparent 5%),radial-gradient(circle at 45% 45%,#17344c 0 35%,#08121c 65%,#020609 72%);box-shadow:inset -28px -18px 45px #000b,0 0 55px #e2b34a22}
+.hqGlobe:before,.hqGlobe:after{content:"";position:absolute;inset:-18px;border:1px solid #c99b3c55;border-radius:50%;transform:rotate(23deg) scaleY(.36)}.hqGlobe:after{transform:rotate(-28deg) scaleY(.58);border-color:#4ab8f955}
+.hqWords{position:absolute;right:18px;top:40px;display:grid;gap:6px;color:#e5c778;font-size:9px;font-weight:950;letter-spacing:.2em;text-align:right}.hqWords b:last-child{color:var(--hqGold);margin-top:5px}
+.hqKpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:12px 0 18px}.hqKpi{border:1px solid #294052;border-radius:14px;padding:13px 12px;background:linear-gradient(155deg,#0b1721,#050a0f);box-shadow:inset 0 1px 0 #ffffff0b}.hqKpi small{display:block;color:#76bce7;font-size:8px;font-weight:950;letter-spacing:.06em}.hqKpi b{display:block;font-size:24px;margin-top:5px}.hqKpi em{display:block;color:#758692;font-style:normal;font-size:9px;margin-top:3px}
+.hqWing{margin:16px 0 8px}.hqWingHead{display:flex;align-items:center;gap:13px;margin-bottom:9px;color:var(--hqGold)}.hqWingHead h2{font-size:15px;letter-spacing:.1em;text-transform:uppercase;margin:0;white-space:nowrap}.hqWingHead span{color:#8b9aa6;font-size:10px}.hqWingHead:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,#6a5429,#1d2d39,transparent)}
+.hqWingGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.hqScene{position:relative;overflow:hidden;min-height:205px;border:1px solid #2c4659;border-radius:16px;padding:16px;background:linear-gradient(155deg,#0b1721,#04080c);box-shadow:inset 0 1px 0 #ffffff0b,0 10px 24px #0005}.hqScene:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 28%,var(--scene,#d6a73b33),transparent 28%),linear-gradient(115deg,transparent 45%,#ffffff05 46%,transparent 47%);pointer-events:none}.hqScene.gold{--scene:#e3b64c55;border-color:#735b2d}.hqScene.blue{--scene:#38aee755}.hqScene.good{--scene:#48d69744}.hqScene .hqRoomIcon{position:relative;z-index:1}.hqScene h3,.hqScene p,.hqScene .hqMeta,.hqScene button{position:relative;z-index:1}.hqScene h3{margin:12px 0 6px;font-size:17px}.hqScene p{min-height:51px;margin:0;color:#9baab5;font-size:10px;line-height:1.45}.hqScene .hqMeta{margin:11px 0;color:#91a3af;font-size:9px}.hqScene .hqMeta i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#54d79b;box-shadow:0 0 10px #54d79b;margin-right:6px}.hqScene .btn{width:100%;padding:9px 10px;background:linear-gradient(100deg,#c38b22,#f1ce6d,#bd7e16);color:#080b0e;border-color:#f1d178}
+@media(max-width:1180px){.hqKpis{grid-template-columns:repeat(3,1fr)}.hqWingGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.hqPremiumHero{padding:22px 18px 150px}.hqGlobe{width:170px;height:170px;right:45px;top:auto;bottom:-38px}.hqWords{top:auto;bottom:18px}.hqKpis{grid-template-columns:repeat(2,1fr)}.hqWingGrid{grid-template-columns:1fr}.hqWingHead span{display:none}}
 @media(max-width:860px){.layout{display:block}.sidebar{display:none;position:fixed;z-index:80;left:0;top:0;width:min(300px,88vw);box-shadow:30px 0 80px #000}.sidebar.open{display:block}.main{padding:15px 14px 50px}.mobileNav{display:inline-flex}.grid2,.grid3,.agentGrid,.formGrid{grid-template-columns:1fr}.topTitle h1{font-size:22px}.identityHide{display:none}}
 @media(max-width:520px){.stats{grid-template-columns:1fr 1fr}.stat b{font-size:23px}.hero{padding:18px}.topActions .btn:not(.mobileNav){padding:9px 10px;font-size:10px}.row{display:block}.row .right{text-align:left;margin-top:9px}}
 </style>
@@ -57,49 +69,36 @@
 
 <div id="appShell" class="layout hidden">
   <aside id="sidebar" class="sidebar">
-    <div class="sideBrand"><strong>MW DYNASTY</strong><span>FOUNDER OPERATING SYSTEM</span></div>
-    <div class="navGroup"><div class="navLabel">HEADQUARTERS</div>
-      <button class="navBtn active" data-view="headquarters"><span>HQ</span>MW Headquarters</button>
+    <div class="sideBrand"><strong>MW DYNASTY</strong><span>FOUNDER OS</span></div>
+    <div class="navGroup">
+      <button class="navBtn active" data-view="headquarters"><span>⌂</span>MW Headquarters</button>
     </div>
     <div class="navGroup"><div class="navLabel">EXECUTIVE</div>
-      <button class="navBtn" data-view="home"><span>⌂</span>Executive Home</button>
-      <button class="navBtn" data-view="attention"><span>!</span>Needs Attention <i class="navCount" data-count="attention"></i></button>
-      <button class="navBtn" data-view="objectives"><span>◎</span>Company Objectives</button>
-      <button class="navBtn" data-view="notifications"><span>●</span>Notifications <i class="navCount" data-count="notifications"></i></button>
-      <button class="navBtn" data-view="analytics"><span>▥</span>Analytics</button>
+      <button class="navBtn" data-view="home"><span>♙</span>Founder Office</button>
+      <button class="navBtn" data-view="ai"><span>♟</span>Boardroom <i class="navCount" data-count="ai"></i></button>
     </div>
     <div class="navGroup"><div class="navLabel">PEOPLE & ACCESS</div>
-      <button class="navBtn" data-view="coaches"><span>♟</span>Coaches</button>
-      <button class="navBtn" data-view="athletes"><span>🏃</span>Athletes</button>
-      <button class="navBtn" data-view="applications"><span>✓</span>Applications <i class="navCount" data-count="applications"></i></button>
-      <button class="navBtn" data-view="organizations"><span>▦</span>Organizations</button>
+      <button class="navBtn" data-view="ai"><span>AI</span>AI Workforce</button>
+      <button class="navBtn" data-view="people"><span>♙</span>Team Members</button>
+      <button class="navBtn" data-view="applications"><span>▣</span>Access & Permissions <i class="navCount" data-count="applications"></i></button>
     </div>
     <div class="navGroup"><div class="navLabel">MONEY & GROWTH</div>
-      <button class="navBtn" data-view="revenue"><span>$</span>Revenue & Billing</button>
-      <button class="navBtn" data-view="costs"><span>−</span>Costs & Finance</button>
-      <button class="navBtn" data-view="sponsorships"><span>◎</span>Sponsorships</button>
-      <button class="navBtn" data-view="partnerships"><span>◇</span>Partnerships</button>
-      <button class="navBtn" data-view="website"><span>⌘</span>Website & Growth</button>
-      <button class="navBtn" data-view="marketing"><span>↗</span>Marketing & Sales</button>
-      <button class="navBtn" data-view="skool"><span>S</span>Skool Content</button>
+      <button class="navBtn" data-view="costs"><span>$</span>CFO & Finance</button>
+      <button class="navBtn" data-view="website"><span>↗</span>Growth Systems</button>
+      <button class="navBtn" data-view="revenue"><span>▦</span>Revenue & Offers</button>
     </div>
     <div class="navGroup"><div class="navLabel">INTELLIGENCE</div>
-      <button class="navBtn" data-view="ai"><span>AI</span>AI Company <i class="navCount" data-count="ai"></i></button>
-      <button class="navBtn" data-view="programs"><span>41</span>Program Control</button>
-      <button class="navBtn" data-view="knowledge"><span>MW</span>MW Knowledge</button>
-      <button class="navBtn" data-view="support"><span>?</span>Customer Support <i class="navCount" data-count="support"></i></button>
+      <button class="navBtn" data-view="system"><span>⌁</span>Company Health</button>
+      <button class="navBtn" data-view="analytics"><span>▥</span>Reports & Analytics</button>
+      <button class="navBtn" data-view="security"><span>▤</span>Decision & Audit Trail</button>
     </div>
     <div class="navGroup"><div class="navLabel">COMPANY OPERATIONS</div>
-      <button class="navBtn" data-view="operations"><span>↻</span>Operations & SOPs</button>
-      <button class="navBtn" data-view="people"><span>♙</span>People & HR</button>
-      <button class="navBtn" data-view="risk"><span>△</span>Legal & Risk <i class="navCount" data-count="risk"></i></button>
-    </div>
-    <div class="navGroup"><div class="navLabel">PLATFORM</div>
-      <button class="navBtn" data-view="launch"><span>✓</span>Launch Readiness</button>
-      <button class="navBtn" data-view="product"><span>⚙</span>Product & Technology</button>
-      <button class="navBtn" data-view="system"><span>◉</span>System Health</button>
-      <button class="navBtn" data-view="security"><span>◇</span>Security & Audit</button>
-      <button class="navBtn" data-view="settings"><span>⚙</span>Settings & Tour</button>
+      <button class="navBtn" data-view="objectives"><span>◎</span>Execution Center</button>
+      <button class="navBtn" data-view="programs"><span>☷</span>Program Control</button>
+      <button class="navBtn" data-view="website"><span>▣</span>Website Studio</button>
+      <button class="navBtn" data-view="skool"><span>◇</span>Skool Content Center</button>
+      <button class="navBtn" data-view="ai"><span>▣</span>Presentation Center</button>
+      <button class="navBtn" data-view="risk"><span>◇</span>Risk & Legal <i class="navCount" data-count="risk"></i></button>
     </div>
     <div class="sideFoot"><b id="founderName">Founder</b><small>Founder / Owner</small><button id="signOut" class="btn small" style="margin-top:10px;width:100%">Sign Out</button></div>
   </aside>
@@ -364,7 +363,7 @@ function setView(v){currentView=v;document.querySelectorAll(".navBtn").forEach(b
 function attentionRow(x){const sev=x.severity==="high"?"high":x.severity==="low"?"low":"";return '<div class="row attention '+sev+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.detail||"")+'</small></div><div class="right">'+badge(x.severity||"review",x.severity==="high"?"bad":x.severity==="low"?"blue":"warn")+'</div></div>'}
 function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
 
-async function renderHeadquarters(){
+async function renderHeadquartersPremium(){
   const [d,f,h,r,aiData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company")]);
   const m=d.metrics||{},attention=d.needs_attention||[],ath=h.athletes||[],co=h.coaches||[],risks=r.items||[];
   const agents=aiData.agents||[],tasks=aiData.tasks||[],approvals=aiData.approvals||[],runs=aiData.recent_runs||[];
@@ -372,53 +371,42 @@ async function renderHeadquarters(){
   const customerAttention=ath.filter(x=>x.health!=="healthy").length+co.filter(x=>x.health!=="healthy").length;
   const openTasks=tasks.filter(x=>!["completed","cancelled"].includes(x.status));
   const completedRuns=runs.filter(x=>x.status==="completed");
-  const financeConnections=f.financial_source_summary||{};
-  const healthySignals=(highRisks.length===0?1:0)+(Number(m.diagnostic_errors_24h||0)===0?1:0)+(Number(m.open_support||0)===0?1:0)+(approvals.length===0?1:0);
-  const healthLabel=healthySignals===4?"OPERATING CLEAN":healthySignals>=2?"REVIEW SIGNALS":"FOUNDER ATTENTION";
-  const healthType=healthySignals===4?"good":healthySignals>=2?"warn":"bad";
-  const room=(icon,title,copy,meta,view,button)=>'<div class="hqRoom"><div class="hqRoomIcon">'+icon+'</div><h3>'+esc(title)+'</h3><p>'+esc(copy)+'</p><div class="hqMeta">'+esc(meta)+'</div><button class="btn '+(view==="home"?"primary":"")+'" data-go="'+view+'">'+esc(button)+'</button></div>';
-  $("content").innerHTML=
-    '<section class="hero hqHero"><div class="brand">MW DYNASTY · COMPANY HEADQUARTERS</div><h2>Your company. One headquarters.</h2><p>Walk into MW Dynasty and move from your Founder Office to the Boardroom, AI workforce, execution center, CFO office, company health, growth systems, and governance without leaving Founder OS.</p><div class="hqStatus">'+
-      badge(healthLabel,healthType)+
-      badge((approvals.length||0)+" BOARDROOM APPROVALS",approvals.length?"warn":"good")+
-      badge((openTasks.length||0)+" OPEN AI TASKS",openTasks.length?"blue":"good")+
-      badge((highRisks.length||0)+" HIGH RISKS",highRisks.length?"bad":"good")+
-      '</div><div class="heroActions"><button class="btn primary" data-go="home">Enter Founder Office</button><button class="btn blue" id="hqFounderAI">Ask Founder AI</button><button class="btn" data-go="attention">Open Needs Attention</button></div></section>'+
-    '<div class="hqStrip">'+
-      '<div class="card"><small>ESTIMATED MRR</small><b>'+money(f.estimated_mrr_cents)+'</b><small>Live finance view</small></div>'+
-      '<div class="card"><small>AI WORKFORCE</small><b>'+esc(agents.length)+'</b><small>'+esc(openTasks.length)+' open tasks</small></div>'+
-      '<div class="card"><small>ACTIVE MEMBERS</small><b>'+esc((Number(m.athletes_active)||0)+(Number(m.coaches_active)||0))+'</b><small>'+esc(m.athletes_active||0)+' athletes · '+esc(m.coaches_active||0)+' coaches</small></div>'+
-      '<div class="card"><small>FOUNDER ATTENTION</small><b>'+esc(attention.length+approvals.length+highRisks.length+customerAttention)+'</b><small>Company-wide review signals</small></div>'+
+  const activeMembers=(Number(m.athletes_active)||0)+(Number(m.coaches_active)||0);
+  const founderAttention=attention.length+approvals.length+highRisks.length+customerAttention;
+  const room=(icon,title,copy,meta,view,button,tone="blue")=>'<div class="hqScene '+tone+'"><div class="hqRoomIcon">'+icon+'</div><h3>'+esc(title)+'</h3><p>'+esc(copy)+'</p><div class="hqMeta"><i></i>'+esc(meta)+'</div><button class="btn" data-go="'+view+'">'+esc(button)+' →</button></div>';
+  const wing=(title,copy,cards)=>'<section class="hqWing"><div class="hqWingHead"><h2>'+esc(title)+'</h2><span>'+esc(copy)+'</span></div><div class="hqWingGrid">'+cards.join("")+'</div></section>';
+  $("content").innerHTML='<div class="hqPremium">'+
+    '<section class="hqPremiumHero"><div class="brand">MW DYNASTY · COMPANY HEADQUARTERS</div><h2>Your Company. <em>One Headquarters.</em></h2><p>Walk into MW Dynasty and move from your Founder Office to the Boardroom, AI workforce, execution center, CFO office, company health, growth systems, and governance — all from one place.</p><div class="hqGlobe"></div><div class="hqWords"><b>PEOPLE</b><b>SYSTEMS</b><b>EXECUTION</b><b>GROWTH</b><b>A STRONGER TOMORROW</b></div></section>'+
+    '<div class="hqKpis">'+
+      '<div class="hqKpi"><small>ESTIMATED MRR</small><b>'+money(f.estimated_mrr_cents)+'</b><em>live finance data</em></div>'+
+      '<div class="hqKpi"><small>BOARDROOM APPROVALS</small><b>'+esc(approvals.length)+'</b><em>pending decisions</em></div>'+
+      '<div class="hqKpi"><small>OPEN AI TASKS</small><b>'+esc(openTasks.length)+'</b><em>across '+esc(agents.length)+' agents</em></div>'+
+      '<div class="hqKpi"><small>HIGH RISKS</small><b>'+esc(highRisks.length)+'</b><em>require attention</em></div>'+
+      '<div class="hqKpi"><small>ACTIVE MEMBERS</small><b>'+esc(activeMembers)+'</b><em>athletes + coaches</em></div>'+
+      '<div class="hqKpi"><small>FOUNDER ATTENTION</small><b>'+esc(founderAttention)+'</b><em>items to review</em></div>'+
     '</div>'+
-    sectionHead("MW Headquarters","Each room opens the live system that already runs that part of MW Dynasty.")+
-    '<div class="hqGrid">'+
-      room("♛","Founder Office","Your personal command center for the entire company, executive briefing, objectives, and the matters requiring your decision.",(attention.length||0)+" operating items need review","home","Enter Founder Office")+
-      room("▰","Boardroom","Review AI proposals and consequential actions before anything important is approved, rejected, or moved forward.",(approvals.length||0)+" items awaiting Founder approval","ai","Enter Boardroom")+
-      room("AI","Company Floor","See your AI employees by department, talk directly with them, review their assignments, and run safe internal work.",agents.length+" AI employees · "+openTasks.length+" open tasks","ai","View AI Workforce")+
-      room("↻","Execution Center","Follow company objectives, assigned work, queued execution, verification, and progress from decision to completion.",openTasks.length+" active/queued AI tasks","objectives","Open Execution Center")+
-      room("$","CFO & Finance","Revenue, subscriptions, Stripe visibility, company costs, operating contribution, and financial-source coverage.",money(f.tracked_operating_contribution_cents)+" tracked contribution","costs","Enter CFO Office")+
-      room("▣","Presentation Center","Review AI work, department briefs, drafts, website work, and materials before they become official company output.",completedRuns.length+" completed AI work products","ai","Open Presentations")+
-      room("◉","Company Health","Product reliability, billing integrity, launch status, support pressure, security, and operational risk in one chain.",(m.diagnostic_errors_24h||0)+" diagnostic errors · "+highRisks.length+" high risks","system","Open Company Health")+
-      room("✓","Decision & Audit Trail","Trace sensitive actions, security controls, risk, and protected Founder decisions across MW Dynasty.",highRisks.length+" high/critical open risks","security","Open Governance")+
-      room("⌘","Website Studio","Monitor the MW public website, conversion, growth signals, and the customer-facing experience.",(m.web_sessions_30d||0)+" sessions in the last 30 days","website","Open Website Studio")+
-      room("S","Skool Content Center","Manage the education and community layer: content plans, drafts, approvals, and publishing workflow.", "Community + education operating layer","skool","Open Skool Center")+
-      room("41","Program Control","Protect and manage the MW Sprint Performance System, training content, methodology, and program operations.","41-week performance system","programs","Open Program Control")+
-      room("△","Risk & Legal","Keep open risks, compliance concerns, controls, and company exposure visible instead of buried.",""+highRisks.length+" high/critical risks open","risk","Open Risk Center")+
-    '</div>'+
-    '<div class="hqBrief">'+
-      '<div><div class="sectionHead"><div><h2>Headquarters Brief</h2><p>What the building is telling you right now.</p></div></div><div class="list">'+
-        (attention.length?attention.slice(0,5).map(attentionRow).join(""):'<div class="card empty">No urgent Founder items detected.</div>')+
-      '</div></div>'+
-      '<div><div class="sectionHead"><div><h2>Operating Snapshot</h2><p>Fast signals from the company.</p></div></div><div class="list">'+
-        '<div class="row"><div><b>Boardroom</b><small>Founder-gated AI decisions</small></div><div class="right">'+badge(approvals.length?approvals.length+" waiting":"clear",approvals.length?"warn":"good")+'</div></div>'+
-        '<div class="row"><div><b>Customer Health</b><small>Athletes/coaches needing attention</small></div><div class="right">'+badge(customerAttention?customerAttention+" signals":"healthy",customerAttention?"warn":"good")+'</div></div>'+
-        '<div class="row"><div><b>Finance Connections</b><small>Connected company financial sources</small></div><div class="right">'+badge((financeConnections.connected||0)+" connected","blue")+'</div></div>'+
-        '<div class="row"><div><b>System Diagnostics</b><small>Errors detected in the last 24 hours</small></div><div class="right">'+badge(String(m.diagnostic_errors_24h||0),(m.diagnostic_errors_24h||0)?"bad":"good")+'</div></div>'+
-      '</div></div>'+
-    '</div>';
+    wing("Executive Wing","Leadership, strategy and key decisions.",[
+      room("♛","Founder Office","Your command center. Set direction, review priorities, and manage what matters most.",attention.length+" operating items need review","home","Enter Founder Office","gold"),
+      room("♟","Boardroom","Make decisions, review opportunities, and track execution across the company.",approvals.length+" pending approvals","ai","Enter Boardroom","blue"),
+      room("▥","Company Floor","View your AI workforce, departments, and how the company runs day to day.",agents.length+" active AI members","ai","View AI Workforce","blue"),
+      room("◎","Execution Center","Turn strategy into execution. Track projects, initiatives, and company progress.",openTasks.length+" active / queued tasks","objectives","Open Execution Center","blue")
+    ])+
+    wing("Operating Wing","Finance, growth, content and core operations.",[
+      room("$","CFO & Finance","Track revenue, expenses, profitability, financial sources, and financial health.",money(f.tracked_operating_contribution_cents)+" tracked contribution","costs","Open CFO Office","good"),
+      room("▣","Presentation Center","Create and manage presentations, briefs, work products, and investor materials.",completedRuns.length+" completed AI work products","ai","Open Presentation Center","blue"),
+      room("⌁","Company Health","Monitor company health, KPIs, support pressure, diagnostics, and growth indicators.",(m.diagnostic_errors_24h||0)+" diagnostic errors · "+highRisks.length+" high risks","system","View Company Health","good"),
+      room("▣","Website Studio","Build and manage your website, landing pages, digital assets, and growth experience.",(m.web_sessions_30d||0)+" sessions in the last 30 days","website","Open Website Studio","blue")
+    ])+
+    wing("Governance Wing","Systems, content, compliance and risk.",[
+      room("◇","Skool Content Center","Manage your Skool community, courses, education content, drafts, and publishing workflow.","Community + education operating layer","skool","Open Content Center","blue"),
+      room("☷","Program Control","Oversee programs, products, methodology, and delivery across the company.","41-week performance system","programs","Open Program Control","good"),
+      room("▤","Decision & Audit Trail","Track key decisions, protected actions, changes, security controls, and company history.",highRisks.length+" high / critical open risks","security","View Audit Trail","blue"),
+      room("◇","Risk & Legal","Manage risks, compliance, legal documentation, controls, and company exposure.",highRisks.length+" high / critical risks open","risk","Open Risk & Legal","good")
+    ])+
+  '</div>';
   bindGo();
-  $("hqFounderAI").onclick=openAIModal;
 }
+async function renderHeadquarters(){return renderHeadquartersPremium()}
 
 async function renderHome(){
   const [d,f,h,r,aiData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company")]);
