@@ -22,7 +22,21 @@
 .modal{position:fixed;inset:0;z-index:90;background:#000b;display:grid;place-items:center;padding:20px}.modalCard{width:min(760px,100%);max-height:90vh;overflow:auto;border:1px solid #3c4853;border-radius:22px;background:#081019;padding:20px;box-shadow:0 30px 100px #000}.modalTop{display:flex;justify-content:space-between;gap:12px;align-items:center}.modalTop h2{margin:0}
 .tourShield{position:fixed;inset:0;z-index:129;background:transparent;pointer-events:auto}.tourSpotlight{position:fixed;z-index:130;border:2px solid var(--gold2);border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.76),0 0 28px rgba(239,189,67,.55);pointer-events:none;transition:all .2s ease}.tourSpotlight.hidden{display:none}.tourCard{position:fixed;z-index:131;left:50%;bottom:18px;transform:translateX(-50%);width:min(620px,calc(100vw - 28px));border:1px solid #8a6b2a;border-radius:20px;background:linear-gradient(155deg,#101923,#06090d);padding:18px;box-shadow:0 26px 90px #000;pointer-events:auto}.tourCard.top{top:18px;bottom:auto}.tourCard h2{margin:5px 0 7px;font-size:23px}.tourCard p{margin:0;color:#b2bdc6;line-height:1.55;font-size:13px}.tourMeta{display:flex;justify-content:space-between;gap:10px;align-items:center;color:#7f8d99;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.tourProgress{height:5px;background:#1a252f;border-radius:999px;overflow:hidden;margin:13px 0}.tourProgress i{display:block;height:100%;background:linear-gradient(90deg,#c78d20,#f5d77d);transition:width .2s ease}.tourActions{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:15px;flex-wrap:wrap}.tourActions .tourRight{display:flex;gap:8px;margin-left:auto}.tourContext{margin-top:10px;border:1px solid #293641;border-radius:11px;padding:10px;background:#081017;color:#93a3af;font-size:11px;line-height:1.45}.tourPreparing{position:fixed;inset:0;z-index:140;display:grid;place-items:center;background:rgba(1,3,5,.91);padding:24px}.tourPreparingCard{width:min(520px,100%);border:1px solid #5e4b25;border-radius:22px;background:#091019;padding:24px;text-align:center;box-shadow:0 30px 100px #000}.tourPreparingCard h2{margin:8px 0}.tourPreparingCard p{color:var(--muted);line-height:1.5}.tourPulse{width:44px;height:44px;margin:0 auto;border:3px solid #3c4650;border-top-color:var(--gold);border-radius:50%;animation:tourSpin .8s linear infinite}@keyframes tourSpin{to{transform:rotate(360deg)}}
 @media(max-width:620px){.tourCard{bottom:10px;padding:15px}.tourCard.top{top:10px}.tourCard h2{font-size:20px}.tourActions{display:block}.tourActions .tourRight{margin:9px 0 0;display:grid;grid-template-columns:1fr 1fr}.tourActions>.btn{width:100%}}
-@media(max-width:1150px){.stats{grid-template-columns:repeat(2,1fr)}.grid3,.agentGrid{grid-template-columns:1fr 1fr}}
+.hqHero{position:relative;overflow:hidden;border-color:#66501f;background:radial-gradient(circle at 86% 10%,rgba(239,189,67,.20),transparent 32%),radial-gradient(circle at 15% 90%,rgba(85,201,255,.12),transparent 35%),linear-gradient(145deg,#111820,#05090d)}
+.hqHero:after{content:"MW";position:absolute;right:34px;bottom:-30px;font-size:150px;line-height:1;font-weight:1000;letter-spacing:-.09em;color:rgba(239,189,67,.035);pointer-events:none}
+.hqStatus{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}.hqStatus .badge{padding:7px 10px}
+.hqGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
+.hqRoom{position:relative;min-height:205px;border:1px solid #2d3c49;border-radius:20px;padding:18px;background:radial-gradient(circle at 92% 8%,rgba(239,189,67,.08),transparent 32%),linear-gradient(155deg,#0c151e,#060a0e);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.hqRoom:hover{transform:translateY(-3px);border-color:#7a642d;box-shadow:0 18px 34px rgba(0,0,0,.26),0 0 24px rgba(239,189,67,.04)}
+.hqRoomIcon{width:42px;height:42px;display:grid;place-items:center;border:1px solid #524726;border-radius:13px;background:#121a20;color:var(--gold2);font-size:20px;font-weight:950}
+.hqRoom h3{margin:16px 0 7px;font-size:18px;letter-spacing:-.025em}.hqRoom p{min-height:56px;margin:0;color:#95a4b0;font-size:11px;line-height:1.5}
+.hqRoom .hqMeta{margin-top:14px;color:#6f8190;font-size:10px}.hqRoom .btn{margin-top:14px;width:100%}
+.hqStrip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.hqStrip .card{padding:14px}.hqStrip b{display:block;font-size:22px;margin-top:4px}.hqStrip small{color:var(--muted)}
+.hqBrief{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-top:12px}
+@media(max-width:1150px){.stats{grid-template-columns:repeat(2,1fr)}.grid3,.agentGrid{grid-template-columns:1fr 1fr}.hqGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.hqStrip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:860px){.hqBrief{grid-template-columns:1fr}}
+@media(max-width:620px){.hqGrid,.hqStrip{grid-template-columns:1fr}.hqRoom{min-height:auto}.hqHero:after{font-size:100px;right:18px}}
 @media(max-width:860px){.layout{display:block}.sidebar{display:none;position:fixed;z-index:80;left:0;top:0;width:min(300px,88vw);box-shadow:30px 0 80px #000}.sidebar.open{display:block}.main{padding:15px 14px 50px}.mobileNav{display:inline-flex}.grid2,.grid3,.agentGrid,.formGrid{grid-template-columns:1fr}.topTitle h1{font-size:22px}.identityHide{display:none}}
 @media(max-width:520px){.stats{grid-template-columns:1fr 1fr}.stat b{font-size:23px}.hero{padding:18px}.topActions .btn:not(.mobileNav){padding:9px 10px;font-size:10px}.row{display:block}.row .right{text-align:left;margin-top:9px}}
 </style>
@@ -32,8 +46,8 @@
 <section id="login" class="login">
   <form id="loginForm" class="loginCard">
     <div class="brand">MW DYNASTY · FOUNDER OS</div>
-    <h1>Founder Command Center</h1>
-    <p class="muted">Private executive access to the company, product, website, revenue, AI workforce, and MW methodology.</p>
+    <h1>MW Dynasty Headquarters</h1>
+    <p class="muted">Private Founder access to MW Dynasty Headquarters, your executive office, AI workforce, company systems, finance, product, website, and methodology.</p>
     <label class="field">EMAIL<input id="email" type="email" autocomplete="email" required></label>
     <label class="field">PASSWORD<input id="password" type="password" autocomplete="current-password" required></label>
     <button id="loginBtn" class="btn primary" type="submit">ENTER FOUNDER OS →</button>
@@ -44,8 +58,11 @@
 <div id="appShell" class="layout hidden">
   <aside id="sidebar" class="sidebar">
     <div class="sideBrand"><strong>MW DYNASTY</strong><span>FOUNDER OPERATING SYSTEM</span></div>
+    <div class="navGroup"><div class="navLabel">HEADQUARTERS</div>
+      <button class="navBtn active" data-view="headquarters"><span>HQ</span>MW Headquarters</button>
+    </div>
     <div class="navGroup"><div class="navLabel">EXECUTIVE</div>
-      <button class="navBtn active" data-view="home"><span>⌂</span>Executive Home</button>
+      <button class="navBtn" data-view="home"><span>⌂</span>Executive Home</button>
       <button class="navBtn" data-view="attention"><span>!</span>Needs Attention <i class="navCount" data-count="attention"></i></button>
       <button class="navBtn" data-view="objectives"><span>◎</span>Company Objectives</button>
       <button class="navBtn" data-view="notifications"><span>●</span>Notifications <i class="navCount" data-count="notifications"></i></button>
@@ -102,10 +119,10 @@
 const SUPABASE_URL="https://keqgunlfwhjgcsurynef.supabase.co";
 const SUPABASE_KEY="sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm";
 const KEY="mwFounderSupabaseSession";
-let session=null,currentView="home",cache={},aiHistory=[],employeeAIHistories={},founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderVoiceActiveButtonId=null,founderMicRecorder=null,founderMicStream=null,founderMicTimer=null,founderRefreshPromise=null,founderSessionTimer=null,founderHealPromise=null,founderViewHealAttempts={};
+let session=null,currentView="headquarters",cache={},aiHistory=[],employeeAIHistories={},founderAIAudio=null,founderAIAudioUrl=null,founderAIVoiceRequest=null,founderVoiceActiveButtonId=null,founderMicRecorder=null,founderMicStream=null,founderMicTimer=null,founderRefreshPromise=null,founderSessionTimer=null,founderHealPromise=null,founderViewHealAttempts={};
 const FOUNDER_RESUME_VIEW_KEY="mwFounderResumeView";
 const FOUNDER_AUTO_VOICE_KEY="mwFounderAutoVoice";
-const titles={home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",skool:"Skool Content Center",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
+const titles={headquarters:"MW Headquarters",home:"Executive Home",attention:"Needs Attention",objectives:"Company Objectives",notifications:"Notifications",analytics:"Analytics",coaches:"Coaches",athletes:"Athletes",applications:"Coach Applications",organizations:"Organizations",revenue:"Revenue & Billing",costs:"Costs & Finance",sponsorships:"Sponsorship Center",partnerships:"Partnerships",website:"Website & Growth",marketing:"Marketing & Sales",skool:"Skool Content Center",ai:"AI Company",programs:"Program Control",knowledge:"MW Knowledge System",support:"Customer Success & Support",operations:"Operations & SOPs",people:"People & HR",risk:"Legal & Risk",launch:"Launch Readiness",product:"Product & Technology",system:"System Health",security:"Security & Audit",settings:"Settings & Tour"};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=c=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format((Number(c)||0)/100);
@@ -208,7 +225,7 @@ function rememberFounderResumeView(view){
 function consumeFounderResumeView(){
   const v=localStorage.getItem(FOUNDER_RESUME_VIEW_KEY);
   localStorage.removeItem(FOUNDER_RESUME_VIEW_KEY);
-  return v&&titles[v]?v:"home"
+  return v&&titles[v]?v:"headquarters"
 }
 function showFounderRecoveryState(title,copy){
   $("content").innerHTML='<div class="card"><div class="brand">FOUNDER OS · SELF-HEALING</div><h2>'+esc(title)+'</h2><p class="muted">'+esc(copy)+'</p></div>'
@@ -346,6 +363,62 @@ function sectionHead(title,copy,actionHtml){return '<div class="sectionHead"><di
 function setView(v){currentView=v;document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("pageTitle").textContent=titles[v]||"Founder OS";$("sidebar").classList.remove("open");return renderView(v)}
 function attentionRow(x){const sev=x.severity==="high"?"high":x.severity==="low"?"low":"";return '<div class="row attention '+sev+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.detail||"")+'</small></div><div class="right">'+badge(x.severity||"review",x.severity==="high"?"bad":x.severity==="low"?"blue":"warn")+'</div></div>'}
 function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
+
+async function renderHeadquarters(){
+  const [d,f,h,r,aiData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company")]);
+  const m=d.metrics||{},attention=d.needs_attention||[],ath=h.athletes||[],co=h.coaches||[],risks=r.items||[];
+  const agents=aiData.agents||[],tasks=aiData.tasks||[],approvals=aiData.approvals||[],runs=aiData.recent_runs||[];
+  const highRisks=risks.filter(x=>["high","critical"].includes(x.severity)&&!["resolved","closed"].includes(x.status));
+  const customerAttention=ath.filter(x=>x.health!=="healthy").length+co.filter(x=>x.health!=="healthy").length;
+  const openTasks=tasks.filter(x=>!["completed","cancelled"].includes(x.status));
+  const completedRuns=runs.filter(x=>x.status==="completed");
+  const financeConnections=f.financial_source_summary||{};
+  const healthySignals=(highRisks.length===0?1:0)+(Number(m.diagnostic_errors_24h||0)===0?1:0)+(Number(m.open_support||0)===0?1:0)+(approvals.length===0?1:0);
+  const healthLabel=healthySignals===4?"OPERATING CLEAN":healthySignals>=2?"REVIEW SIGNALS":"FOUNDER ATTENTION";
+  const healthType=healthySignals===4?"good":healthySignals>=2?"warn":"bad";
+  const room=(icon,title,copy,meta,view,button)=>'<div class="hqRoom"><div class="hqRoomIcon">'+icon+'</div><h3>'+esc(title)+'</h3><p>'+esc(copy)+'</p><div class="hqMeta">'+esc(meta)+'</div><button class="btn '+(view==="home"?"primary":"")+'" data-go="'+view+'">'+esc(button)+'</button></div>';
+  $("content").innerHTML=
+    '<section class="hero hqHero"><div class="brand">MW DYNASTY · COMPANY HEADQUARTERS</div><h2>Your company. One headquarters.</h2><p>Walk into MW Dynasty and move from your Founder Office to the Boardroom, AI workforce, execution center, CFO office, company health, growth systems, and governance without leaving Founder OS.</p><div class="hqStatus">'+
+      badge(healthLabel,healthType)+
+      badge((approvals.length||0)+" BOARDROOM APPROVALS",approvals.length?"warn":"good")+
+      badge((openTasks.length||0)+" OPEN AI TASKS",openTasks.length?"blue":"good")+
+      badge((highRisks.length||0)+" HIGH RISKS",highRisks.length?"bad":"good")+
+      '</div><div class="heroActions"><button class="btn primary" data-go="home">Enter Founder Office</button><button class="btn blue" id="hqFounderAI">Ask Founder AI</button><button class="btn" data-go="attention">Open Needs Attention</button></div></section>'+
+    '<div class="hqStrip">'+
+      '<div class="card"><small>ESTIMATED MRR</small><b>'+money(f.estimated_mrr_cents)+'</b><small>Live finance view</small></div>'+
+      '<div class="card"><small>AI WORKFORCE</small><b>'+esc(agents.length)+'</b><small>'+esc(openTasks.length)+' open tasks</small></div>'+
+      '<div class="card"><small>ACTIVE MEMBERS</small><b>'+esc((Number(m.athletes_active)||0)+(Number(m.coaches_active)||0))+'</b><small>'+esc(m.athletes_active||0)+' athletes · '+esc(m.coaches_active||0)+' coaches</small></div>'+
+      '<div class="card"><small>FOUNDER ATTENTION</small><b>'+esc(attention.length+approvals.length+highRisks.length+customerAttention)+'</b><small>Company-wide review signals</small></div>'+
+    '</div>'+
+    sectionHead("MW Headquarters","Each room opens the live system that already runs that part of MW Dynasty.")+
+    '<div class="hqGrid">'+
+      room("♛","Founder Office","Your personal command center for the entire company, executive briefing, objectives, and the matters requiring your decision.",(attention.length||0)+" operating items need review","home","Enter Founder Office")+
+      room("▰","Boardroom","Review AI proposals and consequential actions before anything important is approved, rejected, or moved forward.",(approvals.length||0)+" items awaiting Founder approval","ai","Enter Boardroom")+
+      room("AI","Company Floor","See your AI employees by department, talk directly with them, review their assignments, and run safe internal work.",agents.length+" AI employees · "+openTasks.length+" open tasks","ai","View AI Workforce")+
+      room("↻","Execution Center","Follow company objectives, assigned work, queued execution, verification, and progress from decision to completion.",openTasks.length+" active/queued AI tasks","objectives","Open Execution Center")+
+      room("$","CFO & Finance","Revenue, subscriptions, Stripe visibility, company costs, operating contribution, and financial-source coverage.",money(f.tracked_operating_contribution_cents)+" tracked contribution","costs","Enter CFO Office")+
+      room("▣","Presentation Center","Review AI work, department briefs, drafts, website work, and materials before they become official company output.",completedRuns.length+" completed AI work products","ai","Open Presentations")+
+      room("◉","Company Health","Product reliability, billing integrity, launch status, support pressure, security, and operational risk in one chain.",(m.diagnostic_errors_24h||0)+" diagnostic errors · "+highRisks.length+" high risks","system","Open Company Health")+
+      room("✓","Decision & Audit Trail","Trace sensitive actions, security controls, risk, and protected Founder decisions across MW Dynasty.",highRisks.length+" high/critical open risks","security","Open Governance")+
+      room("⌘","Website Studio","Monitor the MW public website, conversion, growth signals, and the customer-facing experience.",(m.web_sessions_30d||0)+" sessions in the last 30 days","website","Open Website Studio")+
+      room("S","Skool Content Center","Manage the education and community layer: content plans, drafts, approvals, and publishing workflow.", "Community + education operating layer","skool","Open Skool Center")+
+      room("41","Program Control","Protect and manage the MW Sprint Performance System, training content, methodology, and program operations.","41-week performance system","programs","Open Program Control")+
+      room("△","Risk & Legal","Keep open risks, compliance concerns, controls, and company exposure visible instead of buried.",""+highRisks.length+" high/critical risks open","risk","Open Risk Center")+
+    '</div>'+
+    '<div class="hqBrief">'+
+      '<div><div class="sectionHead"><div><h2>Headquarters Brief</h2><p>What the building is telling you right now.</p></div></div><div class="list">'+
+        (attention.length?attention.slice(0,5).map(attentionRow).join(""):'<div class="card empty">No urgent Founder items detected.</div>')+
+      '</div></div>'+
+      '<div><div class="sectionHead"><div><h2>Operating Snapshot</h2><p>Fast signals from the company.</p></div></div><div class="list">'+
+        '<div class="row"><div><b>Boardroom</b><small>Founder-gated AI decisions</small></div><div class="right">'+badge(approvals.length?approvals.length+" waiting":"clear",approvals.length?"warn":"good")+'</div></div>'+
+        '<div class="row"><div><b>Customer Health</b><small>Athletes/coaches needing attention</small></div><div class="right">'+badge(customerAttention?customerAttention+" signals":"healthy",customerAttention?"warn":"good")+'</div></div>'+
+        '<div class="row"><div><b>Finance Connections</b><small>Connected company financial sources</small></div><div class="right">'+badge((financeConnections.connected||0)+" connected","blue")+'</div></div>'+
+        '<div class="row"><div><b>System Diagnostics</b><small>Errors detected in the last 24 hours</small></div><div class="right">'+badge(String(m.diagnostic_errors_24h||0),(m.diagnostic_errors_24h||0)?"bad":"good")+'</div></div>'+
+      '</div></div>'+
+    '</div>';
+  bindGo();
+  $("hqFounderAI").onclick=openAIModal;
+}
 
 async function renderHome(){
   const [d,f,h,r,aiData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company")]);
@@ -1456,6 +1529,7 @@ async function renderAnalytics(){
 async function renderView(v){
   loading();
   try{
+    if(v==="headquarters")return await renderHeadquarters();
     if(v==="home")return await renderHome();
     if(v==="attention")return await renderAttention();
     if(v==="objectives")return await renderObjectives();
@@ -1520,12 +1594,13 @@ function bindGo(){document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()
 function modal(title,body){$("modalRoot").innerHTML='<div class="modal" id="modal"><div class="modalCard"><div class="modalTop"><h2>'+esc(title)+'</h2><button class="btn small" id="modalClose">Close</button></div><div style="margin-top:12px">'+body+'</div></div></div>';$("modalClose").onclick=closeModal;$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()})}
 function closeModal(){stopFounderAIReadAloud();stopFounderVoiceInput(true);$("modalRoot").innerHTML=""}
 
-const FOUNDER_TOUR_VERSION="2026.09.21.1";
+const FOUNDER_TOUR_VERSION="2026.09.27.2";
 const FOUNDER_TOUR_COMPLETE_KEY="mwFounderTourComplete";
 const FOUNDER_TOUR_PROGRESS_KEY="mwFounderTourProgress";
 const FOUNDER_TOUR_PAUSED_KEY="mwFounderTourPaused";
-const FOUNDER_TOUR_VIEWS=["home","attention","objectives","notifications","analytics","coaches","athletes","applications","organizations","revenue","costs","sponsorships","partnerships","website","marketing","skool","ai","programs","knowledge","support","operations","people","risk","launch","product","system","security","settings"];
+const FOUNDER_TOUR_VIEWS=["headquarters","home","attention","objectives","notifications","analytics","coaches","athletes","applications","organizations","revenue","costs","sponsorships","partnerships","website","marketing","skool","ai","programs","knowledge","support","operations","people","risk","launch","product","system","security","settings"];
 const FOUNDER_TOUR_VIEW_COPY={
+  headquarters:"MW Dynasty Headquarters is the top-level company lobby. From here you can enter your Founder Office, Boardroom, AI workforce, execution, finance, product health, growth, Skool, program control, and governance systems while seeing live company signals.",
   home:"Your executive command center. This is the first place to look for company-wide health, revenue, customers, risks, support, website activity, and items needing your attention.",
   attention:"A prioritized queue of matters that need Founder review. Use this to avoid hunting through every department for problems.",
   objectives:"Where you define company objectives, monitor progress, pause or resume work, and direct the AI company toward safe, reviewable execution.",
@@ -1647,7 +1722,7 @@ async function buildFounderTourPlan(){
   });
   plan.push({kind:"finish",title:"Founder OS tour complete",body:"You have now walked the live Founder Hub, every visible control found during this tour, and reference steps for protected form/dialog controls that were not currently on screen. If MW Dynasty adds new controls later, replay the tour from Settings & Tour and it will scan the current interface again."});
   closeModal();
-  await setView("home");
+  await setView("headquarters");
   return plan
 }
 function founderTourLocate(step){
@@ -1723,7 +1798,7 @@ async function finishFounderTour(){
   localStorage.setItem(FOUNDER_TOUR_COMPLETE_KEY,FOUNDER_TOUR_VERSION);
   localStorage.removeItem(FOUNDER_TOUR_PROGRESS_KEY);
   localStorage.removeItem(FOUNDER_TOUR_PAUSED_KEY);
-  closeModal();founderTourCleanup();await setView("home")
+  closeModal();founderTourCleanup();await setView("headquarters")
 }
 async function startFounderTour({resume=false}={}){
   if(founderTourState?.active)return;
