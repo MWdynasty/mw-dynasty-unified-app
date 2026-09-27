@@ -148,6 +148,29 @@ body{background:radial-gradient(circle at 78% 0,#0c2b4230,transparent 32%),#0207
 @media(max-width:980px){.hqPremiumHero{padding-right:190px}.hqPremiumHero:after{right:25px;width:115px;height:115px;font-size:38px}}
 @media(max-width:680px){.hqPremiumHero{padding-right:22px;padding-top:150px}.hqPremiumHero:after{left:22px;right:auto;top:20px;width:105px;height:105px}.sidebar{box-shadow:none}}
 
+
+/* Founder HQ v6 — functional command surfaces, no decorative dead zones */
+.hqWingGrid.executive .hqScene{padding:18px 16px 14px;min-height:238px;display:grid;grid-template-columns:48px 1fr;grid-template-rows:auto auto 1fr auto;column-gap:12px;align-items:start}
+.hqWingGrid.executive .hqScene:after,.hqWingGrid.executive .hqSceneArt{display:none}
+.hqWingGrid.executive .hqRoomIcon{grid-column:1;grid-row:1/3;width:44px;height:44px;display:grid;place-items:center;border:1px solid #e6b84e55;border-radius:13px;background:linear-gradient(145deg,#172635,#070d12);color:#f3c65c;font-size:20px;box-shadow:inset 0 1px #ffffff14,0 12px 28px #0008}
+.hqWingGrid.executive .hqScene h3{grid-column:2;grid-row:1;margin:3px 0 0;font-size:19px}
+.hqWingGrid.executive .hqScene p{grid-column:2;grid-row:2;margin:3px 0 8px;min-height:0}
+.hqWingGrid.executive .hqMeta{grid-column:1/3;grid-row:3;align-self:end;margin:10px 0 12px;padding:11px 12px;border:1px solid #ffffff0d;border-radius:10px;background:linear-gradient(90deg,#0a1a25,#061019);font-size:10px!important}
+.hqWingGrid.executive .hqScene .btn{grid-column:1/3;grid-row:4}
+.hqWingGrid.executive .hqScene:before{content:"LIVE COMMAND SURFACE";position:absolute;right:14px;top:14px;color:#4ac8ff;font-size:8px;font-weight:900;letter-spacing:.15em;opacity:.7}
+.hqWingGrid.executive .scene-founder{background:radial-gradient(circle at 92% 12%,#d9a62b18,transparent 30%),linear-gradient(145deg,#0b1721,#050a0e)}
+.hqWingGrid.executive .scene-boardroom{background:radial-gradient(circle at 92% 12%,#2bbcff1a,transparent 30%),linear-gradient(145deg,#0a1722,#050a0e)}
+.hqWingGrid.executive .scene-floor{background:radial-gradient(circle at 92% 12%,#22d3a51a,transparent 30%),linear-gradient(145deg,#091820,#050a0e)}
+.hqWingGrid.executive .scene-execution{background:radial-gradient(circle at 92% 12%,#4a8cff20,transparent 30%),linear-gradient(145deg,#091622,#050a0e)}
+.hqWingGrid.operating .hqScene,.hqWingGrid.governance .hqScene{padding:16px 13px 12px;min-height:184px;display:flex;flex-direction:column}
+.hqWingGrid.operating .hqScene:after,.hqWingGrid.governance .hqScene:after,.hqWingGrid.operating .hqSceneArt,.hqWingGrid.governance .hqSceneArt{display:none}
+.hqWingGrid.operating .hqRoomIcon,.hqWingGrid.governance .hqRoomIcon{width:36px;height:36px;display:grid;place-items:center;border:1px solid #e6b84e42;border-radius:11px;background:#0a1620;color:#f0c35b;margin-bottom:12px}
+.hqWingGrid.operating .hqScene p,.hqWingGrid.governance .hqScene p{display:block;min-height:43px}
+.hqWingGrid.operating .hqMeta,.hqWingGrid.governance .hqMeta{margin-top:auto;padding:8px 9px;border-radius:8px;background:#061019;border:1px solid #ffffff0b}
+.hqWingGrid.operating .hqScene .btn,.hqWingGrid.governance .hqScene .btn{margin-top:9px;width:100%}
+.hqWingHead{padding:5px 4px 10px}.hqWingHead em{padding:5px 9px;border:1px solid #e9b9492b;border-radius:999px;background:#e9b9490a;color:#d7b35c!important}
+@media(max-width:760px){.hqWingGrid.executive .hqScene{padding:16px 14px;min-height:220px}}
+
 </style>
 <script src="/assets/mw-diagnostics.js"></script>
 </head>
