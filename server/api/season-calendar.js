@@ -81,12 +81,31 @@ async function requireCoach(token,userId){
   return p;
 }
 async function estimateCalendar(token,{stateCode,coachingLevel,seasonType,seasonYear}){
-  const state=validateState(stateCode),level=cleanLevel(coachingLevel),type=['indoor','outdoor'].includes(String(seasonType))?String(seasonType):'outdoor';
+  const state=validateState(stateCode),level=cleanLevel(coachingLevel),type=['indoor','outdoor','both'].includes(String(seasonType))?String(seasonType):'outdoor';
   const year=Math.trunc(Number(seasonYear));
   const cfg=levelConfig(level);
   if(!state)throw Object.assign(new Error('Choose the state where you coach.'),{status:400});
   if(!cfg)throw Object.assign(new Error('Choose your coaching level.'),{status:400});
   if(!year||year<2025||year>2035)throw Object.assign(new Error('Choose a valid season year.'),{status:400});
+
+  if(type==='both'){
+    const indoor=await estimateCalendar(token,{stateCode:state,coachingLevel:level,seasonType:'indoor',seasonYear:year});
+    const outdoor=await estimateCalendar(token,{stateCode:state,coachingLevel:level,seasonType:'outdoor',seasonYear:year});
+    const startDate=[indoor.startDate,outdoor.startDate].filter(Boolean).sort()[0]||outdoor.startDate||indoor.startDate;
+    const firstMeetDate=[indoor.firstMeetDate,outdoor.firstMeetDate].filter(Boolean).sort()[0]||null;
+    const peakDate=outdoor.primaryPeakDate||indoor.primaryPeakDate;
+    const source=indoor.source==='state_registry'&&outdoor.source==='state_registry'
+      ?'state_registry'
+      :(indoor.source==='state_school_proxy'||outdoor.source==='state_school_proxy'?'state_school_proxy':'mw_estimate');
+    return {
+      competitionState:state,coachingLevel:level,seasonType:'both',seasonYear:year,
+      startDate,firstMeetDate,primaryPeakDate:peakDate,seasonLengthWeeks:weeksBetween(startDate,peakDate),
+      indoorPeakDate:indoor.primaryPeakDate||null,outdoorPeakDate:outdoor.primaryPeakDate||null,
+      source,sourceConfidence:(indoor.sourceConfidence==='verified'&&outdoor.sourceConfidence==='verified')?'verified':'estimated',
+      sourceLabel:'MW Dynasty combined indoor + outdoor calendar',
+      registryLevel:outdoor.registryLevel||indoor.registryLevel||cfg.group
+    };
+  }
 
   const template=await loadTemplate(token,{group:cfg.group,seasonType:type,competitionPath:cfg.path});
   let registry=null,source='mw_estimate',registryLevel=cfg.group;
@@ -142,7 +161,7 @@ module.exports=async function handler(req,res){
 
     const state=validateState(b.stateCode||b.competitionState);
     const level=cleanLevel(b.coachingLevel);
-    const type=['indoor','outdoor'].includes(String(b.seasonType))?String(b.seasonType):'outdoor';
+    const type=['indoor','outdoor','both'].includes(String(b.seasonType))?String(b.seasonType):'outdoor';
     const year=Math.trunc(Number(b.seasonYear));
     const startDate=validDate(b.startDate),firstMeetDate=validDate(b.firstMeetDate),peakDate=validDate(b.primaryPeakDate);
     if(!state)return res.status(400).json({error:'Choose the state where you coach.'});
