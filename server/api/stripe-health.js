@@ -143,8 +143,48 @@ module.exports = async function stripeHealth(req, res) {
       }
     }
 
+    let diagnosticSubscriptionCreated = false;
+    let diagnosticSubscriptionDeleted = false;
+    let diagnosticCustomerDeleted = false;
+    if (webhookEventsReady && athletePrice?.id) {
+      const customer = await stripe('/customers', secret, {
+        method: 'POST',
+        form: {
+          description: 'MW Dynasty launch webhook diagnostic',
+          'metadata[mw_diagnostic]': 'launch_health_check'
+        }
+      });
+      if (customer.ok && customer.data?.id) {
+        const subscription = await stripe('/subscriptions', secret, {
+          method: 'POST',
+          form: {
+            customer: String(customer.data.id),
+            'items[0][price]': String(athletePrice.id),
+            trial_period_days: '1',
+            'metadata[mw_user_id]': 'mw-diagnostic-invalid',
+            'metadata[mw_plan_code]': 'mw_athlete',
+            'metadata[mw_checkout_kind]': 'membership',
+            'metadata[mw_sponsor_quantity]': '0'
+          }
+        });
+        diagnosticSubscriptionCreated = Boolean(subscription.ok && subscription.data?.id);
+        if (diagnosticSubscriptionCreated) {
+          const deleted = await stripe(`/subscriptions/${encodeURIComponent(subscription.data.id)}`, secret, {
+            method: 'DELETE',
+            form: {}
+          });
+          diagnosticSubscriptionDeleted = Boolean(deleted.ok);
+        }
+        const deletedCustomer = await stripe(`/customers/${encodeURIComponent(customer.data.id)}`, secret, {
+          method: 'DELETE',
+          form: {}
+        });
+        diagnosticCustomerDeleted = Boolean(deletedCustomer.ok);
+      }
+    }
+
     return res.status(200).json({
-      ok: Boolean(allPricesMatched && checkoutCreated && checkoutExpired),
+      ok: Boolean(allPricesMatched && checkoutCreated && checkoutExpired && webhookEventsReady && diagnosticSubscriptionCreated && diagnosticSubscriptionDeleted && diagnosticCustomerDeleted),
       configured: true,
       keyKind: key.kind,
       mode: key.mode,
@@ -163,6 +203,9 @@ module.exports = async function stripeHealth(req, res) {
       webhookEventChecks: Object.fromEntries(requiredWebhookEvents.map((name) => [name, events.includes('*') || events.includes(name)])),
       webhookRepairAttempted,
       webhookRepairSucceeded,
+      diagnosticSubscriptionCreated,
+      diagnosticSubscriptionDeleted,
+      diagnosticCustomerDeleted,
       payoutsReadable: payouts.ok
     });
   } catch {
