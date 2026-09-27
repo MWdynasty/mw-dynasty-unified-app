@@ -1,5 +1,12 @@
 const { SUPABASE_URL, SUPABASE_KEY } = require('../lib/mw-coach-auth');
 
+const PRODUCTS = {
+  mw_athlete: { base: 'Athlete Membership' },
+  coach_core: { base: 'Coach Core', sponsor: 'Coach Core Sponsored Athlete' },
+  coach_intelligence: { base: 'Coach Intelligence', sponsor: 'Coach Intelligence Sponsored Athlete' },
+  mw_sprint_performance: { base: 'MW Sprint Performance System', sponsor: 'MW Sprint Performance Sponsored Athlete' },
+};
+
 function classifyKey(secret) {
   if (secret.startsWith('sk_live_')) return { kind: 'secret', mode: 'live' };
   if (secret.startsWith('sk_test_')) return { kind: 'secret', mode: 'test' };
@@ -24,6 +31,16 @@ async function stripe(path, secret, options = {}) {
   return { ok: response.ok, status: response.status, data };
 }
 
+function priceMatches(prices, productName, amount) {
+  return (prices || []).some((item) => {
+    const product = item.product && typeof item.product === 'object' ? item.product : {};
+    return product.name === productName
+      && item.currency === 'usd'
+      && Number(item.unit_amount) === Number(amount)
+      && item.recurring?.interval === 'month';
+  });
+}
+
 module.exports = async function stripeHealth(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') return res.status(405).json({ ok: false });
@@ -35,76 +52,95 @@ module.exports = async function stripeHealth(req, res) {
   }
 
   try {
-    const catalogResp = await fetch(
-      `${SUPABASE_URL}/rest/v1/membership_plans?plan_code=eq.mw_athlete&active=eq.true&monthly_enabled=eq.true&select=monthly_price_cents&limit=1`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-    );
-    const catalogRows = await catalogResp.json().catch(() => []);
-    const amount = Number(Array.isArray(catalogRows) && catalogRows[0]?.monthly_price_cents || 0);
+    const [catalogResp, prices, account, webhooks, payouts] = await Promise.all([
+      fetch(
+        `${SUPABASE_URL}/rest/v1/membership_plans?active=eq.true&monthly_enabled=eq.true&select=plan_code,monthly_price_cents,sponsored_athlete_price_cents`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+      ),
+      stripe('/prices?active=true&type=recurring&limit=100&expand[]=data.product', secret),
+      stripe('/account', secret),
+      stripe('/webhook_endpoints?limit=100', secret),
+      stripe('/payouts?limit=1', secret),
+    ]);
 
-    const prices = await stripe('/prices?active=true&type=recurring&limit=100&expand[]=data.product', secret);
-    if (!prices.ok) {
+    const catalog = await catalogResp.json().catch(() => []);
+    if (!catalogResp.ok || !prices.ok) {
       return res.status(502).json({
         ok: false, configured: true, keyKind: key.kind, mode: key.mode,
-        stripeReachable: false, stripeStatus: prices.status
+        stripeReachable: prices.ok, catalogReadable: catalogResp.ok
       });
     }
 
-    const price = (prices.data?.data || []).find((item) => {
+    const priceRows = prices.data?.data || [];
+    const planChecks = (Array.isArray(catalog) ? catalog : []).map((plan) => {
+      const names = PRODUCTS[plan.plan_code] || {};
+      const baseFound = Boolean(names.base) && priceMatches(priceRows, names.base, plan.monthly_price_cents);
+      const sponsorRequired = Number(plan.sponsored_athlete_price_cents || 0) > 0;
+      const sponsorFound = !sponsorRequired || (Boolean(names.sponsor) && priceMatches(priceRows, names.sponsor, plan.sponsored_athlete_price_cents));
+      return { planCode: plan.plan_code, baseFound, sponsorFound };
+    });
+    const allPricesMatched = planChecks.length > 0 && planChecks.every((p) => p.baseFound && p.sponsorFound);
+
+    const athlete = (Array.isArray(catalog) ? catalog : []).find((p) => p.plan_code === 'mw_athlete');
+    const athletePrice = priceRows.find((item) => {
       const product = item.product && typeof item.product === 'object' ? item.product : {};
       return product.name === 'Athlete Membership'
         && item.currency === 'usd'
-        && Number(item.unit_amount) === amount
+        && Number(item.unit_amount) === Number(athlete?.monthly_price_cents || 0)
         && item.recurring?.interval === 'month';
     });
 
-    if (!price?.id) {
-      return res.status(503).json({
-        ok: false, configured: true, keyKind: key.kind, mode: key.mode,
-        stripeReachable: true, priceMatched: false, expectedAmountCents: amount
+    let checkoutCreated = false;
+    let checkoutExpired = false;
+    if (athletePrice?.id) {
+      const created = await stripe('/checkout/sessions', secret, {
+        method: 'POST',
+        form: {
+          mode: 'subscription',
+          success_url: 'https://mwdynasty.com/?mw_diagnostic=success',
+          cancel_url: 'https://mwdynasty.com/?mw_diagnostic=cancel',
+          'line_items[0][price]': String(athletePrice.id),
+          'line_items[0][quantity]': '1',
+          'metadata[mw_diagnostic]': 'launch_health_check'
+        }
       });
-    }
-
-    const created = await stripe('/checkout/sessions', secret, {
-      method: 'POST',
-      form: {
-        mode: 'subscription',
-        success_url: 'https://mwdynasty.com/?mw_diagnostic=success',
-        cancel_url: 'https://mwdynasty.com/?mw_diagnostic=cancel',
-        'line_items[0][price]': String(price.id),
-        'line_items[0][quantity]': '1',
-        'metadata[mw_diagnostic]': 'launch_health_check'
+      checkoutCreated = Boolean(created.ok && created.data?.id);
+      if (checkoutCreated) {
+        const expired = await stripe(`/checkout/sessions/${encodeURIComponent(created.data.id)}/expire`, secret, {
+          method: 'POST', form: {}
+        });
+        checkoutExpired = Boolean(expired.ok);
       }
-    });
-
-    if (!created.ok || !created.data?.id) {
-      return res.status(502).json({
-        ok: false, configured: true, keyKind: key.kind, mode: key.mode,
-        stripeReachable: true, priceMatched: true, checkoutCreated: false,
-        stripeStatus: created.status
-      });
     }
 
-    const expired = await stripe(`/checkout/sessions/${encodeURIComponent(created.data.id)}/expire`, secret, {
-      method: 'POST',
-      form: {}
-    });
+    const webhookRows = Array.isArray(webhooks.data?.data) ? webhooks.data.data : [];
+    const expectedWebhook = webhookRows.find((item) => String(item.url || '').includes('mw-stripe-webhook'));
+    const events = Array.isArray(expectedWebhook?.enabled_events) ? expectedWebhook.enabled_events : [];
+    const hasEvent = (name) => events.includes('*') || events.includes(name);
+    const webhookEventsReady = Boolean(expectedWebhook)
+      && ['customer.subscription.created','customer.subscription.updated','customer.subscription.deleted','invoice.payment_failed']
+        .every(hasEvent);
 
-    return res.status(expired.ok ? 200 : 502).json({
-      ok: Boolean(expired.ok),
+    return res.status(200).json({
+      ok: Boolean(allPricesMatched && checkoutCreated && checkoutExpired),
       configured: true,
       keyKind: key.kind,
       mode: key.mode,
       stripeReachable: true,
-      priceMatched: true,
-      checkoutCreated: true,
-      checkoutExpired: Boolean(expired.ok),
-      stripeStatus: expired.status
+      allPricesMatched,
+      planChecks,
+      checkoutCreated,
+      checkoutExpired,
+      accountReadable: account.ok,
+      chargesEnabled: account.ok ? Boolean(account.data?.charges_enabled) : null,
+      payoutsEnabled: account.ok ? Boolean(account.data?.payouts_enabled) : null,
+      detailsSubmitted: account.ok ? Boolean(account.data?.details_submitted) : null,
+      webhookListReadable: webhooks.ok,
+      webhookEndpointFound: Boolean(expectedWebhook),
+      webhookEventsReady,
+      payoutsReadable: payouts.ok
     });
-  } catch (error) {
-    return res.status(502).json({
-      ok: false, configured: true, keyKind: key.kind, mode: key.mode,
-      error: 'health_check_failed'
-    });
+  } catch {
+    return res.status(502).json({ ok: false, configured: true, keyKind: key.kind, mode: key.mode, error: 'health_check_failed' });
   }
 };
