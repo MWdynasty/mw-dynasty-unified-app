@@ -298,7 +298,7 @@ function dashboard(){
   else if(experience==='intelligence'){intelligenceDashboard();hydrateAthleteStatusBoard();hydrateLivePerformanceSummary();hydratePerformanceInsightPreview();}
   else {performanceDashboard();hydrateAthleteStatusBoard();hydrateLivePerformanceSummary();hydratePerformanceInsightPreview();}
   hydrateCoachTrainingYearCard();
-  window.setTimeout(()=>maybeStartCoachTour(),180);
+  window.setTimeout(()=>{maybeStartCoachSeasonAssessment().then(opened=>{if(!opened)maybeStartCoachTour()}).catch(()=>maybeStartCoachTour())},180);
 }
 function pageBase(title,subtitle,body){const p=PLANS[experience];app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">← Dashboard</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div><button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=dashboard;const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
 function morePage(){
@@ -472,6 +472,96 @@ function bindSeasonCalendarSettings(){
       toast('Training year saved');
     }catch(e){if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'Training year could not be saved')}</small>`}
     finally{save.disabled=false;save.textContent=old}
+  };
+}
+
+let coachSeasonAssessmentOpen=false;
+async function maybeStartCoachSeasonAssessment(){
+  if(coachSeasonAssessmentOpen)return true;
+  const token=mwSessionToken();if(!token)return false;
+  let cal={};
+  try{cal=await coachSeasonCalendarRequest()}catch{return false}
+  if(cal?.coachingLevel&&cal?.competitionState&&cal?.startDate&&(cal?.primaryPeakDate||cal?.peakDate))return false;
+  coachSeasonAssessmentOpen=true;
+  renderCoachSeasonAssessment(cal);
+  return true;
+}
+function renderCoachSeasonAssessment(existing={}){
+  document.getElementById('coachSeasonAssessment')?.remove();
+  const now=new Date(),defaultYear=now.getMonth()>=6?now.getFullYear()+1:now.getFullYear();
+  const el=document.createElement('div');
+  el.id='coachSeasonAssessment';
+  el.className='mw-modal';
+  el.innerHTML=`<div class="mw-modal-backdrop"></div><section class="mw-modal-card" role="dialog" aria-modal="true" aria-labelledby="coachSeasonAssessmentTitle">
+    <div class="mw-modal-head"><div><div class="eyebrow">MW COACH SETUP</div><h2 id="coachSeasonAssessmentTitle">Set Your Training Year</h2><p>Tell MW where and at what level you coach. We’ll estimate the season dates, then you can edit anything before saving.</p></div></div>
+    <div class="mw-modal-body">
+      <div class="form">
+        <div class="form-grid">
+          <label>Coaching Level<select id="firstSeasonLevel">
+            <option value="">Select level</option>
+            <option value="middle_school">Middle School</option>
+            <option value="high_school">High School</option>
+            <option value="collegiate">College / University</option>
+            <option value="club">Club / AAU</option>
+            <option value="private">Private Coach</option>
+            <option value="professional">Professional</option>
+          </select></label>
+          <label>State<select id="firstSeasonState">${mwSeasonStateOptions(existing?.competitionState||'')}</select></label>
+          <label>Season<select id="firstSeasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option></select></label>
+          <label>Season Year<input id="firstSeasonYear" type="number" min="2025" max="2035" inputmode="numeric" value="${existing?.seasonYear||defaultYear}"></label>
+        </div>
+        <button class="back" id="firstSeasonGenerate" type="button">Generate Estimated Dates</button>
+        <div class="tile" id="firstSeasonDates" style="display:none">
+          <div class="form-grid">
+            <label>Training Start<input id="firstSeasonStart" type="date"></label>
+            <label>First Meet <small>(optional)</small><input id="firstSeasonMeet" type="date"></label>
+          </div>
+          <label>Primary Championship / Peak<input id="firstSeasonPeak" type="date"></label>
+          <div id="firstSeasonSummary" style="margin-top:10px"></div>
+        </div>
+        <button class="action" id="firstSeasonSave" type="button" disabled>Save & Enter Coach Dashboard</button>
+        <div id="firstSeasonState" class="login-message" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>`;
+  document.body.appendChild(el);
+
+  const level=el.querySelector('#firstSeasonLevel'),state=el.querySelector('#firstSeasonState'),type=el.querySelector('#firstSeasonType'),year=el.querySelector('#firstSeasonYear');
+  const start=el.querySelector('#firstSeasonStart'),meet=el.querySelector('#firstSeasonMeet'),peak=el.querySelector('#firstSeasonPeak'),dates=el.querySelector('#firstSeasonDates'),summary=el.querySelector('#firstSeasonSummary'),msg=el.querySelector('#firstSeasonState');
+  const gen=el.querySelector('#firstSeasonGenerate'),save=el.querySelector('#firstSeasonSave');
+  if(existing?.coachingLevel)level.value=existing.coachingLevel;
+  if(existing?.seasonType)type.value=existing.seasonType;
+  if(existing?.startDate&&existing?.coachingLevel&&existing?.competitionState){
+    start.value=existing.startDate||'';meet.value=existing.firstMeetDate||'';peak.value=existing.primaryPeakDate||existing.peakDate||'';
+    dates.style.display='block';save.disabled=!(start.value&&peak.value);
+  }
+  let source=existing?.calendarSource||'coach_edit',generated='';
+  const snap=()=>[start.value,meet.value,peak.value].join('|');
+  [start,meet,peak].forEach(x=>x.addEventListener('input',()=>{if(generated&&snap()!==generated)source='coach_edit';save.disabled=!(start.value&&peak.value)}));
+
+  gen.onclick=async()=>{
+    if(!level.value)return toast('Choose your coaching level.');
+    if(!state.value)return toast('Choose the state where you coach.');
+    const old=gen.textContent;gen.disabled=true;gen.textContent='Generating…';msg.textContent='';
+    try{
+      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'estimate',coachingLevel:level.value,stateCode:state.value,seasonType:type.value,seasonYear:Number(year.value)})});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW could not generate your season dates.');
+      const e=d.estimate||{};start.value=e.startDate||'';meet.value=e.firstMeetDate||'';peak.value=e.primaryPeakDate||'';source=e.source||'mw_estimate';generated=snap();
+      dates.style.display='block';save.disabled=!(start.value&&peak.value);
+      summary.innerHTML=`<b>${escapeHtml(mwCoachLevelLabel(level.value))} · ${escapeHtml(state.value)} · ${escapeHtml(type.value.replace(/^./,x=>x.toUpperCase()))}</b><br><small>${e.seasonLengthWeeks||'—'}-week estimated calendar · ${escapeHtml(mwCalendarSourceLabel(source))}</small><br><small>You can edit any date before saving.</small>`;
+    }catch(e){msg.textContent=e.message||'MW could not generate your season dates.';msg.className='login-message show error'}
+    finally{gen.disabled=false;gen.textContent=old}
+  };
+
+  save.onclick=async()=>{
+    if(!level.value||!state.value||!start.value||!peak.value)return;
+    if(generated&&snap()!==generated)source='coach_edit';
+    const old=save.textContent;save.disabled=true;save.textContent='Saving…';msg.textContent='';
+    try{
+      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'save',coachingLevel:level.value,stateCode:state.value,seasonType:type.value,seasonYear:Number(year.value),startDate:start.value,firstMeetDate:meet.value||null,primaryPeakDate:peak.value,calendarSource:source})});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year could not be saved.');
+      coachSeasonAssessmentOpen=false;el.remove();toast('Coach Training Year saved');dashboard();
+    }catch(e){msg.textContent=e.message||'Training year could not be saved.';msg.className='login-message show error';save.disabled=false;save.textContent=old}
   };
 }
 function coachMWPage(){
