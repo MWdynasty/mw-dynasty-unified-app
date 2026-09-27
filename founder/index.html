@@ -49,6 +49,21 @@
 .hqWingGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.hqScene{position:relative;overflow:hidden;min-height:205px;border:1px solid #2c4659;border-radius:16px;padding:16px;background:linear-gradient(155deg,#0b1721,#04080c);box-shadow:inset 0 1px 0 #ffffff0b,0 10px 24px #0005}.hqScene:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 28%,var(--scene,#d6a73b33),transparent 28%),linear-gradient(115deg,transparent 45%,#ffffff05 46%,transparent 47%);pointer-events:none}.hqScene.gold{--scene:#e3b64c55;border-color:#735b2d}.hqScene.blue{--scene:#38aee755}.hqScene.good{--scene:#48d69744}.hqScene .hqRoomIcon{position:relative;z-index:1}.hqScene h3,.hqScene p,.hqScene .hqMeta,.hqScene button{position:relative;z-index:1}.hqScene h3{margin:12px 0 6px;font-size:17px}.hqScene p{min-height:51px;margin:0;color:#9baab5;font-size:10px;line-height:1.45}.hqScene .hqMeta{margin:11px 0;color:#91a3af;font-size:9px}.hqScene .hqMeta i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#54d79b;box-shadow:0 0 10px #54d79b;margin-right:6px}.hqScene .btn{width:100%;padding:9px 10px;background:linear-gradient(100deg,#c38b22,#f1ce6d,#bd7e16);color:#080b0e;border-color:#f1d178}
 @media(max-width:1180px){.hqKpis{grid-template-columns:repeat(3,1fr)}.hqWingGrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.hqPremiumHero{padding:22px 18px 150px}.hqGlobe{width:170px;height:170px;right:45px;top:auto;bottom:-38px}.hqWords{top:auto;bottom:18px}.hqKpis{grid-template-columns:repeat(2,1fr)}.hqWingGrid{grid-template-columns:1fr}.hqWingHead span{display:none}}
+
+/* Premium Headquarters v3 — approved command-center hierarchy */
+.hqMode .topbar{display:none}.hqMode .main{padding-top:0}.hqPremium{padding-top:0}
+.hqPremiumHero{min-height:210px;padding:25px 340px 24px 28px;border-color:#7b6331;background:radial-gradient(circle at 77% 34%,rgba(46,126,181,.24),transparent 29%),radial-gradient(circle at 92% 8%,rgba(239,189,67,.11),transparent 24%),linear-gradient(135deg,#07131e 0%,#03080d 72%);box-shadow:inset 0 1px 0 #ffffff10,0 20px 60px #0009}
+.hqPremiumHero:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 0 66%,rgba(239,189,67,.035) 66% 66.2%,transparent 66.2%),linear-gradient(0deg,transparent 0 72%,rgba(85,201,255,.025) 72% 72.2%,transparent 72.2%)}.hqPremiumHero h2{font-size:clamp(35px,4.5vw,60px)}
+.hqGlobe{right:116px;top:-25px;width:225px;height:225px;box-shadow:inset -28px -18px 45px #000c,inset 12px 8px 28px #f1c75b13,0 0 58px #e2b34a2b}.hqGlobe:before{inset:-25px;transform:rotate(17deg) scaleY(.34)}.hqGlobe:after{inset:-18px;transform:rotate(-31deg) scaleY(.56)}
+.hqKpis{margin:9px 0 12px;gap:8px}.hqKpi{min-height:76px;padding:11px 12px;position:relative;overflow:hidden}.hqKpi:after{content:"";position:absolute;right:-20px;top:-24px;width:65px;height:65px;border:1px solid #e9bd4b16;border-radius:50%}.hqKpi b{font-size:22px}.hqKpi em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hqWing{margin:8px 0;border:1px solid #223746;border-radius:15px;padding:8px;background:linear-gradient(180deg,#07111a99,#03080c88);box-shadow:inset 0 1px 0 #ffffff08}.hqWingHead{margin:0 3px 8px}.hqWingHead em{margin-left:auto;color:#7f8f9b;font-size:9px;font-style:italic;white-space:nowrap}.hqWingHead:after{display:none}
+.hqWingGrid.executive{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.hqWingGrid.operating,.hqWingGrid.governance{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.hqScene{min-height:132px;padding:13px;isolation:isolate}.hqWingGrid.executive .hqScene{min-height:158px;padding:15px 43% 12px 15px}.hqWingGrid.executive .hqScene p{min-height:42px}.hqWingGrid.executive .hqScene .btn{width:82%}
+.hqScene:before{z-index:-2}.hqScene:after{content:"";position:absolute;z-index:-1;right:0;top:0;width:48%;height:100%;background:linear-gradient(90deg,transparent,rgba(5,12,18,.18)),radial-gradient(circle at 68% 30%,var(--scene,#d6a73b33),transparent 32%),linear-gradient(150deg,#13283a,#07111a 72%);border-left:1px solid #ffffff08;box-shadow:inset 22px 0 34px #03070a88}
+.hqSceneArt{position:absolute;z-index:0;right:0;top:0;width:48%;height:100%;overflow:hidden;pointer-events:none}.hqSceneArt:before{content:"";position:absolute;inset:12% 9%;border:1px solid #67c9ff17;background:linear-gradient(90deg,transparent 49%,#67c9ff0c 50%,transparent 51%),linear-gradient(0deg,transparent 49%,#f1c75b0d 50%,transparent 51%);box-shadow:inset 0 0 34px #0009;transform:perspective(420px) rotateY(-7deg)}.hqSceneArt span{position:absolute;right:15%;top:49%;transform:translateY(-50%);font-size:54px;font-weight:950;color:#efbd4355;text-shadow:0 0 28px #efbd4330}
+.hqScene.scene-boardroom:after,.hqScene.scene-presentation:after{background:radial-gradient(ellipse at 68% 24%,#efbd4350,transparent 21%),linear-gradient(150deg,#182635,#080e14 70%)}.hqScene.scene-floor:after,.hqScene.scene-website:after{background:radial-gradient(circle at 68% 38%,#3daee85c,transparent 27%),linear-gradient(145deg,#0e2a40,#07121b 72%)}.hqScene.scene-execution:after{background:radial-gradient(circle at 74% 24%,#f0bd4a4d,transparent 20%),linear-gradient(150deg,#1b2b39,#071019 70%)}.hqScene.scene-cfo:after,.hqScene.scene-health:after{background:linear-gradient(160deg,#0b2e46,#07131d 70%)}.hqScene.scene-skool:after,.hqScene.scene-program:after,.hqScene.scene-audit:after,.hqScene.scene-risk:after{background:radial-gradient(circle at 76% 30%,#efbd433c,transparent 23%),linear-gradient(145deg,#17212b,#080d12 72%)}
+.hqWingGrid.operating .hqScene,.hqWingGrid.governance .hqScene{padding-top:50px}.hqWingGrid.operating .hqScene:after,.hqWingGrid.governance .hqScene:after,.hqWingGrid.operating .hqSceneArt,.hqWingGrid.governance .hqSceneArt{width:100%;height:52%;opacity:.86}.hqWingGrid.operating .hqSceneArt span,.hqWingGrid.governance .hqSceneArt span{font-size:40px;right:12%;top:43%}.hqWingGrid.operating .hqScene p,.hqWingGrid.governance .hqScene p{display:none}.hqWingGrid.operating .hqScene h3,.hqWingGrid.governance .hqScene h3{font-size:13px;margin:8px 0 4px}.hqWingGrid.operating .hqScene .hqMeta,.hqWingGrid.governance .hqScene .hqMeta{margin:6px 0;font-size:8px}.hqWingGrid.operating .hqScene .btn,.hqWingGrid.governance .hqScene .btn{padding:7px 8px;font-size:9px}
+@media(max-width:1220px){.hqWingGrid.operating,.hqWingGrid.governance{grid-template-columns:repeat(2,1fr)}.hqWingGrid.executive{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.hqMode .main{padding-top:0}.hqPremiumHero{padding:22px 18px 145px}.hqWingGrid.executive,.hqWingGrid.operating,.hqWingGrid.governance{grid-template-columns:1fr}.hqWingGrid.executive .hqScene{padding-right:35%}.hqWingHead em{display:none}}
 @media(max-width:860px){.layout{display:block}.sidebar{display:none;position:fixed;z-index:80;left:0;top:0;width:min(300px,88vw);box-shadow:30px 0 80px #000}.sidebar.open{display:block}.main{padding:15px 14px 50px}.mobileNav{display:inline-flex}.grid2,.grid3,.agentGrid,.formGrid{grid-template-columns:1fr}.topTitle h1{font-size:22px}.identityHide{display:none}}
 @media(max-width:520px){.stats{grid-template-columns:1fr 1fr}.stat b{font-size:23px}.hero{padding:18px}.topActions .btn:not(.mobileNav){padding:9px 10px;font-size:10px}.row{display:block}.row .right{text-align:left;margin-top:9px}}
 </style>
@@ -69,7 +84,7 @@
 
 <div id="appShell" class="layout hidden">
   <aside id="sidebar" class="sidebar">
-    <div class="sideBrand"><strong>MW DYNASTY</strong><span>FOUNDER OS</span></div>
+    <div class="sideBrand"><strong>♛&nbsp; MW DYNASTY</strong><span>FOUNDER OS</span></div>
     <div class="navGroup">
       <button class="navBtn active" data-view="headquarters"><span>⌂</span>MW Headquarters</button>
     </div>
@@ -105,7 +120,7 @@
 
   <main class="main">
     <header class="topbar">
-      <div class="topTitle"><small>MW DYNASTY · FOUNDER OS</small><h1 id="pageTitle">Executive Home</h1></div>
+      <div class="topTitle"><small>MW DYNASTY · FOUNDER OS</small><h1 id="pageTitle">MW Headquarters</h1></div>
       <div class="topActions"><button id="menuBtn" class="btn small mobileNav">Menu</button><button id="founderAIQuick" class="btn small blue">Founder AI</button><button id="refreshBtn" class="btn small">Refresh</button></div>
     </header>
     <section id="content"></section>
@@ -359,49 +374,44 @@ async function admin(method,body){
 function loading(){ $("content").innerHTML='<div class="card empty">Loading Founder OS…</div>'}
 function stat(label,value,note){return '<div class="stat"><small>'+esc(label)+'</small><b>'+esc(value)+'</b>'+(note?'<em>'+esc(note)+'</em>':"")+'</div>'}
 function sectionHead(title,copy,actionHtml){return '<div class="sectionHead"><div><h2>'+esc(title)+'</h2><p>'+esc(copy||"")+'</p></div>'+(actionHtml||"")+'</div>'}
-function setView(v){currentView=v;document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("pageTitle").textContent=titles[v]||"Founder OS";$("sidebar").classList.remove("open");return renderView(v)}
+function setView(v){currentView=v;document.body.classList.toggle("hqMode",v==="headquarters");document.querySelectorAll(".navBtn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("pageTitle").textContent=titles[v]||"Founder OS";$("sidebar").classList.remove("open");return renderView(v)}
 function attentionRow(x){const sev=x.severity==="high"?"high":x.severity==="low"?"low":"";return '<div class="row attention '+sev+'"><div><b>'+esc(x.title)+'</b><small>'+esc(x.detail||"")+'</small></div><div class="right">'+badge(x.severity||"review",x.severity==="high"?"bad":x.severity==="low"?"blue":"warn")+'</div></div>'}
 function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
 
 async function renderHeadquartersPremium(){
-  const [d,f,h,r,aiData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company")]);
+  const [d,f,h,r,aiData,supportData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company"),api("support_triage")]);
   const m=d.metrics||{},attention=d.needs_attention||[],ath=h.athletes||[],co=h.coaches||[],risks=r.items||[];
-  const agents=aiData.agents||[],tasks=aiData.tasks||[],approvals=aiData.approvals||[],runs=aiData.recent_runs||[];
+  const agents=aiData.agents||[],tasks=aiData.tasks||[],approvals=aiData.approvals||[],runs=aiData.recent_runs||[],supportItems=supportData.items||[];
   const highRisks=risks.filter(x=>["high","critical"].includes(x.severity)&&!["resolved","closed"].includes(x.status));
+  const supportEscalations=supportItems.filter(x=>["high","urgent"].includes(x.priority)&&!["resolved","closed"].includes(x.status));
   const customerAttention=ath.filter(x=>x.health!=="healthy").length+co.filter(x=>x.health!=="healthy").length;
   const openTasks=tasks.filter(x=>!["completed","cancelled"].includes(x.status));
-  const completedRuns=runs.filter(x=>x.status==="completed");
-  const activeMembers=(Number(m.athletes_active)||0)+(Number(m.coaches_active)||0);
-  const founderAttention=attention.length+approvals.length+highRisks.length+customerAttention;
-  const room=(icon,title,copy,meta,view,button,tone="blue")=>'<div class="hqScene '+tone+'"><div class="hqRoomIcon">'+icon+'</div><h3>'+esc(title)+'</h3><p>'+esc(copy)+'</p><div class="hqMeta"><i></i>'+esc(meta)+'</div><button class="btn" data-go="'+view+'">'+esc(button)+' →</button></div>';
-  const wing=(title,copy,cards)=>'<section class="hqWing"><div class="hqWingHead"><h2>'+esc(title)+'</h2><span>'+esc(copy)+'</span></div><div class="hqWingGrid">'+cards.join("")+'</div></section>';
+  const completedRuns=runs.filter(x=>x.status==="completed"),activeMembers=(Number(m.athletes_active)||0)+(Number(m.coaches_active)||0);
+  const departments=new Set(agents.map(x=>x.department).filter(Boolean)).size,diagnosticErrors=Number(m.diagnostic_errors_24h||0);
+  const founderAttention=attention.length+approvals.length+highRisks.length+customerAttention+supportEscalations.length+(diagnosticErrors?1:0);
+  const financeConnections=f.financial_source_summary||{},healthy=(highRisks.length===0&&supportEscalations.length===0&&diagnosticErrors===0);
+  const room=(icon,title,copy,meta,view,button,tone,scene)=>'<div class="hqScene '+(tone||"blue")+' scene-'+scene+'"><div class="hqSceneArt" aria-hidden="true"><span>'+icon+'</span></div><div class="hqRoomIcon">'+icon+'</div><h3>'+esc(title)+'</h3><p>'+esc(copy)+'</p><div class="hqMeta"><i></i>'+esc(meta)+'</div><button class="btn" data-go="'+view+'">'+esc(button)+' →</button></div>';
+  const wing=(title,copy,tag,kind,cards)=>'<section class="hqWing"><div class="hqWingHead"><h2>'+esc(title)+'</h2><span>'+esc(copy)+'</span><em>'+esc(tag)+'</em></div><div class="hqWingGrid '+kind+'">'+cards.join("")+'</div></section>';
   $("content").innerHTML='<div class="hqPremium">'+
     '<section class="hqPremiumHero"><div class="brand">MW DYNASTY · COMPANY HEADQUARTERS</div><h2>Your Company. <em>One Headquarters.</em></h2><p>Walk into MW Dynasty and move from your Founder Office to the Boardroom, AI workforce, execution center, CFO office, company health, growth systems, and governance — all from one place.</p><div class="hqGlobe"></div><div class="hqWords"><b>PEOPLE</b><b>SYSTEMS</b><b>EXECUTION</b><b>GROWTH</b><b>A STRONGER TOMORROW</b></div></section>'+
-    '<div class="hqKpis">'+
-      '<div class="hqKpi"><small>ESTIMATED MRR</small><b>'+money(f.estimated_mrr_cents)+'</b><em>live finance data</em></div>'+
-      '<div class="hqKpi"><small>BOARDROOM APPROVALS</small><b>'+esc(approvals.length)+'</b><em>pending decisions</em></div>'+
-      '<div class="hqKpi"><small>OPEN AI TASKS</small><b>'+esc(openTasks.length)+'</b><em>across '+esc(agents.length)+' agents</em></div>'+
-      '<div class="hqKpi"><small>HIGH RISKS</small><b>'+esc(highRisks.length)+'</b><em>require attention</em></div>'+
-      '<div class="hqKpi"><small>ACTIVE MEMBERS</small><b>'+esc(activeMembers)+'</b><em>athletes + coaches</em></div>'+
-      '<div class="hqKpi"><small>FOUNDER ATTENTION</small><b>'+esc(founderAttention)+'</b><em>items to review</em></div>'+
-    '</div>'+
-    wing("Executive Wing","Leadership, strategy and key decisions.",[
-      room("♛","Founder Office","Your command center. Set direction, review priorities, and manage what matters most.",attention.length+" operating items need review","home","Enter Founder Office","gold"),
-      room("♟","Boardroom","Make decisions, review opportunities, and track execution across the company.",approvals.length+" pending approvals","ai","Enter Boardroom","blue"),
-      room("▥","Company Floor","View your AI workforce, departments, and how the company runs day to day.",agents.length+" active AI members","ai","View AI Workforce","blue"),
-      room("◎","Execution Center","Turn strategy into execution. Track projects, initiatives, and company progress.",openTasks.length+" active / queued tasks","objectives","Open Execution Center","blue")
+    '<div class="hqKpis"><div class="hqKpi"><small>ESTIMATED MRR</small><b>'+money(f.estimated_mrr_cents)+'</b><em>live finance data</em></div><div class="hqKpi"><small>BOARDROOM APPROVALS</small><b>'+esc(approvals.length)+'</b><em>pending decisions</em></div><div class="hqKpi"><small>OPEN AI TASKS</small><b>'+esc(openTasks.length)+'</b><em>across '+esc(agents.length)+' agents</em></div><div class="hqKpi"><small>HIGH RISKS</small><b>'+esc(highRisks.length)+'</b><em>'+esc(highRisks.length?"require attention":"all clear")+'</em></div><div class="hqKpi"><small>ACTIVE MEMBERS</small><b>'+esc(activeMembers)+'</b><em>'+esc(m.athletes_active||0)+' athletes · '+esc(m.coaches_active||0)+' coaches</em></div><div class="hqKpi"><small>FOUNDER ATTENTION</small><b>'+esc(founderAttention)+'</b><em>items to review</em></div></div>'+
+    wing("Executive Wing","Leadership, strategy and key decisions.","Set direction. Make decisions. Move faster.","executive",[
+      room("♛","Founder Office","Your command center. Set direction, review priorities, and manage what matters most.",attention.length+" priorities · Founder OS","home","Enter Founder Office","gold","founder"),
+      room("♟","Boardroom","Make decisions, review opportunities, and track execution across the company.",approvals.length+" pending approvals · strategic decisions","ai","Enter Boardroom",approvals.length?"gold":"good","boardroom"),
+      room("▥","Company Floor","View your AI workforce, departments, and how the company runs day to day.",agents.length+" active AI members · "+departments+" departments","ai","View AI Workforce","blue","floor"),
+      room("◎","Execution Center","Turn strategy into execution. Track projects, initiatives, and company progress.",openTasks.length+" active / queued work items","objectives","Open Execution Center","blue","execution")
     ])+
-    wing("Operating Wing","Finance, growth, content and core operations.",[
-      room("$","CFO & Finance","Track revenue, expenses, profitability, financial sources, and financial health.",money(f.tracked_operating_contribution_cents)+" tracked contribution","costs","Open CFO Office","good"),
-      room("▣","Presentation Center","Create and manage presentations, briefs, work products, and investor materials.",completedRuns.length+" completed AI work products","ai","Open Presentation Center","blue"),
-      room("⌁","Company Health","Monitor company health, KPIs, support pressure, diagnostics, and growth indicators.",(m.diagnostic_errors_24h||0)+" diagnostic errors · "+highRisks.length+" high risks","system","View Company Health","good"),
-      room("▣","Website Studio","Build and manage your website, landing pages, digital assets, and growth experience.",(m.web_sessions_30d||0)+" sessions in the last 30 days","website","Open Website Studio","blue")
+    wing("Operating Wing","Finance, growth, content and core operations.","Build. Grow. Create opportunity.","operating",[
+      room("$","CFO & Finance","Track revenue, expenses, profitability, financial sources, and financial health.",(financeConnections.connected||0)+" sources connected · live data","costs","Open CFO Office",(financeConnections.connected||0)?"good":"gold","cfo"),
+      room("▣","Presentation Center","Create and manage presentations, briefs, work products, and investor materials.",completedRuns.length+" completed AI work products","ai","Open Presentation Center","blue","presentation"),
+      room("⌁","Company Health","Monitor company health, KPIs, support pressure, diagnostics, and growth indicators.",(healthy?"All systems operational":"Review signals")+" · "+supportEscalations.length+" support escalations","system","View Company Health",healthy?"good":"gold","health"),
+      room("▣","Website Studio","Build and manage your website, landing pages, digital assets, and growth experience.",(m.web_sessions_30d||0)+" sessions · last 30 days","website","Open Website Studio","blue","website")
     ])+
-    wing("Governance Wing","Systems, content, compliance and risk.",[
-      room("◇","Skool Content Center","Manage your Skool community, courses, education content, drafts, and publishing workflow.","Community + education operating layer","skool","Open Content Center","blue"),
-      room("☷","Program Control","Oversee programs, products, methodology, and delivery across the company.","41-week performance system","programs","Open Program Control","good"),
-      room("▤","Decision & Audit Trail","Track key decisions, protected actions, changes, security controls, and company history.",highRisks.length+" high / critical open risks","security","View Audit Trail","blue"),
-      room("◇","Risk & Legal","Manage risks, compliance, legal documentation, controls, and company exposure.",highRisks.length+" high / critical risks open","risk","Open Risk & Legal","good")
+    wing("Governance Wing","Systems, content, compliance and risk.","Protect. Document. Build for the long term.","governance",[
+      room("◇","Skool Content Center","Manage your Skool community, courses, education content, drafts, and publishing workflow.","Content workflow · Founder governed","skool","Open Content Center","blue","skool"),
+      room("☷","Program Control","Oversee programs, products, methodology, and delivery across the company.","41-week performance system · governed","programs","Open Program Control","good","program"),
+      room("▤","Decision & Audit Trail","Track key decisions, protected actions, changes, security controls, and company history.",highRisks.length+" high / critical risks · protected controls","security","View Audit Trail",highRisks.length?"gold":"good","audit"),
+      room("◇","Risk & Legal","Manage risks, compliance, legal documentation, controls, and company exposure.",highRisks.length?highRisks.length+" high / critical risks open":"Low risk · all clear","risk","Open Risk & Legal",highRisks.length?"gold":"good","risk")
     ])+
   '</div>';
   bindGo();
