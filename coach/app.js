@@ -116,13 +116,14 @@ function coachTrainingYearShell(){return `<button type="button" class="coach-tra
 async function hydrateCoachTrainingYearCard(){
   const label=document.getElementById('coachTrainingYearLabel'),main=document.getElementById('coachTrainingYearMain'),sub=document.getElementById('coachTrainingYearSub');if(!main)return;
   try{
-    const cal=await coachSeasonCalendarRequest();const custom=cal?.mode==='custom';
-    if(label)label.textContent=custom?'CUSTOM TRAINING CALENDAR':'MW STANDARD TRAINING YEAR';
-    if(cal?.status==='active')main.textContent=`Week ${cal.week} of 41 · ${coachPhaseName(cal.phase)}`;
-    else if(cal?.status==='preseason')main.textContent='Preseason · Week 1 begins on your training-year start';
-    else main.textContent='Between 41-week cycles · Foundation entry protected';
-    if(sub)sub.textContent=custom?'Assigned athletes inherit your coach calendar and placement.':'Standard Week 1 begins the day after Labor Day · late joiners use Smart Entry.';
-  }catch(e){main.textContent='Training calendar unavailable';if(sub)sub.textContent='Open Account to review the MW training-year setting.'}
+    const cal=await coachSeasonCalendarRequest(),total=Number(cal?.seasonLengthWeeks||41),custom=cal?.mode==='custom'||!!cal?.coachingLevel;
+    if(label)label.textContent=custom?'COACH TRAINING CALENDAR':'MW STANDARD TRAINING YEAR';
+    if(cal?.status==='active')main.textContent=`Week ${cal.week} of ${total} · ${coachPhaseName(cal.phase)}`;
+    else if(cal?.status==='preseason')main.textContent=`Preseason · ${total}-week calendar begins ${cal.startDate||'on your saved start date'}`;
+    else main.textContent=`Training calendar complete · ${total} weeks`;
+    const meta=[cal?.coachingLevel?mwCoachLevelLabel(cal.coachingLevel):null,cal?.competitionState||null,cal?.seasonType?String(cal.seasonType).replace(/^./,x=>x.toUpperCase()):null].filter(Boolean).join(' · ');
+    if(sub)sub.textContent=meta?meta+' · '+mwCalendarSourceLabel(cal.calendarSource||cal.source):(custom?'Assigned athletes inherit your coach calendar and placement.':'Open Profile to set your state and generate estimated season dates.');
+  }catch(e){main.textContent='Training calendar unavailable';if(sub)sub.textContent='Open Profile to review the MW training-year setting.'}
 }
 function simpleCoachHome(primaryPage,primaryLabel,showIntel=false){
   const coachMW=experience==='core'?'':`<button data-page="coachmw"><b>MW</b><span>COACH MW<small>Ask your coaching assistant</small></span></button>`;
@@ -359,23 +360,119 @@ function bindCoachMWSettings(){
   const btn=document.getElementById('saveCoachMWSettings');if(!btn)return;
   btn.onclick=()=>{const prefs={coachType:document.getElementById('coachMWType')?.value==='female'?'female':'male',voiceSpeed:Number(document.getElementById('coachMWVoiceSpeed')?.value||1),voiceMode:document.getElementById('coachMWVoiceMode')?.value==='standard'?'standard':'fast',autoVoice:document.getElementById('coachMWAutoVoice')?.value==='off'?'off':'on'};localStorage.setItem('mwCoachAISettings',JSON.stringify(prefs));btn.textContent='✓ Saved';setTimeout(()=>btn.textContent='Save Coach MW Settings',1000)};
 }
+const MW_US_STATES=[
+  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']
+];
+function mwSeasonStateOptions(selected=''){
+  const s=String(selected||'').toUpperCase();
+  return '<option value="">Select state</option>'+MW_US_STATES.map(([code,name])=>`<option value="${code}" ${s===code?'selected':''}>${name}</option>`).join('');
+}
+function mwCoachLevelLabel(v){
+  return ({middle_school:'Middle School',high_school:'High School',collegiate:'College / University',club:'Club / AAU',private:'Private Coach',professional:'Professional'})[String(v||'')]||'Coaching level';
+}
+function mwCalendarSourceLabel(v){
+  return ({state_registry:'State calendar estimate',state_school_proxy:'State school-window estimate',mw_estimate:'MW estimated calendar',coach_edit:'Coach-edited calendar',coach_setting:'Coach calendar'})[String(v||'')]||'Coach calendar';
+}
 function seasonCalendarSettingsHTML(){
-  return `<div class="tile" id="seasonCalendarSettings"><h3>MW Training Year</h3><p>Use the MW Standard Training Year, or set a custom Week 1 start when your team calendar needs a different date. Assigned athletes follow the coach calendar and placement.</p><div class="form" style="grid-template-columns:1fr 1fr"><label>Training Calendar<select id="seasonCalendarMode"><option value="standard">MW Standard Training Year</option><option value="custom">Custom Week 1 Start</option></select></label><label id="seasonCalendarStartWrap">Custom Week 1 Start Date<input id="seasonCalendarStart" type="date"></label></div><div id="seasonCalendarSummary" class="tile" style="margin-top:12px"><small>Loading current training year…</small></div><button class="action" id="saveSeasonCalendar" type="button" style="margin-top:12px">Save Training Year</button></div>`;
+  const now=new Date(),defaultYear=now.getMonth()>=6?now.getFullYear()+1:now.getFullYear();
+  return `<div class="tile" id="seasonCalendarSettings">
+    <h3>MW Training Year</h3>
+    <p>Tell MW where and at what level you coach. MW will estimate your training start, first meet, and championship window. Review the dates and edit anything that does not match your real schedule.</p>
+    <div class="form" style="grid-template-columns:1fr 1fr">
+      <label>Coaching Level<select id="seasonCoachLevel">
+        <option value="">Select level</option>
+        <option value="middle_school">Middle School</option>
+        <option value="high_school">High School</option>
+        <option value="collegiate">College / University</option>
+        <option value="club">Club / AAU</option>
+        <option value="private">Private Coach</option>
+        <option value="professional">Professional</option>
+      </select></label>
+      <label>State<select id="seasonCoachState">${mwSeasonStateOptions()}</select></label>
+      <label>Season<select id="seasonType"><option value="outdoor">Outdoor</option><option value="indoor">Indoor</option></select></label>
+      <label>Season Year<input id="seasonYear" type="number" min="2025" max="2035" inputmode="numeric" value="${defaultYear}"></label>
+    </div>
+    <button class="back" id="generateSeasonEstimate" type="button" style="margin-top:12px">Generate Estimated Dates</button>
+    <div class="form" style="grid-template-columns:1fr 1fr;margin-top:12px">
+      <label>Training Start<input id="seasonCalendarStart" type="date"></label>
+      <label>First Meet <small>(estimate / optional)</small><input id="seasonFirstMeet" type="date"></label>
+      <label style="grid-column:1/-1">Primary Championship / Peak<input id="seasonPeakDate" type="date"></label>
+    </div>
+    <div id="seasonCalendarSummary" class="tile" style="margin-top:12px"><small>Choose your coaching level and state to generate an MW estimate.</small></div>
+    <button class="action" id="saveSeasonCalendar" type="button" style="margin-top:12px">Save Training Year</button>
+  </div>`;
 }
 function seasonCalendarSummaryHTML(calendar){
-  const c=calendar||{},mode=c.mode==='custom'?'Custom':'MW Standard',week=Number(c.week||1),phase=Number(c.phase||1),status=String(c.status||'active');
-  const statusLabel=status==='preseason'?'Preseason':status==='offseason'?'Offseason':'Active';
-  return `<b>${escapeHtml(mode)} Training Year</b><br><small>${statusLabel} · Week ${week} · Phase ${phase}${c.startDate?' · Week 1: '+escapeHtml(c.startDate):''}</small>`;
+  const c=calendar||{},week=Number(c.week||1),total=Number(c.seasonLengthWeeks||41),phase=Number(c.phase||1),status=String(c.status||'active');
+  const statusLabel=status==='preseason'?'Preseason':status==='completed'||status==='offseason'?'Completed / Offseason':'Active';
+  const identity=[c.coachingLevel?mwCoachLevelLabel(c.coachingLevel):null,c.competitionState||null,c.seasonType?String(c.seasonType).replace(/^./,x=>x.toUpperCase()):null,c.seasonYear||null].filter(Boolean).join(' · ');
+  const source=mwCalendarSourceLabel(c.calendarSource||c.source);
+  const dates=[c.startDate?`Start ${escapeHtml(c.startDate)}`:null,c.firstMeetDate?`First meet ${escapeHtml(c.firstMeetDate)}`:null,(c.primaryPeakDate||c.peakDate)?`Championship ${escapeHtml(c.primaryPeakDate||c.peakDate)}`:null].filter(Boolean).join(' · ');
+  return `<b>${escapeHtml(identity||'MW Training Year')}</b><br><small>${escapeHtml(source)} · ${statusLabel} · Week ${week} of ${total} · Phase ${phase}</small>${dates?`<br><small>${dates}</small>`:''}`;
 }
 function bindSeasonCalendarSettings(){
   const root=document.getElementById('seasonCalendarSettings');if(!root)return;
-  const mode=root.querySelector('#seasonCalendarMode'),start=root.querySelector('#seasonCalendarStart'),wrap=root.querySelector('#seasonCalendarStartWrap'),summary=root.querySelector('#seasonCalendarSummary'),save=root.querySelector('#saveSeasonCalendar');
-  const sync=()=>{if(wrap)wrap.style.display=mode?.value==='custom'?'grid':'none'};
-  if(mode){mode.onchange=sync;sync()}
+  const level=root.querySelector('#seasonCoachLevel'),state=root.querySelector('#seasonCoachState'),type=root.querySelector('#seasonType'),year=root.querySelector('#seasonYear');
+  const start=root.querySelector('#seasonCalendarStart'),first=root.querySelector('#seasonFirstMeet'),peak=root.querySelector('#seasonPeakDate');
+  const summary=root.querySelector('#seasonCalendarSummary'),generate=root.querySelector('#generateSeasonEstimate'),save=root.querySelector('#saveSeasonCalendar');
   const token=mwSessionToken();
-  if(!token){if(summary)summary.innerHTML='<small>Sign in again to manage the training year.</small>';if(save)save.disabled=true;return}
-  fetch('/api/season-calendar',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year unavailable');const c=d.calendar||{};if(mode)mode.value=c.mode==='custom'?'custom':'standard';if(start)start.value=c.mode==='custom'&&c.startDate?c.startDate:'';sync();if(summary)summary.innerHTML=seasonCalendarSummaryHTML(c)}).catch(e=>{if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'Training year unavailable')}</small>`});
-  if(save)save.onclick=async()=>{const selected=mode?.value==='custom'?'custom':'standard',startDate=start?.value||'';if(selected==='custom'&&!startDate)return toast('Choose the custom Week 1 start date.');const old=save.textContent;save.disabled=true;save.textContent='Saving…';try{const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({mode:selected,startDate:selected==='custom'?startDate:null})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year could not be saved');if(summary)summary.innerHTML=seasonCalendarSummaryHTML(d.calendar||{});toast('Training year saved')}catch(e){if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'Training year could not be saved')}</small>`}finally{save.disabled=false;save.textContent=old}};
+  let calendarSource='coach_edit',generatedSnapshot='';
+  const snapshot=()=>[start?.value||'',first?.value||'',peak?.value||''].join('|');
+  const markEdited=()=>{if(generatedSnapshot&&snapshot()!==generatedSnapshot)calendarSource='coach_edit'};
+  [start,first,peak].forEach(x=>x?.addEventListener('input',markEdited));
+  if(!token){if(summary)summary.innerHTML='<small>Sign in again to manage the training year.</small>';if(save)save.disabled=true;if(generate)generate.disabled=true;return}
+
+  fetch('/api/season-calendar',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}).then(async r=>{
+    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year unavailable');
+    const c=d.calendar||{};
+    if(level&&c.coachingLevel)level.value=c.coachingLevel;
+    if(state&&c.competitionState)state.value=c.competitionState;
+    if(type&&c.seasonType)type.value=c.seasonType;
+    if(year&&c.seasonYear)year.value=c.seasonYear;
+    if(start&&c.startDate)start.value=c.startDate;
+    if(first&&c.firstMeetDate)first.value=c.firstMeetDate;
+    if(peak&&(c.primaryPeakDate||c.peakDate))peak.value=c.primaryPeakDate||c.peakDate;
+    calendarSource=c.calendarSource||'coach_edit';
+    generatedSnapshot=snapshot();
+    if(summary)summary.innerHTML=seasonCalendarSummaryHTML(c);
+  }).catch(e=>{if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'Training year unavailable')}</small>`});
+
+  if(generate)generate.onclick=async()=>{
+    if(!level?.value)return toast('Choose your coaching level.');
+    if(!state?.value)return toast('Choose the state where you coach.');
+    const old=generate.textContent;generate.disabled=true;generate.textContent='Generating…';
+    try{
+      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'estimate',coachingLevel:level.value,stateCode:state.value,seasonType:type?.value||'outdoor',seasonYear:Number(year?.value)})});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW could not generate the estimated dates.');
+      const e=d.estimate||{};
+      if(start)start.value=e.startDate||'';
+      if(first)first.value=e.firstMeetDate||'';
+      if(peak)peak.value=e.primaryPeakDate||'';
+      calendarSource=e.source||'mw_estimate';generatedSnapshot=snapshot();
+      if(summary)summary.innerHTML=seasonCalendarSummaryHTML({...e,status:'preseason',week:1,phase:1,calendarSource});
+      toast('Estimated dates generated — review and edit if needed');
+    }catch(e){if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'MW could not generate the estimated dates.')}</small>`}
+    finally{generate.disabled=false;generate.textContent=old}
+  };
+
+  if(save)save.onclick=async()=>{
+    markEdited();
+    if(!level?.value)return toast('Choose your coaching level.');
+    if(!state?.value)return toast('Choose the state where you coach.');
+    if(!start?.value||!peak?.value)return toast('Generate or enter the training start and championship dates.');
+    const old=save.textContent;save.disabled=true;save.textContent='Saving…';
+    try{
+      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({
+        action:'save',coachingLevel:level.value,stateCode:state.value,seasonType:type?.value||'outdoor',seasonYear:Number(year?.value),
+        startDate:start.value,firstMeetDate:first?.value||null,primaryPeakDate:peak.value,calendarSource
+      })});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year could not be saved');
+      generatedSnapshot=snapshot();calendarSource=d.calendar?.calendarSource||calendarSource;
+      if(summary)summary.innerHTML=seasonCalendarSummaryHTML(d.calendar||{});
+      toast('Training year saved');
+    }catch(e){if(summary)summary.innerHTML=`<small>${escapeHtml(e.message||'Training year could not be saved')}</small>`}
+    finally{save.disabled=false;save.textContent=old}
+  };
 }
 function coachMWPage(){
   pageBase('Coach MW','Your coaching assistant. Ask, review, decide.',`
