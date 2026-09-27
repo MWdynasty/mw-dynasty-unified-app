@@ -527,23 +527,25 @@ function renderCoachSeasonAssessment(existing={}){
           <label>Season Year<input id="firstSeasonYear" type="number" min="2025" max="2035" inputmode="numeric" value="${existing?.seasonYear||defaultYear}"></label>
         </div>
         <button class="back" id="firstSeasonGenerate" type="button">Generate Estimated Dates</button>
-        <div class="tile" id="firstSeasonDates" style="display:none">
+        <div class="tile" id="firstSeasonDates">
+          <h3 style="margin:0 0 6px">Estimated Dates — Review & Edit</h3>
+          <p style="margin:0 0 12px;color:#9fb0ba">Generate MW's estimate, then change any date that does not match your real schedule.</p>
           <div class="form-grid">
             <label>Training Start<input id="firstSeasonStart" type="date"></label>
             <label>First Meet <small>(optional)</small><input id="firstSeasonMeet" type="date"></label>
           </div>
           <label>Primary Championship / Peak<input id="firstSeasonPeak" type="date"></label>
-          <div id="firstSeasonSummary" style="margin-top:10px"></div>
+          <div id="firstSeasonSummary" style="margin-top:10px"><small>Choose your coaching level, state, season, and year, then tap Generate Estimated Dates.</small></div>
         </div>
         <button class="action" id="firstSeasonSave" type="button" disabled>Save & Enter Coach Dashboard</button>
-        <div id="firstSeasonState" class="login-message" role="status" aria-live="polite"></div>
+        <div id="firstSeasonMessage" class="login-message" role="status" aria-live="polite"></div>
       </div>
     </div>
   </section>`;
   document.body.appendChild(el);
 
   const level=el.querySelector('#firstSeasonLevel'),state=el.querySelector('#firstSeasonState'),type=el.querySelector('#firstSeasonType'),year=el.querySelector('#firstSeasonYear');
-  const start=el.querySelector('#firstSeasonStart'),meet=el.querySelector('#firstSeasonMeet'),peak=el.querySelector('#firstSeasonPeak'),dates=el.querySelector('#firstSeasonDates'),summary=el.querySelector('#firstSeasonSummary'),msg=el.querySelector('#firstSeasonState');
+  const start=el.querySelector('#firstSeasonStart'),meet=el.querySelector('#firstSeasonMeet'),peak=el.querySelector('#firstSeasonPeak'),dates=el.querySelector('#firstSeasonDates'),summary=el.querySelector('#firstSeasonSummary'),msg=el.querySelector('#firstSeasonMessage');
   mwPopulateStateSelect(state,existing?.competitionState||'');
 
   const gen=el.querySelector('#firstSeasonGenerate'),save=el.querySelector('#firstSeasonSave');
@@ -551,32 +553,37 @@ function renderCoachSeasonAssessment(existing={}){
   if(existing?.seasonType)type.value=existing.seasonType;
   if(existing?.startDate&&existing?.coachingLevel&&existing?.competitionState){
     start.value=existing.startDate||'';meet.value=existing.firstMeetDate||'';peak.value=existing.primaryPeakDate||existing.peakDate||'';
-    dates.style.display='block';save.disabled=!(start.value&&peak.value);
+    save.disabled=!(start.value&&peak.value);
   }
+  let selectedState=String(existing?.competitionState||state.value||'').toUpperCase();
+  state.addEventListener('change',()=>{selectedState=String(state.value||'').toUpperCase(); if(selectedState)state.value=selectedState;});
   let source=existing?.calendarSource||'coach_edit',generated='';
   const snap=()=>[start.value,meet.value,peak.value].join('|');
   [start,meet,peak].forEach(x=>x.addEventListener('input',()=>{if(generated&&snap()!==generated)source='coach_edit';save.disabled=!(start.value&&peak.value)}));
 
   gen.onclick=async()=>{
     if(!level.value)return toast('Choose your coaching level.');
-    if(!state.value)return toast('Choose the state where you coach.');
+    selectedState=String(state.value||selectedState||'').toUpperCase();
+    if(!selectedState)return toast('Choose the state where you coach.');
     const old=gen.textContent;gen.disabled=true;gen.textContent='Generating…';msg.textContent='';
     try{
-      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'estimate',coachingLevel:level.value,stateCode:state.value,seasonType:type.value,seasonYear:Number(year.value)})});
+      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'estimate',coachingLevel:level.value,stateCode:selectedState,seasonType:type.value,seasonYear:Number(year.value)})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW could not generate your season dates.');
       const e=d.estimate||{};start.value=e.startDate||'';meet.value=e.firstMeetDate||'';peak.value=e.primaryPeakDate||'';source=e.source||'mw_estimate';generated=snap();
-      dates.style.display='block';save.disabled=!(start.value&&peak.value);
-      summary.innerHTML=`<b>${escapeHtml(mwCoachLevelLabel(level.value))} · ${escapeHtml(state.value)} · ${escapeHtml(type.value==='both'?'Indoor + Outdoor':type.value.replace(/^./,x=>x.toUpperCase()))}</b><br><small>${e.seasonLengthWeeks||'—'}-week estimated calendar · ${escapeHtml(mwCalendarSourceLabel(source))}</small>${e.seasonType==='both'&&e.indoorPeakDate?`<br><small>Indoor championship estimate ${escapeHtml(e.indoorPeakDate)} · Outdoor championship estimate ${escapeHtml(e.outdoorPeakDate||e.primaryPeakDate||'')}</small>`:''}<br><small>You can edit any date before saving.</small>`;
-    }catch(e){msg.textContent=e.message||'MW could not generate your season dates.';msg.className='login-message show error'}
+      if(selectedState)state.value=selectedState;
+      save.disabled=!(start.value&&peak.value);
+      summary.innerHTML=`<b>${escapeHtml(mwCoachLevelLabel(level.value))} · ${escapeHtml(selectedState)} · ${escapeHtml(type.value==='both'?'Indoor + Outdoor':type.value.replace(/^./,x=>x.toUpperCase()))}</b><br><small>${e.seasonLengthWeeks||'—'}-week estimated calendar · ${escapeHtml(mwCalendarSourceLabel(source))}</small>${e.seasonType==='both'&&e.indoorPeakDate?`<br><small>Indoor championship estimate ${escapeHtml(e.indoorPeakDate)} · Outdoor championship estimate ${escapeHtml(e.outdoorPeakDate||e.primaryPeakDate||'')}</small>`:''}<br><small>You can edit any date before saving.</small>`;
+    }catch(e){msg.textContent=e.message||'MW could not generate your season dates.';msg.className='login-message show error';if(selectedState)state.value=selectedState}
     finally{gen.disabled=false;gen.textContent=old}
   };
 
   save.onclick=async()=>{
-    if(!level.value||!state.value||!start.value||!peak.value)return;
+    selectedState=String(state.value||selectedState||'').toUpperCase();
+    if(!level.value||!selectedState||!start.value||!peak.value)return;
     if(generated&&snap()!==generated)source='coach_edit';
     const old=save.textContent;save.disabled=true;save.textContent='Saving…';msg.textContent='';
     try{
-      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'save',coachingLevel:level.value,stateCode:state.value,seasonType:type.value,seasonYear:Number(year.value),startDate:start.value,firstMeetDate:meet.value||null,primaryPeakDate:peak.value,calendarSource:source})});
+      const r=await fetch('/api/season-calendar',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'save',coachingLevel:level.value,stateCode:selectedState,seasonType:type.value,seasonYear:Number(year.value),startDate:start.value,firstMeetDate:meet.value||null,primaryPeakDate:peak.value,calendarSource:source})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Training year could not be saved.');
       coachSeasonAssessmentOpen=false;el.remove();toast('Coach Training Year saved');dashboard();
     }catch(e){msg.textContent=e.message||'Training year could not be saved.';msg.className='login-message show error';save.disabled=false;save.textContent=old}
