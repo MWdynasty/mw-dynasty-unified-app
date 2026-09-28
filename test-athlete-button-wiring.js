@@ -26,7 +26,7 @@ assert.deepStrictEqual([...new Set(dupes)],[],'Duplicate static button IDs are n
 const genericFamilies=[
   'data-open','data-open-settings','data-v','data-practice-coach','data-submit-checkin',
   'data-athlete-search-open','data-coach-thread','data-mw-notification','data-resume-strength',
-  'data-sday','data-session','data-finish-previous','data-q','data-mw-target'
+  'data-sday','data-session','data-finish-previous','data-q','data-mw-target','data-rest-toggle','data-rest-reset'
 ];
 
 const directIds=[
@@ -38,7 +38,7 @@ const directIds=[
   'helpCenterBtn','reportIssueBtn','privacyBtn','termsBtn','deleteAccountBtn','mwDiagnosticsSend',
   'saveSettings','replayTour','mwSignOut','tourSkip','tourBack','tourNext','qsSkip','qsBack','qsNext',
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
-  'mwPracticeNext','mwPracticeSave','mwDobVerifySave','mwScSave',
+  'mwPracticeNext','mwPracticeSave','mwPracticeReset','mwPracticeRetry','mwDobVerifySave','mwScSave',
   'mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
   'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton'
 ];
