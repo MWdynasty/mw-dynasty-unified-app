@@ -241,12 +241,12 @@ async function hydrateCoachTodayPractice(targetId='coachTodayPractice',options={
     if(roster.length){
       const groups=new Map();
       for(const a of roster){
-        const week=Math.max(1,Math.min(41,Number(a.current_week)||calendarWeek)),day=Math.max(1,Math.min(5,Number(a.current_day)||calendarDay)),trackTier=coachPracticeTier(a),strengthTier=coachPracticeStrengthTier(a),eventGroup=coachPracticeEventGroup(a);
-        const key=[week,day,trackTier,strengthTier,eventGroup].join('|');
-        if(!groups.has(key))groups.set(key,{week,day,trackTier,strengthTier,eventGroup,athletes:[]});
+        const week=Math.max(1,Math.min(41,Number(a.current_week)||calendarWeek)),sourceWeek=Math.max(1,Math.min(41,Number(a.source_week)||week)),day=Math.max(1,Math.min(5,Number(a.current_day)||calendarDay)),trackTier=coachPracticeTier(a),strengthTier=coachPracticeStrengthTier(a),eventGroup=coachPracticeEventGroup(a);
+        const key=[week,sourceWeek,day,trackTier,strengthTier,eventGroup].join('|');
+        if(!groups.has(key))groups.set(key,{week,sourceWeek,day,trackTier,strengthTier,eventGroup,athletes:[]});
         groups.get(key).athletes.push(a);
       }
-      const cohorts=await Promise.all([...groups.values()].map(async g=>({...g,program:await coachProgramData(g.week,g.eventGroup,g.trackTier,g.strengthTier)})));
+      const cohorts=await Promise.all([...groups.values()].map(async g=>({...g,program:await coachProgramData(g.sourceWeek,g.eventGroup,g.trackTier,g.strengthTier)})));
       sessionCards=cohorts.map(g=>{
         const session=(g.program.track?.sessions||[]).find(s=>coachSessionDayNumber(s.day)===g.day)||null;
         const names=g.athletes.slice(0,3).map(a=>a.name).filter(Boolean).join(', ')+(g.athletes.length>3?` +${g.athletes.length-3}`:'');
@@ -254,6 +254,9 @@ async function hydrateCoachTodayPractice(targetId='coachTodayPractice',options={
         return coachTodaySessionHTML(session,label,g.week,g.day);
       }).join('');
       const first=cohorts[0];if(first)strengthCard=coachTodayStrengthHTML(first.program.strength,first.week,first.day);
+    }else if(practiceOnly){
+      sessionCards='<article class="coach-today-session empty"><div class="coach-today-session-top"><span>ATHLETE-SYNCED PRACTICE</span><b>NO ASSIGNED ATHLETES</b></div><h3>No athlete workout is shown until an athlete is assigned.</h3><p>This prevents Practice Mode from showing a generic 200m prescription when an athlete’s actual MW prescription is different. Assign an athlete and MW will load that athlete’s exact season week, mapped source week, tier, event group, and PR-based pace target.</p></article>';
+      strengthCard='';
     }else{
       const [short,long]=await Promise.all([coachProgramData(calendarWeek,'100_200'),coachProgramData(calendarWeek,'400')]);
       const shortSession=(short.track?.sessions||[]).find(s=>coachSessionDayNumber(s.day)===calendarDay)||null;
@@ -350,10 +353,10 @@ async function practiceModePage(){
       const programCache=new Map();
       await Promise.all(withPrs.map(async a=>{
         try{
-          const week=Math.max(1,Math.min(41,Number(a.current_week)||1)),day=Math.max(1,Math.min(5,Number(a.current_day)||1)),trackTier=coachPracticeTier(a),strengthTier=coachPracticeStrengthTier(a),eg=coachPracticeEventGroup(a),key=[week,day,trackTier,strengthTier,eg].join('|');
-          if(!programCache.has(key))programCache.set(key,coachProgramData(week,eg,trackTier,strengthTier));
+          const week=Math.max(1,Math.min(41,Number(a.current_week)||1)),sourceWeek=Math.max(1,Math.min(41,Number(a.source_week)||week)),day=Math.max(1,Math.min(5,Number(a.current_day)||1)),trackTier=coachPracticeTier(a),strengthTier=coachPracticeStrengthTier(a),eg=coachPracticeEventGroup(a),key=[sourceWeek,day,trackTier,strengthTier,eg].join('|');
+          if(!programCache.has(key))programCache.set(key,coachProgramData(sourceWeek,eg,trackTier,strengthTier));
           const data=await programCache.get(key),s=(data.track?.sessions||[]).find(x=>coachSessionDayNumber(x.day)===day),plan=mwCoachPracticePrescription(s),target=mwCoachPracticeRecommendedTarget(a,plan.distance,plan.intensityPct);
-          if(target)practiceTargets[a.id]={target,distance:plan.distance,intensityPct:plan.intensityPct,week,day};
+          if(target)practiceTargets[a.id]={target,distance:plan.distance,intensityPct:plan.intensityPct,week,sourceWeek,day};
         }catch{}
       }));
     }
