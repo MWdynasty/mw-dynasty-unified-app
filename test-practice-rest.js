@@ -98,7 +98,7 @@ async function run() {
   const coachSaves=[];
   Object.assign(c.ctx,{
     pageBase:()=>{},hydrateCoachTodayPractice:()=>{},openPage:()=>{},experience:'performance',
-    escapeHtml:x=>String(x),toast:()=>{},mwSessionToken:()=>'',
+    escapeHtml:x=>String(x),toast:()=>{},mwSessionToken:()=>'',prompt:()=> '12.34',
     fetchCoachRoster:async()=>({athletes:[{id:'a',name:'Runner A'},{id:'b',name:'Runner B'}]}),
     fetch:async(url,opts)=>{coachSaves.push(JSON.parse(opts.body));return {ok:true,json:async()=>({count:2})}}
   });
@@ -120,6 +120,12 @@ async function run() {
   await c.el('practiceFinishSession').click();
   assert.equal(coachSaves[0].results.length,2,'coach retry replaces earlier results without duplicates');
   assert.deepEqual(coachSaves[0].results.map(r=>r.timeSeconds),[9,11],'coach pause/resume preserves finish times');
+  c.el('practiceTimerStart').click();c.advance(3000);c.el('practiceDNF').click();
+  assert.equal(c.el('practiceNextRep').disabled,false,'DNF enables next-rep correction flow');
+  assert.equal(c.el('practiceFinishSession').disabled,false,'DNF enables session save');
+  c.el('practiceManualTime').click();await c.el('practiceFinishSession').click();
+  assert.deepEqual(coachSaves[1].results.map(r=>r.resultStatus),['dnf','manual'],'DNF and manual statuses persist in save payload');
+  assert.equal(coachSaves[1].results[1].timingSource,'manual','manual time keeps manual provenance');
   console.log('PASS: Rest timer controls, background elapsed time, athlete rep transitions, coach group recovery, pause/resume timing, current-rep reset, previous-rep replacement and cleanup.');
 }
 run().catch(e=>{console.error(e);process.exitCode=1});
