@@ -26,6 +26,7 @@ function publishableKey() {
 }
 function elevatedHeaders(key: string, extra: Record<string, string> = {}) {
   const headers: Record<string, string> = { apikey: key, ...extra };
+  // New sb_secret_ keys are not JWTs. Legacy service_role keys remain JWTs.
   if (!key.startsWith("sb_secret_")) headers.authorization = `Bearer ${key}`;
   return headers;
 }
@@ -42,6 +43,7 @@ Deno.serve(async (req: Request) => {
     const auth = req.headers.get("authorization") || "";
     if (!url || !secret || !publicKey || !auth) return J({ ok: false, error: "Unauthorized" }, 401);
 
+    // Verify the caller's actual Auth session, then verify Founder/Admin in the database.
     const userResp = await fetch(`${url}/auth/v1/user`, {
       headers: { apikey: publicKey, authorization: auth },
     });
@@ -51,7 +53,7 @@ Deno.serve(async (req: Request) => {
     const baseHeaders = elevatedHeaders(secret);
     const profileResp = await fetch(
       `${url}/rest/v1/profiles?user_id=eq.${encodeURIComponent(user.id)}&select=role,account_status&limit=1`,
-      { headers: baseHeaders },
+      { headers: { apikey: publicKey, authorization: auth } },
     );
     if (!profileResp.ok) return J({ ok: false, error: "Authorization check failed." }, 500);
     const profileRows = await profileResp.json().catch(() => []);
@@ -62,7 +64,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET") {
       const r = await fetch(
-        `${url}/rest/v1/coach_access_applications?select=id,first_name,last_name,email,organization,coach_title,city,state,coaching_level,years_coaching,website_or_social,reason,status,created_at,reviewed_at,review_notes,rejection_reason,access_tier,invited_at,activated_at,coach_user_id&order=created_at.desc`,
+        `${url}/rest/v1/coach_access_applications?select=id,first_name,last_name,email,organization,coach_title,city,state,coaching_level,years_coaching,website_or_social,verification_method,verification_detail,athlete_count,verification_status,decision_mode,verification_score,verification_evidence,verification_checked_at,decision_reason,email_domain,payment_status,reason,status,created_at,reviewed_at,review_notes,rejection_reason,access_tier,selected_plan_code,sponsored_athlete_seats,invited_at,activated_at,coach_user_id&order=created_at.desc`,
         { headers: baseHeaders },
       );
       if (!r.ok) return J({ ok: false, error: "Applications could not be loaded." }, 500);
@@ -102,102 +104,130 @@ Deno.serve(async (req: Request) => {
       const reason = clean(body.rejection_reason, 1000);
       const updated = await patchApplication({
         status: "rejected",
+        verification_status: "denied",
+        decision_mode: "manual",
+        decision_reason: reason || "Founder/Admin denied the Coach verification after manual review.",
+        verification_checked_at: new Date().toISOString(),
+        payment_status: "not_ready",
         reviewed_at: new Date().toISOString(),
         reviewed_by: user.id,
         rejection_reason: reason || null,
         review_notes: clean(body.review_notes, 1000) || null,
       });
-      return J({ ok: true, status: "rejected", application: updated });
+      const journeyResp = await fetch(`${url}/rest/v1/onboarding_journeys?coach_application_id=eq.${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: elevatedHeaders(secret, { "content-type": "application/json", prefer: "return=minimal" }),
+        body: JSON.stringify({
+          stage: "verification",
+          status: "blocked",
+          verification_status: "denied",
+          payment_status: "not_ready",
+          updated_at: new Date().toISOString(),
+        }),
+      });
+      if (!journeyResp.ok) console.error("Rejected coach onboarding journey update failed", journeyResp.status);
+      return J({ ok: true, status: "rejected", verification_status: "denied", payment_status: "not_ready", application: updated });
     }
 
-    const tier = clean(body.access_tier, 40);
-    if (!["core", "intelligence", "mw_sprint_performance"].includes(tier)) {
-      return J({ ok: false, error: "Select a valid coach access tier." }, 400);
-    }
     if (app.status === "rejected") return J({ ok: false, error: "A rejected application cannot be approved without a new review." }, 409);
     if (["invited", "activated"].includes(String(app.status))) {
-      return J({ ok: true, status: app.status, tier: app.access_tier, application: app, message: "Coach approval is already provisioned." });
+      return J({ ok: true, status: app.status, application: app, message: "This legacy coach application is already provisioned." });
     }
     if (!["pending", "approved"].includes(String(app.status))) {
       return J({ ok: false, error: "This application is not eligible for approval." }, 409);
     }
 
+    // Founder/Admin approves the PERSON here, not a paid tier.
+    // The coach chooses membership + optional sponsored seats in the next simple step.
     app = await patchApplication({
       status: "approved",
-      access_tier: tier,
+      verification_status: "approved",
+      decision_mode: "manual",
+      decision_reason: "Founder/Admin verified the Coach application after manual evidence review.",
+      verification_checked_at: new Date().toISOString(),
+      payment_status: "ready",
+      access_tier: null,
+      selected_plan_code: null,
+      sponsored_athlete_seats: 0,
       reviewed_at: app.reviewed_at || new Date().toISOString(),
       reviewed_by: app.reviewed_by || user.id,
       review_notes: clean(body.review_notes, 1000) || app.review_notes || null,
       rejection_reason: null,
     });
 
-    let coachId = app?.coach_user_id || null;
-    if (!coachId) {
-      const invite = await fetch(`${url}/auth/v1/invite`, {
-        method: "POST",
-        headers: elevatedHeaders(secret, { "content-type": "application/json" }),
-        body: JSON.stringify({
-          email: app.email,
-          data: {
-            first_name: app.first_name,
-            last_name: app.last_name,
-            coach_organization: app.organization || null,
-            coach_title: app.coach_title || null,
-            mw_access_tier: tier,
-            mw_application_id: id,
-          },
-        }),
-      });
-      const inviteData: any = await jsonOrEmpty(invite);
-      if (!invite.ok) {
-        const existing = invite.status === 422;
-        return J({
-          ok: false,
-          status: "approved",
-          retryable: !existing,
-          error: existing
-            ? "This email already belongs to an Auth account. Founder review is required before linking it to a coach application."
-            : (inviteData?.msg || inviteData?.message || "Coach invitation could not be sent."),
-        }, existing ? 409 : 502);
-      }
-      coachId = inviteData?.id || inviteData?.user?.id;
-      if (!coachId) return J({ ok: false, status: "approved", retryable: true, error: "Invitation sent but coach account ID was not returned." }, 502);
-      app = await patchApplication({ coach_user_id: coachId, invited_at: new Date().toISOString() });
-    }
-
-    const entitlementResp = await fetch(`${url}/rest/v1/coach_access_entitlements?on_conflict=coach_user_id`, {
-      method: "POST",
-      headers: elevatedHeaders(secret, { "content-type": "application/json", prefer: "resolution=merge-duplicates,return=minimal" }),
+    const journeyResp = await fetch(`${url}/rest/v1/onboarding_journeys?coach_application_id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: elevatedHeaders(secret, { "content-type": "application/json", prefer: "return=minimal" }),
       body: JSON.stringify({
-        coach_user_id: coachId,
-        access_tier: tier,
-        status: "active",
-        approved_by: user.id,
-        application_id: id,
+        stage: "membership",
+        status: "in_progress",
+        verification_status: "approved",
+        selected_plan_code: null,
+        sponsored_athlete_seats: 0,
+        payment_status: "ready",
+        last_completed_stage: "verification",
         updated_at: new Date().toISOString(),
       }),
     });
-    if (!entitlementResp.ok) {
-      return J({ ok: false, status: "approved", retryable: true, error: "Coach was invited, but access entitlement could not be created. Retry approval or review the account." }, 502);
+    if (!journeyResp.ok) console.error("Coach onboarding journey update failed", journeyResp.status);
+
+    // Create a pending-payment Coach account and let Supabase send the secure setup link.
+    // The account can authenticate for membership checkout, but Coach product access remains
+    // locked because there is no active coach_access_entitlement until Stripe confirms payment.
+    const inviteResp = await fetch(`${url}/auth/v1/invite`, {
+      method: "POST",
+      headers: elevatedHeaders(secret, { "content-type": "application/json" }),
+      body: JSON.stringify({
+        email: app.email,
+        data: {
+          first_name: app.first_name,
+          last_name: app.last_name,
+          account_type: "coach",
+          mw_application_id: id,
+        },
+        redirect_to: "https://app.mwdynasty.com/coach/?onboarding=membership",
+      }),
+    });
+    const invitedUser = await jsonOrEmpty(inviteResp);
+    if (!inviteResp.ok || !invitedUser?.id) {
+      console.error("Coach setup invitation failed", inviteResp.status, invitedUser);
+      return J({
+        ok: false,
+        status: "approved",
+        verification_status: "approved",
+        payment_status: "ready",
+        error: "Coach was verified, but the secure account setup invitation could not be sent. Retry approval to resend the invitation."
+      }, 502);
     }
 
-    const activateProfile = await fetch(`${url}/rest/v1/profiles?user_id=eq.${encodeURIComponent(coachId)}`, {
+    app = await patchApplication({
+      status: "invited",
+      coach_user_id: invitedUser.id,
+      invited_at: new Date().toISOString(),
+    });
+
+    const linkJourneyResp = await fetch(`${url}/rest/v1/onboarding_journeys?coach_application_id=eq.${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: elevatedHeaders(secret, { "content-type": "application/json", prefer: "return=minimal" }),
-      body: JSON.stringify({ role: "coach", account_status: "active", coach_organization: clean(app.organization, 160) || null, coach_title: clean(app.coach_title, 120) || null, updated_at: new Date().toISOString() }),
+      body: JSON.stringify({
+        user_id: invitedUser.id,
+        stage: "membership",
+        status: "in_progress",
+        verification_status: "approved",
+        payment_status: "ready",
+        updated_at: new Date().toISOString(),
+      }),
     });
-    if (!activateProfile.ok) {
-      return J({ ok: false, status: "approved", retryable: true, error: "Coach entitlement exists, but profile activation needs to be retried." }, 502);
-    }
+    if (!linkJourneyResp.ok) console.error("Coach onboarding account link failed", linkJourneyResp.status);
 
-    const finalApp = await patchApplication({
+    return J({
+      ok: true,
       status: "invited",
-      access_tier: tier,
-      coach_user_id: coachId,
-      invited_at: app?.invited_at || new Date().toISOString(),
+      verification_status: "approved",
+      payment_status: "ready",
+      application: app,
+      message: "Coach verified. A secure account setup link was sent. Membership, optional sponsored-athlete seats, and payment come next."
     });
-
-    return J({ ok: true, status: "invited", tier, application: finalApp, message: "Coach approved and invitation sent." });
   } catch (error) {
     console.error("MW coach applications admin error", error);
     return J({ ok: false, error: "Request failed." }, 500);
