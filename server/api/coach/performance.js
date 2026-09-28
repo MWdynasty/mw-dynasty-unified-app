@@ -197,7 +197,7 @@ module.exports=async(req,res)=>{
       repTrackingEnabled?rows(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&${filter}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,c.token):Promise.resolve([]),
       rows(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&${filter}&order=recorded_at.desc&limit=1500`,c.token),
       rows(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&${filter}&order=recorded_at.desc&limit=1000`,c.token),
-      rows(`coach_practice_timing_results?select=session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_min_seconds,target_max_seconds,actual_rest_seconds,timing_source,pace_status,created_at&${filter}&order=created_at.desc&limit=2000`,c.token)
+      rows(`coach_practice_timing_results?select=session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_min_seconds,target_max_seconds,actual_rest_seconds,timing_source,pace_status,created_at&${filter}&order=created_at.desc&limit=2000`,c.token).catch(()=>[])
     ]);
     const paceMap=new Map();
     for(const row of pace||[])paceMap.set(`${row.athlete_id}|${row.workout_key}|${row.rep_number}`,row);
