@@ -11,6 +11,12 @@ module.exports=async(req,res)=>{
   try{
     const c=await getAccountContext(req),role=String(c.profile.role||'');
     if(!['founder_owner','admin','coach'].includes(role))return res.status(403).json({error:'Coach access required'});
+    if(req.method==='DELETE'){
+      const sessionId=String(req.query?.sessionId||'').trim();
+      if(!sessionId)return res.status(400).json({error:'sessionId is required'});
+      const rows=await rest(`coach_practice_timing_results?session_id=eq.${encodeURIComponent(sessionId)}&coach_user_id=eq.${encodeURIComponent(c.user.id)}`,c.token,{method:'DELETE'});
+      return res.status(200).json({ok:true,deleted:Array.isArray(rows)?rows.length:0});
+    }
     if(req.method==='POST'){
       const b=req.body||{},results=Array.isArray(b.results)?b.results:[];
       const sessionId=String(b.sessionId||'').trim()||null;
@@ -43,6 +49,6 @@ module.exports=async(req,res)=>{
       const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,pace_status,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
       return res.status(200).json({ok:true,results:rows});
     }
-    return res.status(405).json({error:'GET or POST only'});
+    return res.status(405).json({error:'GET, POST, or DELETE only'});
   }catch(e){return res.status(e.status||500).json({error:e.message||'Practice timing request failed'})}
 };
