@@ -2290,7 +2290,7 @@ async function setWorkoutStatus(w,d,status){
   return out;
 }
 let mwPracticeProgressCache=[];
-async async function mwPracticeNormalizeProgressTargets(rows){
+async function mwPracticeNormalizeProgressTargets(rows){
   const list=Array.isArray(rows)?rows.map(row=>({...row})):[];
   const plans=new Map();
   for(const row of list){
@@ -2308,7 +2308,7 @@ async async function mwPracticeNormalizeProgressTargets(rows){
   }
   return list;
 }
-function loadPracticeProgress(){
+async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
   const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
