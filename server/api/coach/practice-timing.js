@@ -27,10 +27,12 @@ module.exports=async(req,res)=>{
         athlete_id:String(x.athleteId||''),
         session_date:String(x.sessionDate||new Date().toISOString().slice(0,10)),
         group_name:String(x.groupName||'All').slice(0,80),
+        group_id:x.groupId||null,
         session_id:sessionId,
         division:['boys','girls','open'].includes(x.division)?x.division:null,
         lane_number:Number.isInteger(Number(x.laneNumber))&&Number(x.laneNumber)>=1&&Number(x.laneNumber)<=9?Number(x.laneNumber):null,
         timing_source:['coach','athlete','sensor','manual'].includes(x.timingSource)?x.timingSource:'coach',
+        result_status:['finished','dnf','manual'].includes(x.resultStatus)?x.resultStatus:'finished',
         rep_number:Math.max(1,Number(x.repNumber)||1),
         time_seconds:Number(Number(x.timeSeconds).toFixed(3)),
         target_seconds:Number(x.targetSeconds)>0?Number(Number(x.targetSeconds).toFixed(3)):null,
@@ -46,7 +48,7 @@ module.exports=async(req,res)=>{
       return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length});
     }
     if(req.method==='GET'){
-      const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,pace_status,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
+      const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,session_date,division,group_name,group_id,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,result_status,pace_status,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
       return res.status(200).json({ok:true,results:rows});
     }
     return res.status(405).json({error:'GET, POST, or DELETE only'});
