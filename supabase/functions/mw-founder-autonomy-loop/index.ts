@@ -63,7 +63,7 @@ Deno.serve(async(req:Request)=>{
     const incoming=auth.toLowerCase().startsWith("bearer ")?auth.slice(7).trim():"";
     if(!await sameSecret(incoming,workerSecret))return J({ok:false,error:"Autonomy scheduler authorization failed."},401);
 
-    const cycle=await rpc("mw_autonomy_begin_cycle",{p_limit:null});
+    const cycle=await rpc("mw_autonomy_begin_cycle_v2",{p_limit:null});
     const cycleId=String(cycle?.cycle_id||"");
     const tasks=Array.isArray(cycle?.tasks)?cycle.tasks:[];
     if(!cycle?.enabled)return J({ok:true,status:"paused",cycle_id:cycleId,claimed:0});
@@ -91,12 +91,13 @@ Deno.serve(async(req:Request)=>{
         });
         const d=await r.json().catch(()=>({}));
         if(!r.ok)throw new Error(d?.error||`Worker failed (${r.status})`);
-        await rpc("mw_autonomy_complete_task",{
+        await rpc("mw_autonomy_record_task_result",{
           p_task_id:String(task.id),
           p_cycle_id:cycleId,
           p_output:String(d?.answer||""),
           p_model:String(d?.model||"gpt-5.6-sol"),
-          p_review:d?.review||null
+          p_review:d?.review||null,
+          p_disposition:String(d?.disposition||"blocked_evidence")
         });
         return {task_id:task.id,status:"completed"};
       }catch(e){
