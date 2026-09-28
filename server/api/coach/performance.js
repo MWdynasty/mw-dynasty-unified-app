@@ -52,6 +52,42 @@ function sprintSession(group,completion){
   };
 }
 
+
+function coachPracticeSession(rows){
+  const reps=(rows||[]).filter(r=>Number(r.time_seconds)>0).sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
+  if(!reps.length)return null;
+  const targeted=reps.filter(r=>Number(r.target_min_seconds)>0&&Number(r.target_max_seconds)>0);
+  const onTarget=targeted.filter(r=>Number(r.time_seconds)>=Number(r.target_min_seconds)&&Number(r.time_seconds)<=Number(r.target_max_seconds));
+  const tooFast=targeted.filter(r=>Number(r.time_seconds)<Number(r.target_min_seconds));
+  const tooSlow=targeted.filter(r=>Number(r.time_seconds)>Number(r.target_max_seconds));
+  const execution=targeted.length?onTarget.length/targeted.length*100:null;
+  const actuals=reps.map(r=>Number(r.time_seconds));
+  const mean=avg(actuals),consistency=mean&&actuals.length>1?clamp(100-(std(actuals)/mean*100)):actuals.length===1?100:null;
+  const third=Math.max(1,Math.ceil(reps.length/3));
+  const early=avg(reps.slice(0,third).map(r=>Number(r.time_seconds)));
+  const late=avg(reps.slice(-third).map(r=>Number(r.time_seconds)));
+  const lateDropoff=early&&late?(late/early-1)*100:null;
+  const recovery=reps.map(r=>Number(r.actual_rest_seconds)).filter(x=>Number.isFinite(x)&&x>=0);
+  return {
+    source:'coach_practice',
+    session_id:reps[0].session_id||null,
+    session_date:reps[0].session_date||null,
+    division:reps[0].division||null,
+    group_name:reps[0].group_name||null,
+    rep_count:reps.length,
+    target_rep_count:targeted.length,
+    pace_reps_hit:onTarget.length,
+    too_fast_count:tooFast.length,
+    too_slow_count:tooSlow.length,
+    execution_score_pct:round(execution,1),
+    consistency_score:round(consistency,1),
+    late_session_dropoff_pct:round(lateDropoff,1),
+    average_actual_recovery_seconds:round(avg(recovery),1),
+    timing_sources:[...new Set(reps.map(r=>r.timing_source||'coach'))],
+    reps:reps.map(r=>({rep_number:Number(r.rep_number),lane_number:r.lane_number==null?null:Number(r.lane_number),actual_seconds:Number(r.time_seconds),target_min_seconds:r.target_min_seconds==null?null:Number(r.target_min_seconds),target_max_seconds:r.target_max_seconds==null?null:Number(r.target_max_seconds),pace_status:r.pace_status||null,actual_rest_seconds:r.actual_rest_seconds==null?null:Number(r.actual_rest_seconds)}))
+  };
+}
+
 function quickSprintSession(completion){
   const total=Number(completion?.pace_reps_total||0),hit=Number(completion?.pace_reps_hit||0);
   if(!(total>0))return null;
@@ -69,7 +105,7 @@ function quickSprintSession(completion){
   };
 }
 
-function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengthCheckins){
+function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengthCheckins,practiceRows=[]){
   const completionMap=new Map(completionRows.filter(x=>x.athlete_id===athleteId).map(x=>[x.workout_key,x]));
   const groups=new Map();
   for(const r of paceRows.filter(x=>x.athlete_id===athleteId)){
@@ -104,6 +140,9 @@ function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengt
   }));
   const quickStrength=(strengthCheckins||[]).filter(x=>x.athlete_id===athleteId).sort((a,b)=>new Date(b.recorded_at)-new Date(a.recorded_at));
 
+  const practiceGroups=new Map();
+  for(const r of practiceRows.filter(x=>x.athlete_id===athleteId)){const key=r.session_id||`${r.session_date}|${r.group_name||''}`;if(!practiceGroups.has(key))practiceGroups.set(key,[]);practiceGroups.get(key).push(r)}
+  const coachPracticeSessions=[...practiceGroups.values()].map(coachPracticeSession).filter(Boolean).sort((a,b)=>String(b.session_date||'').localeCompare(String(a.session_date||'')));
   const latest=sprintSessions[0]||null;
   const flags=[];
   if(latest&&latest.flag==='review')flags.push({level:'attention',type:'sprint_execution',message:latest.reason,workout_key:latest.workout_key});
@@ -111,7 +150,7 @@ function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengt
   if(trend==='declining')flags.push({level:'watch',type:'trend',message:'Recent target accuracy is trending down across recorded sessions.'});
   return {
     athlete_id:athleteId,
-    sprint:{latest,trend,recent_average_execution_pct:round(recentAccuracy,1),session_count:sprintSessions.length,sessions:sprintSessions.slice(0,8)},
+    sprint:{latest,trend,recent_average_execution_pct:round(recentAccuracy,1),session_count:sprintSessions.length,sessions:sprintSessions.slice(0,8),coach_practice_latest:coachPracticeSessions[0]||null,coach_practice_sessions:coachPracticeSessions.slice(0,8)},
     strength:{session_count:strengthSessions.length+quickStrength.length,detailed_session_count:strengthSessions.length,latest:strengthSessions[0]||null,sessions:strengthSessions.slice(0,6),quick_checkins:quickStrength.slice(0,12),latest_checkin:quickStrength[0]||null},
     flags
   };
@@ -141,13 +180,14 @@ module.exports=async(req,res)=>{
     if(requested)athleteIds=[requested];
     if(!athleteIds.length)return res.status(200).json({ok:true,rep_tracking_enabled:repTrackingEnabled,athletes:[],summary:{athletes_with_sprint_data:0,athletes_with_strength_data:0,review_flags:0,average_latest_execution_pct:null}});
     const filter=`athlete_id=in.${inList(athleteIds)}`;
-    const [pace,completions,strength,strengthCheckins]=await Promise.all([
+    const [pace,completions,strength,strengthCheckins,practiceTiming]=await Promise.all([
       repTrackingEnabled?rows(`athlete_pace_logs?select=athlete_id,program_week,program_day,workout_key,rep_number,distance_m,target_seconds,actual_seconds,intensity_percent,recorded_at&${filter}&actual_seconds=not.is.null&order=recorded_at.desc&limit=1500`,c.token):Promise.resolve([]),
       repTrackingEnabled?rows(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&${filter}&order=completed_at.desc&limit=1000`,c.token):Promise.resolve([]),
       rows(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&${filter}&order=recorded_at.desc&limit=1500`,c.token),
-      rows(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&${filter}&order=recorded_at.desc&limit=1000`,c.token)
+      rows(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&${filter}&order=recorded_at.desc&limit=1000`,c.token),
+      rows(`coach_practice_timing_results?select=session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_min_seconds,target_max_seconds,actual_rest_seconds,timing_source,pace_status,created_at&${filter}&order=created_at.desc&limit=2000`,c.token)
     ]);
-    const athletes=athleteIds.map(id=>summarizeAthlete(id,pace,completions,strength,strengthCheckins));
+    const athletes=athleteIds.map(id=>summarizeAthlete(id,pace,completions,strength,strengthCheckins,practiceTiming));
     const latestExec=athletes.map(a=>a.sprint.latest?.execution_score_pct).filter(Number.isFinite);
     const summary={
       athletes_with_sprint_data:athletes.filter(a=>a.sprint.session_count>0).length,
