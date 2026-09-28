@@ -96,7 +96,10 @@ module.exports=async function handler(req,res){
         return res.status(200).json({ok:true,data:{...data,health:{website:site,app},website_projects:projects}});
       }
       if(section==='ai_company'){
-        const queue=await rpc(token,'mw_founder_ai_operating_queue_snapshot',{});
+        const [queue,autonomy]=await Promise.all([
+          rpc(token,'mw_founder_ai_operating_queue_snapshot',{}),
+          rpc(token,'mw_founder_autonomy_snapshot',{}).catch(()=>null)
+        ]);
         const [refreshed,runs,playbooks]=await Promise.all([
           rpc(token,'mw_founder_os_snapshot',{p_section:'ai_company'}),
           rest(token,'founder_ai_runs?select=id,task_id,agent_code,run_type,status,model,output_summary,metadata,created_at&order=created_at.desc&limit=50'),
@@ -107,7 +110,8 @@ module.exports=async function handler(req,res){
           agents:Array.isArray(playbooks?.agents)?playbooks.agents:(refreshed.agents||[]),
           recent_runs:runs,
           department_briefs:Array.isArray(playbooks?.department_briefs)?playbooks.department_briefs:[],
-          operating_queue:queue
+          operating_queue:queue,
+          autonomy
         }});
       }
       return res.status(200).json({ok:true,data});
@@ -115,6 +119,11 @@ module.exports=async function handler(req,res){
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
     const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const action=clean(b.action,60);
+    if(action==='set_ai_autonomy'){
+      if(typeof b.enabled!=='boolean')return res.status(400).json({error:'Autonomy enabled state is required.'});
+      const state=await rpc(token,'mw_founder_set_ai_autonomy',{p_enabled:b.enabled});
+      return res.status(200).json({ok:true,autonomy:state});
+    }
     if(action==='create_skool_post'){
       const scheduledFor=clean(b.scheduledFor,20),title=clean(b.title,180),body=clean(b.body,12000);
       if(!scheduledFor||!/^\d{4}-\d{2}-\d{2}$/.test(scheduledFor))return res.status(400).json({error:'Valid Skool schedule date required.'});
