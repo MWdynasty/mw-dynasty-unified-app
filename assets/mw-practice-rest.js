@@ -54,7 +54,7 @@
     toggle.addEventListener('click', onToggle);
     resetButton.addEventListener('click', onReset);
     render();
-    return { start, pause, reset, restart, setDisabled, destroy };
+    return { start, pause, reset, restart, setDisabled, destroy, milliseconds, seconds: () => milliseconds() / 1000 };
   }
   root.MWPracticeRestTimer = { mount };
 })(window);
