@@ -49,3 +49,13 @@ comment on column public.coach_practice_timing_results.target_min_seconds is
   'Fast edge of the prescribed target range. A faster result is not automatically on target.';
 comment on column public.coach_practice_timing_results.target_max_seconds is
   'Slow edge of the prescribed target range.';
+
+
+-- Link every timing result to its authoritative group when available.
+alter table public.coach_practice_timing_results
+  add column if not exists group_id uuid references public.coach_practice_groups(id) on delete set null,
+  add column if not exists result_status text not null default 'finished'
+    check (result_status in ('finished','dnf','manual'));
+
+create index if not exists coach_practice_timing_group_rep_idx
+  on public.coach_practice_timing_results(group_id,rep_number,lane_number);

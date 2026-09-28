@@ -26,7 +26,7 @@ create table if not exists public.coach_practice_groups (
 create table if not exists public.coach_practice_lane_assignments (
   id uuid primary key default gen_random_uuid(),
   group_id uuid not null references public.coach_practice_groups(id) on delete cascade,
-  athlete_id uuid not null references public.athletes(id) on delete cascade,
+  athlete_id uuid not null references auth.users(id) on delete cascade,
   lane_number integer not null check (lane_number between 1 and 9),
   active boolean not null default true,
   created_at timestamptz not null default now(),
@@ -39,7 +39,7 @@ create table if not exists public.coach_practice_audit_log (
   session_id uuid not null references public.coach_practice_sessions(id) on delete cascade,
   coach_user_id uuid not null references auth.users(id) on delete cascade,
   action text not null,
-  athlete_id uuid references public.athletes(id) on delete set null,
+  athlete_id uuid references auth.users(id) on delete set null,
   rep_number integer,
   details jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
