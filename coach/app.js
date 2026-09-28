@@ -182,13 +182,27 @@ async function coachCurrentCalendar(){
   if(!r.ok)throw new Error(d.error||'Training calendar unavailable');
   return d.calendar||{};
 }
-async function coachProgramData(week,eventGroup='100_200'){
+async function coachProgramData(week,eventGroup='100_200',trackTier='performance',strengthTier=trackTier){
   const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const qs=new URLSearchParams({week:String(week||1),trackTier:'performance',strengthTier:'performance',eventGroup:String(eventGroup||'100_200')});
+  const qs=new URLSearchParams({week:String(week||1),trackTier:String(trackTier||'performance'),strengthTier:String(strengthTier||trackTier||'performance'),eventGroup:String(eventGroup||'100_200')});
   const r=await fetch('/api/coach/program?'+qs.toString(),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
   const d=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(d.error||'Today’s MW training could not be loaded');
   return d;
+}
+function coachPracticeTier(a){
+  const direct=String(a?.track_tier||'').toLowerCase();if(['foundation','development','performance'].includes(direct))return direct;
+  const x=String(a?.experience_level||'').toLowerCase();
+  if(/advanced|elite|professional|\bpro\b/.test(x))return 'performance';
+  if(/intermediate|trained/.test(x))return 'development';
+  return 'foundation';
+}
+function coachPracticeStrengthTier(a){
+  const direct=String(a?.strength_tier||'').toLowerCase();return ['foundation','development','performance'].includes(direct)?direct:coachPracticeTier(a)
+}
+function coachPracticeEventGroup(a){
+  const primary=String(a?.primary_event||a?.event||'').toLowerCase();
+  return /400/.test(primary)&&!/100|200/.test(primary)?'400':'100_200'
 }
 function coachTodaySessionHTML(session,label,week,day){
   if(!session)return `<article class="coach-today-session empty"><div class="coach-today-session-top"><span>${escapeHtml(label)}</span><b>WEEK ${week} · ${escapeHtml(coachTrainingDayLabel(day))}</b></div><h3>No sprint session is prescribed for this training day.</h3><p>Use recovery, meet, travel, or schedule context as appropriate. Open the full week if you need another training day.</p></article>`;
@@ -213,31 +227,48 @@ function coachTodayStrengthHTML(strength,week,day){
 }
 async function hydrateCoachTodayPractice(targetId='coachTodayPractice',options={}){
   const el=document.getElementById(targetId);if(!el)return;
+  const practiceOnly=options.practiceMode===true;
   if(experience!=='performance'){
-    el.innerHTML=`<article class="coach-today-session"><div class="coach-today-session-top"><span>TODAY’S PRACTICE</span><b>${experience==='intelligence'?'YOUR PROGRAM + MW INTELLIGENCE':'YOUR PROGRAM'}</b></div><h3>Open today’s coaching program.</h3><p>Your Train tab keeps Practice Mode and the performance tools beside your program so you can run the session from one place.</p><button class="action" data-page="programs">OPEN MY PROGRAM</button></article>`;
+    el.innerHTML=`<article class="coach-today-session"><div class="coach-today-session-top"><span>TODAY’S PRACTICE</span><b>${experience==='intelligence'?'YOUR PROGRAM + MW INTELLIGENCE':'YOUR PROGRAM'}</b></div><h3>Open today’s coaching program.</h3><p>Your Train tab keeps Practice Mode and the performance tools beside your program so you can run the session from one place.</p>${practiceOnly?'':'<button class="action" data-page="programs">OPEN MY PROGRAM</button>'}</article>`;
     bindPageNavigation(el);return;
   }
   el.innerHTML='<div class="tile">Loading today’s MW practice…</div>';
   try{
-    const calendar=await coachCurrentCalendar(),week=Math.max(1,Math.min(41,Number(calendar.week)||1)),day=coachTrainingDayFromCalendar(calendar);
-    const [short,long]=await Promise.all([coachProgramData(week,'100_200'),coachProgramData(week,'400')]);
-    const shortSession=(short.track?.sessions||[]).find(s=>coachSessionDayNumber(s.day)===day)||null;
-    const longSession=(long.track?.sessions||[]).find(s=>coachSessionDayNumber(s.day)===day)||null;
-    const calendarLabel=calendar.status==='preseason'?'PRESEASON':calendar.status==='offseason'?'OFFSEASON':`WEEK ${week} · ${coachPhaseName(calendar.phase)}`;
+    const [calendar,rosterData]=await Promise.all([coachCurrentCalendar(),fetchCoachRoster().catch(()=>({athletes:[]}))]);
+    const calendarWeek=Math.max(1,Math.min(41,Number(calendar.week)||1)),calendarDay=coachTrainingDayFromCalendar(calendar),roster=Array.isArray(rosterData?.athletes)?rosterData.athletes:[];
+    const calendarLabel=calendar.status==='preseason'?'PRESEASON':calendar.status==='offseason'?'OFFSEASON':`WEEK ${calendarWeek} · ${coachPhaseName(calendar.phase)}`;
+    let sessionCards='',strengthCard='';
+    if(roster.length){
+      const groups=new Map();
+      for(const a of roster){
+        const week=Math.max(1,Math.min(41,Number(a.current_week)||calendarWeek)),day=Math.max(1,Math.min(5,Number(a.current_day)||calendarDay)),trackTier=coachPracticeTier(a),strengthTier=coachPracticeStrengthTier(a),eventGroup=coachPracticeEventGroup(a);
+        const key=[week,day,trackTier,strengthTier,eventGroup].join('|');
+        if(!groups.has(key))groups.set(key,{week,day,trackTier,strengthTier,eventGroup,athletes:[]});
+        groups.get(key).athletes.push(a);
+      }
+      const cohorts=await Promise.all([...groups.values()].map(async g=>({...g,program:await coachProgramData(g.week,g.eventGroup,g.trackTier,g.strengthTier)})));
+      sessionCards=cohorts.map(g=>{
+        const session=(g.program.track?.sessions||[]).find(s=>coachSessionDayNumber(s.day)===g.day)||null;
+        const names=g.athletes.slice(0,3).map(a=>a.name).filter(Boolean).join(', ')+(g.athletes.length>3?` +${g.athletes.length-3}`:'');
+        const label=`${g.eventGroup==='400'?'400M':'100M / 200M'} · ${g.trackTier.toUpperCase()}${names?' · '+names:''}`;
+        return coachTodaySessionHTML(session,label,g.week,g.day);
+      }).join('');
+      const first=cohorts[0];if(first)strengthCard=coachTodayStrengthHTML(first.program.strength,first.week,first.day);
+    }else{
+      const [short,long]=await Promise.all([coachProgramData(calendarWeek,'100_200'),coachProgramData(calendarWeek,'400')]);
+      const shortSession=(short.track?.sessions||[]).find(s=>coachSessionDayNumber(s.day)===calendarDay)||null;
+      const longSession=(long.track?.sessions||[]).find(s=>coachSessionDayNumber(s.day)===calendarDay)||null;
+      sessionCards=coachTodaySessionHTML(shortSession,'100M / 200M GROUP',calendarWeek,calendarDay)+coachTodaySessionHTML(longSession,'400M GROUP',calendarWeek,calendarDay);
+      strengthCard=coachTodayStrengthHTML(short.strength,calendarWeek,calendarDay);
+    }
     el.innerHTML=`
-      <div class="coach-today-banner"><div><span class="status-kicker">TODAY’S PRACTICE</span><h2>Your practice is ready.</h2><p>${escapeHtml(calendarLabel)} · ${escapeHtml(coachTrainingDayLabel(day))}</p></div><button class="action" data-page="practice">START PRACTICE MODE</button></div>
-      <div class="coach-today-event-grid">
-        ${coachTodaySessionHTML(shortSession,'100M / 200M GROUP',week,day)}
-        ${coachTodaySessionHTML(longSession,'400M GROUP',week,day)}
-      </div>
-      ${coachTodayStrengthHTML(short.strength,week,day)}
-      <div class="coach-today-actions">
-        <button class="back" data-page="mwtrack">OPEN FULL MW WEEK</button>
-        <button class="back" data-page="pacing">OPEN PACE AI</button>
-      </div>`;
+      <div class="coach-today-banner"><div><span class="status-kicker">${practiceOnly?'LIVE PRACTICE':'TODAY’S PRACTICE'}</span><h2>${practiceOnly?'Today only. No week browsing.':'Your practice is ready.'}</h2><p>${escapeHtml(calendarLabel)} · ${escapeHtml(coachTrainingDayLabel(calendarDay))}${roster.length?' · ATHLETE PRESCRIPTIONS SYNCED':''}</p></div>${practiceOnly?'':'<button class="action" data-page="practice">START PRACTICE MODE</button>'}</div>
+      <div class="coach-today-event-grid">${sessionCards}</div>
+      ${strengthCard}
+      ${practiceOnly?'':`<div class="coach-today-actions"><button class="back" data-page="mwtrack">OPEN FULL MW WEEK</button><button class="back" data-page="pacing">OPEN PACE AI</button></div>`}`;
     bindPageNavigation(el);
   }catch(e){
-    el.innerHTML=`<div class="tile"><h3>Today’s practice could not load.</h3><p>${escapeHtml(e.message)}</p><button class="action" data-page="mwtrack">Open MW Track Program</button></div>`;
+    el.innerHTML=`<div class="tile"><h3>Today’s practice could not load.</h3><p>${escapeHtml(e.message)}</p>${practiceOnly?'':'<button class="action" data-page="mwtrack">Open MW Track Program</button>'}</div>`;
     bindPageNavigation(el);
   }
 }
@@ -275,11 +306,11 @@ async function practiceModePage(){
     <div class="practice-group-tabs" id="practiceGroupTabs"><button class="active" data-practice-group="all">ALL</button><button data-practice-group="boys">BOYS</button><button data-practice-group="girls">GIRLS</button></div>
     <div class="tile" style="margin-top:14px"><div class="practice-group-tools"><label>Group<select id="practiceEventGroup"><option value="All Sprinters">All Sprinters</option><option value="100 / 200">100 / 200</option><option value="400">400</option><option value="Development">Development</option><option value="Varsity">Varsity</option><option value="Relays">Relays</option></select></label><label>Target Range — Fast (optional)<input id="practiceTargetMin" type="number" min=".01" step=".01" inputmode="decimal" placeholder="e.g. 23.00"></label><label>Target Range — Slow (optional)<input id="practiceTargetMax" type="number" min=".01" step=".01" inputmode="decimal" placeholder="e.g. 24.00"></label><label>Track Lanes<select id="practiceLaneCount">${[1,2,3,4,5,6,7,8,9].map(n=>`<option value="${n}" ${n===8?'selected':''}>${n}</option>`).join('')}</select></label></div><small>BOYS / GIRLS competition divisions stay synced with the athlete roster and Group Pace AI. Tap an athlete’s badge to update it.</small></div>
     <div class="tile" style="margin-top:14px"><div class="practice-finish-head"><div><h3>Finish Line</h3><p>Start the rep, then tap each athlete as they cross.</p></div><b id="practiceRepLabel">REP 1</b></div><div id="practiceTimingRoster" class="practice-timing-grid"><div class="row">Loading athletes…</div></div><div class="practice-next-actions"><button class="action" id="practiceNextRep" disabled>NEXT REP</button><button class="back" id="practiceFinishSession" disabled>FINISH & SAVE</button></div><div id="practiceTimingState"></div></div>
-    <div class="panel-grid" style="margin-top:14px"><button class="tile practice-launch" id="practiceTraining"><h3>🏃 Today’s Training</h3><p>${experience==='performance'?'Open the MW Sprint Performance workout.':'Open your coaching program.'}</p><b>OPEN →</b></button><button class="tile practice-launch mw-coach-launch" id="practiceCoachMW" ${experience==='core'?'style="display:none"':''}><h3><span class="mw-coach-crest" aria-hidden="true">MW</span> Coach MW</h3><p>Ask a quick coaching question.</p><b>OPEN →</b></button></div>
+    <div class="panel-grid" style="margin-top:14px"><button class="tile practice-launch mw-coach-launch" id="practiceCoachMW" ${experience==='core'?'style="display:none"':''}><h3><span class="mw-coach-crest" aria-hidden="true">MW</span> Coach MW</h3><p>Ask a quick coaching question without leaving Practice Mode.</p><b>OPEN →</b></button></div>
     <div class="tile" style="margin-top:14px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h3>Quick Attendance</h3><p>Set status and save once.</p></div><b id="practiceAttendanceCount">Loading…</b></div><div class="list" id="practiceRoster" style="margin-top:10px"><div class="row">Loading assigned athletes…</div></div><button class="action" id="practiceSaveAttendance" style="margin-top:14px" disabled>Save Practice Attendance</button><div id="practiceAttendanceState" style="margin-top:10px"></div></div>
   `);
-  hydrateCoachTodayPractice('practiceTodayPlan');
-  const training=document.getElementById('practiceTraining');if(training)training.onclick=()=>openPage(experience==='performance'?'mwtrack':'programs');const ai=document.getElementById('practiceCoachMW');if(ai)ai.onclick=()=>openPage('coachmw');
+  hydrateCoachTodayPractice('practiceTodayPlan',{practiceMode:true});
+  const ai=document.getElementById('practiceCoachMW');if(ai)ai.onclick=()=>openPage('coachmw');
   const clock=document.getElementById('practiceClock'),clockState=document.getElementById('practiceClockState'),startBtn=document.getElementById('practiceTimerStart'),resetBtn=document.getElementById('practiceTimerReset'),nextBtn=document.getElementById('practiceNextRep'),finishBtn=document.getElementById('practiceFinishSession'),timingRoster=document.getElementById('practiceTimingRoster'),timingState=document.getElementById('practiceTimingState'),repLabel=document.getElementById('practiceRepLabel'),targetMinInput=document.getElementById('practiceTargetMin'),targetMaxInput=document.getElementById('practiceTargetMax'),eventGroup=document.getElementById('practiceEventGroup'),laneCountInput=document.getElementById('practiceLaneCount'),undoFinishBtn=document.getElementById('practiceUndoFinish'),falseStartBtn=document.getElementById('practiceFalseStart'),dnfBtn=document.getElementById('practiceDNF'),manualTimeBtn=document.getElementById('practiceManualTime');
   const restTimer=window.MWPracticeRestTimer.mount(document.getElementById('practiceRest')),retryBtn=document.getElementById('practiceRetryRep');
   let rep=1,repStart=0,repElapsed=0,repFinished=false,retryingRep=false,repAthleteIds=[],tick=null,activeGroup='all',athletes=[],repResults=[],sessionResults=[];
@@ -311,6 +342,7 @@ function coreDashboard(){simpleCoachHome('programs','TRAINING',false)}
 function intelligenceDashboard(){simpleCoachHome('programs','TRAINING',true)}
 function performanceDashboard(){simpleCoachHome('mwtrack','MW TRAINING',true)}
 function dashboard(){
+  rememberCoachActivePage('dashboard');
   if(!history.state?.mwCoachPage||history.state.mwCoachPage!=='dashboard')history.replaceState({...history.state,mwCoachPage:'dashboard'},'',location.href);
   if(experience==='core')coreDashboard();
   else if(experience==='intelligence'){intelligenceDashboard();hydrateAthleteStatusBoard();hydrateLivePerformanceSummary();hydratePerformanceInsightPreview();}
@@ -791,7 +823,16 @@ async function requestCoachAccountDeletion(){
     window.setTimeout(signOut,900);
   }catch(e){if(state)state.textContent=e.message||'Account deletion request failed.';if(btn){btn.disabled=false;btn.textContent='Delete Account'}}
 }
-function openPage(id,pushHistory=true){if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,school:schoolPage,race:racePage,pacing:pacingPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
+const COACH_ACTIVE_PAGE_KEY='mwCoachActivePage';
+function rememberCoachActivePage(page){try{sessionStorage.setItem(COACH_ACTIVE_PAGE_KEY,String(page||'dashboard'))}catch{}}
+function resumeCoachActivePage(){
+  let page=history.state?.mwCoachPage||'';
+  if(!page)try{page=sessionStorage.getItem(COACH_ACTIVE_PAGE_KEY)||''}catch{}
+  const allowed=new Set(['train','practice','founderpreview','athletes','teams','programs','calendar','meets','attendance','messages','activity','account','support','taskboard','season','adjustment','coachmw','insights','mwtrack','strength','school','race','pacing','grouppacing','more']);
+  if(page&&page!=='dashboard'&&allowed.has(page)){openPage(page,false);return}
+  dashboard();
+}
+function openPage(id,pushHistory=true){if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,school:schoolPage,race:racePage,pacing:pacingPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';rememberCoachActivePage(page);if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
 if(!window.__mwCoachHistoryBound){window.__mwCoachHistoryBound=true;window.addEventListener('popstate',e=>{if(mwSessionToken())openPage(e.state?.mwCoachPage||'dashboard',false)})}
 function bindPageNavigation(root=document){
   root.querySelectorAll('[data-page]').forEach(b=>{if(b.dataset.mwBound==='1')return;b.dataset.mwBound='1';b.addEventListener('click',()=>openPage(b.dataset.page))});
@@ -1294,7 +1335,7 @@ function persistSession(session,remember=true){
   authSession=session;
   if(remember){localStorage.setItem(SESSION_KEY,JSON.stringify(session));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));localStorage.removeItem(SESSION_KEY)}
 }
-function clearSession(){authSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
+function clearSession(){authSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);try{sessionStorage.removeItem(COACH_ACTIVE_PAGE_KEY)}catch{}}
 function readStoredSession(){
   try{return JSON.parse(localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY)||'null')}catch{return null}
 }
@@ -1488,7 +1529,7 @@ async function initAuth(){
       if(!(await validateSession(active)))active=await refreshCoachSession(active);
       if(active&&await validateSession(active)){
         if(await waitForCoachActivation(active))return;
-        try{await verifyCoachAccess(active);dashboard();return}
+        try{await verifyCoachAccess(active);resumeCoachActivePage();return}
         catch(accessErr){
           if(coachTransient(accessErr))throw accessErr;
           renderCoachMembershipSelection(active);return
