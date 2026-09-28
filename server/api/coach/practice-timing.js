@@ -13,6 +13,7 @@ module.exports=async(req,res)=>{
     if(!['founder_owner','admin','coach'].includes(role))return res.status(403).json({error:'Coach access required'});
     if(req.method==='POST'){
       const b=req.body||{},results=Array.isArray(b.results)?b.results:[];
+      const sessionId=String(b.sessionId||'').trim()||null;
       if(!results.length)return res.status(400).json({error:'No timing results supplied'});
       if(results.length>200)return res.status(400).json({error:'Too many timing results in one save'});
       const rows=results.map(x=>({
@@ -20,17 +21,26 @@ module.exports=async(req,res)=>{
         athlete_id:String(x.athleteId||''),
         session_date:String(x.sessionDate||new Date().toISOString().slice(0,10)),
         group_name:String(x.groupName||'All').slice(0,80),
+        session_id:sessionId,
+        division:['boys','girls','open'].includes(x.division)?x.division:null,
+        lane_number:Number.isInteger(Number(x.laneNumber))&&Number(x.laneNumber)>=1&&Number(x.laneNumber)<=9?Number(x.laneNumber):null,
+        timing_source:['coach','athlete','sensor','manual'].includes(x.timingSource)?x.timingSource:'coach',
         rep_number:Math.max(1,Number(x.repNumber)||1),
         time_seconds:Number(Number(x.timeSeconds).toFixed(3)),
         target_seconds:Number(x.targetSeconds)>0?Number(Number(x.targetSeconds).toFixed(3)):null,
+        target_min_seconds:Number(x.targetMinSeconds)>0?Number(Number(x.targetMinSeconds).toFixed(3)):null,
+        target_max_seconds:Number(x.targetMaxSeconds)>0?Number(Number(x.targetMaxSeconds).toFixed(3)):null,
+        prescribed_rest_seconds:Number(x.prescribedRestSeconds)>=0?Number(Number(x.prescribedRestSeconds).toFixed(2)):null,
+        actual_rest_seconds:Number(x.actualRestSeconds)>=0?Number(Number(x.actualRestSeconds).toFixed(2)):null,
         pace_status:['fast','on_pace','slow'].includes(x.paceStatus)?x.paceStatus:null
       }));
       if(rows.some(x=>!x.athlete_id||!Number.isFinite(x.time_seconds)||x.time_seconds<=0))return res.status(400).json({error:'Invalid timing result'});
+      if(rows.some(x=>(x.target_min_seconds==null)!==(x.target_max_seconds==null)||((x.target_min_seconds!=null)&&x.target_min_seconds>x.target_max_seconds)))return res.status(400).json({error:'Invalid target pace range'});
       const saved=await rest('coach_practice_timing_results',c.token,{method:'POST',body:JSON.stringify(rows)});
       return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length});
     }
     if(req.method==='GET'){
-      const rows=await rest(`coach_practice_timing_results?select=id,athlete_id,session_date,group_name,rep_number,time_seconds,target_seconds,pace_status,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
+      const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,pace_status,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
       return res.status(200).json({ok:true,results:rows});
     }
     return res.status(405).json({error:'GET or POST only'});
