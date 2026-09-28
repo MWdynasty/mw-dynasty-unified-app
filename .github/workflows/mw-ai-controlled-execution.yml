@@ -1,0 +1,52 @@
+name: MW AI Controlled Execution
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/mw-ai-controlled-execution.yml'
+      - 'scripts/mw_stage2_executor.mjs'
+  schedule:
+    - cron: '37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: mw-ai-controlled-execution
+  cancel-in-progress: false
+
+jobs:
+  controlled-execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout execution control plane
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: control
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout isolated Stage 2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: ai-execution/stage2
+          path: repo
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run controlled MW AI engineering lane
+        working-directory: repo
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node ../control/scripts/mw_stage2_executor.mjs
