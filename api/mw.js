@@ -2,6 +2,7 @@
 // Keeps the public API paths stable while deploying one Node.js Function.
 const {randomUUID}=require('crypto');
 const handlers = {
+  'build-info': require('../server/api/build-info'),
   'chat': require('../server/api/chat'),
   'me': require('../server/api/me'),
   'pace-chat': require('../server/api/pace-chat'),
