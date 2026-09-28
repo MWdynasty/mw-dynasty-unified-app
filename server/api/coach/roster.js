@@ -52,22 +52,32 @@ module.exports=async(req,res)=>{
 
     const athleteIds=athletes.map(a=>a.id);
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
-    const [profiles,states,prs]=await Promise.all([
+    const [profiles,states,prs,seasonPlans]=await Promise.all([
       userIds.length?get(`profiles?select=user_id,first_name,last_name&user_id=in.${inList(userIds)}`,c.token):Promise.resolve([]),
       get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at,track_tier,strength_tier,starting_week,program_version&athlete_id=in.${inList(athleteIds)}`,c.token),
-      get(`athlete_prs?select=athlete_id,event,time_seconds,date_recorded,verified&athlete_id=in.${inList(athleteIds)}&order=event.asc`,c.token)
+      get(`athlete_prs?select=athlete_id,event,time_seconds,date_recorded,verified&athlete_id=in.${inList(athleteIds)}&order=event.asc`,c.token),
+      get(`athlete_season_plans?select=id,athlete_id,source_week_map,plan_status,season_type,season_length_weeks&athlete_id=in.${inList(athleteIds)}&plan_status=eq.active`,c.token).catch(()=>[])
     ]);
 
     const pMap=new Map(profiles.map(p=>[p.user_id,p]));
     const sMap=new Map(states.map(s=>[s.athlete_id,s]));
+    const planMap=new Map((seasonPlans||[]).map(p=>[p.athlete_id,p]));
     const prMap=new Map();
     for(const p of prs){if(!prMap.has(p.athlete_id))prMap.set(p.athlete_id,[]);prMap.get(p.athlete_id).push(p)}
     const aMap=new Map(assignments.map(a=>[a.athlete_id,a]));
 
     const out=athletes.map(a=>{
       const p=pMap.get(a.user_id)||{};
-      const st=sMap.get(a.id)||{};
+      const st=sMap.get(a.id)||{},plan=planMap.get(a.id)||null;
       const athletePrs=prMap.get(a.id)||[];
+      let sourceWeek=Number(st.current_week||1);
+      if(plan?.source_week_map){
+        try{
+          const map=typeof plan.source_week_map==='string'?JSON.parse(plan.source_week_map):plan.source_week_map;
+          sourceWeek=Number(map?.[String(st.current_week||1)]?.sourceWeek||sourceWeek);
+        }catch{}
+      }
+      sourceWeek=Math.max(1,Math.min(41,Number(sourceWeek)||1));
       return {
         id:a.id,
         name:[p.first_name,p.last_name].filter(Boolean).join(' ')||'Athlete',
@@ -77,6 +87,10 @@ module.exports=async(req,res)=>{
         experience_level:a.experience_level||null,
         competition_division:a.competition_division||null,
         current_week:st.current_week||1,
+        source_week:sourceWeek,
+        season_plan_id:plan?.id||null,
+        season_type:plan?.season_type||null,
+        season_length_weeks:plan?.season_length_weeks||null,
         current_day:st.current_day||1,
         current_phase:st.current_phase||null,
         track_tier:st.track_tier||null,
