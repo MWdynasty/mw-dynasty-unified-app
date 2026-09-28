@@ -83,10 +83,15 @@ function athleteStatusClassify(a){
   const explicit=String(a?.status||'').toLowerCase();
   const reasons=[];
   let level='ontrack';
-  const perf=a?.performance||null,perfFlags=Array.isArray(perf?.flags)?perf.flags:[],latest=perf?.sprint?.latest||null;
+  const perf=a?.performance||null,perfFlags=Array.isArray(perf?.flags)?perf.flags:[],latest=perf?.sprint?.latest||null,latestWorkout=a?.latest_workout||null;
   if(perfFlags.some(f=>f.level==='attention')){level='attention';reasons.push(perfFlags.find(f=>f.level==='attention')?.message||'Performance execution needs review')}
   else if(perfFlags.some(f=>f.level==='watch')){level='watch';reasons.push(perfFlags.find(f=>f.level==='watch')?.message||'Performance trend worth watching')}
   else if(latest?.execution_score_pct!=null){reasons.push(`${latest.execution_score_pct}% pace execution in latest check-in`)}
+  else if(Number(latestWorkout?.pace_reps_total)>0){
+    const hit=Math.max(0,Number(latestWorkout.pace_reps_hit||0)),total=Number(latestWorkout.pace_reps_total),pct=hit/total*100;
+    if(pct<50)level='attention';else if(pct<80)level='watch';
+    reasons.push(`${hit}/${total} reps were on target pace`);
+  }
   if(days!==null&&days>14){level='attention';reasons.push(`No recorded workout in ${Math.floor(days)} days`)}
   else if(days===null){if(level==='ontrack')level='watch';reasons.push('No completed workout recorded yet')}
   else if(days>7){if(level==='ontrack')level='watch';reasons.push(`Last workout ${Math.floor(days)} days ago`)}
@@ -106,7 +111,7 @@ async function hydrateAthleteStatusBoard(){
     for(const raw of athletes){const a={...raw,performance:perfMap.get(raw.id)||null},c=athleteStatusClassify(a);groups[c.level].push({...a,_status:c})}
     const summary=`<div class="status-summary"><div class="status-summary-card ontrack"><span class="status-dot"></span><b>${groups.ontrack.length}</b><small>On Track</small></div><div class="status-summary-card watch"><span class="status-dot"></span><b>${groups.watch.length}</b><small>Watch</small></div><div class="status-summary-card attention"><span class="status-dot"></span><b>${groups.attention.length}</b><small>Needs Attention</small></div></div>`;
     const ordered=[...groups.attention,...groups.watch,...groups.ontrack];
-    const cards=ordered.slice(0,12).map(a=>{const level=a._status.level;const reason=a._status.reasons[0];const event=a.event||a.primary_event||'Event not set';const week=Number(a.current_week||1);const acc=a.performance?.sprint?.latest?.execution_score_pct;return `<button class="athlete-status-card ${level}" data-athlete-id="${escapeHtml(a.id)}"><div class="athlete-status-top"><span class="status-pill ${level}"><span class="status-dot"></span>${athleteStatusLabel(level)}</span><span class="athlete-status-week">WEEK ${week}</span></div><h3>${escapeHtml(a.name||'Athlete')}</h3><p>${escapeHtml(event)}</p><div class="athlete-status-reason">${escapeHtml(reason)}</div><div class="athlete-status-foot"><span>${acc!=null?`Pace execution ${acc}%`:a.last_completed_workout_at?`Last workout ${escapeHtml(fmtDate(a.last_completed_workout_at))}`:'No performance data yet'}</span><span>Open →</span></div></button>`}).join('');
+    const cards=ordered.slice(0,12).map(a=>{const level=a._status.level;const reason=a._status.reasons[0];const event=a.event||a.primary_event||'Event not set';const week=Number(a.current_week||1),lw=a.latest_workout||null,acc=a.performance?.sprint?.latest?.execution_score_pct;const paceTotal=Number(lw?.pace_reps_total||0),paceHit=Math.max(0,Number(lw?.pace_reps_hit||0));const liveWorkout=lw?`W${Number(lw.program_week)||week} · D${Number(lw.program_day)||1}${paceTotal>0?` · ${paceHit}/${paceTotal} on pace`:''}`:null;return `<button class="athlete-status-card ${level}" data-athlete-id="${escapeHtml(a.id)}"><div class="athlete-status-top"><span class="status-pill ${level}"><span class="status-dot"></span>${athleteStatusLabel(level)}</span><span class="athlete-status-week">WEEK ${week}</span></div><h3>${escapeHtml(a.name||'Athlete')}</h3><p>${escapeHtml(event)}</p><div class="athlete-status-reason">${escapeHtml(reason)}</div><div class="athlete-status-foot"><span>${liveWorkout?escapeHtml(liveWorkout):acc!=null?`Pace execution ${acc}%`:a.last_completed_workout_at?`Last workout ${escapeHtml(fmtDate(a.last_completed_workout_at))}`:'No performance data yet'}</span><span>Open →</span></div></button>`}).join('');
     el.innerHTML=summary+(cards?`<div class="athlete-status-grid">${cards}</div>`:`<div class="tile"><h3>No athletes connected yet</h3><p>Connect athletes to activate roster intelligence.</p></div>`);
     el.querySelectorAll('[data-athlete-id]').forEach(b=>b.onclick=()=>athleteDetail(b.dataset.athleteId));
   }catch(e){el.innerHTML=`<div class="tile"><h3>Status board unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}
