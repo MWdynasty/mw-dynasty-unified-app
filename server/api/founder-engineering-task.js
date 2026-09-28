@@ -26,6 +26,8 @@ function pathAllowed(path,contextPaths){
   const p=String(path||'').replace(/\\/g,'/').replace(/^\.\//,'');
   if(!p||p.startsWith('/')||p.includes('..'))return false;
   if(!contextPaths.has(p))return false;
+  const allowedPrefixes=['athlete/','coach/','assets/','lib/','server/api/','server/lib/'];
+  if(!allowedPrefixes.some(x=>p.startsWith(x)))return false;
   const denied=[
     '.github/','supabase/','founder/','vercel.json','package.json','package-lock.json',
     'server/api/founder.js','server/api/founder-ai.js','server/api/founder-autonomous-task.js',
