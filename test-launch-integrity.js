@@ -36,7 +36,7 @@ includes('coach/index.html','/assets/mw-diagnostics.js','Coach diagnostics clien
 includes('athlete/index.html','/assets/mw-diagnostics.js','Athlete diagnostics client missing');
 includes('account/index.html','/assets/mw-diagnostics.js','Account diagnostics client missing');
 includes('supabase/migrations/20260921_launch_diagnostics.sql','mw_launch_diagnostics_insert_own','Diagnostics RLS insert policy missing');
-includes('founder/index.html','FOUNDER OPERATING SYSTEM','Founder OS shell missing');
+includes('founder/index.html','id="pageTitle">MW Headquarters</h1>','Founder Headquarters shell missing');
 includes('founder/index.html','Website & Growth','Founder OS website center missing');
 includes('founder/index.html','AI Company','Founder OS AI company missing');
 includes('founder/index.html','MW Knowledge','Founder OS methodology center missing');

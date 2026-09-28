@@ -1,0 +1,60 @@
+/* Two clocks in the same timing space, including phone screens. */
+.mwPracticeTiming, .practice-timing-clocks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+.mwPracticeTiming { margin: 20px 0 12px; }
+.mwPracticeControls button { font-size: .875rem; }
+.practice-retry-actions { margin-top: 10px; }
+.practice-retry-actions button { min-height: 44px; font-size: .875rem; }
+.mwPracticeTiming .mwPracticeRep { margin: 0; padding: 18px 10px; align-content: center; min-width: 0; }
+.mwPracticeTiming .mwPracticeRep strong { font-size: clamp(1.75rem, 7vw, 2.75rem); line-height: 1.15; letter-spacing: -.03em; }
+.mwPracticeTiming .mwPracticeRep span { font-size: .875rem; letter-spacing: .04em; }
+.mwPracticeTiming .mwPracticeRep small { font-size: .75rem; line-height: 1.4; letter-spacing: 0; }
+.mwRestTimer {
+  min-width: 0;
+  padding: 18px 10px;
+  border: 1px solid #355965;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #0d2028, #060f15);
+  color: #f5f7fb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+.mwRestTimer .mwRestLabel { color: #a8dfe8; font-size: .875rem; font-weight: 800; letter-spacing: .06em; }
+.mwRestTimer [data-rest-clock] { font-size: clamp(1.75rem, 7vw, 2.75rem); line-height: 1.15; font-weight: 850; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.mwRestTimer [data-rest-status] { color: #b7cbd3; font-size: .75rem; line-height: 1.4; }
+.mwRestTimer[data-rest-state="running"] { border-color: #72c9d7; box-shadow: inset 0 1px 0 #b2f2ff22; }
+.mwRestTimer[data-rest-state="running"] [data-rest-status] { color: #a8e8ef; }
+.mwRestActions { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; margin-top: 4px; }
+.mwRestTimer .mwRestActions button {
+  flex: 1 1 90px;
+  min-height: 44px;
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px solid #3c6876;
+  border-radius: 10px;
+  background: #15323d;
+  color: #effcff;
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.mwRestTimer .mwRestActions [data-rest-reset] { background: #08171e; }
+.mwRestTimer .mwRestActions button:disabled { opacity: .45; cursor: default; }
+.mwRestTimer .mwRestActions button:focus-visible { outline: 2px solid #b6f1ff; outline-offset: 3px; }
+.practice-timing-clocks .practice-mode-head { min-width: 0; padding: 18px 12px; flex-direction: column; text-align: center; justify-content: center; align-items: center; gap: 12px; }
+.practice-timing-clocks .practice-mode-head h2 { font-size: clamp(1.75rem, 7vw, 2.75rem); overflow-wrap: anywhere; }
+.practice-timing-clocks .practice-timer-actions { width: 100%; gap: 6px; }
+.practice-timing-clocks .practice-timer-actions button { flex: 1 1 90px; min-width: 0; min-height: 44px; padding: 8px 6px; font-size: .875rem; }
+.practice-timing-clocks .practice-mode-head small { font-size: .75rem; }
+@media (max-width: 340px) {
+  .mwPracticeTiming, .practice-timing-clocks { grid-template-columns: 1fr; }
+}
