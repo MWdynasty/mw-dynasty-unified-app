@@ -10,6 +10,7 @@ const handlers = {
   'diagnostics': require('../server/api/diagnostics'),
   'founder': require('../server/api/founder'),
   'founder/ai': require('../server/api/founder-ai'),
+  'founder/autonomous-task': require('../server/api/founder-autonomous-task'),
   'stripe/checkout': require('../server/api/stripe-checkout'),
   'stripe/portal': require('../server/api/stripe-portal'),
   'profile': require('../server/api/profile'),
