@@ -926,7 +926,7 @@ async function renderAI(){
     sectionHead("Founder Approval Queue","Pricing, contracts, money, deployment, destructive changes, official methodology, and important external communications stay under human control.")+
     '<div class="list">'+(approvals.length?approvals.map(x=>'<div class="card approval"><div class="row" style="padding:0;border:0;background:transparent"><div>'+badge(x.risk_level,x.risk_level==="critical"||x.risk_level==="high"?"bad":"warn")+'<h3 style="margin:7px 0">'+esc(x.title)+'</h3><p class="muted">'+esc(x.description||"")+'</p></div><div class="heroActions"><button class="btn small good" data-approve-ai="'+esc(x.id)+'">Approve</button><button class="btn small danger" data-reject-ai="'+esc(x.id)+'">Reject</button></div></div></div>').join(""):'<div class="card empty">No AI actions are waiting for Founder approval.</div>')+'</div>'+
     sectionHead("AI Task Board","Work created by Founder objectives and department planning.")+
-    '<div class="tableWrap"><table class="table"><thead><tr><th>Owner</th><th>Task</th><th>Department</th><th>Priority</th><th>Status</th><th>Approval</th><th>Work</th></tr></thead><tbody>'+tasks.map(x=>'<tr><td>'+esc(x.agent_code||"—")+'</td><td><b>'+esc(x.title)+'</b><br><small>'+esc(x.description||"")+'</small>'+(x.output_summary?'<br><small style="color:#93d6ff">AI work is ready to review.</small>':"")+'</td><td>'+esc(x.department||"—")+'</td><td>'+esc(x.priority)+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.approval_status||"—")+'</td><td>'+(x.agent_code?'<button class="btn small" data-agent-talk="'+esc(x.agent_code)+'">🎙 Talk</button>':"")+(["queued","in_progress","blocked"].includes(x.status)?'<button class="btn small blue" data-run-task="'+esc(x.id)+'">Run AI</button>':"")+(x.output_summary?'<button class="btn small" style="margin-left:5px" data-view-task="'+esc(x.id)+'">View</button><button class="btn small good" style="margin-left:5px" data-task-to-sop="'+esc(x.id)+'">To SOP</button>':"")+'</td></tr>').join("")+'</tbody></table></div>'+
+    '<div class="tableWrap"><table class="table"><thead><tr><th>Owner</th><th>Task</th><th>Department</th><th>Priority</th><th>Status</th><th>Approval</th><th>Work</th></tr></thead><tbody>'+tasks.map(x=>'<tr><td>'+esc(x.agent_code||"—")+'</td><td><b>'+esc(x.title)+'</b><br><small>'+esc(x.description||"")+'</small>'+(x.output_summary?'<br><small style="color:#93d6ff">AI work is ready to review.</small>':"")+'</td><td>'+esc(x.department||"—")+'</td><td>'+esc(x.priority)+'</td><td>'+esc(x.status)+'</td><td>'+esc(x.approval_status||"—")+'</td><td>'+(x.agent_code?'<button class="btn small" data-agent-talk="'+esc(x.agent_code)+'">🎙 Talk</button>':"")+(["queued","in_progress","blocked"].includes(x.status)?'<button class="btn small blue" data-run-task="'+esc(x.id)+'">Run AI</button>':"")+(x.output_summary?'<button class="btn small" style="margin-left:5px" data-view-task="'+esc(x.id)+'">View</button>':"")+(x.status==="completed"&&x.output_summary?'<button class="btn small good" style="margin-left:5px" data-task-to-sop="'+esc(x.id)+'">To SOP</button>':"")+'</td></tr>').join("")+'</tbody></table></div>'+
     sectionHead("Recent AI Work","Stored analysis and drafts from MW AI employees.")+
     '<div class="list">'+(runs.length?runs.slice(0,15).map(x=>'<div class="row"><div><b>'+esc(x.agent_code||"AI employee")+' · '+esc(x.run_type||"analysis")+'</b><small>'+esc((x.output_summary||"").slice(0,180))+(String(x.output_summary||"").length>180?"…":"")+'</small></div><div class="right">'+badge(x.status,x.status==="completed"?"good":"bad")+'<small>'+date(x.created_at)+'</small></div></div>').join(""):'<div class="card empty">No AI employee work has been run yet.</div>')+'</div>'+
     sectionHead("Department Leadership Briefs","Each department lead can review its live MW data and prepare an operating brief for the Founder.")+
@@ -977,12 +977,17 @@ async function runSafeAIQueue(tasks){
   const safe=(tasks||[]).filter(isAIInternalSafeTask).slice(0,5);
   if(!safe.length){modal("Safe AI Queue",'<p class="muted">There are no approval-free queued AI tasks to run.</p>');return}
   const b=$("runSafeQueue");if(b){b.disabled=true;b.textContent="Running "+safe.length+" safe task"+(safe.length===1?"":"s")+"…"}
-  let completed=0,failed=[];
+  let completed=0,blocked=0,escalated=0,failed=[];
   for(const task of safe){
-    try{await ai("execute_task",{taskId:task.id});completed++}catch(e){failed.push((task.title||"Task")+": "+e.message)}
+    try{
+      const d=await ai("execute_task",{taskId:task.id});
+      if(d.disposition==="completed_internal")completed++;
+      else if(d.disposition==="founder_required"||d.disposition==="specialist_required")escalated++;
+      else blocked++;
+    }catch(e){failed.push((task.title||"Task")+": "+e.message)}
   }
   cache={};
-  modal("Safe AI Queue Complete",'<div class="stats">'+stat("Completed",completed)+stat("Failed",failed.length)+'</div>'+(failed.length?'<div class="bubble ai" style="margin-top:12px">'+esc(failed.join("\n"))+'</div>':'<p class="muted">All selected analysis/drafting tasks completed. No approval-required task was run.</p>'));
+  modal("Safe AI Queue Finished",'<div class="stats">'+stat("Completed",completed)+stat("Blocked",blocked)+stat("Escalated",escalated)+stat("Failed",failed.length)+'</div>'+(failed.length?'<div class="bubble ai" style="margin-top:12px">'+esc(failed.join("\n"))+'</div>':'<p class="muted">Evidence gates were enforced. Only genuinely completed internal work was marked complete.</p>'));
   if(b){b.disabled=false;b.textContent="Run Safe Queued Work"}
   setTimeout(()=>renderAI(),250);
 }
@@ -991,7 +996,16 @@ async function runAITask(id,button,returnView){
   try{
     const d=await ai("execute_task",{taskId:id});
     cache={};
-    openVoiceResponseModal("AI Work Complete",d.answer||"Task completed.","MW AI Employee","employee",(d.requiresApproval?'<p class="muted">This task remains in Founder approval status. No consequential action was executed.</p>':'<p class="muted">Analysis/drafting work completed and stored in the Founder OS.</p>'));
+    const disposition=d.disposition|| (d.requiresApproval?"founder_required":"completed_internal");
+    const title=disposition==="completed_internal"?"AI Work Complete":disposition==="founder_required"?"Founder Decision Required":disposition==="specialist_required"?"Specialist Review Required":"Evidence Required";
+    const note=disposition==="completed_internal"
+      ?'<p class="muted">Internal analysis/drafting work was completed and stored with evidence.</p>'
+      :disposition==="founder_required"
+        ?'<p class="muted">The AI completed the safe internal work, but the consequential next action is waiting for Founder approval.</p>'
+        :disposition==="specialist_required"
+          ?'<p class="muted">The task is blocked until qualified human specialist review is available.</p>'
+          :'<p class="muted">The task was not marked complete because the AI lacked the evidence or authorized access needed to verify the requested work.</p>';
+    openVoiceResponseModal(title,d.answer||"No work output returned.","MW AI Employee","employee",note);
   }catch(e){alert(e.message)}
   finally{
     if(button){button.disabled=false;button.textContent="Run AI"}
