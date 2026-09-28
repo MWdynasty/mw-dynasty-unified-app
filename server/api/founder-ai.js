@@ -536,21 +536,40 @@ KPIs: ${JSON.stringify(agent.kpis||[])}
 Complete the assigned task as analysis/drafting work only. Do not claim that external actions, deployments, payments, contracts, emails, customer changes, security changes, or methodology changes were executed.
 If oversight_mode is founder_approval, clearly separate safe internal work from any consequential action that requires Founder approval.
 If oversight_mode is human_specialist_required, do not make an authoritative legal, tax, medical, safeguarding, insurance, or other professional determination; prepare the analysis and explicitly state what qualified human specialist must review it.
-If execution outside the Founder OS would be needed, end with a short "Founder action required" or "Qualified specialist review required" section, as appropriate.
-Use current secured MW data when relevant and flag missing evidence instead of guessing.`;
+If execution outside the Founder OS would be needed, do not claim it happened.
+Use current secured MW data when relevant and flag missing evidence instead of guessing.
+Return JSON only with this exact shape:
+{"disposition":"completed_internal|blocked_evidence|founder_required|specialist_required","output":"full work product"}
+Disposition rules:
+- completed_internal: genuine analysis, drafting, research, design, planning, documentation, or other internal non-consequential work is actually complete.
+- blocked_evidence: implementation, repair, testing, verification, or another task cannot be completed from the available access/evidence.
+- founder_required: a consequential action or Founder decision is required before proceeding.
+- specialist_required: authoritative regulated/professional review is required.
+Never use completed_internal merely because you produced a plan for an implementation, repair, test, deployment, or verification task.`;
 
-      const answer=await openai(taskInstructions,`Assigned task: ${task.title}\n\nDescription: ${task.description||'No additional description.'}`,3200);
-      const requiresApproval=!!task.requires_approval;
-      const nextStatus=requiresApproval?'waiting_approval':'completed';
+      const rawAnswer=await openai(taskInstructions,`Assigned task: ${task.title}\n\nDescription: ${task.description||'No additional description.'}`,3000);
+      let result;try{result=parseJson(rawAnswer)}catch{result={disposition:'blocked_evidence',output:rawAnswer||'AI work could not be safely classified as complete.'}}
+      const allowed=new Set(['completed_internal','blocked_evidence','founder_required','specialist_required']);
+      const disposition=allowed.has(String(result?.disposition))?String(result.disposition):'blocked_evidence';
+      const answer=clean(result?.output,12000)||'No usable AI work product was returned.';
+      const existingApprovalRequired=!!task.requires_approval;
+      const requiresApproval=existingApprovalRequired||disposition==='founder_required';
+      const nextStatus=requiresApproval?'waiting_approval':disposition==='completed_internal'?'completed':'blocked';
+      const patchBody={
+        status:nextStatus,
+        output_summary:answer.slice(0,12000),
+        completed_at:nextStatus==='completed'?new Date().toISOString():null,
+        updated_at:new Date().toISOString(),
+        metadata:Object.assign({},task.metadata||{},{execution_disposition:disposition,evidence_gated:true})
+      };
+      if(disposition==='founder_required'){
+        patchBody.requires_approval=true;
+        patchBody.approval_status='pending';
+      }
       const patch=await fetch(`${SUPABASE_URL}/rest/v1/founder_ai_tasks?id=eq.${encodeURIComponent(task.id)}`,{
         method:'PATCH',
         headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},
-        body:JSON.stringify({
-          status:nextStatus,
-          output_summary:answer.slice(0,12000),
-          completed_at:requiresApproval?null:new Date().toISOString(),
-          updated_at:new Date().toISOString()
-        })
+        body:JSON.stringify(patchBody)
       });
       const updated=await patch.json().catch(()=>[]);
       if(!patch.ok)throw new Error(updated?.message||'AI task result could not be stored.');
@@ -563,11 +582,24 @@ Use current secured MW data when relevant and flag missing evidence instead of g
           run_type:agent.authority_level==='draft'?'draft':'analysis',
           status:'completed',model:process.env.OPENAI_MODEL||'gpt-5.6-sol',
           output_summary:answer.slice(0,12000),
-          metadata:{requires_approval:requiresApproval,department:agent.department,oversight_mode:agent.oversight_mode||'founder_approval'}
+          metadata:{requires_approval:requiresApproval,department:agent.department,oversight_mode:agent.oversight_mode||'founder_approval',disposition,evidence_gated:true}
         })
       }).catch(()=>null);
 
-      return res.status(200).json({ok:true,mode,task:Array.isArray(updated)?updated[0]:updated,answer,requiresApproval});
+      if(disposition==='founder_required'&&!existingApprovalRequired){
+        const existing=await fetch(`${SUPABASE_URL}/rest/v1/founder_approvals?task_id=eq.${encodeURIComponent(task.id)}&status=eq.pending&select=id&limit=1`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}}).then(r=>r.json()).catch(()=>[]);
+        if(!Array.isArray(existing)||!existing.length){
+          await insert(token,'founder_approvals',[{
+            task_id:task.id,objective_id:task.objective_id||null,category:'ai_task_approval',
+            title:`Approve: ${clean(task.title,140)}`,description:answer.slice(0,2000),
+            risk_level:task.priority==='urgent'?'critical':task.priority==='high'?'high':'medium',
+            status:'pending',requested_by_agent_code:task.agent_code||null,
+            requested_action:{task_id:task.id,disposition:'founder_required'}
+          }]).catch(()=>[]);
+        }
+      }
+
+      return res.status(200).json({ok:true,mode,task:Array.isArray(updated)?updated[0]:updated,answer,requiresApproval,disposition});
     }
     const question=clean(body.message,8000);
     if(!question)return res.status(400).json({error:'Ask Founder AI a question.'});
