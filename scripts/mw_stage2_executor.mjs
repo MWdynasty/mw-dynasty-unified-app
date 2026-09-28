@@ -69,33 +69,39 @@ function excerpt(content,terms,max=17500){
   if(content.length<=max)return content;
   const lines=content.split(/\r?\n/);
   const lower=lines.map(x=>x.toLowerCase());
-  const hits=[];
+  const ranked=[];
   for(let i=0;i<lines.length;i++){
-    if(terms.some(t=>t&&lower[i].includes(t.toLowerCase())))hits.push(i);
-    if(hits.length>=8)break;
+    let score=0;
+    for(let t=0;t<terms.length;t++){
+      const term=String(terms[t]||'').toLowerCase();
+      if(!term||!lower[i].includes(term))continue;
+      score+=Math.max(2,40-t)+(term.includes(' ')?14:0)+(term.includes('_')||/[A-Z]/.test(String(terms[t]))?10:0);
+    }
+    if(score>0)ranked.push({i,score});
   }
-  if(!hits.length)return lines.slice(0,220).join('\n').slice(0,max);
+  if(!ranked.length)return lines.slice(0,220).join('\n').slice(0,max);
+  const hits=ranked.sort((a,b)=>b.score-a.score).slice(0,8).map(x=>x.i).sort((a,b)=>a-b);
   const ranges=[];
   for(const i of hits){
-    const s=Math.max(0,i-45),e=Math.min(lines.length,i+55);
+    const s=Math.max(0,i-32),e=Math.min(lines.length,i+44);
     const last=ranges[ranges.length-1];
-    if(last&&s<=last[1]+10)last[1]=Math.max(last[1],e); else ranges.push([s,e]);
+    if(last&&s<=last[1]+8)last[1]=Math.max(last[1],e); else ranges.push([s,e]);
   }
   let out='';
   for(const [s,e] of ranges){
     const chunk=lines.slice(s,e).join('\n');
     const next=(out?out+'\n\n/* MW_CONTEXT_GAP */\n\n':'')+chunk;
-    if(next.length>max)break;
+    if(next.length>max)continue;
     out=next;
   }
-  return (out||lines.slice(0,220).join('\n')).slice(0,max);
+  return (out||lines.slice(Math.max(0,hits[0]-45),Math.min(lines.length,hits[0]+90)).join('\n')).slice(0,max);
 }
 function buildContext(task,policy){
   const allowed=Array.isArray(policy?.allowed_prefixes)?policy.allowed_prefixes.map(String):[];
   const denied=Array.isArray(policy?.denied_paths)?policy.denied_paths.map(String):[];
   const files=run('git',['ls-files']).split(/\r?\n/).filter(Boolean).filter(p=>isAllowed(p,allowed,denied));
   const {hints,words}=tokensFor(task);
-  const phraseTerms=[...hints.filter(x=>!x.includes('/')), 'try again','in progress','track workout','today'];
+  const phraseTerms=[...hints.filter(x=>!x.includes('/')), 'renderCompletion','mwTodayTrackSessionNumber','workoutStatus','completion_status','unlockBadge','in progress','try again','track workout'];
   const scored=[];
   for(const p of files){
     let st;try{st=fs.statSync(path.join(ROOT,p))}catch{continue}
