@@ -2290,13 +2290,31 @@ async function setWorkoutStatus(w,d,status){
   return out;
 }
 let mwPracticeProgressCache=[];
-async function loadPracticeProgress(){
+async async function mwPracticeNormalizeProgressTargets(rows){
+  const list=Array.isArray(rows)?rows.map(row=>({...row})):[];
+  const plans=new Map();
+  for(const row of list){
+    const w=Number(row.program_week||0),d=Number(row.program_day||0),key=w+':'+d;
+    let p=plans.get(key);
+    if(p===undefined){
+      try{const data=await loadMWProgramWeek(w),s=data?.track?.sessions?.find(x=>Number(x.day)===d);p=s?parsePrescription(s):null}catch{p=null}
+      plans.set(key,p);
+    }
+    if(p?.target){
+      const target=Number(p.target),actual=Number(row.time_seconds);
+      row.target_seconds=target;
+      if(Number.isFinite(actual))row.pace_status=actual>=target*.99&&actual<=target*1.01?'on_pace':'outside_target';
+    }
+  }
+  return list;
+}
+function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
   const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
   const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,source_program_week&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
-  mwPracticeProgressCache=Array.isArray(rows)?rows:[];
+  mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(rows);
   renderPracticeProgress();
 }
 function renderPracticeProgress(){
@@ -4132,13 +4150,38 @@ const restTimer=window.MWPracticeRestTimer.mount($p('mwPracticeRest'));
 function clearTimers(){timers.forEach(clearTimeout);timers=[]}
 function say(x){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(x));u.rate=1;u.pitch=.95;speechSynthesis.speak(u)}catch{}}
 function clock(){if(!running||paused)return;const s=(performance.now()-startedAt)/1000;$p('mwPracticeClock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')+'.'+Math.floor((s%1)*10);raf=requestAnimationFrame(clock)}
-function parsePrescription(){
- const raw=String(session?.prescribedWork||session?.tierWork?.[String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase()]||session?.work||session?.structure||'');
+function mwPracticeExponent(d1,t1,d2,t2){return Math.log(t2/t1)/Math.log(d2/d1)}
+function mwPracticeEstimateTime(distance,t100,t200,t400){
+ const e12=mwPracticeExponent(100,t100,200,t200),e24=mwPracticeExponent(200,t200,400,t400);let time;
+ if(distance<100)time=t100*Math.pow(distance/100,e12);
+ else if(distance===100)time=t100;
+ else if(distance<=150)time=t200*Math.pow(distance/200,e12);
+ else if(distance<200)time=t200*Math.pow(distance/200,e12);
+ else if(distance===200)time=t200;
+ else if(distance<300)time=t200*Math.pow(distance/200,e24);
+ else if(distance===300)time=t400*Math.pow(distance/400,e24);
+ else if(distance<400)time=t400*Math.pow(distance/400,e24);
+ else if(distance===400)time=t400;
+ else time=t400*Math.pow(distance/400,e24);
+ return Number.isFinite(time)?time:null
+}
+function mwPracticeCalculatedTarget(distance,intensity){
+ const p=getProfile(),t100=Number(p.p100),t200=Number(p.p200),t400=Number(p.p400);
+ if(!(distance>0&&intensity>0&&t100>0&&t200>0&&t400>0))return null;
+ const estimate=mwPracticeEstimateTime(distance,t100,t200,t400),target=estimate/intensity;
+ return Number.isFinite(target)&&target>0?target:null
+}
+function parsePrescription(source=session){
+ const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
+ const raw=String(source?.prescribedWork||source?.tierWork?.[tier]||source?.work||source?.structure||'');
  const m=raw.match(/(\d+)\s*[x×]\s*(\d+)\s*m\b/i), reps=m?Number(m[1]):1, dist=m?Number(m[2]):null;
- const explicit=[session?.targetSeconds,session?.target_seconds,session?.paceTargetSeconds,session?.pace_target_seconds].map(Number).find(x=>x>2&&x<300);
- const times=[...raw.matchAll(/(\d+(?:\.\d+)?)\s*(?:s|sec|seconds?)\b/ig)].map(x=>Number(x[1])).filter(x=>x>2&&x<300);
- const target=explicit||(times.length?times[times.length-1]:null);
- return {raw,reps,dist,target,timed:Boolean(m)}
+ const explicit=[source?.targetSeconds,source?.target_seconds,source?.paceTargetSeconds,source?.pace_target_seconds].map(Number).find(x=>x>2&&x<300);
+ const paceText=raw+' '+String(source?.intensity||'');
+ const paceMatch=paceText.match(/(?:@|at)?\s*(\d{2,3})(?:\s*[–-]\s*(\d{2,3}))?\s*%/i);
+ const intensity=paceMatch?Number(paceMatch[2]||paceMatch[1])/100:null;
+ const calculated=!explicit&&dist&&intensity?mwPracticeCalculatedTarget(dist,intensity):null;
+ const target=explicit||calculated||null;
+ return {raw,reps,dist,target,intensity,timed:Boolean(m)}
 }
 function schedulePace(p){
  if(!p.target||!p.dist)return;
@@ -4210,7 +4253,7 @@ async function finishRep(){
  running=false;paused=false;savingRep=true;cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();
  restTimer.setDisabled(false);
  if(rep<p.reps)restTimer.restart();
- const status=p.target?(actual<=p.target?'on_pace':'outside_target'):'timed';
+ const status=p.target?(actual>=p.target*.99&&actual<=p.target*1.01?'on_pace':'outside_target'):'timed';
  const row={rep_number:rep,time_seconds:Number(actual.toFixed(2)),target_seconds:p.target?Number(p.target):null,pace_status:status};
  const previous=results.findIndex(r=>r.rep_number===rep);
  if(previous>=0)results[previous]=row;else results.push(row);
@@ -4261,7 +4304,13 @@ async function openPracticeFor(w,d){
  try{const data=await loadMWProgramWeek(practiceWeek);session=data?.track?.sessions?.find(x=>Number(x.day)===Number(practiceDay))}catch{}
  if(!session){alert('This MW track session is not available yet.');return}
  try{results=await loadExistingReps(practiceWeek,practiceDay)}catch{results=[]}
- renderLog();const p=parsePrescription(),next=Math.min(p.reps,results.length+1);
+ const p=parsePrescription();
+ if(p.target&&results.length){
+   let repaired=false;const target=Number(p.target);
+   results=results.map(row=>{const actual=Number(row.time_seconds),status=Number.isFinite(actual)&&(actual>=target*.99&&actual<=target*1.01)?'on_pace':'outside_target';if(Math.abs(Number(row.target_seconds||0)-target)>.01||row.pace_status!==status)repaired=true;return {...row,target_seconds:target,pace_status:status}});
+   if(repaired)Promise.all(results.map(row=>persistOneRep(row))).catch(()=>{});
+ }
+ renderLog();const next=Math.min(p.reps,results.length+1);
  $p('mwPracticeTitle').textContent=session.title||'MW Track Session';const wk=session?.wickets||{};const prep=['WARM-UP: '+(session.warmup||'Competition Warm-Up'),'WICKETS: '+[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · '),'MAIN: '+(p.raw||session.focus||'Follow today’s MW prescription.'),'RECOVERY: '+(session.recovery||'Recover as prescribed.')];$p('mwPracticeWork').textContent=prep.join('  |  ');
  if(workoutSaved){
    restTimer.setDisabled(true,'WORKOUT COMPLETE');
