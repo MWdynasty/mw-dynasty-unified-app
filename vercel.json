@@ -159,6 +159,10 @@
       "destination": "/api/mw?route=founder/autonomous-task"
     },
     {
+      "source": "/api/founder/engineering-task",
+      "destination": "/api/mw?route=founder/engineering-task"
+    },
+    {
       "source": "/api/stripe/checkout",
       "destination": "/api/mw?route=stripe/checkout"
     },
