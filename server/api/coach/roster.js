@@ -54,7 +54,7 @@ module.exports=async(req,res)=>{
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
     const [profiles,states,prs]=await Promise.all([
       userIds.length?get(`profiles?select=user_id,first_name,last_name&user_id=in.${inList(userIds)}`,c.token):Promise.resolve([]),
-      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at&athlete_id=in.${inList(athleteIds)}`,c.token),
+      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at,track_tier,strength_tier,starting_week,program_version&athlete_id=in.${inList(athleteIds)}`,c.token),
       get(`athlete_prs?select=athlete_id,event,time_seconds,date_recorded,verified&athlete_id=in.${inList(athleteIds)}&order=event.asc`,c.token)
     ]);
 
@@ -79,6 +79,10 @@ module.exports=async(req,res)=>{
         current_week:st.current_week||1,
         current_day:st.current_day||1,
         current_phase:st.current_phase||null,
+        track_tier:st.track_tier||null,
+        strength_tier:st.strength_tier||null,
+        starting_week:st.starting_week||1,
+        program_version:st.program_version||null,
         status:st.program_status||'On Track',
         last_completed_workout_at:st.last_completed_workout_at||null,
         assigned_at:aMap.get(a.id)?.assigned_at||null,
