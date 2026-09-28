@@ -52,11 +52,12 @@ module.exports=async(req,res)=>{
 
     const athleteIds=athletes.map(a=>a.id);
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
-    const [profiles,states,prs,seasonPlans]=await Promise.all([
+    const [profiles,states,prs,seasonPlans,completedWorkouts]=await Promise.all([
       userIds.length?get(`profiles?select=user_id,first_name,last_name&user_id=in.${inList(userIds)}`,c.token):Promise.resolve([]),
       get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at,track_tier,strength_tier,starting_week,program_version&athlete_id=in.${inList(athleteIds)}`,c.token),
       get(`athlete_prs?select=athlete_id,event,time_seconds,date_recorded,verified&athlete_id=in.${inList(athleteIds)}&order=event.asc`,c.token),
-      get(`athlete_season_plans?select=id,athlete_id,source_week_map,plan_status,season_type,season_length_weeks&athlete_id=in.${inList(athleteIds)}&plan_status=eq.active`,c.token).catch(()=>[])
+      get(`athlete_season_plans?select=id,athlete_id,source_week_map,plan_status,season_type,season_length_weeks&athlete_id=in.${inList(athleteIds)}&plan_status=eq.active`,c.token).catch(()=>[]),
+      get(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&athlete_id=in.${inList(athleteIds)}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,c.token).catch(()=>[])
     ]);
 
     const pMap=new Map(profiles.map(p=>[p.user_id,p]));
@@ -65,10 +66,14 @@ module.exports=async(req,res)=>{
     const prMap=new Map();
     for(const p of prs){if(!prMap.has(p.athlete_id))prMap.set(p.athlete_id,[]);prMap.get(p.athlete_id).push(p)}
     const aMap=new Map(assignments.map(a=>[a.athlete_id,a]));
+    const latestCompletionMap=new Map();
+    for(const row of (completedWorkouts||[])){
+      if(!latestCompletionMap.has(row.athlete_id))latestCompletionMap.set(row.athlete_id,row);
+    }
 
     const out=athletes.map(a=>{
       const p=pMap.get(a.user_id)||{};
-      const st=sMap.get(a.id)||{},plan=planMap.get(a.id)||null;
+      const st=sMap.get(a.id)||{},plan=planMap.get(a.id)||null,latestCompletion=latestCompletionMap.get(a.id)||null;
       const athletePrs=prMap.get(a.id)||[];
       let sourceWeek=Number(st.current_week||1);
       if(plan?.source_week_map){
@@ -98,7 +103,18 @@ module.exports=async(req,res)=>{
         starting_week:st.starting_week||1,
         program_version:st.program_version||null,
         status:st.program_status||'On Track',
-        last_completed_workout_at:st.last_completed_workout_at||null,
+        last_completed_workout_at:latestCompletion?.completed_at||st.last_completed_workout_at||null,
+        latest_workout:latestCompletion?{
+          program_week:Number(latestCompletion.program_week)||null,
+          program_day:Number(latestCompletion.program_day)||null,
+          workout_key:latestCompletion.workout_key||null,
+          completion_status:latestCompletion.completion_status||null,
+          pace_check_status:latestCompletion.pace_check_status||null,
+          pace_reps_total:latestCompletion.pace_reps_total==null?null:Number(latestCompletion.pace_reps_total),
+          pace_reps_hit:latestCompletion.pace_reps_hit==null?null:Number(latestCompletion.pace_reps_hit),
+          performance_checked_at:latestCompletion.performance_checked_at||null,
+          completed_at:latestCompletion.completed_at||null
+        }:null,
         assigned_at:aMap.get(a.id)?.assigned_at||null,
         prs:athletePrs,
         pr:athletePrs.map(x=>`${x.event} ${x.time_seconds}`).join(' · ')||'—'
