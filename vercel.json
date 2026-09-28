@@ -81,6 +81,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/build-info",
+      "destination": "/api/mw?route=build-info"
+    },
+    {
       "source": "/memberships",
       "destination": "/api/membership"
     },
