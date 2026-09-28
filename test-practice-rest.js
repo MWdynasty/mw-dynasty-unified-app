@@ -56,7 +56,7 @@ async function run() {
 
   const a=fixture(), saved=[];
   Object.assign(a.ctx,{
-    getProfile:()=>({trainingTier:'performance'}), completionAthleteId:()=> 'test-athlete',
+    getProfile:()=>({trainingTier:'performance',p100:10.50,p200:21.40,p400:48.00}), completionAthleteId:()=> 'test-athlete',
     workoutKey:()=> 'test-workout', completionHeaders:()=>({}),MW_SB_URL:'https://fixture.invalid',
     activeSeasonPlanId:()=>null,sourceWeekForSeasonWeek:w=>w,
     fetch:async(url,opts)=>{if(opts?.method==='POST')saved.push(JSON.parse(opts.body));return {ok:true,json:async()=>[]}},
@@ -66,6 +66,11 @@ async function run() {
   });
   const athlete=fs.readFileSync('athlete/index.html','utf8').match(/<script id="mw-practice-runtime-v3">([\s\S]*?)<\/script>/)[1];
   vm.runInContext(athlete,a.ctx);
+  vm.runInContext("session={prescribedWork:'2 x 160m @ 80% · 90 sec rest'}",a.ctx);
+  const parsedTarget=vm.runInContext("parsePrescription()",a.ctx);
+  assert.equal(parsedTarget.dist,160);
+  assert.ok(parsedTarget.target>15&&parsedTarget.target<40,'Practice target is calculated from PR + intensity, not 90-second recovery');
+  assert.notEqual(parsedTarget.target,90);
   await a.ctx.mwOpenPracticeFor(1,1);
   a.click('mwPracticeStart');await a.flush();a.advance(3000);a.advance(12000);
   a.click('mwPracticePause');a.advance(5000);a.click('mwPracticeNext');await a.flush();
