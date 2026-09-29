@@ -374,7 +374,7 @@ async function practiceModePage(){
   };
   const syncPracticeAvailability=()=>{
     const list=visible(),open=timable(),max=groupMaxPrescribedReps();
-    if(!repStart&&!repElapsed&&!repResults.length&&!sessionResults.length){
+    if(!repStart&&!repElapsed&&!repResults.length){
       startBtn.disabled=!open.length;
       clockState.textContent=open.length?`Ready for Rep ${rep}`:list.some(a=>!coachPracticeWorkoutComplete(a))&&max!=null&&rep>max?'Prescription complete · Save session':'Current workout already completed for this group';
     }
