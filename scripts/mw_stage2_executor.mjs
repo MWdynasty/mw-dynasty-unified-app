@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync,spawnSync} from 'node:child_process';
 
-// Stage 2 execution control version 2
+// Stage 2 execution control version 3
 const EDGE='https://keqgunlfwhjgcsurynef.supabase.co/functions/v1/mw-founder-controlled-execution';
 const PREVIEW='https://mwdynastyunifiedappv31tiered13plusdeploy-git-a-bab295-mw-sprint.vercel.app';
 const ROOT=process.cwd();
@@ -23,16 +23,13 @@ function isAllowed(p,allowed,denied){
   p=normalized(p);
   return !!p&&!p.startsWith('/')&&!p.includes('..')&&allowed.some(a=>p.startsWith(a))&&!isDenied(p,denied);
 }
-function patchPaths(patch){
-  const out=new Set();
-  for(const line of String(patch||'').split(/\r?\n/)){
-    let m=line.match(/^diff --git a\/(.+?) b\/(.+)$/);
-    if(m){out.add(normalized(m[1]));out.add(normalized(m[2]));continue}
-    m=line.match(/^(?:---|\+\+\+) (?:a|b)\/(.+)$/);
-    if(m)out.add(normalized(m[1]));
-  }
-  return [...out];
+function countExact(haystack,needle){
+  if(!needle)return 0;
+  let count=0,pos=0;
+  while((pos=haystack.indexOf(needle,pos))>=0){count++;pos+=Math.max(1,needle.length)}
+  return count;
 }
+
 async function oidc(){
   const u=process.env.ACTIONS_ID_TOKEN_REQUEST_URL,t=process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
   if(!u||!t)throw new Error('GitHub OIDC environment is unavailable.');
@@ -107,7 +104,7 @@ function anchoredSegments(content,anchors,max=7600){
     if(i<0||seen.some(x=>Math.abs(x-i)<18))continue;
     seen.push(i);
     const s=Math.max(0,i-52),e=Math.min(lines.length,i+76);
-    out.push('/* MW_CONTEXT_ANCHOR: '+anchor+' */\n'+lines.slice(s,e).join('\n').slice(0,max));
+    out.push(lines.slice(s,e).join('\n').slice(0,max));
     if(out.length>=10)break;
   }
   return out;
@@ -148,21 +145,47 @@ function buildContext(task,policy){
   }
   return context.slice(0,16);
 }
-function validatePatch(patch,context,policy){
-  if(!patch.startsWith('diff --git '))throw new Error('AI response did not contain a valid unified diff.');
-  if(/GIT binary patch|new file mode|deleted file mode|rename from|rename to|old mode|new mode/.test(patch))throw new Error('Patch attempted an unsupported file operation.');
-  if(/(?:---|\+\+\+) \/dev\/null/.test(patch))throw new Error('Patch attempted to create or delete a file.');
+function validateAndApplyEdits(edits,context,policy){
+  if(!Array.isArray(edits)||!edits.length||edits.length>6)throw new Error('Engineering response had an invalid number of exact-code edits.');
   const allowed=(policy?.allowed_prefixes||[]).map(String),denied=(policy?.denied_paths||[]).map(String);
   const contextPaths=new Set(context.map(x=>normalized(x.path)));
-  const paths=patchPaths(patch);
   const maxFiles=Number(policy?.max_files||4);
-  if(!paths.length||paths.length>maxFiles)throw new Error('Patch touched an invalid number of files.');
+  const paths=[...new Set(edits.map(x=>normalized(x?.path)).filter(Boolean))];
+  if(!paths.length||paths.length>maxFiles)throw new Error('Engineering edits touched an invalid number of files.');
   for(const p of paths){
-    if(!contextPaths.has(p))throw new Error(`Patch touched a file outside supplied context: ${p}`);
-    if(!isAllowed(p,allowed,denied))throw new Error(`Patch touched a denied path: ${p}`);
+    if(!contextPaths.has(p))throw new Error(`Edit touched a file outside supplied context: ${p}`);
+    if(!isAllowed(p,allowed,denied))throw new Error(`Edit touched a denied path: ${p}`);
   }
-  return [...new Set(paths)];
+  const originals=new Map(),working=new Map();
+  for(const p of paths){
+    const content=fs.readFileSync(path.join(ROOT,p),'utf8');
+    originals.set(p,content);working.set(p,content);
+  }
+  for(const edit of edits){
+    const p=normalized(edit?.path),find=String(edit?.find||''),replace=String(edit?.replace??'');
+    if(find.length<8||find.length>18000||replace.length>24000)throw new Error(`Edit for ${p} exceeded exact-code size limits.`);
+    const content=working.get(p),occurrences=countExact(content,find);
+    if(occurrences!==1)throw new Error(`Exact source block for ${p} matched ${occurrences} times; refusing ambiguous edit.`);
+    working.set(p,content.replace(find,replace));
+  }
+  for(const p of paths){
+    const before=originals.get(p),after=working.get(p);
+    if(before===after)throw new Error(`Engineering edit made no change to ${p}.`);
+    if(Math.abs(after.length-before.length)>30000)throw new Error(`Engineering edit changed too much content in ${p}.`);
+    fs.writeFileSync(path.join(ROOT,p),after,'utf8');
+  }
+  run('git',['diff','--check']);
+  const numstat=run('git',['diff','--numstat']).split(/\r?\n/).filter(Boolean);
+  let changedLines=0;
+  for(const line of numstat){
+    const [a,d]=line.split(/\s+/);
+    if(a==='-'||d==='-')throw new Error('Binary changes are not allowed.');
+    changedLines+=(Number(a)||0)+(Number(d)||0);
+  }
+  if(changedLines>260)throw new Error(`Engineering edit changed ${changedLines} lines; Stage 2 limit is 260.`);
+  return paths;
 }
+
 async function github(endpoint,options={}){
   if(!GH_TOKEN)throw new Error('GITHUB_TOKEN is unavailable.');
   const r=await fetch(`https://api.github.com/repos/${GH_REPO}${endpoint}`,{
@@ -233,21 +256,16 @@ async function main(){
     const context=buildContext(task,policy);
     log(`Prepared ${context.length} constrained repository context file(s).`);
     const generated=await edge(token,{action:'generate_patch',job_id:job.id,context});
-    if(generated?.disposition!=='patch_ready'||!generated?.patch){
+    if(generated?.disposition!=='patch_ready'||!Array.isArray(generated?.edits)||!generated.edits.length){
       log('Engineering worker blocked itself on insufficient evidence.');
       return;
     }
 
-    const changed=validatePatch(generated.patch,context,policy);
-    fs.writeFileSync('/tmp/mw-stage2.patch',generated.patch,'utf8');
-    run('git',['apply','--check','--recount','/tmp/mw-stage2.patch']);
-    run('git',['apply','--recount','/tmp/mw-stage2.patch']);
-    run('git',['diff','--check']);
-
+    const changed=validateAndApplyEdits(generated.edits,context,policy);
     const actual=run('git',['diff','--name-only']).split(/\r?\n/).filter(Boolean);
     if(actual.length!==changed.length||actual.some(p=>!changed.includes(p)))throw new Error('Applied changes did not match the approved patch file set.');
 
-    await edge(token,{action:'evidence',job_id:job.id,state:'testing',evidence:{summary:'Patch applied in isolated GitHub Actions workspace.',changed_files:actual}});
+    await edge(token,{action:'evidence',job_id:job.id,state:'testing',evidence:{summary:'Exact-code edits applied in isolated GitHub Actions workspace.',changed_files:actual}});
 
     for(const p of actual.filter(x=>/\.(?:js|mjs|cjs)$/i.test(x)))run('node',['--check',p]);
     const test=spawnSync('npm',['test'],{cwd:ROOT,encoding:'utf8',timeout:12*60*1000,maxBuffer:12*1024*1024});
