@@ -2313,7 +2313,7 @@ async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
   const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,source_program_week&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,source_program_week,entry_source,timing_source,result_status,coach_session_id&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
   mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(rows);
   renderPracticeProgress();
@@ -2325,9 +2325,9 @@ function renderPracticeProgress(){
   for(const r of rows){const k=String(r.workout_key||('w'+r.program_week+'d'+r.program_day));if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)}
   box.innerHTML=[...groups.values()].slice(0,4).map(g=>{
     g.sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
-    const first=g[0],hit=g.filter(x=>x.pace_status==='on_pace').length,targets=g.some(x=>Number(x.target_seconds)>0);
-    const chips=g.map(x=>'<span class="'+(x.pace_status==='on_pace'?'on':x.pace_status==='outside_target'?'off':'')+'">REP '+x.rep_number+' · '+Number(x.time_seconds).toFixed(2)+'s'+(Number(x.target_seconds)>0?' / '+Number(x.target_seconds).toFixed(2)+'s':'')+'</span>').join('');
-    return '<div class="mwPracticeProgressSession"><div><b>WEEK '+first.program_week+' · DAY '+first.program_day+'</b><small>'+g.length+' REP'+(g.length===1?'':'S')+(targets?' · '+hit+'/'+g.length+' ON PACE':'')+'</small></div><div class="mwPracticeProgressChips">'+chips+'</div></div>'
+    const first=g[0],hit=g.filter(x=>x.pace_status==='on_pace').length,targets=g.some(x=>Number(x.target_seconds)>0),source=g.some(x=>x.entry_source==='coach')?'COACH TIMED':'ATHLETE TIMED';
+    const chips=g.map(x=>'<span class="'+(x.pace_status==='on_pace'?'on':x.pace_status==='outside_target'?'off':'')+'">REP '+x.rep_number+' · '+(x.result_status==='dnf'?'DNF':Number(x.time_seconds).toFixed(2)+'s')+(Number(x.target_seconds)>0&&x.result_status!=='dnf'?' / '+Number(x.target_seconds).toFixed(2)+'s':'')+'</span>').join('');
+    return '<div class="mwPracticeProgressSession"><div><b>WEEK '+first.program_week+' · DAY '+first.program_day+'</b><small>'+source+' · '+g.length+' REP'+(g.length===1?'':'S')+(targets?' · '+hit+'/'+g.length+' ON PACE':'')+'</small></div><div class="mwPracticeProgressChips">'+chips+'</div></div>'
   }).join('');
 }
 function rowsToCompletion(rows){
