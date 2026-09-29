@@ -40,6 +40,8 @@ module.exports=async(req,res)=>{
       const sessionId=String(b.sessionId||'').trim()||null;
       if(!results.length)return res.status(400).json({error:'No timing results supplied'});
       if(results.length>200)return res.status(400).json({error:'Too many timing results in one save'});
+      const invalidRep=results.find(x=>{const rep=Number(x.repNumber),limit=Number(x.prescribedReps);return !Number.isInteger(rep)||rep<1||(Number.isFinite(limit)&&limit>0&&rep>limit)});
+      if(invalidRep)return res.status(400).json({error:'Timing result exceeds the prescribed rep count.',code:'rep_limit_exceeded'});
       const rows=results.map(x=>({
         coach_user_id:c.user.id,
         athlete_id:String(x.athleteId||''),

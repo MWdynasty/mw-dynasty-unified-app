@@ -243,6 +243,10 @@
       "destination": "/api/mw?route=coach/performance"
     },
     {
+      "source": "/api/coach/practice-timing",
+      "destination": "/api/mw?route=coach/practice-timing"
+    },
+    {
       "source": "/api/coach/progression",
       "destination": "/api/mw?route=coach/progression"
     },

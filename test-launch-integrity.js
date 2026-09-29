@@ -186,9 +186,18 @@ includes('coach/app.js','Start → Tap Finish → Recover','Coach Practice live 
 includes('coach/styles.css','.practice-live-cockpit','Coach Practice live cockpit styling missing');
 includes('coach/styles.css','.practice-drawer','Coach Practice collapsed setup/control styling missing');
 
+includes('api/mw.js',"'coach/practice-timing': require('../server/api/coach/practice-timing')",'Coach Practice timing gateway handler missing');
+includes('vercel.json','"/api/coach/practice-timing"','Coach Practice timing rewrite missing');
+includes('coach/app.js','const prescribedRepLimit=(athleteId)=>','Coach Practice prescribed rep limit missing');
+includes('coach/app.js',"nextBtn.textContent=prescriptionFinished?'REPS COMPLETE':'NEXT REP'",'Coach Practice must stop Next Rep at the prescription limit');
+includes('coach/app.js','prescribedReps:prescribedRepLimit(x.athleteId)','Coach Practice save payload must carry its prescribed rep limit');
+includes('server/api/coach/practice-timing.js',"code:'rep_limit_exceeded'",'Coach Practice API must reject reps beyond the prescription');
+
+
 includes('coach/app.js',"function coachPracticeWorkoutComplete(a)",'Coach Practice Mode completion lock helper missing');
 includes('coach/app.js',"WORKOUT COMPLETE",'Coach Practice Mode must visibly lock completed athlete workouts');
-includes('coach/app.js',"const timable=()=>visible().filter(a=>!coachPracticeWorkoutComplete(a))",'Coach Practice Mode must exclude completed athletes from live timing');
+includes('coach/app.js',"if(coachPracticeWorkoutComplete(a))return false;",'Coach Practice Mode must exclude completed athletes from live timing');
+includes('coach/app.js',"const timable=()=>visible().filter(a=>athleteEligibleForRep(a))",'Coach Practice Mode must gate live timing through authoritative eligibility');
 includes('server/api/coach/practice-timing.js',"completedCurrentWorkouts",'Coach practice timing API must check authoritative workout completion');
 includes('server/api/coach/practice-timing.js',"workout_already_completed",'Coach practice timing API must reject duplicate completed-workout timing');
 

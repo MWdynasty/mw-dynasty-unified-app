@@ -134,9 +134,11 @@ async function run() {
   assert.equal(coachSaves[0].results.length,2,'coach retry replaces earlier results without duplicates');
   assert.deepEqual(coachSaves[0].results.map(r=>r.timeSeconds),[9,11],'coach pause/resume preserves finish times');
   c.el('practiceTimerStart').click();c.advance(3000);c.el('practiceDNF').click();
-  assert.equal(c.el('practiceNextRep').disabled,false,'DNF enables next-rep correction flow');
+  assert.equal(c.el('practiceNextRep').disabled,true,'Next Rep stays locked until the full selected group is accounted for');
   assert.equal(c.el('practiceFinishSession').disabled,false,'DNF enables session save');
-  c.el('practiceManualTime').click();await c.el('practiceFinishSession').click();
+  c.el('practiceManualTime').click();
+  assert.equal(c.el('practiceNextRep').disabled,false,'Final manual result completes the group rep and unlocks Next Rep');
+  await c.el('practiceFinishSession').click();
   assert.deepEqual(coachSaves[1].results.map(r=>r.resultStatus),['dnf','manual'],'DNF and manual statuses persist in save payload');
   assert.equal(coachSaves[1].results[1].timingSource,'manual','manual time keeps manual provenance');
   console.log('PASS: Rest timer controls, background elapsed time, athlete rep transitions, coach group recovery, pause/resume timing, current-rep reset, previous-rep replacement and cleanup.');
