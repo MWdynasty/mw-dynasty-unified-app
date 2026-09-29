@@ -36,15 +36,11 @@ function pathAllowed(path,contextPaths){
   ];
   return !denied.some(x=>p===x||p.startsWith(x));
 }
-function patchPaths(patch){
-  const out=new Set();
-  for(const line of String(patch||'').split(/\r?\n/)){
-    const m=line.match(/^diff --git a\/(.+?) b\/(.+)$/);
-    if(m){out.add(m[1]);out.add(m[2])}
-    const f=line.match(/^(?:---|\+\+\+) (?:a|b)\/(.+)$/);
-    if(f)out.add(f[1]);
-  }
-  return [...out];
+function validEdit(edit,contextPaths){
+  const p=String(edit?.path||'').replace(/\\/g,'/').replace(/^\.\//,'');
+  const find=String(edit?.find||'');
+  const replace=String(edit?.replace??'');
+  return pathAllowed(p,contextPaths)&&find.length>=8&&find.length<=18000&&replace.length<=24000;
 }
 async function openai(instructions,input,max=5000){
   const ctl=new AbortController();
@@ -84,7 +80,7 @@ module.exports=async function handler(req,res){
     const instructions=`You are the MW Dynasty controlled non-production engineering agent.
 You are working ONLY on a disposable Git branch and preview environment. Production merge is forbidden.
 
-Your job is to produce a minimal unified Git diff for the assigned engineering task.
+Your job is to produce a minimal set of exact text replacements for the assigned engineering task.
 
 HARD BOUNDARIES:
 - Modify ONLY files explicitly present in REPOSITORY CONTEXT.
@@ -94,15 +90,17 @@ HARD BOUNDARIES:
 - Do not change official MW training methodology, prices, memberships, workout prescriptions, pace formulas, or program content unless the task explicitly requires a UI/state bug fix that preserves those values.
 - Do not claim a test passed; tests happen after your patch in CI.
 - Prefer the smallest change that resolves the defect and preserves existing design.
-- If the supplied context is insufficient to safely implement the repair, return blocked_evidence with no patch.
-- The patch must be valid standard unified diff starting with "diff --git".
-- Do not use binary patches, file renames, deletes, chmod changes, or new files.
+- If the supplied context is insufficient to safely implement the repair, return blocked_evidence with no edits.
+- Each edit must identify an exact existing source string copied verbatim from REPOSITORY CONTEXT and its complete replacement.
+- Keep each find string narrowly scoped but long enough to be unique. Do not use ellipses, placeholders, line numbers, regex, or invented surrounding code.
+- Use no more than 6 edits and no more than 4 distinct files.
+- Do not create, delete, rename, or chmod files.
 
 Return JSON only:
 {
   "disposition":"patch_ready|blocked_evidence",
   "summary":"what you changed or why blocked",
-  "patch":"unified diff or empty string",
+  "edits":[{"path":"existing/context/file","find":"exact source text","replace":"complete replacement text"}],
   "expected_behavior":["short verification points"],
   "risk_notes":["short risk notes"],
   "suggested_tests":["existing test commands or focused checks"]
@@ -128,27 +126,33 @@ ${ctx}`;
     const raw=await openai(instructions,input,5200);
     let result;
     try{result=parseJson(raw)}catch{
-      return res.status(200).json({ok:true,disposition:'blocked_evidence',summary:'Engineering model returned an unreadable patch response.',patch:'',expected_behavior:[],risk_notes:['No repository change was authorized.'],suggested_tests:[]});
+      return res.status(200).json({ok:true,disposition:'blocked_evidence',summary:'Engineering model returned an unreadable edit response.',edits:[],expected_behavior:[],risk_notes:['No repository change was authorized.'],suggested_tests:[]});
     }
 
     const disposition=result?.disposition==='patch_ready'?'patch_ready':'blocked_evidence';
-    const patch=clean(result?.patch,90000);
-    if(disposition!=='patch_ready'||!patch){
+    const edits=Array.isArray(result?.edits)?result.edits.slice(0,7):[];
+    if(disposition!=='patch_ready'||!edits.length){
       return res.status(200).json({
-        ok:true,disposition:'blocked_evidence',summary:clean(result?.summary,4000)||'Repository context was insufficient for a safe patch.',
-        patch:'',expected_behavior:Array.isArray(result?.expected_behavior)?result.expected_behavior.slice(0,12):[],
+        ok:true,disposition:'blocked_evidence',summary:clean(result?.summary,4000)||'Repository context was insufficient for safe exact-code edits.',
+        edits:[],expected_behavior:Array.isArray(result?.expected_behavior)?result.expected_behavior.slice(0,12):[],
         risk_notes:Array.isArray(result?.risk_notes)?result.risk_notes.slice(0,12):[],
         suggested_tests:Array.isArray(result?.suggested_tests)?result.suggested_tests.slice(0,12):[]
       });
     }
-    if(!patch.startsWith('diff --git '))return res.status(422).json({error:'Engineering patch was not a valid unified Git diff.'});
-    const paths=patchPaths(patch);
-    if(!paths.length||paths.length>4)return res.status(422).json({error:'Engineering patch touched an invalid number of files.'});
-    for(const p of paths)if(!pathAllowed(p,contextPaths))return res.status(422).json({error:`Engineering patch attempted an unauthorized path: ${p}`});
+    if(edits.length>6)return res.status(422).json({error:'Engineering response exceeded the edit limit.'});
+    const normalizedEdits=[];
+    const paths=new Set();
+    for(const edit of edits){
+      if(!validEdit(edit,contextPaths))return res.status(422).json({error:'Engineering response attempted an invalid or unauthorized exact-code edit.'});
+      const p=String(edit.path).replace(/\\/g,'/').replace(/^\.\//,'');
+      paths.add(p);
+      normalizedEdits.push({path:p,find:String(edit.find),replace:String(edit.replace??'')});
+    }
+    if(paths.size>4)return res.status(422).json({error:'Engineering response touched too many files.'});
 
     return res.status(200).json({
-      ok:true,disposition:'patch_ready',summary:clean(result?.summary,4000),patch,
-      changed_paths:[...new Set(paths)],
+      ok:true,disposition:'patch_ready',summary:clean(result?.summary,4000),edits:normalizedEdits,
+      changed_paths:[...paths],
       expected_behavior:Array.isArray(result?.expected_behavior)?result.expected_behavior.slice(0,12):[],
       risk_notes:Array.isArray(result?.risk_notes)?result.risk_notes.slice(0,12):[],
       suggested_tests:Array.isArray(result?.suggested_tests)?result.suggested_tests.slice(0,12):[],
