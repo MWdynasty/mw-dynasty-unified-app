@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync,spawnSync} from 'node:child_process';
 
-// Stage 2 execution control version 4
+// Stage 2 execution control version 5
 const EDGE='https://keqgunlfwhjgcsurynef.supabase.co/functions/v1/mw-founder-controlled-execution';
 const PREVIEW='https://mwdynastyunifiedappv31tiered13plusdeploy-git-a-bab295-mw-sprint.vercel.app';
 const ROOT=process.cwd();
