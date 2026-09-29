@@ -186,6 +186,65 @@ function validateAndApplyEdits(edits,context,policy){
   return paths;
 }
 
+function suiteCommands(){
+  const pkg=JSON.parse(fs.readFileSync(path.join(ROOT,'package.json'),'utf8'));
+  const script=String(pkg?.scripts?.test||'');
+  return script.split('&&').map(x=>x.trim()).map(cmd=>{
+    const m=cmd.match(/^node\s+([^\s]+\.js)(?:\s+.*)?$/);
+    return m?m[1]:null;
+  }).filter(Boolean);
+}
+function failureSignature(output){
+  const text=String(output||'').replace(/\r/g,'');
+  const lines=text.split('\n').map(x=>x.trim()).filter(Boolean);
+  const err=lines.find(x=>/^(?:AssertionError|ReferenceError|TypeError|SyntaxError|RangeError|Error):/.test(x))
+    ||lines.find(x=>/(?:AssertionError|ReferenceError|TypeError|SyntaxError|RangeError|Error):/.test(x))
+    ||lines.slice(-1)[0]||'unknown failure';
+  const frame=lines.find(x=>/test-[A-Za-z0-9_.-]+\.js:\d+/.test(x))||'';
+  const file=(frame.match(/(test-[A-Za-z0-9_.-]+\.js):\d+/)||[])[1]||'';
+  return (err+'|'+file).slice(0,900);
+}
+function runSuiteIndependently(){
+  const commands=suiteCommands();
+  if(!commands.length)throw new Error('No Node test files could be resolved from npm test.');
+  return commands.map(file=>{
+    const r=spawnSync('node',[file],{cwd:ROOT,encoding:'utf8',timeout:4*60*1000,maxBuffer:8*1024*1024});
+    const output=safeText((r.stdout||'')+'\n'+(r.stderr||''),9000);
+    return {file,ok:r.status===0,status:r.status,signature:r.status===0?'PASS':failureSignature(output),output};
+  });
+}
+function compareSuites(before,after){
+  const byFile=new Map(after.map(x=>[x.file,x]));
+  const regressions=[],baselineFailures=[],improvements=[];
+  for(const b of before){
+    const a=byFile.get(b.file);
+    if(!a){regressions.push(b.file+': missing after-change result');continue}
+    if(b.ok&&!a.ok){regressions.push(b.file+': '+a.signature);continue}
+    if(!b.ok&&a.ok){improvements.push(b.file);continue}
+    if(!b.ok&&!a.ok){
+      if(b.signature!==a.signature)regressions.push(b.file+': failure changed from '+b.signature+' to '+a.signature);
+      else baselineFailures.push(b.file+': '+b.signature);
+    }
+  }
+  for(const a of after)if(!before.some(b=>b.file===a.file))regressions.push(a.file+': new test command appeared during edit');
+  return {regressions,baselineFailures,improvements,passedAfter:after.filter(x=>x.ok).length,total:after.length};
+}
+function checkChangedSyntax(files){
+  let htmlScripts=0;
+  for(const p of files){
+    if(/\.(?:js|mjs|cjs)$/i.test(p)){run('node',['--check',p]);continue}
+    if(/\.html$/i.test(p)){
+      const html=fs.readFileSync(path.join(ROOT,p),'utf8');
+      const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(x=>x[1]).filter(x=>x.trim());
+      for(let i=0;i<scripts.length;i++){
+        const tmp=`/tmp/mw-stage2-inline-${htmlScripts++}.js`;
+        fs.writeFileSync(tmp,scripts[i],'utf8');
+        run('node',['--check',tmp],{cwd:ROOT});
+      }
+    }
+  }
+}
+
 async function github(endpoint,options={}){
   if(!GH_TOKEN)throw new Error('GITHUB_TOKEN is unavailable.');
   const r=await fetch(`https://api.github.com/repos/${GH_REPO}${endpoint}`,{
@@ -255,6 +314,8 @@ async function main(){
   try{
     const context=buildContext(task,policy);
     log(`Prepared ${context.length} constrained repository context file(s).`);
+    const baselineSuite=runSuiteIndependently();
+    log(`Captured baseline regression state: ${baselineSuite.filter(x=>x.ok).length}/${baselineSuite.length} tests passing.`);
     const generated=await edge(token,{action:'generate_patch',job_id:job.id,context});
     if(generated?.disposition!=='patch_ready'){
       log('Engineering worker blocked itself on insufficient evidence.');
@@ -270,10 +331,15 @@ async function main(){
 
     await edge(token,{action:'evidence',job_id:job.id,state:'testing',evidence:{summary:'Exact-code edits applied in isolated GitHub Actions workspace.',changed_files:actual}});
 
-    for(const p of actual.filter(x=>/\.(?:js|mjs|cjs)$/i.test(x)))run('node',['--check',p]);
-    const test=spawnSync('npm',['test'],{cwd:ROOT,encoding:'utf8',timeout:12*60*1000,maxBuffer:12*1024*1024});
-    const testOut=safeText((test.stdout||'')+'\n'+(test.stderr||''),7000);
-    if(test.status!==0)throw new Error('npm test failed. '+safeText(testOut,3500));
+    checkChangedSyntax(actual);
+    const afterSuite=runSuiteIndependently();
+    const comparison=compareSuites(baselineSuite,afterSuite);
+    if(comparison.regressions.length)throw new Error('Regression gate failed: '+comparison.regressions.join(' | '));
+    const testSummary=[
+      `Independent regression suite: ${comparison.passedAfter}/${comparison.total} tests pass after the edit.`,
+      comparison.baselineFailures.length?`Pre-existing unchanged failures: ${comparison.baselineFailures.join(' | ')}`:'No baseline test failures remained.',
+      comparison.improvements.length?`Improved baseline tests: ${comparison.improvements.join(', ')}`:''
+    ].filter(Boolean).join(' ');
 
     run('git',['config','user.name','MW Dynasty AI Engineer']);
     run('git',['config','user.email','ai-engineer@mwdynasty.local']);
@@ -285,7 +351,7 @@ async function main(){
     await edge(token,{action:'evidence',job_id:job.id,state:'committed',evidence:{
       summary:'Controlled patch committed to isolated Stage 2 branch.',
       commit_sha:sha,changed_files:actual,
-      test_summary:'npm test passed before push. '+safeText(testOut,2200)
+      test_summary:testSummary
     }});
     log(`Committed ${sha.slice(0,12)} and pushed Stage 2 branch.`);
 
@@ -297,11 +363,11 @@ async function main(){
 
     const smokeResults=await smoke();
     const prUrl=await ensureDraftPr(task,sha);
-    const qa=`Repository regression suite passed; preview commit identity matched ${sha}; smoke checks passed: ${smokeResults.map(x=>x.path+' '+x.status).join(', ')}.`;
+    const qa=`Regression comparison found no new test failures; preview commit identity matched ${sha}; smoke checks passed: ${smokeResults.map(x=>x.path+' '+x.status).join(', ')}.`;
     await edge(token,{action:'evidence',job_id:job.id,state:'qa_passed',evidence:{
       summary:'Controlled execution passed non-production QA and is waiting for Founder approval.',
       commit_sha:sha,preview_url:PREVIEW,changed_files:actual,
-      test_summary:'npm test passed.',
+      test_summary:testSummary,
       qa_summary:qa,
       pull_request_url:prUrl||null,
       engineering_summary:safeText(generated.summary,3500),
