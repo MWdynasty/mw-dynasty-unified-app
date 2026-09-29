@@ -196,7 +196,8 @@ includes('server/api/coach/practice-timing.js',"code:'rep_limit_exceeded'",'Coac
 
 includes('coach/app.js',"function coachPracticeWorkoutComplete(a)",'Coach Practice Mode completion lock helper missing');
 includes('coach/app.js',"WORKOUT COMPLETE",'Coach Practice Mode must visibly lock completed athlete workouts');
-includes('coach/app.js',"const timable=()=>visible().filter(a=>!coachPracticeWorkoutComplete(a))",'Coach Practice Mode must exclude completed athletes from live timing');
+includes('coach/app.js',"if(coachPracticeWorkoutComplete(a))return false;",'Coach Practice Mode must exclude completed athletes from live timing');
+includes('coach/app.js',"const timable=()=>visible().filter(a=>athleteEligibleForRep(a))",'Coach Practice Mode must gate live timing through authoritative eligibility');
 includes('server/api/coach/practice-timing.js',"completedCurrentWorkouts",'Coach practice timing API must check authoritative workout completion');
 includes('server/api/coach/practice-timing.js',"workout_already_completed",'Coach practice timing API must reject duplicate completed-workout timing');
 
