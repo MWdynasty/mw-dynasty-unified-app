@@ -101,6 +101,11 @@ Deno.serve(async(req:Request)=>{
     const body=await req.json().catch(()=>({}));
     const action=String(body?.action||"");
 
+    if(action==="resume"){
+      const resumed=await rpc("mw_execution_resume_next",{});
+      return J({ok:true,identity:{event_name:identity.event_name,run_id:identity.run_id},...resumed});
+    }
+
     if(action==="claim"){
       const claimed=await rpc("mw_execution_claim_next",{});
       return J({ok:true,identity:{event_name:identity.event_name,run_id:identity.run_id},...claimed});
