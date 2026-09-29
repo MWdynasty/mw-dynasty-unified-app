@@ -2251,6 +2251,7 @@ let mwCompletionCache={};
 let mwWorkoutStatusCache={};
 let mwSessionRpeCache={};
 let mwPaceCheckCache={};
+let mwCompletionRenderGeneration=0;
 let mwCompletionLoaded=false;
 let mwPendingCompletion=null;
 let mwSeasonCalendar=null;
@@ -2413,6 +2414,7 @@ function mwTodayTrackSessionNumber(){
   return (n>=1&&n<=5)?n:null;
 }
 async function renderCompletion(){
+  const renderGeneration=++mwCompletionRenderGeneration;
   const w=advanceCurrentWeek(),repEnabled=!!getProfile().repTracking;
   const hint=$('#completionRepHint'),perfHint=$('#performanceHint'),details=$('#todayTrackDetails');
   if(hint)hint.textContent=repEnabled?'If today has a target pace, MW will ask one quick question. No typing. No homework.':'Rep-by-rep pace tracking is exclusive to athletes training inside the MW Sprint Performance System.';
@@ -2420,17 +2422,17 @@ async function renderCompletion(){
   if($('#completionWeek'))$('#completionWeek').textContent=w;
   const c=getCompletion(),wc=c[String(w)]||{},pace=mwPaceCheckCache[String(w)]||{},box=$('#weekChecklist');
   if(!box)return;
+  const overdue=latestIncompleteWorkout(),sessionNumber=mwTodayTrackSessionNumber();
+  let session=null;
+  try{const data=await loadMWProgramWeek(w);session=sessionNumber?data?.track?.sessions?.find(x=>Number(x.day)===Number(sessionNumber)):null}catch{}
+  if(renderGeneration!==mwCompletionRenderGeneration)return;
   box.innerHTML='';
-  const overdue=latestIncompleteWorkout();
-  if(overdue&&!(Number(overdue.program_week)===Number(w)&&Number(overdue.program_day)===Number(mwTodayTrackSessionNumber()))){
+  if(overdue&&!(Number(overdue.program_week)===Number(w)&&Number(overdue.program_day)===Number(sessionNumber))){
     const late=document.createElement('div');late.className='checkRow';
     late.innerHTML=`<span><b>Week ${overdue.program_week} · Session ${overdue.program_day}</b><br><small class="muted">INCOMPLETE · YOUR SAVED REPS ARE STILL HERE</small></span><span class="completionActions"><button data-finish-previous="1">FINISH LOGGING</button></span>`;
     box.appendChild(late);
     late.querySelector('button')?.addEventListener('click',()=>window.mwOpenPracticeFor?.(overdue.program_week,overdue.program_day));
   }
-  const sessionNumber=mwTodayTrackSessionNumber();
-  let session=null;
-  try{const data=await loadMWProgramWeek(w);session=sessionNumber?data?.track?.sessions?.find(x=>Number(x.day)===Number(sessionNumber)):null}catch{}
   if(!sessionNumber||!session){
     if(details)details.innerHTML='<h2 style="margin-bottom:6px">No track workout scheduled today.</h2><p class="muted">Recovery day. Your next scheduled track session will appear here automatically.</p>';
     if(hint)hint.style.display='none';if(perfHint)perfHint.style.display='none';
@@ -2443,14 +2445,15 @@ async function renderCompletion(){
     const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'Follow the MW prescription for today.';
     const wk=session?.wickets||{};const wicketLine=[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · ');details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WARM-UP:</b> ${session.warmup||'Competition Warm-Up'}<br><b>WICKETS:</b> ${wicketLine||'Daily MW wicket progression'}<br><b>WORK:</b> ${prescribed}<br><b>RECOVERY / STRENGTH:</b> ${session.recovery||'Full quality recovery'}</div>`;
   }
-  const isDone=!!wc['s'+sessionNumber],pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
+  const pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),isDone=!!wc['s'+sessionNumber]||status==='completed',row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
   const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
   const statusLabel=isDone?(state?.completed_late?'COMPLETED · LATE ENTRY':'COMPLETED'):status==='in_progress'?'IN PROGRESS':status==='incomplete'?'INCOMPLETE · REPS SAVED':status==='absent'?'ABSENT':'SCHEDULED';
-  row.innerHTML=`<span><b>${session.title||('Track Session '+sessionNumber)}</b><br><small class="muted">${statusLabel}${paceNote}</small></span><span class="completionActions"><button data-session="${sessionNumber}">${isDone?'✓ DONE':status==='incomplete'?'FINISH LOGGING':'DONE'}</button></span>`;
+  const actionLabel=isDone?'✓ DONE':status==='in_progress'?'CONTINUE':status==='incomplete'?'FINISH LOGGING':'DONE';
+  row.innerHTML=`<span><b>${session.title||('Track Session '+sessionNumber)}</b><br><small class="muted">${statusLabel}${paceNote}</small></span><span class="completionActions"><button data-session="${sessionNumber}">${actionLabel}</button></span>`;
   box.appendChild(row);
-  const btn=box.querySelector('button[data-session]');if(btn)btn.onclick=()=>status==='incomplete'?window.mwOpenPracticeFor?.(w,sessionNumber):beginWorkoutCheckin(w,sessionNumber,btn);
+  const btn=box.querySelector('button[data-session]');if(btn)btn.onclick=()=>['in_progress','incomplete'].includes(status)?window.mwOpenPracticeFor?.(w,sessionNumber):beginWorkoutCheckin(w,sessionNumber,btn);
   if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':status==='incomplete'?'INCOMPLETE':status==='in_progress'?'IN PROGRESS':'SCHEDULED';
-  if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Every finished rep is being saved automatically.':'Today’s session is scheduled and ready.';
+  if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Continue the same saved workout from Practice Mode.':'Today’s session is scheduled and ready.';
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}}
 function renderProfileIdentity(){const p=getProfile(),first=(document.getElementById('name')?.value||p.name||'Athlete').trim(),last=(document.getElementById('profileLastName')?.value||'').trim(),events=(document.getElementById('profileEvents')?.value||'SPRINT PERFORMANCE').trim();const nm=document.getElementById('mwProfileDisplayName'),ev=document.getElementById('mwProfileEventLine'),mo=document.getElementById('mwProfileMonogram');if(nm)nm.textContent=(first+' '+last).trim();if(ev)ev.textContent=events||'SPRINT PERFORMANCE';if(mo)mo.textContent=((first[0]||'M')+(last[0]||'W')).toUpperCase()}
