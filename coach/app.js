@@ -387,7 +387,8 @@ async function practiceModePage(){
     if(target>0)return {target,fast:target*.99,slow:target*1.01,source:'pace_ai',distance:auto.distance,intensityPct:auto.intensityPct};
     return {target:null,fast:null,slow:null,source:null}
   };
-  const pace=(ms,athleteId)=>{const t=targetFor(athleteId);if(!(t.fast>0&&t.slow>0))return {status:null,label:'',...t};const seconds=ms/1000;return seconds<t.fast?{status:'fast',label:'TOO FAST',...t}:seconds>t.slow?{status:'slow',label:'TOO SLOW',...t}:{status:'on_pace',label:'ON TARGET',...t}};
+  const practiceIntent=(athleteId)=>String(practicePlans[athleteId]?.intent||'pace');
+  const pace=(ms,athleteId)=>{const t=targetFor(athleteId);if(!(t.fast>0&&t.slow>0))return {status:null,label:'',...t};const seconds=ms/1000,intent=practiceIntent(athleteId),qualitySpeed=['technical','speed'].includes(intent);if(seconds<t.fast&&qualitySpeed)return {status:'on_pace',label:'ABOVE TARGET · QUALITY SPEED',interpretation:'above_target',intent,...t};return seconds<t.fast?{status:'fast',label:'TOO FAST',interpretation:'pace_violation',intent,...t}:seconds>t.slow?{status:'slow',label:'TOO SLOW',interpretation:'below_target',intent,...t}:{status:'on_pace',label:'ON TARGET',interpretation:'on_target',intent,...t}};
   const renderTiming=()=>{
     retryBtn.disabled=Boolean(repStart||retryingRep||(!repFinished&&repResults.length)||(!repResults.length&&!sessionResults.length));
     const list=visible();
@@ -429,7 +430,7 @@ async function practiceModePage(){
           const week=Math.max(1,Math.min(41,Number(a.current_week)||1)),sourceWeek=Math.max(1,Math.min(41,Number(a.source_week)||week)),day=Math.max(1,Math.min(5,Number(a.current_day)||1)),trackTier=coachPracticeTier(a),strengthTier=coachPracticeStrengthTier(a),eg=coachPracticeEventGroup(a),key=[sourceWeek,day,trackTier,strengthTier,eg].join('|');
           if(!programCache.has(key))programCache.set(key,coachProgramData(sourceWeek,eg,trackTier,strengthTier));
           const data=await programCache.get(key),s=(data.track?.sessions||[]).find(x=>coachSessionDayNumber(x.day)===day),plan=mwCoachPracticePrescription(s),target=mwCoachPracticeRecommendedTarget(a,plan.distance,plan.intensityPct);
-          practicePlans[a.id]={reps:plan.reps,distance:plan.distance,intensityPct:plan.intensityPct,raw:plan.raw,week,sourceWeek,day};
+          const intentText=[s?.title,s?.focus,s?.prescribedWork,s?.work,s?.structure,s?.intensity,...(Array.isArray(s?.cues)?s.cues:[])].filter(Boolean).join(' ').toLowerCase(),intent=/tempo|extensive|recovery|regeneration|easy/.test(intentText)?(/recovery|regeneration|easy/.test(intentText)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(intentText)?(/technical|technique|progressive|fly|flying|wicket/.test(intentText)?'technical':'speed'):'pace';practicePlans[a.id]={reps:plan.reps,distance:plan.distance,intensityPct:plan.intensityPct,raw:plan.raw,intent,week,sourceWeek,day};
           if(target)practiceTargets[a.id]={target,distance:plan.distance,intensityPct:plan.intensityPct,week,sourceWeek,day};
         }catch{}
       }));
