@@ -1,5 +1,5 @@
 const app=document.getElementById('app');
-const MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
+const MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-')||location.hostname.includes('-git-a-bab295-');
 const SUPABASE_URL=MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':'https://keqgunlfwhjgcsurynef.supabase.co';
 const SUPABASE_KEY=MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
 const SESSION_KEY='mwCoachSupabaseSession';
