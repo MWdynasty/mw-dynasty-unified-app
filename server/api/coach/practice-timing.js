@@ -95,6 +95,7 @@ module.exports=async(req,res)=>{
           p_distance_m:meta.distanceM,
           p_season_plan_id:meta.seasonPlanId
         })});
+        await rest('rpc/mw_coach_sync_practice_intelligence',c.token,{method:'POST',body:JSON.stringify({p_session_id:sessionId,p_athlete_id:meta.athleteId,p_workout_key:meta.workoutKey})});
         synced.push(sync);
       }
       return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length,sessionId,results:saved,synced});
