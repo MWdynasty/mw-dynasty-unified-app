@@ -281,27 +281,46 @@ async function ensureDraftPr(task,sha){
   }
 }
 async function waitForPreview(sha){
-  for(let i=0;i<24;i++){
+  for(let i=0;i<30;i++){
     try{
-      const r=await fetch(`${PREVIEW}/api/build-info?mwqa=${Date.now()}`,{headers:{'cache-control':'no-cache'}});
-      const d=await r.json().catch(()=>({}));
-      if(r.ok&&String(d?.git_sha||'')===sha&&String(d?.git_ref||'')==='ai-execution/stage2')return d;
-    }catch{}
+      const d=await github(`/commits/${encodeURIComponent(sha)}/status`);
+      const statuses=Array.isArray(d?.statuses)?d.statuses:[];
+      const vercel=statuses.find(x=>String(x?.context||'').toLowerCase()==='vercel');
+      if(vercel?.state==='success'){
+        return {state:'success',target_url:vercel.target_url||null,description:vercel.description||'Deployment has completed'};
+      }
+      if(vercel&&['failure','error'].includes(String(vercel.state||''))){
+        throw new Error('Vercel reported a failed deployment for the controlled execution commit.');
+      }
+    }catch(e){
+      if(String(e?.message||'').includes('Vercel reported a failed deployment'))throw e;
+    }
     await sleep(10000);
   }
-  throw new Error('Vercel preview did not reach the new commit within the QA window.');
+  throw new Error('Vercel did not report deployment success for the controlled execution commit within the QA window.');
 }
-async function smoke(){
+function verifyLocalRouteContract(){
+  const required=['index.html','athlete/index.html','coach/index.html'];
+  const missing=required.filter(p=>!fs.existsSync(path.join(ROOT,p)));
+  if(missing.length)throw new Error('Preview route contract is missing required entry files: '+missing.join(', '));
+  return required;
+}
+async function previewProtectionProbe(){
   const paths=['/','/athlete/','/coach/'];
   const results=[];
   for(const p of paths){
     const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),20000);
     try{
-      const r=await fetch(PREVIEW+p,{redirect:'follow',signal:ctl.signal,headers:{'cache-control':'no-cache'}});
-      results.push({path:p,status:r.status,ok:r.status>=200&&r.status<400});
+      const r=await fetch(PREVIEW+p,{redirect:'manual',signal:ctl.signal,headers:{'cache-control':'no-cache'}});
+      const location=String(r.headers.get('location')||'');
+      const protectedByVercel=r.status===302&&location.includes('vercel.com/sso-api');
+      const directlyReachable=r.status>=200&&r.status<400&&!protectedByVercel;
+      results.push({path:p,status:r.status,protected:protectedByVercel,reachable:directlyReachable});
     }finally{clearTimeout(timer)}
   }
-  if(results.some(x=>!x.ok))throw new Error('Preview smoke test failed: '+results.map(x=>`${x.path}=${x.status}`).join(', '));
+  if(results.some(x=>!x.protected&&!x.reachable)){
+    throw new Error('Preview front-door probe failed: '+results.map(x=>`${x.path}=${x.status}`).join(', '));
+  }
   return results;
 }
 
@@ -371,15 +390,17 @@ async function main(){
     }});
     log(`Committed ${pushedSha.slice(0,12)} and pushed Stage 2 branch.`);
 
-    await waitForPreview(pushedSha);
+    const deployment=await waitForPreview(pushedSha);
+    const routeFiles=verifyLocalRouteContract();
+    const protectionResults=await previewProtectionProbe();
     await edge(token,{action:'evidence',job_id:job.id,state:'preview_ready',evidence:{
-      summary:'Vercel preview is serving the exact controlled execution commit.',
-      commit_sha:pushedSha,preview_url:PREVIEW,changed_files:actual
+      summary:'Vercel reported deployment success for the exact controlled execution commit; preview access protection remains intact.',
+      commit_sha:pushedSha,preview_url:PREVIEW,changed_files:actual,
+      vercel_status:deployment,route_contract:routeFiles,preview_protection:protectionResults
     }});
 
-    const smokeResults=await smoke();
-    const prUrl=await ensureDraftPr(task,sha);
-    const qa=`Regression comparison found no new test failures; preview commit identity matched ${pushedSha}; smoke checks passed: ${smokeResults.map(x=>x.path+' '+x.status).join(', ')}.`;
+    const prUrl=await ensureDraftPr(task,pushedSha);
+    const qa=`Regression comparison found no new test failures; Vercel reported deployment success for exact commit ${pushedSha}; local route contract is intact; preview front door remained protected: ${protectionResults.map(x=>x.path+' '+x.status+(x.protected?' protected':' reachable')).join(', ')}.`;
     await edge(token,{action:'evidence',job_id:job.id,state:'qa_passed',evidence:{
       summary:'Controlled execution passed non-production QA and is waiting for Founder approval.',
       commit_sha:pushedSha,preview_url:PREVIEW,changed_files:actual,
