@@ -4218,7 +4218,7 @@ function retryLastRep(){
 function renderLog(){
  const box=$p('mwPracticeRepLog'); if(!box)return;
  box.hidden=!results.length;
- box.innerHTML=results.map(r=>'<div class="mwPracticeRepRow"><b>REP '+r.rep_number+'</b><span>'+Number(r.time_seconds).toFixed(2)+'s'+(r.target_seconds?' / '+Number(r.target_seconds).toFixed(2)+'s target':'')+'</span><span class="'+(r.pace_status==='on_pace'?'on':r.pace_status==='outside_target'?'off':'')+'">'+(r.mw_interpretation==='above_target'?'✓ ABOVE TARGET · QUALITY SPEED':r.pace_status==='on_pace'?'✓ ON PACE':r.pace_status==='outside_target'?'OUTSIDE TARGET':'✓ SAVED')+'</span></div>').join('');
+ box.innerHTML=results.map(r=>'<div class="mwPracticeRepRow"><b>REP '+r.rep_number+'</b><span>'+Number(r.time_seconds).toFixed(2)+'s'+(r.target_seconds?' / '+Number(r.target_seconds).toFixed(2)+'s target':'')+'</span><span class="'+(r.pace_status==='on_pace'?'on':r.pace_status==='outside_target'?'off':'')+'">'+(r.mw_interpretation==='above_target'?'✓ ABOVE TARGET · QUALITY SPEED':r.mw_intent==='technical'&&r.mw_interpretation==='below_target'?'BELOW TARGET · TECHNICAL SPEED':r.pace_status==='on_pace'?'✓ ON PACE':r.pace_status==='outside_target'?'OUTSIDE TARGET':'✓ SAVED')+'</span></div>').join('');
 }
 async function loadExistingReps(w,d){
  const aid=completionAthleteId();if(!aid)return[];
