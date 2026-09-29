@@ -172,6 +172,12 @@ includes('supabase/migrations/20260921_founder_os_v23_skool_content_center.sql',
 includes('assets/mw-web-analytics.js','if(NATIVE)return false','Website analytics must exclude native app sessions');
 includes('account/index.html',"MWWebAnalytics?.track('checkout_start'",'Web checkout-start tracking missing');
 includes('coach/app.js',"MWWebAnalytics?.track('signup_complete'",'Coach web application completion tracking missing');
+includes('coach/app.js',"function coachPracticeWorkoutComplete(a)",'Coach Practice Mode completion lock helper missing');
+includes('coach/app.js',"WORKOUT COMPLETE",'Coach Practice Mode must visibly lock completed athlete workouts');
+includes('coach/app.js',"const timable=()=>visible().filter(a=>!coachPracticeWorkoutComplete(a))",'Coach Practice Mode must exclude completed athletes from live timing');
+includes('server/api/coach/practice-timing.js',"completedCurrentWorkouts",'Coach practice timing API must check authoritative workout completion');
+includes('server/api/coach/practice-timing.js',"workout_already_completed",'Coach practice timing API must reject duplicate completed-workout timing');
+
 includes('athlete/index.html','/assets/mw-web-analytics.js','Athlete web entry analytics missing');
 includes('coach/index.html','/assets/mw-web-analytics.js','Coach web entry analytics missing');
 
