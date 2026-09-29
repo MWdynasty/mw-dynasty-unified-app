@@ -64,7 +64,14 @@ async function run() {
     loadMWProgramWeek:async()=>({track:{sessions:[{day:1,work:'2 x 100 m'}]}}),
     renderCompletion:async()=>{},renderProgressUI:()=>{},markWorkoutComplete:async()=>{},mwPracticeProgressCache:[]
   });
-  const athlete=fs.readFileSync('athlete/index.html','utf8').match(/<script id="mw-practice-runtime-v3">([\s\S]*?)<\/script>/)[1];
+  const athleteRaw=fs.readFileSync('athlete/index.html','utf8').match(/<script id="mw-practice-runtime-v3">([\s\S]*?)<\/script>/)[1];
+  // parsePrescription intentionally lives inside the browser runtime IIFE.
+  // Expose only that helper inside this VM fixture so the test can validate pace math
+  // without changing the shipped browser scope.
+  const athlete=athleteRaw.replace(
+    'function parsePrescription(source=session){',
+    'window.parsePrescription=function parsePrescription(source=session){'
+  );
   vm.runInContext(athlete,a.ctx);
   vm.runInContext("session={prescribedWork:'2 x 160m @ 80% · 90 sec rest'}",a.ctx);
   const parsedTarget=vm.runInContext("parsePrescription()",a.ctx);
