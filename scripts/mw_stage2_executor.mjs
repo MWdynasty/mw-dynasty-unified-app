@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync,spawnSync} from 'node:child_process';
 
-// Stage 2 execution control version 3
+// Stage 2 execution control version 4
 const EDGE='https://keqgunlfwhjgcsurynef.supabase.co/functions/v1/mw-founder-controlled-execution';
 const PREVIEW='https://mwdynastyunifiedappv31tiered13plusdeploy-git-a-bab295-mw-sprint.vercel.app';
 const ROOT=process.cwd();
@@ -256,9 +256,12 @@ async function main(){
     const context=buildContext(task,policy);
     log(`Prepared ${context.length} constrained repository context file(s).`);
     const generated=await edge(token,{action:'generate_patch',job_id:job.id,context});
-    if(generated?.disposition!=='patch_ready'||!Array.isArray(generated?.edits)||!generated.edits.length){
+    if(generated?.disposition!=='patch_ready'){
       log('Engineering worker blocked itself on insufficient evidence.');
       return;
+    }
+    if(!Array.isArray(generated?.edits)||!generated.edits.length){
+      throw new Error('Engineering worker returned patch_ready without exact edits; refusing to leave the job in a false-ready state.');
     }
 
     const changed=validateAndApplyEdits(generated.edits,context,policy);
