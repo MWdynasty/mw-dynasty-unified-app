@@ -73,8 +73,7 @@ async function run() {
     'window.parsePrescription=parsePrescription;\nfunction schedulePace(p){'
   );
   vm.runInContext(athlete,a.ctx);
-  vm.runInContext("session={prescribedWork:'2 x 160m @ 80% · 90 sec rest'}",a.ctx);
-  const parsedTarget=vm.runInContext("parsePrescription()",a.ctx);
+  const parsedTarget=vm.runInContext("parsePrescription({prescribedWork:'2 x 160m @ 80% · 90 sec rest'})",a.ctx);
   assert.equal(parsedTarget.dist,160);
   assert.ok(parsedTarget.target>15&&parsedTarget.target<40,'Practice target is calculated from PR + intensity, not 90-second recovery');
   assert.notEqual(parsedTarget.target,90);
