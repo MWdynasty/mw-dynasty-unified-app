@@ -388,7 +388,7 @@ async function practiceModePage(){
     return {target:null,fast:null,slow:null,source:null}
   };
   const practiceIntent=(athleteId)=>String(practicePlans[athleteId]?.intent||'pace');
-  const pace=(ms,athleteId)=>{const t=targetFor(athleteId);if(!(t.fast>0&&t.slow>0))return {status:null,label:'',...t};const seconds=ms/1000,intent=practiceIntent(athleteId),qualitySpeed=['technical','speed'].includes(intent);if(seconds<t.fast&&qualitySpeed)return {status:'on_pace',label:'ABOVE TARGET · QUALITY SPEED',interpretation:'above_target',intent,...t};return seconds<t.fast?{status:'fast',label:'TOO FAST',interpretation:'pace_violation',intent,...t}:seconds>t.slow?{status:'slow',label:'TOO SLOW',interpretation:'below_target',intent,...t}:{status:'on_pace',label:'ON TARGET',interpretation:'on_target',intent,...t}};
+  const pace=(ms,athleteId)=>{const t=targetFor(athleteId);if(!(t.fast>0&&t.slow>0))return {status:null,label:'',...t};const seconds=ms/1000,intent=practiceIntent(athleteId),qualitySpeed=['technical','speed'].includes(intent);if(seconds<t.fast&&qualitySpeed)return {status:'on_pace',label:'ABOVE TARGET · QUALITY SPEED',interpretation:'above_target',intent,...t};return seconds<t.fast?{status:'fast',label:'TOO FAST',interpretation:'pace_violation',intent,...t}:seconds>t.slow?{status:'slow',label:intent==='technical'?'BELOW TARGET · TECHNICAL SPEED':'TOO SLOW',interpretation:'below_target',intent,...t}:{status:'on_pace',label:'ON TARGET',interpretation:'on_target',intent,...t}};
   const renderTiming=()=>{
     retryBtn.disabled=Boolean(repStart||retryingRep||(!repFinished&&repResults.length)||(!repResults.length&&!sessionResults.length));
     const list=visible();
