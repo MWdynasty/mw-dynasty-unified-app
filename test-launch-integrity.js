@@ -193,6 +193,14 @@ includes('coach/app.js',"nextBtn.textContent=prescriptionFinished?'REPS COMPLETE
 includes('coach/app.js','prescribedReps:prescribedRepLimit(x.athleteId)','Coach Practice save payload must carry its prescribed rep limit');
 includes('server/api/coach/practice-timing.js',"code:'rep_limit_exceeded'",'Coach Practice API must reject reps beyond the prescription');
 
+includes('server/api/coach/practice-timing.js','rpc/mw_coach_sync_practice_session_to_athlete','Coach Practice saves must sync into canonical athlete history');
+includes('server/api/coach/practice-timing.js','p_workout_key:meta.workoutKey','Coach Practice sync must preserve athlete workout identity');
+includes('coach/app.js','seasonPlanId:athletes.find(a=>a.id===x.athleteId)?.season_plan_id||null','Coach Practice save must include athlete season/workout context');
+includes('athlete/index.html',"source=g.some(x=>x.entry_source==='coach')?'COACH TIMED':'ATHLETE TIMED'",'Athlete Practice history must identify Coach-timed sessions');
+includes('server/api/coach/performance.js','entry_sources:[...new Set(reps.map(r=>r.entry_source','Coach intelligence must receive Practice timing provenance');
+includes('supabase/migrations/20260929_unify_coach_athlete_practice_history.sql','mw_coach_sync_practice_session_to_athlete','Shared Coach/Athlete practice sync migration missing');
+
+
 includes('coach/app.js',"if(!repStart&&!repElapsed&&!repResults.length){",'Coach Practice reset must recompute Start Rep availability even when earlier reps are stored');
 includes('supabase/migrations/20260929_grant_coach_practice_timing_authenticated_crud.sql','grant select, insert, update, delete','Coach Practice timing authenticated table grants missing');
 
