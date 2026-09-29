@@ -5,11 +5,16 @@ on:
     branches: [main]
     paths:
       - 'athlete/**'
+      - 'coach/**'
+      - 'assets/mw-practice-rest.js'
+      - 'assets/mw-practice-rest.css'
       - 'api/**'
       - 'server/**'
       - 'supabase/migrations/**'
       - 'test-season-intelligence.js'
       - 'test-season-intelligence-authority.js'
+      - 'test-practice-rest.js'
+      - 'test-launch-integrity.js'
       - 'package.json'
       - 'vercel.json'
       - '.github/workflows/season-intelligence-qa.yml'

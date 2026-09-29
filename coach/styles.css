@@ -3076,3 +3076,106 @@ img,svg,video,canvas{max-width:100%}
   .coach-mobile-nav{pointer-events:auto!important}
   .coach-mobile-nav *{pointer-events:auto!important}
 }
+
+
+/* MW Practice Mode — live sideline cockpit
+   Keep Start, Rest and Finish Line together. Setup/error controls stay secondary. */
+.practice-live-cockpit{
+  margin-top:14px;
+  padding:14px;
+  border:1px solid color-mix(in srgb,var(--accent) 52%,var(--line));
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 18% 0%,rgba(239,191,56,.10),transparent 32%),
+    linear-gradient(155deg,rgba(8,20,29,.99),rgba(3,8,12,.995));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 34px rgba(0,0,0,.30);
+}
+.practice-live-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.practice-live-heading h3{margin:3px 0 2px;font-size:clamp(20px,5vw,28px)}
+.practice-live-heading p{margin:0;color:#9fb0bb;font-size:.88rem;line-height:1.35}
+.practice-live-heading>b{
+  flex:0 0 auto;
+  padding:8px 11px;
+  border:1px solid color-mix(in srgb,var(--accent) 62%,var(--line));
+  border-radius:12px;
+  background:rgba(239,191,56,.09);
+  color:var(--accent);
+  font-size:.9rem;
+  letter-spacing:.08em;
+}
+.practice-live-group-tabs{margin-top:10px}
+.practice-live-group-tabs button{min-height:42px}
+.practice-live-clocks{margin-top:10px}
+.practice-live-clock-card,.practice-live-rest-card{min-height:178px}
+.practice-live-clock-card{padding:14px 10px!important;gap:8px!important}
+.practice-live-clock-card h2{font-size:clamp(2rem,8vw,2.8rem)!important}
+.practice-live-clock-card .practice-timer-actions button,
+.practice-live-rest-card .mwRestActions button{min-height:42px!important}
+.practice-live-finish{
+  margin-top:10px;
+  padding:12px;
+  border:1px solid rgba(239,191,56,.28);
+  border-radius:20px;
+  background:linear-gradient(150deg,rgba(27,23,13,.92),rgba(5,10,14,.98));
+}
+.practice-live-finish .practice-finish-head h3{margin:2px 0 0;font-size:clamp(20px,5vw,27px)}
+.practice-live-finish .practice-finish-head p{margin:3px 0 0;color:#a9b6be;font-size:.86rem}
+.practice-live-finish .practice-timing-grid{margin-top:10px}
+.practice-live-finish .practice-finish-athlete{min-height:82px;padding:11px 12px}
+.practice-live-finish .practice-finish-athlete em{font-size:17px}
+.practice-live-finish .practice-next-actions{margin-top:10px;gap:8px}
+.practice-live-finish .practice-next-actions button{min-height:48px}
+.practice-drawer{
+  margin-top:10px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(10,20,27,.96),rgba(4,9,13,.98));
+  overflow:hidden;
+}
+.practice-drawer summary{
+  list-style:none;
+  min-height:54px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.practice-drawer summary::-webkit-details-marker{display:none}
+.practice-drawer summary span{font-weight:950;letter-spacing:.06em;color:#f0c85b}
+.practice-drawer summary small{color:#91a2ad;text-align:right}
+.practice-drawer summary:after{content:'＋';font-weight:900;color:var(--accent);font-size:18px}
+.practice-drawer[open] summary:after{content:'−'}
+.practice-drawer[open] summary{border-bottom:1px solid var(--line)}
+.practice-secondary-drawer .practice-retry-actions{margin:0;padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.practice-secondary-drawer .practice-retry-actions button{margin:0;min-width:0;min-height:42px;padding:8px;font-size:.78rem}
+.practice-secondary-drawer .practice-retry-actions button:first-child{grid-column:1/-1}
+.practice-setup-body{padding:12px}
+.practice-setup-body>small{display:block;margin-top:10px;color:#95a8b2;line-height:1.45}
+@media(max-width:620px){
+  .practice-live-cockpit{padding:10px;border-radius:20px}
+  .practice-live-heading p{display:none}
+  .practice-live-group-tabs{gap:6px}
+  .practice-live-group-tabs button{min-height:38px;font-size:.78rem}
+  .practice-live-clocks{gap:8px}
+  .practice-live-clock-card,.practice-live-rest-card{min-height:162px}
+  .practice-live-clock-card{padding:10px 7px!important}
+  .practice-live-clock-card h2{font-size:2.25rem!important}
+  .practice-live-clock-card small,.practice-live-rest-card [data-rest-status]{font-size:.68rem!important}
+  .practice-live-clock-card .practice-timer-actions,
+  .practice-live-rest-card .mwRestActions{gap:5px}
+  .practice-live-clock-card .practice-timer-actions button,
+  .practice-live-rest-card .mwRestActions button{font-size:.72rem!important;padding:6px 4px!important;min-height:40px!important}
+  .practice-live-finish{padding:10px}
+  .practice-live-finish .practice-timing-grid{grid-template-columns:1fr;gap:8px}
+  .practice-live-finish .practice-finish-athlete{min-height:78px;border-radius:16px}
+  .practice-live-finish .practice-finish-athlete b{font-size:.94rem}
+  .practice-live-finish .practice-finish-athlete small{font-size:.72rem}
+  .practice-live-finish .practice-finish-athlete em{font-size:16px}
+  .practice-live-finish .practice-next-actions{display:grid;grid-template-columns:1fr 1fr}
+  .practice-live-finish .practice-next-actions button{min-width:0;padding:10px 6px;font-size:.78rem}
+  .practice-drawer summary{min-height:48px;padding:10px 12px}
+  .practice-drawer summary small{font-size:.68rem}
+}
