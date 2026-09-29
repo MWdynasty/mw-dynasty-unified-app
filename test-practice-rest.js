@@ -69,8 +69,8 @@ async function run() {
   // Expose only that helper inside this VM fixture so the test can validate pace math
   // without changing the shipped browser scope.
   const athlete=athleteRaw.replace(
-    'function parsePrescription(source=session){',
-    'window.parsePrescription=function parsePrescription(source=session){'
+    'function schedulePace(p){',
+    'window.parsePrescription=parsePrescription;\nfunction schedulePace(p){'
   );
   vm.runInContext(athlete,a.ctx);
   vm.runInContext("session={prescribedWork:'2 x 160m @ 80% · 90 sec rest'}",a.ctx);
