@@ -310,18 +310,38 @@ function coachPracticeCompletionLabel(a){
 async function practiceModePage(){
   pageBase('Practice Mode','See today’s practice first, then run groups, capture finish times, and save the session without leaving the track.',`
     <section id="practiceTodayPlan" class="coach-today-practice practice-inline"><div class="tile">Loading today’s practice…</div></section>
-    <div class="practice-timing-clocks">
-      <div class="practice-mode-head"><div><span class="status-kicker">GROUP TIMING</span><h2 id="practiceClock">00.00</h2><small id="practiceClockState">Ready for Rep 1</small></div><div class="practice-timer-actions"><button class="action" id="practiceTimerStart">START REP</button><button class="back" id="practiceTimerReset" aria-label="Reset rep timer">RESET REP</button></div></div>
-      <section id="practiceRest" class="mwRestTimer" aria-label="Rest timer">
-        <span class="mwRestLabel">REST TIME</span><strong data-rest-clock role="timer" aria-label="Elapsed rest time" aria-live="off">00:00</strong>
-        <span data-rest-status role="status">READY BETWEEN REPS</span>
-        <div class="mwRestActions"><button type="button" data-rest-toggle>START REST</button><button type="button" data-rest-reset aria-label="Reset rest timer">RESET</button></div>
-      </section>
-    </div>
-    <div class="practice-retry-actions"><button class="back" id="practiceUndoFinish" disabled>UNDO LAST FINISH</button><button class="back" id="practiceFalseStart">FALSE START / RESTART</button><button class="back" id="practiceDNF">DNF</button><button class="back" id="practiceManualTime">MANUAL TIME</button><button class="back" id="practiceRetryRep" disabled>RETRY LAST REP</button></div>
-    <div class="practice-group-tabs" id="practiceGroupTabs"><button class="active" data-practice-group="all">ALL</button><button data-practice-group="boys">BOYS</button><button data-practice-group="girls">GIRLS</button></div>
-    <div class="tile" style="margin-top:14px"><div class="practice-group-tools"><label>Group<select id="practiceEventGroup"><option value="All Sprinters">All Sprinters</option><option value="100 / 200">100 / 200</option><option value="400">400</option><option value="Development">Development</option><option value="Varsity">Varsity</option><option value="Relays">Relays</option></select></label><label>Manual Target Override — Fast<input id="practiceTargetMin" type="number" min=".01" step=".01" inputmode="decimal" placeholder="Auto from Pace AI"></label><label>Manual Target Override — Slow<input id="practiceTargetMax" type="number" min=".01" step=".01" inputmode="decimal" placeholder="Auto from Pace AI"></label><label>Track Lanes<select id="practiceLaneCount">${[1,2,3,4,5,6,7,8,9].map(n=>`<option value="${n}" ${n===8?'selected':''}>${n}</option>`).join('')}</select></label></div><small>MW Pace AI loads each athlete’s recommended target from today’s prescription + live PRs. Use the two target boxes only when you intentionally want to override the automatic target. BOYS / GIRLS divisions stay synced with the roster.</small></div>
-    <div class="tile" style="margin-top:14px"><div class="practice-finish-head"><div><h3>Finish Line</h3><p>Start the rep, then tap each athlete as they cross.</p></div><b id="practiceRepLabel">REP 1</b></div><div id="practiceTimingRoster" class="practice-timing-grid"><div class="row">Loading athletes…</div></div><div class="practice-next-actions"><button class="action" id="practiceNextRep" disabled>NEXT REP</button><button class="back" id="practiceFinishSession" disabled>FINISH & SAVE</button></div><div id="practiceTimingState"></div></div>
+    <section class="practice-live-cockpit" aria-label="Live practice timing">
+      <div class="practice-live-heading">
+        <div><span class="status-kicker">LIVE REP</span><h3>Start → Tap Finish → Recover</h3><p>Keep the live controls together while athletes are moving.</p></div>
+        <b id="practiceRepLabel">REP 1</b>
+      </div>
+      <div class="practice-group-tabs practice-live-group-tabs" id="practiceGroupTabs"><button class="active" data-practice-group="all">ALL</button><button data-practice-group="boys">BOYS</button><button data-practice-group="girls">GIRLS</button></div>
+      <div class="practice-timing-clocks practice-live-clocks">
+        <div class="practice-mode-head practice-live-clock-card"><div><span class="status-kicker">GROUP TIMING</span><h2 id="practiceClock">00.00</h2><small id="practiceClockState">Ready for Rep 1</small></div><div class="practice-timer-actions"><button class="action" id="practiceTimerStart">START REP</button><button class="back" id="practiceTimerReset" aria-label="Reset rep timer">RESET REP</button></div></div>
+        <section id="practiceRest" class="mwRestTimer practice-live-rest-card" aria-label="Rest timer">
+          <span class="mwRestLabel">REST TIME</span><strong data-rest-clock role="timer" aria-label="Elapsed rest time" aria-live="off">00:00</strong>
+          <span data-rest-status role="status">READY BETWEEN REPS</span>
+          <div class="mwRestActions"><button type="button" data-rest-toggle>START REST</button><button type="button" data-rest-reset aria-label="Reset rest timer">RESET</button></div>
+        </section>
+      </div>
+      <div class="practice-live-finish">
+        <div class="practice-finish-head"><div><span class="status-kicker">FINISH LINE</span><h3>Tap athletes as they cross</h3><p>No scrolling through setup controls during the rep.</p></div></div>
+        <div id="practiceTimingRoster" class="practice-timing-grid"><div class="row">Loading athletes…</div></div>
+        <div class="practice-next-actions"><button class="action" id="practiceNextRep" disabled>NEXT REP</button><button class="back" id="practiceFinishSession" disabled>FINISH & SAVE</button></div>
+        <div id="practiceTimingState"></div>
+      </div>
+    </section>
+    <details class="practice-drawer practice-secondary-drawer" id="practiceMoreControls">
+      <summary><span>MORE REP CONTROLS</span><small>Undo · False Start · DNF · Manual · Retry</small></summary>
+      <div class="practice-retry-actions"><button class="back" id="practiceUndoFinish" disabled>UNDO LAST FINISH</button><button class="back" id="practiceFalseStart">FALSE START / RESTART</button><button class="back" id="practiceDNF">DNF</button><button class="back" id="practiceManualTime">MANUAL TIME</button><button class="back" id="practiceRetryRep" disabled>RETRY LAST REP</button></div>
+    </details>
+    <details class="practice-drawer practice-setup-drawer" id="practiceSetup">
+      <summary><span>PRACTICE SETUP</span><small>Group · Pace targets · Track lanes</small></summary>
+      <div class="practice-setup-body">
+        <div class="practice-group-tools"><label>Group<select id="practiceEventGroup"><option value="All Sprinters">All Sprinters</option><option value="100 / 200">100 / 200</option><option value="400">400</option><option value="Development">Development</option><option value="Varsity">Varsity</option><option value="Relays">Relays</option></select></label><label>Manual Target Override — Fast<input id="practiceTargetMin" type="number" min=".01" step=".01" inputmode="decimal" placeholder="Auto from Pace AI"></label><label>Manual Target Override — Slow<input id="practiceTargetMax" type="number" min=".01" step=".01" inputmode="decimal" placeholder="Auto from Pace AI"></label><label>Track Lanes<select id="practiceLaneCount"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8" selected>8</option><option value="9">9</option></select></label></div>
+        <small>MW Pace AI loads each athlete’s recommended target from today’s prescription + live PRs. Open this setup only when you need to change the group, targets or lane count.</small>
+      </div>
+    </details>
     <div class="panel-grid" style="margin-top:14px"><button class="tile practice-launch mw-coach-launch" id="practiceCoachMW" ${experience==='core'?'style="display:none"':''}><h3><span class="mw-coach-crest" aria-hidden="true">MW</span> Coach MW</h3><p>Ask a quick coaching question without leaving Practice Mode.</p><b>OPEN →</b></button></div>
     <div class="tile" style="margin-top:14px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h3>Quick Attendance</h3><p>Set status and save once.</p></div><b id="practiceAttendanceCount">Loading…</b></div><div class="list" id="practiceRoster" style="margin-top:10px"><div class="row">Loading assigned athletes…</div></div><button class="action" id="practiceSaveAttendance" style="margin-top:14px" disabled>Save Practice Attendance</button><div id="practiceAttendanceState" style="margin-top:10px"></div></div>
   `);
