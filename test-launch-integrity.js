@@ -172,6 +172,20 @@ includes('supabase/migrations/20260921_founder_os_v23_skool_content_center.sql',
 includes('assets/mw-web-analytics.js','if(NATIVE)return false','Website analytics must exclude native app sessions');
 includes('account/index.html',"MWWebAnalytics?.track('checkout_start'",'Web checkout-start tracking missing');
 includes('coach/app.js',"MWWebAnalytics?.track('signup_complete'",'Coach web application completion tracking missing');
+
+const coachPracticeLayout=read('coach/app.js');
+const cockpitIndex=coachPracticeLayout.indexOf('class="practice-live-cockpit"');
+const finishRosterIndex=coachPracticeLayout.indexOf('id="practiceTimingRoster"',cockpitIndex);
+const moreControlsIndex=coachPracticeLayout.indexOf('id="practiceMoreControls"',cockpitIndex);
+const setupDrawerIndex=coachPracticeLayout.indexOf('id="practiceSetup"',cockpitIndex);
+ok(cockpitIndex>=0,'Coach Practice live cockpit missing');
+ok(finishRosterIndex>cockpitIndex,'Coach Finish Line must live inside the live timing cockpit');
+ok(moreControlsIndex>finishRosterIndex,'Secondary rep controls must come after the Finish Line');
+ok(setupDrawerIndex>finishRosterIndex,'Practice Setup must come after the Finish Line');
+includes('coach/app.js','Start → Tap Finish → Recover','Coach Practice live workflow label missing');
+includes('coach/styles.css','.practice-live-cockpit','Coach Practice live cockpit styling missing');
+includes('coach/styles.css','.practice-drawer','Coach Practice collapsed setup/control styling missing');
+
 includes('coach/app.js',"function coachPracticeWorkoutComplete(a)",'Coach Practice Mode completion lock helper missing');
 includes('coach/app.js',"WORKOUT COMPLETE",'Coach Practice Mode must visibly lock completed athlete workouts');
 includes('coach/app.js',"const timable=()=>visible().filter(a=>!coachPracticeWorkoutComplete(a))",'Coach Practice Mode must exclude completed athletes from live timing');
