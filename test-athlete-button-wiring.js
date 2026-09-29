@@ -136,3 +136,12 @@ assert(html.includes('let mwDeferSeasonDates=false;'),'Season date deferral stat
 assert(html.includes('deferSeasonDates:window.mwCoachConnected===true||mwDeferSeasonDates'),'Season plan must support automatic safe-date deferral without a legacy button');
 assert(html.includes("if(sd.needsDates){"),'Season plan must handle unavailable exact dates');
 console.log('PASS: Season Intelligence uses automatic date deferral instead of retired defer buttons.');
+
+assert(html.includes('let mwCompletionRenderGeneration=0;'),'Train completion rendering must keep a generation guard');
+assert(html.includes('const renderGeneration=++mwCompletionRenderGeneration;'),'Each Train render must claim a unique generation');
+assert(html.includes('if(renderGeneration!==mwCompletionRenderGeneration)return;'),'Stale asynchronous Train renders must stop before mutating the workout UI');
+assert(html.includes("const actionLabel=isDone?'✓ DONE':status==='in_progress'?'CONTINUE':status==='incomplete'?'FINISH LOGGING':'DONE';"),'IN PROGRESS workouts must expose CONTINUE instead of the completion path');
+assert(html.includes("['in_progress','incomplete'].includes(status)?window.mwOpenPracticeFor?.(w,sessionNumber):beginWorkoutCheckin"),'IN PROGRESS and INCOMPLETE workouts must resume Practice Mode instead of entering a new completion flow');
+assert(html.includes("isDone=!!wc['s'+sessionNumber]||status==='completed'"),'Authoritative completed status must take precedence over stale local completion state');
+console.log('PASS: Athlete Train rendering prevents stale duplicate rows and resumes the authoritative in-progress workout.');
+
