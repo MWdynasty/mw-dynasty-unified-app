@@ -240,8 +240,8 @@ async function main(){
 
     const changed=validatePatch(generated.patch,context,policy);
     fs.writeFileSync('/tmp/mw-stage2.patch',generated.patch,'utf8');
-    run('git',['apply','--check','/tmp/mw-stage2.patch']);
-    run('git',['apply','/tmp/mw-stage2.patch']);
+    run('git',['apply','--check','--recount','/tmp/mw-stage2.patch']);
+    run('git',['apply','--recount','/tmp/mw-stage2.patch']);
     run('git',['diff','--check']);
 
     const actual=run('git',['diff','--name-only']).split(/\r?\n/).filter(Boolean);
