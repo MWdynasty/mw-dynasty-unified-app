@@ -114,8 +114,10 @@ async function run() {
     fetch:async(url,opts)=>{coachSaves.push(JSON.parse(opts.body));return {ok:true,json:async()=>({count:2})}}
   });
   c.el('practiceEventGroup').value='All Sprinters';
-  const coach=fs.readFileSync('coach/app.js','utf8').split('async function practiceModePage(){')[1].split('\nfunction coreDashboard')[0];
-  vm.runInContext('async function practiceModePage(){'+coach,c.ctx);
+  const coachApp=fs.readFileSync('coach/app.js','utf8');
+  const coachHelpers=coachApp.split('function coachPracticeWorkoutComplete(a){')[1].split('async function practiceModePage(){')[0];
+  const coach=coachApp.split('async function practiceModePage(){')[1].split('\nfunction coreDashboard')[0];
+  vm.runInContext('function coachPracticeWorkoutComplete(a){'+coachHelpers+'async function practiceModePage(){'+coach,c.ctx);
   await c.ctx.practiceModePage();
   c.el('practiceTimerStart').click();c.advance(4000);c.el('practiceTimerStart').click();c.advance(5000);
   c.el('practiceTimerStart').click();c.advance(6000);finishes[0].click();
