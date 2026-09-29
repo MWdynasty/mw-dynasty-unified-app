@@ -6,6 +6,24 @@ async function rest(path,token,options={}){
   if(!r.ok)throw Object.assign(new Error(d?.message||d?.hint||'Practice timing request failed'),{status:r.status});
   return d;
 }
+const cleanId=(v)=>String(v||'').replace(/[^a-f0-9-]/gi,'');
+const inList=(values)=>`(${[...new Set(values.map(cleanId).filter(Boolean))].join(',')})`;
+async function completedCurrentWorkouts(athleteIds,token){
+  const ids=[...new Set((athleteIds||[]).map(cleanId).filter(Boolean))];
+  if(!ids.length)return [];
+  const [states,completed]=await Promise.all([
+    rest(`athlete_program_state?select=athlete_id,current_week,current_day&athlete_id=in.${inList(ids)}`,token),
+    rest(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,completed_at&athlete_id=in.${inList(ids)}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,token)
+  ]);
+  const stateMap=new Map((states||[]).map(x=>[x.athlete_id,x]));
+  const locked=new Map();
+  for(const row of completed||[]){
+    const state=stateMap.get(row.athlete_id);
+    if(!state||locked.has(row.athlete_id))continue;
+    if(Number(row.program_week)===Number(state.current_week)&&Number(row.program_day)===Number(state.current_day))locked.set(row.athlete_id,row);
+  }
+  return [...locked.entries()].map(([athlete_id,row])=>({athlete_id,...row}));
+}
 module.exports=async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   try{
@@ -44,6 +62,12 @@ module.exports=async(req,res)=>{
       }));
       if(rows.some(x=>!x.athlete_id||!Number.isFinite(x.time_seconds)||x.time_seconds<=0))return res.status(400).json({error:'Invalid timing result'});
       if(rows.some(x=>(x.target_min_seconds==null)!==(x.target_max_seconds==null)||((x.target_min_seconds!=null)&&x.target_min_seconds>x.target_max_seconds)))return res.status(400).json({error:'Invalid target pace range'});
+      const locked=await completedCurrentWorkouts(rows.map(x=>x.athlete_id),c.token);
+      if(locked.length)return res.status(409).json({
+        error:'One or more athletes already completed their current MW workout. Practice Mode will not create duplicate timing results.',
+        code:'workout_already_completed',
+        athletes:locked.map(x=>({athleteId:x.athlete_id,programWeek:Number(x.program_week),programDay:Number(x.program_day),workoutKey:x.workout_key||null,completedAt:x.completed_at||null}))
+      });
       const saved=await rest('coach_practice_timing_results',c.token,{method:'POST',body:JSON.stringify(rows)});
       return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length});
     }
