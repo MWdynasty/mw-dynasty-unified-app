@@ -193,6 +193,10 @@ includes('coach/app.js',"nextBtn.textContent=prescriptionFinished?'REPS COMPLETE
 includes('coach/app.js','prescribedReps:prescribedRepLimit(x.athleteId)','Coach Practice save payload must carry its prescribed rep limit');
 includes('server/api/coach/practice-timing.js',"code:'rep_limit_exceeded'",'Coach Practice API must reject reps beyond the prescription');
 
+includes('coach/app.js',"if(!repStart&&!repElapsed&&!repResults.length){",'Coach Practice reset must recompute Start Rep availability even when earlier reps are stored');
+includes('supabase/migrations/20260929_grant_coach_practice_timing_authenticated_crud.sql','grant select, insert, update, delete','Coach Practice timing authenticated table grants missing');
+
+
 
 includes('coach/app.js',"function coachPracticeWorkoutComplete(a)",'Coach Practice Mode completion lock helper missing');
 includes('coach/app.js',"WORKOUT COMPLETE",'Coach Practice Mode must visibly lock completed athlete workouts');

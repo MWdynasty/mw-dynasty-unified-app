@@ -127,7 +127,9 @@ async function run() {
   assert.equal(c.el('practiceRest[data-rest-clock]').textContent,'00:30','Next Rep keeps current recovery running');
   c.el('practiceTimerStart').click();c.advance(5000);
   assert.equal(c.el('practiceRest[data-rest-clock]').textContent,'00:30');
-  c.el('practiceTimerReset').click();assert.equal(c.el('practiceRest[data-rest-clock]').textContent,'00:00');
+  c.el('practiceTimerReset').click();
+  assert.equal(c.el('practiceRest[data-rest-clock]').textContent,'00:00');
+  assert.equal(c.el('practiceTimerStart').disabled,false,'Reset Rep re-enables Start Rep even after earlier reps are stored');
   c.el('practiceRetryRep').click();assert.equal(c.el('practiceRepLabel').textContent,'RETRY REP 1');
   c.el('practiceTimerStart').click();c.advance(9000);finishes[0].click();c.advance(2000);finishes[1].click();
   await c.el('practiceFinishSession').click();
