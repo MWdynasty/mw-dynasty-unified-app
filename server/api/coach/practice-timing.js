@@ -61,7 +61,9 @@ module.exports=async(req,res)=>{
         target_max_seconds:Number(x.targetMaxSeconds)>0?Number(Number(x.targetMaxSeconds).toFixed(3)):null,
         prescribed_rest_seconds:Number(x.prescribedRestSeconds)>=0?Number(Number(x.prescribedRestSeconds).toFixed(2)):null,
         actual_rest_seconds:Number(x.actualRestSeconds)>=0?Number(Number(x.actualRestSeconds).toFixed(2)):null,
-        pace_status:['fast','on_pace','slow'].includes(x.paceStatus)?x.paceStatus:null,\n        mw_intent:['technical','speed','pace','recovery'].includes(x.mwIntent)?x.mwIntent:'pace',\n        mw_interpretation:['above_target','on_target','pace_violation','below_target'].includes(x.mwInterpretation)?x.mwInterpretation:null
+        pace_status:['fast','on_pace','slow'].includes(x.paceStatus)?x.paceStatus:null,
+        mw_intent:['technical','speed','pace','recovery'].includes(x.mwIntent)?x.mwIntent:'pace',
+        mw_interpretation:['above_target','on_target','pace_violation','below_target'].includes(x.mwInterpretation)?x.mwInterpretation:null
       }));
       if(rows.some(x=>!x.athlete_id||!Number.isFinite(x.time_seconds)||x.time_seconds<=0))return res.status(400).json({error:'Invalid timing result'});
       if(rows.some(x=>(x.target_min_seconds==null)!==(x.target_max_seconds==null)||((x.target_min_seconds!=null)&&x.target_min_seconds>x.target_max_seconds)))return res.status(400).json({error:'Invalid target pace range'});
