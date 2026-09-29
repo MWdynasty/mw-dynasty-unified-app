@@ -1457,6 +1457,7 @@ function renderCoachMembershipSelection(session=authSession){
     const p=PLANS[selected],sponsorTotal=sponsorOn?sponsorQty*p.sponsor:0,total=p.monthly+sponsorTotal;
     app.innerHTML=`<div class="coach-membership-screen">
       <section class="coach-membership-shell">
+        <div class="coach-membership-nav"><button type="button" id="coachMembershipBack" class="coach-membership-back" aria-label="Back to Coach sign in">← Back</button></div>
         <div class="coach-membership-progress"><span class="done">✓ Verified</span><i></i><span class="active">2 Membership</span><i></i><span>3 Payment</span><i></i><span>4 Start Coaching</span></div>
         <div class="coach-membership-head"><div class="coach-apply-kicker">MW DYNASTY • COACH</div><h1>Choose what fits your program.</h1><p>Your coaching role is verified. Pick a membership, add sponsored athletes only if you want them, then you're ready for checkout.</p></div>
         <div class="coach-membership-plans">${planCards()}</div>
@@ -1474,6 +1475,7 @@ function renderCoachMembershipSelection(session=authSession){
         <div id="coachMembershipMessage" class="login-message" role="status" aria-live="polite"></div>
       </section>
     </div>`;
+    document.getElementById('coachMembershipBack').onclick=()=>renderLogin('Your verified Coach profile is saved. Sign in whenever you’re ready to continue membership setup.');
     app.querySelectorAll('[data-member-plan]').forEach(b=>b.onclick=()=>{selected=b.dataset.memberPlan;draw()});
     app.querySelectorAll('[data-sponsor]').forEach(b=>b.onclick=()=>{sponsorOn=b.dataset.sponsor==='yes';draw()});
     app.querySelectorAll('[data-qty]').forEach(b=>b.onclick=()=>{sponsorQty=Math.max(1,Math.min(250,sponsorQty+Number(b.dataset.qty||0)));draw()});

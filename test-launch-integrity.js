@@ -173,6 +173,11 @@ includes('assets/mw-web-analytics.js','if(NATIVE)return false','Website analytic
 includes('account/index.html',"MWWebAnalytics?.track('checkout_start'",'Web checkout-start tracking missing');
 includes('coach/app.js',"MWWebAnalytics?.track('signup_complete'",'Coach web application completion tracking missing');
 
+includes('coach/app.js','id="coachMembershipBack"','Coach membership back button missing');
+includes('coach/app.js',"renderLogin('Your verified Coach profile is saved.",'Coach membership back button must return to Coach sign in without deleting verification');
+includes('coach/styles.css','.coach-membership-back','Coach membership back button styling missing');
+
+
 const coachPracticeLayout=read('coach/app.js');
 const cockpitIndex=coachPracticeLayout.indexOf('class="practice-live-cockpit"');
 const finishRosterIndex=coachPracticeLayout.indexOf('id="practiceTimingRoster"',cockpitIndex);
