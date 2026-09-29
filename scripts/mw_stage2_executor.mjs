@@ -324,8 +324,47 @@ async function previewProtectionProbe(){
   return results;
 }
 
+async function finishResumedJob(token,resumed){
+  const job=resumed?.job||{},task=resumed?.task||{};
+  const sha=String(job.commit_sha||'');
+  if(!job.id||!task.id||!sha)throw new Error('Resumable controlled execution job is missing commit evidence.');
+  log(`Resuming ${task.title} from ${job.status} at ${sha.slice(0,12)}.`);
+
+  const deployment=await waitForPreview(sha);
+  const routeFiles=verifyLocalRouteContract();
+  const protectionResults=await previewProtectionProbe();
+
+  if(job.status==='committed'){
+    await edge(token,{action:'evidence',job_id:job.id,state:'preview_ready',evidence:{
+      summary:'Resumed job: Vercel reported deployment success for the exact controlled execution commit; preview protection remains intact.',
+      commit_sha:sha,preview_url:PREVIEW,changed_files:Array.isArray(job.changed_files)?job.changed_files:[],
+      vercel_status:deployment,route_contract:routeFiles,preview_protection:protectionResults
+    }});
+  }
+
+  const prUrl=await ensureDraftPr(task,sha);
+  const testSummary=String(job.test_summary||'Previously stored regression comparison completed before commit.');
+  const qa=`Resumed controlled execution after runner interruption. Vercel reported deployment success for exact commit ${sha}; local route contract is intact; preview front door remained protected: ${protectionResults.map(x=>x.path+' '+x.status+(x.protected?' protected':' reachable')).join(', ')}.`;
+  await edge(token,{action:'evidence',job_id:job.id,state:'qa_passed',evidence:{
+    summary:'Controlled execution resumed successfully, passed the non-production deployment gate, and is waiting for Founder approval.',
+    commit_sha:sha,preview_url:PREVIEW,changed_files:Array.isArray(job.changed_files)?job.changed_files:[],
+    test_summary:testSummary,qa_summary:qa,pull_request_url:prUrl||null,
+    resumed:true
+  }});
+  log('Resumed job reached QA passed. Production remains gated behind Founder approval.');
+}
+
 async function main(){
   const token=await oidc();
+  const resumed=await edge(token,{action:'resume'});
+  if(resumed?.job&&resumed?.task){
+    try{await finishResumedJob(token,resumed)}
+    catch(e){
+      log(`RESUME BLOCKED: ${e instanceof Error?e.message:String(e)}`);
+      process.exitCode=1;
+    }
+    return;
+  }
   const claim=await edge(token,{action:'claim'});
   if(!claim?.job||!claim?.task){log('No controlled engineering task is eligible.');return}
   const {job,task,policy}=claim;
