@@ -37,7 +37,8 @@ module.exports=async(req,res)=>{
     }
     if(req.method==='POST'){
       const b=req.body||{},results=Array.isArray(b.results)?b.results:[];
-      const sessionId=String(b.sessionId||'').trim()||null;
+      const sessionId=cleanId(b.sessionId);
+      if(!sessionId)return res.status(400).json({error:'Practice session id is required'});
       if(!results.length)return res.status(400).json({error:'No timing results supplied'});
       if(results.length>200)return res.status(400).json({error:'Too many timing results in one save'});
       const invalidRep=results.find(x=>{const rep=Number(x.repNumber),limit=Number(x.prescribedReps);return !Number.isInteger(rep)||rep<1||(Number.isFinite(limit)&&limit>0&&rep>limit)});
@@ -64,14 +65,39 @@ module.exports=async(req,res)=>{
       }));
       if(rows.some(x=>!x.athlete_id||!Number.isFinite(x.time_seconds)||x.time_seconds<=0))return res.status(400).json({error:'Invalid timing result'});
       if(rows.some(x=>(x.target_min_seconds==null)!==(x.target_max_seconds==null)||((x.target_min_seconds!=null)&&x.target_min_seconds>x.target_max_seconds)))return res.status(400).json({error:'Invalid target pace range'});
+      const athleteMeta=new Map();
+      for(const x of results){
+        const athleteId=cleanId(x.athleteId),programWeek=Number(x.programWeek),programDay=Number(x.programDay),sourceProgramWeek=Number(x.sourceProgramWeek||programWeek),distanceM=x.distanceM==null?null:Number(x.distanceM),workoutKey=String(x.workoutKey||''),seasonPlanId=cleanId(x.seasonPlanId);
+        if(!athleteId||!Number.isInteger(programWeek)||programWeek<1||programWeek>41||!Number.isInteger(programDay)||programDay<1||programDay>7||!workoutKey)return res.status(400).json({error:'Practice workout identity is missing or invalid'});
+        if(workoutKey!==`mw-track-w${programWeek}-d${programDay}`)return res.status(400).json({error:'Practice workout identity does not match the athlete Week/Day'});
+        if(distanceM!=null&&(!(distanceM>0)||!Number.isFinite(distanceM)))return res.status(400).json({error:'Invalid practice distance'});
+        const meta={athleteId,programWeek,programDay,sourceProgramWeek,workoutKey,distanceM,seasonPlanId:seasonPlanId||null};
+        const prior=athleteMeta.get(athleteId);
+        if(prior&&JSON.stringify(prior)!==JSON.stringify(meta))return res.status(400).json({error:'Mixed workout identity for one athlete in the same practice save'});
+        athleteMeta.set(athleteId,meta);
+      }
       const locked=await completedCurrentWorkouts(rows.map(x=>x.athlete_id),c.token);
       if(locked.length)return res.status(409).json({
         error:'One or more athletes already completed their current MW workout. Practice Mode will not create duplicate timing results.',
         code:'workout_already_completed',
         athletes:locked.map(x=>({athleteId:x.athlete_id,programWeek:Number(x.program_week),programDay:Number(x.program_day),workoutKey:x.workout_key||null,completedAt:x.completed_at||null}))
       });
-      const saved=await rest('coach_practice_timing_results',c.token,{method:'POST',body:JSON.stringify(rows)});
-      return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length});
+      const saved=await rest('coach_practice_timing_results?on_conflict=session_id,athlete_id,rep_number',c.token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify(rows)});
+      const synced=[];
+      for(const meta of athleteMeta.values()){
+        const sync=await rest('rpc/mw_coach_sync_practice_session_to_athlete',c.token,{method:'POST',body:JSON.stringify({
+          p_session_id:sessionId,
+          p_athlete_id:meta.athleteId,
+          p_program_week:meta.programWeek,
+          p_program_day:meta.programDay,
+          p_source_program_week:meta.sourceProgramWeek,
+          p_workout_key:meta.workoutKey,
+          p_distance_m:meta.distanceM,
+          p_season_plan_id:meta.seasonPlanId
+        })});
+        synced.push(sync);
+      }
+      return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length,sessionId,results:saved,synced});
     }
     if(req.method==='GET'){
       const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,session_date,division,group_name,group_id,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,result_status,pace_status,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
