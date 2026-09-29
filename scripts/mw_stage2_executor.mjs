@@ -96,6 +96,22 @@ function excerpt(content,terms,max=17500){
   }
   return (out||lines.slice(Math.max(0,hits[0]-45),Math.min(lines.length,hits[0]+90)).join('\n')).slice(0,max);
 }
+function anchoredSegments(content,anchors,max=7600){
+  const lines=content.split(/\r?\n/),lower=lines.map(x=>x.toLowerCase()),seen=[];
+  const out=[];
+  for(const raw of anchors){
+    const anchor=String(raw||'').trim();
+    if(!anchor||anchor.includes('/'))continue;
+    const a=anchor.toLowerCase();
+    const i=lower.findIndex(x=>x.includes(a));
+    if(i<0||seen.some(x=>Math.abs(x-i)<18))continue;
+    seen.push(i);
+    const s=Math.max(0,i-52),e=Math.min(lines.length,i+76);
+    out.push('/* MW_CONTEXT_ANCHOR: '+anchor+' */\n'+lines.slice(s,e).join('\n').slice(0,max));
+    if(out.length>=10)break;
+  }
+  return out;
+}
 function buildContext(task,policy){
   const allowed=Array.isArray(policy?.allowed_prefixes)?policy.allowed_prefixes.map(String):[];
   const denied=Array.isArray(policy?.denied_paths)?policy.denied_paths.map(String):[];
@@ -116,10 +132,21 @@ function buildContext(task,policy){
     if(score>0)scored.push({path:p,score,content});
   }
   scored.sort((a,b)=>b.score-a.score);
-  const selected=scored.slice(0,12);
+  const selected=scored.slice(0,8);
   if(!selected.length)throw new Error('No repository context matched the controlled execution task.');
   const terms=[...phraseTerms,...words].filter(Boolean).slice(0,30);
-  return selected.map(x=>({path:x.path,content:excerpt(x.content,terms)}));
+  const context=[];
+  for(const x of selected){
+    const exactFileHint=hints.some(h=>normalized(h).toLowerCase()===x.path.toLowerCase());
+    const segments=exactFileHint?anchoredSegments(x.content,phraseTerms):[];
+    if(segments.length){
+      for(const segment of segments)context.push({path:x.path,content:segment});
+    }else{
+      context.push({path:x.path,content:excerpt(x.content,terms)});
+    }
+    if(context.length>=16)break;
+  }
+  return context.slice(0,16);
 }
 function validatePatch(patch,context,policy){
   if(!patch.startsWith('diff --git '))throw new Error('AI response did not contain a valid unified diff.');
