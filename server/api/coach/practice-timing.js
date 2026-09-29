@@ -37,7 +37,8 @@ module.exports=async(req,res)=>{
     }
     if(req.method==='POST'){
       const b=req.body||{},results=Array.isArray(b.results)?b.results:[];
-      const sessionId=String(b.sessionId||'').trim()||null;
+      const sessionId=cleanId(b.sessionId);
+      if(!sessionId)return res.status(400).json({error:'Practice session id is required'});
       if(!results.length)return res.status(400).json({error:'No timing results supplied'});
       if(results.length>200)return res.status(400).json({error:'Too many timing results in one save'});
       const invalidRep=results.find(x=>{const rep=Number(x.repNumber),limit=Number(x.prescribedReps);return !Number.isInteger(rep)||rep<1||(Number.isFinite(limit)&&limit>0&&rep>limit)});
