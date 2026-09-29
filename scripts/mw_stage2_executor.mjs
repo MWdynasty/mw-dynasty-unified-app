@@ -340,33 +340,49 @@ async function main(){
       comparison.baselineFailures.length?`Pre-existing unchanged failures: ${comparison.baselineFailures.join(' | ')}`:'No baseline test failures remained.',
       comparison.improvements.length?`Improved baseline tests: ${comparison.improvements.join(', ')}`:''
     ].filter(Boolean).join(' ');
+    await edge(token,{action:'evidence',job_id:job.id,state:'testing',evidence:{
+      summary:'Exact-code edits passed the baseline-vs-after regression comparison.',
+      changed_files:actual,test_summary:testSummary
+    }});
 
     run('git',['config','user.name','MW Dynasty AI Engineer']);
     run('git',['config','user.email','ai-engineer@mwdynasty.local']);
     run('git',['add','--',...actual]);
     run('git',['commit','-m',`AI Stage 2: ${safeText(task.title,120)}`]);
-    const sha=run('git',['rev-parse','HEAD']);
-    run('git',['push','origin','HEAD:ai-execution/stage2']);
 
+    // The preview branch can receive isolation/config maintenance while a job is testing.
+    // Never force-push: reconcile the remote head, rebase the tested commit, then push fast-forward only.
+    run('git',['fetch','origin','ai-execution/stage2']);
+    run('git',['rebase','origin/ai-execution/stage2']);
+    const sha=run('git',['rev-parse','HEAD']);
+    try{
+      run('git',['push','origin','HEAD:ai-execution/stage2']);
+    }catch(firstPushError){
+      run('git',['fetch','origin','ai-execution/stage2']);
+      run('git',['rebase','origin/ai-execution/stage2']);
+      run('git',['push','origin','HEAD:ai-execution/stage2']);
+    }
+
+    const pushedSha=run('git',['rev-parse','HEAD']);
     await edge(token,{action:'evidence',job_id:job.id,state:'committed',evidence:{
       summary:'Controlled patch committed to isolated Stage 2 branch.',
-      commit_sha:sha,changed_files:actual,
+      commit_sha:pushedSha,changed_files:actual,
       test_summary:testSummary
     }});
-    log(`Committed ${sha.slice(0,12)} and pushed Stage 2 branch.`);
+    log(`Committed ${pushedSha.slice(0,12)} and pushed Stage 2 branch.`);
 
-    await waitForPreview(sha);
+    await waitForPreview(pushedSha);
     await edge(token,{action:'evidence',job_id:job.id,state:'preview_ready',evidence:{
       summary:'Vercel preview is serving the exact controlled execution commit.',
-      commit_sha:sha,preview_url:PREVIEW,changed_files:actual
+      commit_sha:pushedSha,preview_url:PREVIEW,changed_files:actual
     }});
 
     const smokeResults=await smoke();
     const prUrl=await ensureDraftPr(task,sha);
-    const qa=`Regression comparison found no new test failures; preview commit identity matched ${sha}; smoke checks passed: ${smokeResults.map(x=>x.path+' '+x.status).join(', ')}.`;
+    const qa=`Regression comparison found no new test failures; preview commit identity matched ${pushedSha}; smoke checks passed: ${smokeResults.map(x=>x.path+' '+x.status).join(', ')}.`;
     await edge(token,{action:'evidence',job_id:job.id,state:'qa_passed',evidence:{
       summary:'Controlled execution passed non-production QA and is waiting for Founder approval.',
-      commit_sha:sha,preview_url:PREVIEW,changed_files:actual,
+      commit_sha:pushedSha,preview_url:PREVIEW,changed_files:actual,
       test_summary:testSummary,
       qa_summary:qa,
       pull_request_url:prUrl||null,
