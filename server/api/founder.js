@@ -96,9 +96,10 @@ module.exports=async function handler(req,res){
         return res.status(200).json({ok:true,data:{...data,health:{website:site,app},website_projects:projects}});
       }
       if(section==='ai_company'){
-        const [queue,autonomy]=await Promise.all([
+        const [queue,autonomy,controlledExecution]=await Promise.all([
           rpc(token,'mw_founder_ai_operating_queue_snapshot',{}),
-          rpc(token,'mw_founder_autonomy_snapshot',{}).catch(()=>null)
+          rpc(token,'mw_founder_autonomy_snapshot',{}).catch(()=>null),
+          rpc(token,'mw_founder_execution_snapshot',{}).catch(()=>null)
         ]);
         const [refreshed,runs,playbooks]=await Promise.all([
           rpc(token,'mw_founder_os_snapshot',{p_section:'ai_company'}),
@@ -111,7 +112,8 @@ module.exports=async function handler(req,res){
           recent_runs:runs,
           department_briefs:Array.isArray(playbooks?.department_briefs)?playbooks.department_briefs:[],
           operating_queue:queue,
-          autonomy
+          autonomy,
+          controlled_execution:controlledExecution
         }});
       }
       return res.status(200).json({ok:true,data});
