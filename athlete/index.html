@@ -1776,8 +1776,8 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div class="mwProgressTitle"><span>WEIGHT ROOM PROGRESSION</span><small>STRENGTH HISTORY</small></div>
   <div class="mwStrengthProgressStats">
     <div><strong id="progressStrengthSessions">0</strong><span>SESSIONS COMPLETE</span></div>
-    <div><strong id="progressStrengthSets">0</strong><span>SETS LOGGED</span></div>
-    <div><strong id="progressStrengthRpe">—</strong><span>AVG SET RPE</span></div>
+    <div><strong id="progressStrengthSets">—</strong><span>AS WRITTEN</span></div>
+    <div><strong id="progressStrengthRpe">—</strong><span>LAST RESPONSE</span></div>
   </div>
   <div class="mwStrengthProgressBlock">
     <div class="mwStrengthProgressLabel"><span>CURRENT MAXES</span><small id="progressStrengthUnit">LB</small></div>
@@ -2496,15 +2496,25 @@ async function renderCompletion(){
   if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Continue the same saved workout from Practice Mode.':'Today’s session is scheduled and ready.';
 }
 let mwStrengthPerformanceRows=[];
+function strengthFeelForCheckin(x){
+  const saved=String(x?.session_feel||'').toLowerCase();
+  if(['strong','normal','heavy'].includes(saved))return saved;
+  try{
+    const local=String(localStorage.getItem('mwLiftFeel:'+trainingCycleKey()+':'+Number(x?.program_week||0)+':'+Number(x?.strength_day||0))||'').toLowerCase();
+    return ['strong','normal','heavy'].includes(local)?local:'';
+  }catch{return ''}
+}
 function renderWeightRoomProgressUI(){
   const checkins=Object.values(mwStrengthQuickCache||{}),rows=Array.isArray(mwStrengthPerformanceRows)?mwStrengthPerformanceRows:[];
-  const completed=checkins.filter(x=>String(x?.lifecycle_status||'')==='completed');
-  const rpes=rows.map(x=>Number(x?.set_rpe)).filter(x=>Number.isFinite(x)&&x>=0);
-  const avgRpe=rpes.length?(rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1):'—';
+  const completed=checkins.filter(x=>String(x?.lifecycle_status||'')==='completed').sort((a,b)=>String(b.completed_at||b.recorded_at||'').localeCompare(String(a.completed_at||a.recorded_at||'')));
+  const asWritten=completed.filter(x=>String(x?.status||'')==='as_prescribed').length;
+  const asWrittenPct=completed.length?Math.round(asWritten/completed.length*100):null;
+  const responseRows=completed.map(x=>({...x,_feel:strengthFeelForCheckin(x)})).filter(x=>x._feel);
+  const latestFeel=responseRows[0]?responseRows[0]._feel:'';
   const setText=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
   setText('progressStrengthSessions',String(completed.length));
-  setText('progressStrengthSets',String(rows.length));
-  setText('progressStrengthRpe',avgRpe==='—'?'—':avgRpe+'/10');
+  setText('progressStrengthSets',asWrittenPct==null?'—':asWrittenPct+'%');
+  setText('progressStrengthRpe',latestFeel?latestFeel.toUpperCase():'—');
   const unit=(document.getElementById('profileWeightUnit')?.value||'lb').toLowerCase();
   setText('progressStrengthUnit',unit.toUpperCase());
   const maxes=[
@@ -2519,22 +2529,25 @@ function renderWeightRoomProgressUI(){
   });
   setText('progressDeadliftLabel',(document.getElementById('profileDeadliftType')?.value||'conventional')==='trap_bar'?'TRAP-BAR DEADLIFT':'DEADLIFT');
   const box=document.getElementById('progressStrengthRecent');if(!box)return;
-  const latestCompleted=[...completed].sort((a,b)=>String(b.completed_at||b.recorded_at||'').localeCompare(String(a.completed_at||a.recorded_at||'')))[0]||null;
+  const parts=[];
+  for(const x of completed.slice(0,4)){
+    const status=String(x.status||'').replaceAll('_',' ').toUpperCase()||'COMPLETED';
+    const feel=strengthFeelForCheckin(x);
+    parts.push(`<div class="mwStrengthProgressRow"><div><b>WEEK ${Number(x.program_week||1)} · ${escapeHtmlLocal(x.day_label||('DAY '+Number(x.strength_day||1)))}</b><small>${status}${feel?' · '+feel.toUpperCase():''}</small></div><strong>${x.completed_late?'LATE · DONE':'DONE'}</strong></div>`);
+  }
   const recentExercises=[],seen=new Set();
   for(const x of [...rows].sort((a,b)=>String(b.recorded_at||'').localeCompare(String(a.recorded_at||'')))){
-    const key=String(x.exercise_name||'').trim().toLowerCase();if(!key||seen.has(key))continue;seen.add(key);recentExercises.push(x);if(recentExercises.length>=4)break;
+    const key=String(x.exercise_name||'').trim().toLowerCase();if(!key||seen.has(key))continue;seen.add(key);recentExercises.push(x);if(recentExercises.length>=3)break;
   }
-  const parts=[];
-  if(latestCompleted){
-    const status=String(latestCompleted.status||'').replaceAll('_',' ').toUpperCase();
-    parts.push(`<div class="mwStrengthProgressRow"><div><b>WEEK ${Number(latestCompleted.program_week||1)} · ${escapeHtmlLocal(latestCompleted.day_label||('DAY '+Number(latestCompleted.strength_day||1)))}</b><small>Latest completed strength session</small></div><strong>${status||'COMPLETED'}</strong></div>`);
-  }
-  for(const x of recentExercises){
-    const load=Number(x.actual_load),reps=Number(x.reps_completed),rpe=Number(x.set_rpe),u=escapeHtmlLocal(x.weight_unit||unit);
-    parts.push(`<div class="mwStrengthProgressRow"><div><b>${escapeHtmlLocal(x.exercise_name||'Exercise')}</b><small>Week ${Number(x.program_week||1)} · ${Number.isFinite(reps)?reps+' reps':'saved set'}${Number.isFinite(rpe)?' · RPE '+rpe+'/10':''}</small></div><strong>${Number.isFinite(load)?load+' '+u:'LOGGED'}</strong></div>`);
+  if(recentExercises.length){
+    parts.push('<div class="muted" style="margin-top:4px">Optional detailed set data</div>');
+    for(const x of recentExercises){
+      const load=Number(x.actual_load),reps=Number(x.reps_completed),rpe=Number(x.set_rpe),u=escapeHtmlLocal(x.weight_unit||unit);
+      parts.push(`<div class="mwStrengthProgressRow"><div><b>${escapeHtmlLocal(x.exercise_name||'Exercise')}</b><small>Week ${Number(x.program_week||1)} · ${Number.isFinite(reps)?reps+' reps':'saved set'}${Number.isFinite(rpe)?' · RPE '+rpe+'/10':''}</small></div><strong>${Number.isFinite(load)?load+' '+u:'LOGGED'}</strong></div>`);
+    }
   }
   if(!parts.length)parts.push('<div class="muted">No weight-room history yet. Complete a lift and MW will build this section automatically.</div>');
-  else if(latestCompleted&&!recentExercises.length)parts.push('<div class="muted">Session completion is recorded. Detailed working loads will appear only when you choose to log changed or specific sets.</div>');
+  else if(completed.length&&!responseRows.length)parts.push('<div class="muted">Your lift is recorded. Use the existing Strong / Normal / Heavy check after a session so MW can build your response trend without extra set logging.</div>');
   box.innerHTML=parts.join('');
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI()}
@@ -2672,9 +2685,15 @@ function latestIncompleteStrength(){
 }
 async function loadStrengthQuickCheckins(){
   const aid=completionAthleteId();if(!aid||!window.mwGetSessionToken?.())return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional,training_cycle_key,season_plan_id,source_program_week&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=program_week,strength_day,day_label,status,note,session_feel,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional,training_cycle_key,season_plan_id,source_program_week&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength check-ins.');
-  mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}try{renderWeightRoomProgressUI()}catch{}
+  mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}
+  for(const x of Object.values(mwStrengthQuickCache)){
+    if(x?.lifecycle_status!=='completed'||x?.session_feel)continue;
+    let legacy='';try{legacy=String(localStorage.getItem('mwLiftFeel:'+trainingCycleKey()+':'+Number(x.program_week)+':'+Number(x.strength_day))||'').toLowerCase()}catch{}
+    if(['strong','normal','heavy'].includes(legacy)){try{await saveStrengthFeel(x.program_week,x.strength_day,legacy)}catch{}}
+  }
+  try{renderWeightRoomProgressUI()}catch{}
 }
 async function markStrengthStatus(w,day,status,label,optional=false){
   const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_mark_own_strength_status',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_strength_day:Number(day),p_status:String(status),p_day_label:String(label||`Day ${day}`),p_is_optional:!!optional}),cache:'no-store'});
@@ -2685,6 +2704,14 @@ async function completeStrengthSession(w,day,outcome,label,optional=false){
   const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_complete_own_strength_session',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_strength_day:Number(day),p_outcome:String(outcome),p_day_label:String(label||`Day ${day}`),p_is_optional:!!optional}),cache:'no-store'});
   const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out?.message||out?.hint||'Strength session completion could not be saved.');
   mwStrengthQuickCache[`${Number(w)}-${Number(day)}`]=out;window.mwReloadAthleteNotifications?.();return out;
+}
+async function saveStrengthFeel(w,day,feel){
+  const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_set_own_strength_feel',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_strength_day:Number(day),p_feel:String(feel)}),cache:'no-store'});
+  const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out?.message||out?.hint||'Strength response could not be saved.');
+  const key=`${Number(w)}-${Number(day)}`;if(mwStrengthQuickCache[key])mwStrengthQuickCache[key].session_feel=out.session_feel||feel;
+  try{localStorage.setItem('mwLiftFeel:'+trainingCycleKey()+':'+Number(w)+':'+Number(day),String(feel))}catch{}
+  renderWeightRoomProgressUI();
+  return out;
 }
 async function saveStrengthQuickCheckin(w,day,label,status,button,optional=false){
   if(button){button.disabled=true;button.textContent='SAVING…'}
@@ -2717,7 +2744,7 @@ async function renderStrengthQuickCheckins(w){
   box.querySelectorAll('[data-resume-strength]').forEach(b=>b.onclick=()=>{const [rw,rd]=b.dataset.resumeStrength.split('-').map(Number);window.mwOpenStrengthSessionFor?.(rw,rd)});
   box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b,b.dataset.optional==='1');await renderStrengthQuickCheckins(w);const feel=box.querySelector('[data-lift-feel]');if(feel)feel.hidden=false}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
   box.querySelectorAll('[data-adjust-strength]').forEach(b=>b.onclick=()=>{const details=document.getElementById('strengthAdvancedLog');if(details){details.open=true;details.scrollIntoView({behavior:'smooth',block:'center'})}const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Only log what changed. You do not need to re-enter the full lift.'});
-  box.querySelectorAll('[data-feel]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('mwLiftFeel:'+trainingCycleKey()+':'+w+':'+viewDay,b.dataset.feel)}catch{} box.querySelectorAll('[data-feel]').forEach(x=>x.disabled=true);b.disabled=false;const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='✓ Lift saved · '+b.dataset.feel.toUpperCase()+'. You’re done.'});
+  box.querySelectorAll('[data-feel]').forEach(b=>b.onclick=async()=>{box.querySelectorAll('[data-feel]').forEach(x=>x.disabled=true);const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Saving strength response…';try{await saveStrengthFeel(w,viewDay,b.dataset.feel);if(st)st.textContent='✓ Lift saved · '+b.dataset.feel.toUpperCase()+'. You’re done.'}catch(e){box.querySelectorAll('[data-feel]').forEach(x=>x.disabled=false);if(st)st.textContent='Response save failed: '+(e.message||'Please try again.')}});
 }
 function initStrength(){
   const sel=$('#strengthWeek'); if(!sel)return;
