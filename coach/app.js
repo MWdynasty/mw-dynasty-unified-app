@@ -828,7 +828,8 @@ function coachMWPage(){
     const detail=document.createElement('p');detail.textContent=(action.title||action.matchTitle||'Schedule update')+(action.startDate?' · '+action.startDate:'')+(action.endDate&&action.endDate!==action.startDate?' through '+action.endDate:'')+(action.trainingImpact?' · '+String(action.trainingImpact).replaceAll('_',' '):'');
     const approve=document.createElement('button');approve.className='action';approve.type='button';approve.textContent=deleting?'Confirm & Remove':(updating?'Approve & Update Calendar':'Approve & Add to Calendar');
     const cancel=document.createElement('button');cancel.className='back';cancel.type='button';cancel.textContent='Cancel';cancel.style.marginLeft='8px';
-    card.append(title,detail,approve,cancel);chat.appendChild(card);chat.scrollTop=chat.scrollHeight;
+    card.append(title,detail,approve,cancel);chat.appendChild(card);
+    requestAnimationFrame(()=>{chat.scrollTop=chat.scrollHeight;card.scrollIntoView({behavior:'smooth',block:'nearest'});});
     cancel.onclick=()=>{card.remove();toast('Calendar left unchanged')};
     approve.onclick=async()=>{
       approve.disabled=true;cancel.disabled=true;approve.textContent=deleting?'Removing…':(updating?'Updating…':'Adding…');
