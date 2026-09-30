@@ -1796,10 +1796,10 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div class="mwStrengthProgressBlock">
     <div class="mwStrengthProgressLabel"><span>CURRENT MAXES</span><small id="progressStrengthUnit">LB</small></div>
     <div class="mwStrengthMaxGrid">
-      <div><small>POWER CLEAN</small><strong id="progressMaxPowerClean">—</strong></div>
-      <div><small>FRONT SQUAT</small><strong id="progressMaxFrontSquat">—</strong></div>
-      <div><small>BACK SQUAT</small><strong id="progressMaxBackSquat">—</strong></div>
-      <div><small id="progressDeadliftLabel">DEADLIFT</small><strong id="progressMaxDeadlift">—</strong></div>
+      <div><small>POWER CLEAN</small><strong id="progressMaxPowerClean">—</strong><span id="progressMaxPowerCleanDelta" class="mwStrengthDelta">BASELINE</span></div>
+      <div><small>FRONT SQUAT</small><strong id="progressMaxFrontSquat">—</strong><span id="progressMaxFrontSquatDelta" class="mwStrengthDelta">BASELINE</span></div>
+      <div><small>BACK SQUAT</small><strong id="progressMaxBackSquat">—</strong><span id="progressMaxBackSquatDelta" class="mwStrengthDelta">BASELINE</span></div>
+      <div><small id="progressDeadliftLabel">DEADLIFT</small><strong id="progressMaxDeadlift">—</strong><span id="progressMaxDeadliftDelta" class="mwStrengthDelta">BASELINE</span></div>
     </div>
     <div class="muted" style="margin-top:8px">Current maxes are your established benchmarks. MW tracks session history separately so a completed lift still counts even when you do not log every set.</div>
   </div>
@@ -2371,6 +2371,7 @@ async function loadPracticeProgress(){
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
   mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(rows);
   renderPracticeProgress();
+  try{renderWeightRoomProgressUI()}catch{}
 }
 function renderPracticeProgress(){
   const box=document.getElementById('mwPracticeProgressResults');if(!box)return;
@@ -2512,43 +2513,97 @@ async function renderCompletion(){
 let mwStrengthPerformanceRows=[];
 function renderWeightRoomProgressUI(){
   const checkins=Object.values(mwStrengthQuickCache||{}),rows=Array.isArray(mwStrengthPerformanceRows)?mwStrengthPerformanceRows:[];
-  const completed=checkins.filter(x=>String(x?.lifecycle_status||'')==='completed');
-  const rpes=rows.map(x=>Number(x?.set_rpe)).filter(x=>Number.isFinite(x)&&x>=0);
-  const avgRpe=rpes.length?(rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1):'—';
+  const completed=checkins.filter(x=>String(x?.lifecycle_status||'')==='completed').sort((a,b)=>String(b.completed_at||b.recorded_at||'').localeCompare(String(a.completed_at||a.recorded_at||'')));
+  const asWritten=completed.filter(x=>String(x?.status||'')==='as_prescribed').length;
+  const executionPct=completed.length?Math.round(asWritten/completed.length*100):null;
+  const latestFeel=String(completed.find(x=>['strong','normal','heavy'].includes(String(x?.session_feel||'')))?.session_feel||'');
+  const recent=completed.slice(0,3),recentFeel=recent.map(x=>String(x?.session_feel||'')).filter(Boolean);
+  const heavyRecent=recentFeel.filter(x=>x==='heavy').length,strongRecent=recentFeel.filter(x=>x==='strong').length,modifiedRecent=recent.filter(x=>String(x?.status||'')==='modified').length;
   const setText=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
+
   setText('progressStrengthSessions',String(completed.length));
-  setText('progressStrengthSets',String(rows.length));
-  setText('progressStrengthRpe',avgRpe==='—'?'—':avgRpe+'/10');
+  setText('progressStrengthExecution',executionPct==null?'—':executionPct+'%');
+  setText('progressStrengthFeel',latestFeel?latestFeel.toUpperCase():'—');
+
+  const currentWeek=activeMWWeek(),strengthWeek=MW_STRENGTH[currentWeek]||{};
+  setText('progressStrengthPhase',String(strengthWeek.phaseName||PHASES[phaseFromWeek(currentWeek)]?.name||'CURRENT PHASE').toUpperCase());
+
+  let signal='BUILDING BASELINE',note='Complete a few weight-room sessions and MW will start reading the response pattern automatically.';
+  if(completed.length>=3){
+    if(heavyRecent>=2){signal='REVIEW LOAD RESPONSE';note='At least 2 of the last 3 completed lifts felt heavy. Protect sprint quality and let Coach MW review recovery and total training stress before progressing load.'}
+    else if(modifiedRecent>=2){signal='REVIEW ADJUSTMENTS';note='At least 2 of the last 3 lifts were modified. The prescribed progression stays visible, but the coach should review why adjustments are repeating.'}
+    else if(strongRecent>=2){signal='RESPONDING WELL';note='Recent lifts are being completed with a strong response. Continue the planned progression unless sprint-quality data points another direction.'}
+    else {signal='ON TRACK';note='Recent weight-room sessions show no repeated heavy or modified pattern. Stay with the synchronized MW progression.'}
+  }
+  setText('progressStrengthSignal',signal);
+  setText('progressStrengthSignalNote',note);
+
+  const practice=Array.isArray(mwPracticeProgressCache)?mwPracticeProgressCache:[];
+  const trackGroups=new Map();
+  for(const r of practice){const k=String(r.workout_key||('w'+r.program_week+'d'+r.program_day));if(!trackGroups.has(k))trackGroups.set(k,[]);trackGroups.get(k).push(r)}
+  const trackSessions=[...trackGroups.values()].map(g=>{const targeted=g.filter(x=>Number(x.target_seconds)>0&&x.result_status!=='dnf');return targeted.length?targeted.filter(x=>x.pace_status==='on_pace').length/targeted.length:null}).filter(x=>x!=null).slice(0,3);
+  const trackExecution=trackSessions.length?Math.round(trackSessions.reduce((a,b)=>a+b,0)/trackSessions.length*100):null;
+  let combined='Keep collecting timed sprint sessions and the existing lift response check-in.';
+  if(trackExecution!=null&&completed.length>=3){
+    if(heavyRecent>=2&&trackExecution<70)combined='Recent lifting has felt heavy while sprint target execution is below 70%. This is a coach-review signal before adding more training stress.';
+    else if(heavyRecent>=2)combined='Sprint execution is holding, but recent lifting has felt heavy. Keep the next strength decision conservative until the response normalizes.';
+    else if(trackExecution>=70)combined=`Recent sprint target execution is ${trackExecution}% and the strength signal is ${signal.toLowerCase()}. MW is tracking both systems together.`;
+    else combined=`Recent sprint target execution is ${trackExecution}%. Keep the planned lift progression steady while MW collects more shared sprint + strength data.`;
+  }
+  setText('progressStrengthSprintRead',combined);
+
   const unit=(document.getElementById('profileWeightUnit')?.value||'lb').toLowerCase();
   setText('progressStrengthUnit',unit.toUpperCase());
-  const maxes=[
-    ['progressMaxPowerClean','maxPowerClean'],
-    ['progressMaxFrontSquat','maxFrontSquat'],
-    ['progressMaxBackSquat','maxBackSquat'],
-    ['progressMaxDeadlift','maxDeadlift']
-  ];
-  maxes.forEach(([outId,inputId])=>{
-    const raw=(document.getElementById(inputId)?.value||'').trim(),n=Number(raw);
-    setText(outId,raw!==''&&Number.isFinite(n)?`${n} ${unit}`:'—');
-  });
   setText('progressDeadliftLabel',(document.getElementById('profileDeadliftType')?.value||'conventional')==='trap_bar'?'TRAP-BAR DEADLIFT':'DEADLIFT');
+
+  const history=Array.isArray(window.mwStrengthMaxHistoryRows)?[...window.mwStrengthMaxHistoryRows]:[];
+  history.sort((a,b)=>String(a.recorded_at||'').localeCompare(String(b.recorded_at||'')));
+  const baseline=history[0]||null;
+  const maxes=[
+    ['progressMaxPowerClean','progressMaxPowerCleanDelta','maxPowerClean','power_clean_max'],
+    ['progressMaxFrontSquat','progressMaxFrontSquatDelta','maxFrontSquat','front_squat_max'],
+    ['progressMaxBackSquat','progressMaxBackSquatDelta','maxBackSquat','back_squat_max'],
+    ['progressMaxDeadlift','progressMaxDeadliftDelta','maxDeadlift','deadlift_max']
+  ];
+  maxes.forEach(([outId,deltaId,inputId,col])=>{
+    const raw=(document.getElementById(inputId)?.value||'').trim(),current=Number(raw),out=document.getElementById(outId),deltaEl=document.getElementById(deltaId);
+    if(out)out.textContent=raw!==''&&Number.isFinite(current)?`${current} ${unit}`:'—';
+    if(!deltaEl)return;
+    deltaEl.classList.remove('up','down');
+    const base=Number(baseline?.[col]),sameUnit=baseline&&String(baseline.weight_unit||unit).toLowerCase()===unit;
+    if(raw===''||!Number.isFinite(current)){deltaEl.textContent='NOT ESTABLISHED';return}
+    if(!baseline||!Number.isFinite(base)||!sameUnit){deltaEl.textContent=baseline&&!sameUnit?'NEW UNIT BASELINE':'BASELINE';return}
+    const delta=current-base;
+    if(Math.abs(delta)<.001){deltaEl.textContent='BASELINE';return}
+    deltaEl.textContent=`${delta>0?'+':''}${Number(delta.toFixed(1))} ${unit.toUpperCase()} SINCE BASELINE`;
+    deltaEl.classList.add(delta>0?'up':'down');
+  });
+
   const box=document.getElementById('progressStrengthRecent');if(!box)return;
-  const latestCompleted=[...completed].sort((a,b)=>String(b.completed_at||b.recorded_at||'').localeCompare(String(a.completed_at||a.recorded_at||'')))[0]||null;
-  const recentExercises=[],seen=new Set();
-  for(const x of [...rows].sort((a,b)=>String(b.recorded_at||'').localeCompare(String(a.recorded_at||'')))){
-    const key=String(x.exercise_name||'').trim().toLowerCase();if(!key||seen.has(key))continue;seen.add(key);recentExercises.push(x);if(recentExercises.length>=4)break;
-  }
   const parts=[];
-  if(latestCompleted){
-    const status=String(latestCompleted.status||'').replaceAll('_',' ').toUpperCase();
-    parts.push(`<div class="mwStrengthProgressRow"><div><b>WEEK ${Number(latestCompleted.program_week||1)} · ${escapeHtmlLocal(latestCompleted.day_label||('DAY '+Number(latestCompleted.strength_day||1)))}</b><small>Latest completed strength session</small></div><strong>${status||'COMPLETED'}</strong></div>`);
+  for(const x of completed.slice(0,4)){
+    const status=String(x.status||'').replaceAll('_',' ').toUpperCase(),feel=String(x.session_feel||'');
+    parts.push(`<div class="mwStrengthProgressRow"><div><b>WEEK ${Number(x.program_week||1)} · ${escapeHtmlLocal(x.day_label||('DAY '+Number(x.strength_day||1)))}</b><small>${status||'COMPLETED'}${x.completed_late?' · LATE ENTRY':''}</small></div><strong>${feel?feel.toUpperCase():'COMPLETED'}</strong></div>`);
   }
-  for(const x of recentExercises){
-    const load=Number(x.actual_load),reps=Number(x.reps_completed),rpe=Number(x.set_rpe),u=escapeHtmlLocal(x.weight_unit||unit);
-    parts.push(`<div class="mwStrengthProgressRow"><div><b>${escapeHtmlLocal(x.exercise_name||'Exercise')}</b><small>Week ${Number(x.program_week||1)} · ${Number.isFinite(reps)?reps+' reps':'saved set'}${Number.isFinite(rpe)?' · RPE '+rpe+'/10':''}</small></div><strong>${Number.isFinite(load)?load+' '+u:'LOGGED'}</strong></div>`);
+
+  const byExercise=new Map();
+  for(const x of [...rows].sort((a,b)=>String(a.recorded_at||'').localeCompare(String(b.recorded_at||'')))){
+    const exercise=String(x.exercise_name||'').trim(),reps=Number(x.reps_completed),load=Number(x.actual_load);
+    if(!exercise||!Number.isFinite(reps)||!Number.isFinite(load))continue;
+    const key=exercise.toLowerCase()+'|'+reps;
+    if(!byExercise.has(key))byExercise.set(key,[]);
+    byExercise.get(key).push(x);
   }
-  if(!parts.length)parts.push('<div class="muted">No weight-room history yet. Complete a lift and MW will build this section automatically.</div>');
-  else if(latestCompleted&&!recentExercises.length)parts.push('<div class="muted">Session completion is recorded. Detailed working loads will appear only when you choose to log changed or specific sets.</div>');
+  const trends=[];
+  for(const group of byExercise.values()){
+    if(group.length<2)continue;
+    const first=group[0],last=group[group.length-1],delta=Number(last.actual_load)-Number(first.actual_load);
+    if(Math.abs(delta)<.5)continue;
+    trends.push({exercise:last.exercise_name,reps:Number(last.reps_completed),delta,unit:last.weight_unit||unit});
+  }
+  trends.slice(0,2).forEach(x=>parts.push(`<div class="mwStrengthProgressRow"><div><b>${escapeHtmlLocal(x.exercise)}</b><small>Comparable ${x.reps}-rep working-load trend · optional detailed log</small></div><strong>${x.delta>0?'+':''}${Number(x.delta.toFixed(1))} ${escapeHtmlLocal(x.unit)}</strong></div>`));
+
+  if(!parts.length)parts.push('<div class="muted">No weight-room history yet. Complete today’s lift and MW will build progression automatically from the check-in you already use.</div>');
   box.innerHTML=parts.join('');
 }
 function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI()}
