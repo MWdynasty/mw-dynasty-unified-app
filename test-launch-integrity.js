@@ -211,6 +211,15 @@ includes('athlete/index.html','function renderWeightRoomProgressUI()','Athlete w
 includes('athlete/index.html',"String(x?.lifecycle_status||'')==='completed'",'Weight-room progression must count completed strength sessions');
 includes('athlete/index.html','mwStrengthPerformanceRows','Weight-room progression must use saved detailed strength data');
 includes('athlete/index.html','Current maxes are your established benchmarks.','Weight-room progression must distinguish current benchmarks from session history');
+includes('athlete/index.html','async function saveStrengthFeel(w,day,feel)','Existing Strong / Normal / Heavy response must persist to MW');
+includes('athlete/index.html',"p_feel:String(feel)",'Strength response RPC payload missing');
+includes('athlete/index.html','session_feel,recorded_at','Athlete strength history must load persisted session response');
+includes('athlete/index.html','<span>AS WRITTEN</span>','Weight-room Progress must use low-friction completion quality instead of optional set-count logging');
+includes('athlete/index.html','<span>LAST RESPONSE</span>','Weight-room Progress must surface the existing session response');
+includes('server/api/coach/performance.js','response_trend:strengthResponseTrend','Coach intelligence must receive strength response trend');
+includes('server/api/coach/performance.js','as_prescribed_pct:asWrittenPct','Coach intelligence must receive strength completion quality');
+includes('supabase/migrations/20260930_persist_strength_session_feel.sql','mw_set_own_strength_feel','Strength response persistence migration missing');
+
 
 const athleteLoginHtml=read('athlete/index.html');
 ok(athleteLoginHtml.indexOf('let mwStrengthPerformanceRows=[];')>=0,'Shared strength-performance state declaration missing');
