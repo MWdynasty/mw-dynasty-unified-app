@@ -2694,8 +2694,9 @@ async function speak(t,btn){if(!t)return;if(mwVoiceButton===btn&&btn?.classList.
 function mwEscape(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function mwMessageHtml(t){let s=mwEscape(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n\n+/g,'<br><br>').replace(/\n/g,'<br>');return s}
 function add(t,c){let d=document.createElement('div');d.className='msg '+c;if(c==='coach')d.innerHTML=mwMessageHtml(t);else d.textContent=t;if(c==='coach'){let b=document.createElement('button');b.className='speak';b.textContent='🔊 READ ALOUD';b.onclick=()=>speak(t,b);d.appendChild(b);let v=document.createElement('span');v.className='voiceLabel';v.textContent='MW NATURAL VOICE';d.appendChild(v)}$('#chat').appendChild(d);$('#chat').scrollTop=$('#chat').scrollHeight}
-const conversation=JSON.parse(localStorage.getItem('mwConversation')||'[]');
-function saveConversation(){localStorage.setItem('mwConversation',JSON.stringify(conversation.slice(-30)))}
+const MW_CONVERSATION_KEY='mwConversationV2';
+const conversation=JSON.parse(localStorage.getItem(MW_CONVERSATION_KEY)||'[]');
+function saveConversation(){localStorage.setItem(MW_CONVERSATION_KEY,JSON.stringify(conversation.slice(-30)))}
 function renderSavedConversation(){
   if(!conversation.length)return;
   $('#chat').innerHTML='';
