@@ -41,6 +41,21 @@ async function writeCoachCalendarEvent(token,payload){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/coach_calendar_events`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(payload)});
   const d=await r.json().catch(()=>null);if(!r.ok)throw Object.assign(new Error(d?.message||'Calendar update failed'),{status:r.status});return Array.isArray(d)?d[0]:d;
 }
+async function mutateCoachCalendarEvent(token,id,method,payload=null){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method,headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},body:payload?JSON.stringify(payload):undefined});
+  const d=await r.json().catch(()=>null);if(!r.ok)throw Object.assign(new Error(d?.message||'Calendar action failed'),{status:r.status});return Array.isArray(d)?d[0]:d;
+}
+async function findCoachCalendarEvent(token,userId,a){
+  const id=cleanActionText(a.eventId||'',80);
+  if(id){
+    const rows=await sb(`coach_calendar_events?select=*&id=eq.${encodeURIComponent(id)}&coach_user_id=eq.${encodeURIComponent(userId)}&limit=1`,token);
+    return rows?.[0]||null;
+  }
+  const title=cleanActionText(a.matchTitle||a.title||'',120);
+  if(!title)return null;
+  const rows=await sb(`coach_calendar_events?select=*&coach_user_id=eq.${encodeURIComponent(userId)}&title=ilike.${encodeURIComponent(title)}&order=starts_at.desc&limit=5`,token);
+  return rows?.[0]||null;
+}
 
 module.exports=async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
@@ -62,12 +77,23 @@ module.exports=async function handler(req,res){
 
   if(req.body?.approvedAction&&typeof req.body.approvedAction==='object'){
     const a=req.body.approvedAction;
-    if(a.type!=='calendar_block')return res.status(400).json({error:'Unsupported Coach MW action'});
+    if(!['calendar_create','calendar_block','calendar_update','calendar_delete'].includes(a.type))return res.status(400).json({error:'Unsupported Coach MW action'});
+    if(a.type==='calendar_delete'){
+      const existing=await findCoachCalendarEvent(token,user.id,a);if(!existing)return res.status(404).json({error:'I could not find that calendar entry to delete.'});
+      await mutateCoachCalendarEvent(token,existing.id,'DELETE');
+      return res.status(200).json({ok:true,deletedId:existing.id,answer:`${existing.title} was removed from your MW calendar.`});
+    }
     const start=isoDay(a.startDate),end=isoDay(a.endDate||a.startDate);
     if(!start||!end||end<start)return res.status(400).json({error:'Coach MW needs valid start and end dates.'});
-    const eventType=['school_break','exam_week','holiday','facility_closure','travel','other'].includes(a.eventType)?a.eventType:'other';
+    const eventType=['school_break','exam_week','holiday','facility_closure','travel','practice','meet','testing','other'].includes(a.eventType)?a.eventType:'other';
     const impact=['no_practice','reduced_load','awareness_only'].includes(a.trainingImpact)?a.trainingImpact:'awareness_only';
-    const event=await writeCoachCalendarEvent(token,{coach_user_id:user.id,title:cleanActionText(a.title||'Schedule update',120),event_type:eventType,starts_at:start+'T00:00:00.000Z',ends_at:end+'T23:59:59.999Z',training_impact:impact,notes:cleanActionText(a.notes||'Added through Coach MW',800)});
+    const payload={title:cleanActionText(a.title||'Schedule update',120),event_type:eventType,starts_at:start+'T00:00:00.000Z',ends_at:end+'T23:59:59.999Z',training_impact:impact,notes:cleanActionText(a.notes||'Updated through Coach MW',800)};
+    if(a.type==='calendar_update'){
+      const existing=await findCoachCalendarEvent(token,user.id,a);if(!existing)return res.status(404).json({error:'I could not find that calendar entry to update.'});
+      const event=await mutateCoachCalendarEvent(token,existing.id,'PATCH',payload);
+      return res.status(200).json({ok:true,event,answer:`${event.title} was updated on your MW calendar.`});
+    }
+    const event=await writeCoachCalendarEvent(token,{coach_user_id:user.id,...payload});
     return res.status(200).json({ok:true,event,answer:`${event.title} is now on your MW calendar from ${start} through ${end}.`});
   }
 
@@ -142,10 +168,13 @@ Use secured coach/team context when answering roster, attendance, PR, progressio
 Respect the coach's saved calendar constraints when discussing or recommending schedules. Treat event_type school_break, holiday, or facility_closure with training_impact no_practice as unavailable training dates. Treat exam_week or any event marked reduced_load as a signal to reduce scheduling pressure, complexity, or total load. Awareness-only events should be mentioned when relevant but not treated as automatic cancellations. Never silently move official training; recommend an adjustment and keep the coach in control.
 COACH MW ACTION PROTOCOL:
 - Current system date: ${new Date().toISOString().slice(0,10)}. Use it to resolve future month/day scheduling requests; never silently choose a past occurrence when the coach is clearly planning an upcoming season.
-- When the coach explicitly asks you to add, schedule, block, mark off, or put a school break, exam period, holiday, travel period, facility closure, or other date range on the calendar, prepare a calendar action for coach approval.
+- You are an operational assistant, not just a chat explainer. When the coach asks to create, update, reschedule, or remove a calendar item, translate the request into an executable calendar action.
+- For create/add/schedule requests use type calendar_create (calendar_block is accepted for backward compatibility). For edits use calendar_update. For removals use calendar_delete.
+- For update/delete, use the secured CALENDAR EVENTS context to identify the existing entry. Include eventId when you can identify one unambiguously; otherwise include matchTitle. If the request is ambiguous, ask which entry instead of guessing.
+- Normal create/update actions require one-tap approval. Delete actions always require explicit confirmation before execution.
 - Do not claim the calendar changed before approval. Say clearly that the change is READY FOR APPROVAL and that the coach must tap the approval control shown below your response.
 - Never use phrases such as "I'll move forward", "I've marked it off", "it's scheduled", or "it's handled" until the approved calendar write has succeeded.
-- End that response with exactly one single-line marker: MW_ACTION_JSON: {"type":"calendar_block","title":"...","eventType":"school_break|exam_week|holiday|facility_closure|travel|other","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","trainingImpact":"no_practice|reduced_load|awareness_only","notes":"..."}
+- End that response with exactly one single-line marker: MW_ACTION_JSON: {"type":"calendar_create|calendar_update|calendar_delete","eventId":"existing-id-when-known","matchTitle":"existing title when needed","title":"...","eventType":"school_break|exam_week|holiday|facility_closure|travel|practice|meet|testing|other","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","trainingImpact":"no_practice|reduced_load|awareness_only","notes":"..."}
 - Resolve explicit month/day dates using the current conversation year when unambiguous. If the year is ambiguous, ask instead of emitting an action.
 - For requests to move training indoors, first preserve the purpose of the day. Explain the goal in plain language and give 1-3 easy-to-understand alternatives based on available distance, surface, spikes, equipment, group size, athlete event, and current phase. Prefer exercises already present in the approved MW program/context; if the exact approved library is unavailable, clearly label the suggestion as an alternative rather than pretending it is an official MW library item.
 - Indoor alternatives must be readable by a coach who has never seen the internal MW library: show Today's goal, Why it changed, Space/equipment, Modified workout, and a one-sentence How to do it for unfamiliar drills.
