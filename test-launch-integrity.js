@@ -212,6 +212,15 @@ includes('athlete/index.html',"String(x?.lifecycle_status||'')==='completed'",'W
 includes('athlete/index.html','mwStrengthPerformanceRows','Weight-room progression must use saved detailed strength data');
 includes('athlete/index.html','Current maxes are your established benchmarks.','Weight-room progression must distinguish current benchmarks from session history');
 
+const athleteLoginHtml=read('athlete/index.html');
+ok(athleteLoginHtml.indexOf('let mwStrengthPerformanceRows=[];')>=0,'Shared strength-performance state declaration missing');
+ok(athleteLoginHtml.indexOf('let mwStrengthPerformanceRows=[];')<athleteLoginHtml.indexOf('function renderWeightRoomProgressUI()'),'Strength-performance state must exist before Progress rendering can run');
+ok((athleteLoginHtml.match(/let mwStrengthPerformanceRows=\[\];/g)||[]).length===1,'Strength-performance rows must not be shadowed by a second lexical declaration');
+includes('athlete/index.html',"console.error('MW post-auth hydration issue',e)",'Athlete post-auth UI hydration must be isolated from authentication');
+includes('athlete/index.html',"if(authenticated&&mwSession?.access_token)",'Athlete sign-in must preserve an accepted session when downstream app startup fails');
+includes('athlete/index.html','You are signed in. MW hit a temporary app-loading issue, but your session is safe.','Athlete sign-in must not expose raw feature exceptions as credential failures');
+
+
 includes('server/api/coach/performance.js','entry_sources:[...new Set(reps.map(r=>r.entry_source','Coach intelligence must receive Practice timing provenance');
 includes('supabase/migrations/20260929_unify_coach_athlete_practice_history.sql','mw_coach_sync_practice_session_to_athlete','Shared Coach/Athlete practice sync migration missing');
 
