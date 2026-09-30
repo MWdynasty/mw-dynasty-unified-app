@@ -818,6 +818,29 @@ function coachMWPage(){
     bubble.appendChild(label);
     bubble.appendChild(body);
     chat.appendChild(bubble);
+    return bubble;
+  };
+  const appendCoachAction=(action)=>{
+    if(!action||action.type!=='calendar_block')return;
+    const card=document.createElement('div');card.className='tile mw-coach-message mw-coach-assistant mw-coach-action-card';
+    const title=document.createElement('b');title.textContent='Calendar change ready';
+    const detail=document.createElement('p');detail.textContent=(action.title||'Schedule update')+' · '+action.startDate+(action.endDate&&action.endDate!==action.startDate?' through '+action.endDate:'')+' · '+String(action.trainingImpact||'').replaceAll('_',' ');
+    const approve=document.createElement('button');approve.className='action';approve.type='button';approve.textContent='Approve & Add to Calendar';
+    const cancel=document.createElement('button');cancel.className='back';cancel.type='button';cancel.textContent='Keep Calendar Unchanged';cancel.style.marginLeft='8px';
+    card.append(title,detail,approve,cancel);chat.appendChild(card);chat.scrollTop=chat.scrollHeight;
+    cancel.onclick=()=>{card.remove();toast('Calendar left unchanged')};
+    approve.onclick=async()=>{
+      approve.disabled=true;cancel.disabled=true;approve.textContent='Adding…';
+      try{
+        const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
+        const rr=await fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({approvedAction:action})});
+        const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||'Calendar update failed');
+        card.remove();const confirmation=String(dd.answer||'Calendar updated.');
+        history.push({role:'assistant',content:confirmation});history=history.slice(-40);
+        appendCoachBubble('assistant',confirmation);try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}
+        toast('Added to MW Calendar');
+      }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent='Approve & Add to Calendar';toast(e.message||'Calendar update failed')}
+    };
   };
   const send=()=>{
     const text=q.value.trim();if(!text)return toast('Type or speak a question first');
@@ -849,6 +872,7 @@ function coachMWPage(){
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       traceCoachStage('before_assistant_append');
       appendCoachBubble('assistant',answer);
+      if(d.action)appendCoachAction(d.action);
       traceCoachStage('assistant_appended');
       state.textContent='';
       pendingImage='';pick.value='';
