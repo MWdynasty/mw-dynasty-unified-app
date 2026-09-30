@@ -3218,3 +3218,16 @@ img,svg,video,canvas{max-width:100%}
  .mw-attendance-list .row{align-items:center}
  .mw-attendance-list .row select{width:auto;max-width:44%;min-width:112px}
 }
+
+/* V26.09 navigation safety — page content must never trap the fixed coach nav.
+   True dialogs remain above the nav and intentionally own interaction while open. */
+@media(max-width:820px){
+  .coach-mobile-nav{
+    z-index:15000!important;
+    pointer-events:auto!important;
+    isolation:isolate!important;
+  }
+  .coach-mobile-nav button,.coach-mobile-nav button *{pointer-events:auto!important}
+  .mw-modal{z-index:20000!important}
+  .coach-apply-modal{z-index:21000!important}
+}
