@@ -3704,10 +3704,15 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   function strengthHeaders(extra={}){return {'apikey':SUPABASE_KEY,'Authorization':'Bearer '+token(),...extra}}
   async function loadStrengthMaxes(){
     if(!mwRemoteProfile.athleteId||!token())return;
-    const url=SUPABASE_URL+'/rest/v1/athlete_strength_maxes?athlete_id=eq.'+encodeURIComponent(mwRemoteProfile.athleteId)+'&select=*';
-    const r=await fetch(url,{headers:strengthHeaders({'Accept':'application/json'})});
+    const aid=encodeURIComponent(mwRemoteProfile.athleteId),headers=strengthHeaders({'Accept':'application/json'});
+    const [r,h]=await Promise.all([
+      fetch(SUPABASE_URL+'/rest/v1/athlete_strength_maxes?athlete_id=eq.'+aid+'&select=*',{headers}),
+      fetch(SUPABASE_URL+'/rest/v1/athlete_strength_max_history?athlete_id=eq.'+aid+'&select=power_clean_max,front_squat_max,back_squat_max,deadlift_max,deadlift_type,weight_unit,last_max_test,recorded_at,change_source&order=recorded_at.asc&limit=100',{headers})
+    ]);
     const rows=await r.json().catch(()=>[]);
     if(!r.ok)throw new Error(rows?.message||'Could not load weight-room maxes.');
+    const history=await h.json().catch(()=>[]);
+    window.mwStrengthMaxHistoryRows=h.ok&&Array.isArray(history)?history:[];
     const row=Array.isArray(rows)?rows[0]:null;
     if(row){
       for(const [id,col] of Object.entries(STRENGTH_FIELD_MAP)){
@@ -3717,6 +3722,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }
     const b=document.getElementById('saveLiftMaxes');
     if(b)b.onclick=saveStrengthMaxes;
+    try{renderWeightRoomProgressUI()}catch{}
   }
   function strengthValue(id){
     const raw=(document.getElementById(id)?.value||'').trim();
@@ -3739,6 +3745,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       const local={};for(const id of Object.keys(STRENGTH_FIELD_MAP))local[id]=document.getElementById(id)?.value||'';localStorage.setItem(LIFT_MAX_KEY,JSON.stringify(local));
       if(st)st.textContent='✓ Weight-room maxes saved to MW Dynasty. They will stay synced across devices.';
       if(b)b.textContent='✓ WEIGHT ROOM MAXES SAVED';
+      try{await loadStrengthMaxes()}catch{}
       try{renderStrengthWeek(activeMWWeek())}catch{}try{renderWeightRoomProgressUI()}catch{}
       setTimeout(()=>{if(b)b.textContent='SAVE WEIGHT ROOM MAXES'},1400);
     }catch(e){if(st)st.textContent='Save failed: '+(e.message||'Please try again.');if(b)b.textContent='SAVE FAILED — TAP TO RETRY'}finally{if(b)b.disabled=false}
