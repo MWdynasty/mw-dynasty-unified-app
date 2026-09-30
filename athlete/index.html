@@ -2686,7 +2686,7 @@ function latestIncompleteStrength(){
 }
 async function loadStrengthQuickCheckins(){
   const aid=completionAthleteId();if(!aid||!window.mwGetSessionToken?.())return;
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional,training_cycle_key,season_plan_id,source_program_week&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_strength_checkins?athlete_id=eq.'+encodeURIComponent(aid)+'&training_cycle_key=eq.'+encodeURIComponent(trainingCycleKey())+'&select=program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,scheduled_date,started_at,last_activity_at,completed_at,completed_late,is_optional,training_cycle_key,season_plan_id,source_program_week,session_feel,feel_recorded_at&order=recorded_at.desc&limit=250',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load strength check-ins.');
   mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}try{renderWeightRoomProgressUI()}catch{}
 }
@@ -2699,6 +2699,14 @@ async function completeStrengthSession(w,day,outcome,label,optional=false){
   const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_complete_own_strength_session',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_strength_day:Number(day),p_outcome:String(outcome),p_day_label:String(label||`Day ${day}`),p_is_optional:!!optional}),cache:'no-store'});
   const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out?.message||out?.hint||'Strength session completion could not be saved.');
   mwStrengthQuickCache[`${Number(w)}-${Number(day)}`]=out;window.mwReloadAthleteNotifications?.();return out;
+}
+async function saveStrengthFeel(w,day,feel){
+  const r=await fetch(MW_SB_URL+'/rest/v1/rpc/mw_set_own_strength_session_feel',{method:'POST',headers:completionHeaders({'Content-Type':'application/json'}),body:JSON.stringify({p_program_week:Number(w),p_strength_day:Number(day),p_feel:String(feel)}),cache:'no-store'});
+  const out=await r.json().catch(()=>({}));if(!r.ok)throw new Error(out?.message||out?.hint||'Lift response could not be saved.');
+  const key=`${Number(w)}-${Number(day)}`;
+  mwStrengthQuickCache[key]={...(mwStrengthQuickCache[key]||{}),...out};
+  try{renderWeightRoomProgressUI()}catch{}
+  return out;
 }
 async function saveStrengthQuickCheckin(w,day,label,status,button,optional=false){
   if(button){button.disabled=true;button.textContent='SAVING…'}
@@ -2726,12 +2734,13 @@ async function renderStrengthQuickCheckins(w){
   else if(life==='incomplete')txt='INCOMPLETE · SAVED SETS';
   else if(life==='absent')txt='ABSENT';
   if(saved?.completed_late&&life==='completed')txt+=' · LATE ENTRY';
-  parts.push(`<div class="strengthCheckRow ${life==='completed'?'saved':''}"><div class="rowTop"><span><b>${window.mwStrengthViewDayOverride?'Resume · ':'Today · '}${viewLabel}</b><br><small>${txt}</small></span><small>Week ${w}${meta.optional?' · OPTIONAL':''}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${viewDay}" data-label="${String(meta.label).replace(/"/g,'&quot;')}" data-optional="${meta.optional?'1':'0'}" data-status="as_prescribed">✓ COMPLETE AS WRITTEN</button><button class="strengthChanged" type="button" data-adjust-strength="1">ADJUST</button></div><div class="mwLiftFeel" data-lift-feel hidden style="margin-top:10px"><small>HOW DID THE LIFT FEEL?</small><div class="strengthCheckActions" style="margin-top:7px"><button type="button" data-feel="strong">🟢 STRONG</button><button type="button" data-feel="normal">🟡 NORMAL</button><button type="button" data-feel="heavy">🔴 HEAVY</button></div></div></div>`);
+  const savedFeel=String(saved?.session_feel||'');
+  parts.push(`<div class="strengthCheckRow ${life==='completed'?'saved':''}"><div class="rowTop"><span><b>${window.mwStrengthViewDayOverride?'Resume · ':'Today · '}${viewLabel}</b><br><small>${txt}${savedFeel?' · '+savedFeel.toUpperCase():''}</small></span><small>Week ${w}${meta.optional?' · OPTIONAL':''}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${viewDay}" data-label="${String(meta.label).replace(/"/g,'&quot;')}" data-optional="${meta.optional?'1':'0'}" data-status="as_prescribed">✓ COMPLETE AS WRITTEN</button><button class="strengthChanged" type="button" data-adjust-strength="1">ADJUST</button></div><div class="mwLiftFeel" data-lift-feel ${life==='completed'?'':'hidden'} style="margin-top:10px"><small>HOW DID THE LIFT FEEL?</small><div class="strengthCheckActions" style="margin-top:7px"><button type="button" data-feel="strong">🟢 STRONG</button><button type="button" data-feel="normal">🟡 NORMAL</button><button type="button" data-feel="heavy">🔴 HEAVY</button></div></div></div>`);
   box.innerHTML=parts.join('');
   box.querySelectorAll('[data-resume-strength]').forEach(b=>b.onclick=()=>{const [rw,rd]=b.dataset.resumeStrength.split('-').map(Number);window.mwOpenStrengthSessionFor?.(rw,rd)});
   box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b,b.dataset.optional==='1');await renderStrengthQuickCheckins(w);const feel=box.querySelector('[data-lift-feel]');if(feel)feel.hidden=false}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
   box.querySelectorAll('[data-adjust-strength]').forEach(b=>b.onclick=()=>{const details=document.getElementById('strengthAdvancedLog');if(details){details.open=true;details.scrollIntoView({behavior:'smooth',block:'center'})}const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Only log what changed. You do not need to re-enter the full lift.'});
-  box.querySelectorAll('[data-feel]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('mwLiftFeel:'+trainingCycleKey()+':'+w+':'+viewDay,b.dataset.feel)}catch{} box.querySelectorAll('[data-feel]').forEach(x=>x.disabled=true);b.disabled=false;const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='✓ Lift saved · '+b.dataset.feel.toUpperCase()+'. You’re done.'});
+  box.querySelectorAll('[data-feel]').forEach(b=>b.onclick=async()=>{const st=document.getElementById('strengthPerformanceStatus');box.querySelectorAll('[data-feel]').forEach(x=>x.disabled=true);if(st)st.textContent='Saving lift response…';try{await saveStrengthFeel(w,viewDay,b.dataset.feel);await renderStrengthQuickCheckins(w);if(st)st.textContent='✓ Lift saved · '+b.dataset.feel.toUpperCase()+'. You’re done.'}catch(e){if(st)st.textContent='Could not save lift response: '+(e.message||'Please try again.');box.querySelectorAll('[data-feel]').forEach(x=>x.disabled=false)}});
 }
 function initStrength(){
   const sel=$('#strengthWeek'); if(!sel)return;
