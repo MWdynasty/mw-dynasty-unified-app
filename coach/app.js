@@ -2074,7 +2074,7 @@ function bindCoachApplicationActions(reload){
 }
 
 // === V12.0 CONNECTED COACH OPERATING SYSTEM ===
-async async function sbRest(path,{method='GET',body=null,prefer='return=representation',timeoutMs=12000}={}){
+async function sbRest(path,{method='GET',body=null,prefer='return=representation',timeoutMs=12000}={}){
   const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
