@@ -2635,7 +2635,21 @@ async function mwProgramWeek(week,kind='track',eventGroup='100_200'){
     if(kind==='track')document.querySelectorAll('.mw-event-branch').forEach(b=>b.onclick=()=>{document.getElementById('mwModal')?.remove();mwProgramWeek(week,'track',b.dataset.event)});
   }catch(e){toast(e.message)}
 }
-function mwTrackPage(){pageBase('MW Track Program','Protected 41-week MW training system — every session opens with the full prescription, recovery, cues and circuit order.',`<div class="panel-grid">${Array.from({length:41},(_,i)=>i+1).map(w=>`<div class="tile"><h3>Week ${w}</h3><p>MW progressive sprint development</p><button class="action mw-week" data-week="${w}">Open Week</button></div>`).join('')}</div>`);document.querySelectorAll('.mw-week').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'track'))}
+async function mwTrackPage(){
+  let cal={week:1,status:'active'};
+  try{cal=await coachCurrentCalendar()}catch{}
+  const current=Math.max(1,Math.min(41,Number(cal.week)||1)),founder=!!accountAccess.isFounder;
+  const cards=Array.from({length:41},(_,i)=>i+1).map(w=>{
+    let access='upcoming',label='🔒 UPCOMING',desc='Unlocks when this training week arrives';
+    if(founder){access='open';label='FOUNDER PREVIEW';desc='Founder access · full program preview'}
+    else if(w===current){access='open';label='CURRENT WEEK';desc='Full coaching access'}
+    else if(w===current-1){access='review';label='REVIEW WINDOW';desc='Previous week · 7-day review access'}
+    else if(w<current-1){access='archived';label='🔒 ARCHIVED';desc='Results remain available in athlete progression'}
+    return `<div class="tile mw-access-${access}"><h3>Week ${w}</h3><p>${desc}</p>${access==='open'||access==='review'?`<button class="action mw-week" data-week="${w}">${access==='review'?'Review Week':'Open Week'}</button>`:`<button class="back" type="button" disabled>${label}</button>`}</div>`;
+  }).join('');
+  pageBase('MW Track Program','Your season timeline controls access. Current week is open, the previous week has a 7-day review window, older weeks archive, and future weeks unlock automatically.',`<div class="panel-grid">${cards}</div>`);
+  document.querySelectorAll('.mw-week').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'track'));
+}
 function strengthPage(){pageBase('Strength & Power','The complete MW weight-room plan — organized by training day, lift, prescription, circuits and Coach MW notes.',`<div class="panel-grid">${Array.from({length:41},(_,i)=>i+1).map(w=>`<div class="tile"><h3>Week ${w}</h3><p>MW Strength & Power</p><button class="action mw-strength" data-week="${w}">Open Week</button></div>`).join('')}</div>`);document.querySelectorAll('.mw-strength').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'strength'))}
 
 window.addEventListener('mw:session-refreshed',e=>{if(e?.detail?.key===SESSION_KEY&&e.detail.session)authSession=e.detail.session});
