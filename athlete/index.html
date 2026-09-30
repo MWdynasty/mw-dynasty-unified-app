@@ -2495,6 +2495,7 @@ async function renderCompletion(){
   if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':status==='incomplete'?'INCOMPLETE':status==='in_progress'?'IN PROGRESS':'SCHEDULED';
   if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Continue the same saved workout from Practice Mode.':'Today’s session is scheduled and ready.';
 }
+let mwStrengthPerformanceRows=[];
 function renderWeightRoomProgressUI(){
   const checkins=Object.values(mwStrengthQuickCache||{}),rows=Array.isArray(mwStrengthPerformanceRows)?mwStrengthPerformanceRows:[];
   const completed=checkins.filter(x=>String(x?.lifecycle_status||'')==='completed');
@@ -3664,7 +3665,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       setTimeout(()=>{if(b)b.textContent='SAVE WEIGHT ROOM MAXES'},1400);
     }catch(e){if(st)st.textContent='Save failed: '+(e.message||'Please try again.');if(b)b.textContent='SAVE FAILED — TAP TO RETRY'}finally{if(b)b.disabled=false}
   }
-  let mwStrengthPerformanceRows=[];
+  mwStrengthPerformanceRows=[];
   function restoreStrengthLogger(){
     const week=strengthLoggingWeek(),day=Number(document.getElementById('strengthLogDay')?.value||mwTodayStrengthInfo().day),exercise=(document.getElementById('strengthLogExercise')?.value||'').trim().toLowerCase();
     const rows=(mwStrengthPerformanceRows||[]).filter(x=>Number(x.program_week)===week&&Number(x.program_day)===day&&(!exercise||String(x.exercise_name||'').trim().toLowerCase()===exercise));
@@ -3747,7 +3748,24 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const payload={athlete_id:mwRemoteProfile.athleteId,coach_visual:v('settingsCoachType')||v('coachType')||'male',voice_speed:v('voiceSpeed')||'1',voice_mode:v('voiceMode')||'fast',auto_voice:v('autoVoice')==='on',workout_reminders:v('workoutReminders')!=='off',meet_reminders:v('meetReminders')!=='off',message_alerts:v('messageAlerts')!=='off',updated_at:new Date().toISOString()};
     const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'Settings save failed.');mwRemoteProfile.coachType=payload.coach_visual;applyCoachVisual(payload.coach_visual);localStorage.setItem('mwPrefs',JSON.stringify({voiceSpeed:payload.voice_speed,voiceMode:payload.voice_mode,autoVoice:payload.auto_voice?'on':'off',workoutReminders:payload.workout_reminders?'on':'off',meetReminders:payload.meet_reminders?'on':'off',messageAlerts:payload.message_alerts?'on':'off'}));return d;
   }
-  async function loadMe(){const d=await api('/api/me',{cache:'no-store'});hydrate(d);try{await loadSeasonCalendar()}catch(e){console.warn('MW training-year calendar unavailable',e)}try{await loadSmartEntry()}catch(e){console.warn('MW Smart Entry sync unavailable',e)}try{await loadAthleteSettings()}catch(e){console.warn('MW settings sync unavailable',e)}try{await loadStrengthMaxes()}catch(e){const st=document.getElementById('liftMaxStatus');if(st)st.textContent='MW strength sync unavailable: '+e.message}try{await loadStrengthQuickCheckins();bindStrengthPerformanceLogger();await loadStrengthPerformanceLogs()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Strength performance sync unavailable: '+e.message}try{await loadWorkoutCompletions();renderCompletion();renderProgressUI()}catch(e){console.warn('MW completion sync unavailable',e);if($('#unlockNote'))$('#unlockNote').textContent='Workout history could not sync from MW Dynasty. Please refresh.'}const sb=document.getElementById('saveSettings');if(sb)sb.onclick=async()=>{sb.disabled=true;sb.textContent='SAVING…';try{await saveAthleteSettings();sb.textContent='✓ SETTINGS SAVED'}catch(e){sb.textContent='SAVE FAILED — TAP TO RETRY';authStatus(e.message,true)}finally{sb.disabled=false;setTimeout(()=>{if(sb.textContent.startsWith('✓'))sb.textContent='SAVE SETTINGS'},1300)}};return d}
+  async function loadMe(){
+    const d=await api('/api/me',{cache:'no-store'});
+    try{
+      hydrate(d);
+    }catch(e){
+      console.error('MW post-auth hydration issue',e);
+      window.MWDiag?.event('athlete_post_auth_hydration_error',{severity:'error',code:'post_auth_hydration',context:{message:String(e?.message||e).slice(0,180)}});
+      window.mwAthleteBootWarning='Some Athlete features are still loading.';
+    }
+    try{await loadSeasonCalendar()}catch(e){console.warn('MW training-year calendar unavailable',e)}
+    try{await loadSmartEntry()}catch(e){console.warn('MW Smart Entry sync unavailable',e)}
+    try{await loadAthleteSettings()}catch(e){console.warn('MW settings sync unavailable',e)}
+    try{await loadStrengthMaxes()}catch(e){const st=document.getElementById('liftMaxStatus');if(st)st.textContent='MW strength sync unavailable: '+e.message}
+    try{await loadStrengthQuickCheckins();bindStrengthPerformanceLogger();await loadStrengthPerformanceLogs()}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Strength performance sync unavailable: '+e.message}
+    try{await loadWorkoutCompletions();renderCompletion();renderProgressUI()}catch(e){console.warn('MW completion sync unavailable',e);if($('#unlockNote'))$('#unlockNote').textContent='Workout history could not sync from MW Dynasty. Please refresh.'}
+    const sb=document.getElementById('saveSettings');if(sb)sb.onclick=async()=>{sb.disabled=true;sb.textContent='SAVING…';try{await saveAthleteSettings();sb.textContent='✓ SETTINGS SAVED'}catch(e){sb.textContent='SAVE FAILED — TAP TO RETRY';authStatus(e.message,true)}finally{sb.disabled=false;setTimeout(()=>{if(sb.textContent.startsWith('✓'))sb.textContent='SAVE SETTINGS'},1300)}};
+    return d
+  }
   window.mwReloadAccount=loadMe;
   const websiteCheckoutPlan=new URLSearchParams(location.search).get('plan')==='mw_athlete'?'mw_athlete':'';
   async function beginWebsiteCheckout(accessToken){
@@ -3809,6 +3827,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     return true;
   }
   async function login(){
+    let authenticated=false;
     const email=document.querySelector('#mwAuthEmail').value.trim(),password=document.querySelector('#mwAuthPassword').value;
     if(!email||!password){authStatus('Enter your email and password.',true);return}
     hideRoleMismatch();
@@ -3816,6 +3835,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{
       const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({email,password})});
       const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error_description||d.msg||d.error||'Sign-in failed');
+      authenticated=true;
       saveSession(d,document.querySelector('#mwRememberMe')?.checked===true);
       if(websiteCheckoutPlan){await beginWebsiteCheckout(d.access_token);return}
       const enterStarted=performance.now();
@@ -3837,12 +3857,18 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }catch(e){
       document.body.classList.remove('mw-entering');
       if(showRoleMismatch(e))return;
+      if(authenticated&&mwSession?.access_token){
+        console.error('MW post-auth startup issue',e);
+        window.MWDiag?.event('athlete_post_auth_startup_error',{severity:'error',code:'post_auth_startup',context:{message:String(e?.message||e).slice(0,180)}});
+        authStatus('You are signed in. MW hit a temporary app-loading issue, but your session is safe. Tap Sign In again or refresh once.',true);
+        return
+      }
       if(transientProblem(e)&&mwSession?.access_token){
         authStatus('Connection interrupted after sign-in. Your MW session is safe and will reconnect automatically.',true);
         return
       }
       clearSession();
-      authStatus(String(e?.message||'Sign-in failed'),true)
+      authStatus('Sign-in could not be completed. Check your email and password, then try again.',true)
     }
   }
 
@@ -3978,6 +4004,11 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   }catch(e){
     console.warn('MW session restore failed:',e);
     if(showRoleMismatch(e))return;
+    if(mwSession?.access_token&&mwSession?.refresh_token){
+      window.MWDiag?.event('athlete_session_restore_startup_error',{severity:'error',code:'session_restore_startup',context:{message:String(e?.message||e).slice(0,180)}});
+      authStatus('Your MW session is still signed in. The Athlete app could not finish loading one feature; refresh once to retry.',true);
+      return
+    }
     if(transientProblem(e)){
       authStatus('MW is having a temporary connection issue. Your saved session is safe; we’ll reconnect automatically.',true);
       return
