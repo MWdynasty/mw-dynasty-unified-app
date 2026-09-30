@@ -48,7 +48,7 @@ module.exports=async function handler(req,res){
   }
 
   const repTrackingEnabled=coachTier==='mw_sprint_performance';
-  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,completions,calendarEvents,athleteAvailability,seasonContexts]=await Promise.all([
+  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,strengthMaxHistory,completions,calendarEvents,athleteAvailability,seasonContexts]=await Promise.all([
     sb(`coach_assignments?select=*&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=200`,token),
     sb(`athletes?select=*&limit=200`,token),
     sb(`attendance_records?select=*&order=attendance_date.desc&limit=250`,token),
@@ -57,7 +57,8 @@ module.exports=async function handler(req,res){
     sb(`athlete_flags?select=*&limit=200`,token),
     repTrackingEnabled?sb(`athlete_pace_logs?select=athlete_id,program_week,program_day,workout_key,rep_number,distance_m,target_seconds,actual_seconds,intensity_percent,recorded_at&actual_seconds=not.is.null&order=recorded_at.desc&limit=500`,token):Promise.resolve([]),
     sb(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=500`,token),
-    sb(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at&order=recorded_at.desc&limit=500`,token),
+    sb(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,recorded_at,lifecycle_status,completed_at,completed_late,session_feel,feel_recorded_at&order=recorded_at.desc&limit=500`,token),
+    sb(`athlete_strength_max_history?select=athlete_id,power_clean_max,front_squat_max,back_squat_max,deadlift_max,deadlift_type,weight_unit,last_max_test,recorded_at,change_source&order=recorded_at.desc&limit=800`,token),
     sb(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&order=completed_at.desc&limit=500`,token),
     sb(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact,location,notes,meet_priority,is_primary_target,qualification_stage,parent_event_id&coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_at.asc&limit=150`,token),
     sb(`athlete_schedule_constraints?select=id,athlete_id,constraint_type,title,starts_on,ends_on,training_impact,notes,review_status,coach_note,created_at&linked_coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_on.asc&limit=150`,token),
@@ -73,7 +74,7 @@ module.exports=async function handler(req,res){
     };
     return {athleteId,...evaluatePerformance(perfContext,{coachManaged:true,officialWeek:state.current_week,officialDay:state.current_day})};
   });
-  const context={coach:me,coachTier,seasonIntelligenceMode:coachTier==='mw_sprint_performance'?'engine':'insights',repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],athleteAvailability:athleteAvailability||[],seasonContexts:seasonContexts||[],performanceIntelligence,performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],workoutCompletions:completions||[]}};
+  const context={coach:me,coachTier,seasonIntelligenceMode:coachTier==='mw_sprint_performance'?'engine':'insights',repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],athleteAvailability:athleteAvailability||[],seasonContexts:seasonContexts||[],performanceIntelligence,performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],strengthMaxHistory:strengthMaxHistory||[],workoutCompletions:completions||[]}};
 
   const messages=Array.isArray(req.body?.messages)?req.body.messages.slice(-40):[];
   const input=messages.map(m=>{
@@ -132,6 +133,9 @@ COACH TIER CAPABILITY RULES:
 - If the current tier is MW Sprint Performance and detailed pace logs actually exist, you may analyze those recorded sprint reps and compare actual values with stored targets.
 - Session RPE is not part of the current normal athlete workout-completion workflow. Do not advertise it, rely on it, or imply athletes are being asked for it.
 - Quick pace check-ins are not timed rep data. Use pace_reps_hit / pace_reps_total only as a simple execution/compliance signal and label it clearly as a quick check-in.
+- Weight-room progression uses the athlete's existing low-friction completion flow: as prescribed vs modified plus Strong / Normal / Heavy. Detailed set logging is optional evidence, not required for progression.
+- Use strengthCheckins.session_feel for repeated response patterns and strengthMaxHistory for established max changes over time. Never invent a strength gain when comparable history is absent.
+- If sprint execution and strength response point in different directions, explain both and recommend coach review; never silently change the athlete's official 41-week prescription.
 Treat all performance signals as coaching context, not medical diagnoses.
 MW PERFORMANCE-RESPONSE DECISION RULE:
 - SECURED COACH CONTEXT includes deterministic performanceIntelligence flags per assigned athlete.
