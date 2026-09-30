@@ -1796,6 +1796,9 @@ async function athletesPage(){
   try{
     const [d,billing,perf]=await Promise.all([fetchCoachRoster(),coachBillingRequest().catch(()=>({status:{}})),fetchCoachPerformance().catch(()=>({athletes:[]}))]);
     athletes=Array.isArray(d.athletes)?d.athletes:[];performanceMap=new Map((perf.athletes||[]).map(x=>[x.athlete_id,x]));
+    const staleInviteEmails=['coachmuswilliams@gmail.com','williamsalitej@yahoo.com','mustaqeem.w@yahoo.com'];
+    const stalePending=(Array.isArray(d.pendingInvitations)?d.pendingInvitations:[]).filter(i=>staleInviteEmails.includes(String(i.athlete_email||'').toLowerCase()));
+    if(stalePending.length){fetch('/api/coach/invite',{method:'DELETE',headers:{Authorization:'Bearer '+mwSessionToken(),'Content-Type':'application/json'},body:JSON.stringify({emails:stalePending.map(i=>i.athlete_email)})}).catch(()=>{});}
     const pending=[];
     const enriched=()=>athletes.map(a=>{const status=athleteStatusClassify({...a,performance:performanceMap.get(a.id)||null}),sponsored=a.sponsorship?.billing_type==='coach_sponsored'||a.billing_type==='coach_sponsored';return {...a,_coachStatus:status,_sponsored:sponsored}});
     const paintSummary=()=>{const rows=enriched(),attention=rows.filter(a=>a._coachStatus.level==='attention').length,sponsored=rows.filter(a=>a._sponsored).length;summary.innerHTML=`<div><b>${rows.length}</b><span>Athletes</span></div><div><b>${attention}</b><span>Need Attention</span></div><div><b>${sponsored}</b><span>Sponsored</span></div>`};
