@@ -119,7 +119,7 @@ function quickSprintSession(completion){
   };
 }
 
-function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengthCheckins,practiceRows=[]){
+function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengthCheckins,practiceRows=[],strengthMaxHistory=[]){
   const completionMap=new Map(completionRows.filter(x=>x.athlete_id===athleteId).map(x=>[x.workout_key,x]));
   const groups=new Map();
   for(const r of paceRows.filter(x=>x.athlete_id===athleteId)){
@@ -162,21 +162,38 @@ function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengt
     strengthResponseTrend=recentFeel.every(x=>x==='strong'||x==='normal')?'stable':recentFeel.every(x=>x==='heavy')?'review':'watch';
   }
   const asWrittenPct=completedStrength.length?round(asWrittenStrength.length/completedStrength.length*100,1):null;
+  const maxHistory=(strengthMaxHistory||[]).filter(x=>x.athlete_id===athleteId).sort((a,b)=>new Date(a.recorded_at||0)-new Date(b.recorded_at||0));
+  const maxBaseline=maxHistory[0]||null,maxLatest=maxHistory[maxHistory.length-1]||null;
+  const maxProgression={baseline_at:maxBaseline?.recorded_at||null,latest_at:maxLatest?.recorded_at||null,weight_unit:maxLatest?.weight_unit||maxBaseline?.weight_unit||null,changes:{}};
+  for(const [key,col] of [['power_clean','power_clean_max'],['front_squat','front_squat_max'],['back_squat','back_squat_max'],['deadlift','deadlift_max']]){
+    const base=Number(maxBaseline?.[col]),current=Number(maxLatest?.[col]),sameUnit=maxBaseline&&maxLatest&&String(maxBaseline.weight_unit||'')===String(maxLatest.weight_unit||'');
+    maxProgression.changes[key]={baseline:Number.isFinite(base)?base:null,current:Number.isFinite(current)?current:null,delta:sameUnit&&Number.isFinite(base)&&Number.isFinite(current)?round(current-base,1):null};
+  }
 
   const practiceGroups=new Map();
   for(const r of practiceRows.filter(x=>x.athlete_id===athleteId)){const key=r.session_id||`${r.session_date}|${r.group_name||''}`;if(!practiceGroups.has(key))practiceGroups.set(key,[]);practiceGroups.get(key).push(r)}
   const coachPracticeSessions=[...practiceGroups.values()].map(coachPracticeSession).filter(Boolean).sort((a,b)=>String(b.session_date||'').localeCompare(String(a.session_date||'')));
   const latest=sprintSessions[0]||null;
+  const latestSprintExecution=Number(latest?.execution_score_pct);
+  let combinedStrengthSprintSignal='insufficient_shared_data';
+  if(completedStrength.length>=2&&Number.isFinite(latestSprintExecution)){
+    if(strengthResponseTrend==='review'&&latestSprintExecution<70)combinedStrengthSprintSignal='coach_review';
+    else if(strengthResponseTrend==='review')combinedStrengthSprintSignal='strength_response_watch';
+    else if(strengthResponseTrend==='stable'&&latestSprintExecution>=70)combinedStrengthSprintSignal='synchronized_on_track';
+    else if(latestSprintExecution<70)combinedStrengthSprintSignal='sprint_execution_watch';
+    else combinedStrengthSprintSignal='monitor';
+  }
   const flags=[];
   if(latest&&latest.flag==='review')flags.push({level:'attention',type:'sprint_execution',message:latest.reason,workout_key:latest.workout_key});
   else if(latest&&latest.flag==='watch')flags.push({level:'watch',type:'sprint_execution',message:latest.reason,workout_key:latest.workout_key});
   if(trend==='declining')flags.push({level:'watch',type:'trend',message:'Recent target accuracy is trending down across recorded sessions.'});
-  if(strengthResponseTrend==='review')flags.push({level:'watch',type:'strength_response',message:'The athlete reported HEAVY on two consecutive completed strength sessions. Review recovery and the next programmed load before progressing.'});
+  if(combinedStrengthSprintSignal==='coach_review')flags.push({level:'attention',type:'combined_load_response',message:'Repeated HEAVY strength response is occurring alongside lower sprint target execution. Review total training stress before progressing load.'});
+  else if(strengthResponseTrend==='review')flags.push({level:'watch',type:'strength_response',message:'The athlete reported HEAVY on two consecutive completed strength sessions. Review recovery and the next programmed load before progressing.'});
   else if(strengthResponseTrend==='watch')flags.push({level:'watch',type:'strength_response',message:'Recent strength-session responses are mixed. Continue monitoring before changing the programmed progression.'});
   return {
     athlete_id:athleteId,
     sprint:{latest,trend,recent_average_execution_pct:round(recentAccuracy,1),session_count:sprintSessions.length,sessions:sprintSessions.slice(0,8),coach_practice_latest:coachPracticeSessions[0]||null,coach_practice_sessions:coachPracticeSessions.slice(0,8)},
-    strength:{session_count:completedStrength.length,detailed_session_count:strengthSessions.length,latest:strengthSessions[0]||null,sessions:strengthSessions.slice(0,6),quick_checkins:quickStrength.slice(0,12),latest_checkin:quickStrength[0]||null,as_prescribed_pct:asWrittenPct,response_trend:strengthResponseTrend,latest_response:responseStrength[0]?.session_feel||null,response_history:responseStrength.map(x=>({program_week:x.program_week,strength_day:x.strength_day,day_label:x.day_label,session_feel:x.session_feel,status:x.status,completed_at:x.completed_at||x.recorded_at}))},
+    strength:{session_count:completedStrength.length,detailed_session_count:strengthSessions.length,latest:strengthSessions[0]||null,sessions:strengthSessions.slice(0,6),quick_checkins:quickStrength.slice(0,12),latest_checkin:quickStrength[0]||null,as_prescribed_pct:asWrittenPct,response_trend:strengthResponseTrend,latest_response:responseStrength[0]?.session_feel||null,response_history:responseStrength.map(x=>({program_week:x.program_week,strength_day:x.strength_day,day_label:x.day_label,session_feel:x.session_feel,status:x.status,completed_at:x.completed_at||x.recorded_at})),combined_signal:combinedStrengthSprintSignal,max_progression:maxProgression},
     flags
   };
 }
@@ -205,13 +222,14 @@ module.exports=async(req,res)=>{
     if(requested)athleteIds=[requested];
     if(!athleteIds.length)return res.status(200).json({ok:true,rep_tracking_enabled:repTrackingEnabled,athletes:[],summary:{athletes_with_sprint_data:0,athletes_with_strength_data:0,review_flags:0,average_latest_execution_pct:null}});
     const filter=`athlete_id=in.${inList(athleteIds)}`;
-    const [pace,athletePractice,completions,strength,strengthCheckins,practiceTiming]=await Promise.all([
+    const [pace,athletePractice,completions,strength,strengthCheckins,practiceTiming,strengthMaxHistory]=await Promise.all([
       repTrackingEnabled?rows(`athlete_pace_logs?select=athlete_id,program_week,program_day,workout_key,rep_number,distance_m,target_seconds,actual_seconds,intensity_percent,recorded_at&${filter}&actual_seconds=not.is.null&order=recorded_at.desc&limit=1500`,c.token):Promise.resolve([]),
       repTrackingEnabled?rows(`athlete_practice_rep_results?select=athlete_id,program_week,program_day,workout_key,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,entry_source,timing_source,result_status,coach_session_id&${filter}&time_seconds=not.is.null&order=recorded_at.desc&limit=1500`,c.token):Promise.resolve([]),
       repTrackingEnabled?rows(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&${filter}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,c.token):Promise.resolve([]),
       rows(`athlete_strength_session_logs?select=athlete_id,program_week,program_day,session_label,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&${filter}&order=recorded_at.desc&limit=1500`,c.token),
       rows(`athlete_strength_checkins?select=athlete_id,program_week,strength_day,day_label,status,note,session_feel,lifecycle_status,completed_at,recorded_at&${filter}&order=recorded_at.desc&limit=1000`,c.token),
-      rows(`coach_practice_timing_results?select=session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_min_seconds,target_max_seconds,actual_rest_seconds,timing_source,pace_status,created_at&${filter}&order=created_at.desc&limit=2000`,c.token).catch(()=>[])
+      rows(`coach_practice_timing_results?select=session_id,athlete_id,session_date,division,group_name,lane_number,rep_number,time_seconds,target_min_seconds,target_max_seconds,actual_rest_seconds,timing_source,pace_status,created_at&${filter}&order=created_at.desc&limit=2000`,c.token).catch(()=>[]),
+      rows(`athlete_strength_max_history?select=athlete_id,power_clean_max,front_squat_max,back_squat_max,deadlift_max,deadlift_type,weight_unit,last_max_test,recorded_at,change_source&${filter}&order=recorded_at.asc&limit=1500`,c.token).catch(()=>[])
     ]);
     const paceMap=new Map();
     for(const row of pace||[])paceMap.set(`${row.athlete_id}|${row.workout_key}|${row.rep_number}`,row);
@@ -225,7 +243,7 @@ module.exports=async(req,res)=>{
       });
     }
     const combinedPace=[...paceMap.values()];
-    const athletes=athleteIds.map(id=>summarizeAthlete(id,combinedPace,completions,strength,strengthCheckins,practiceTiming));
+    const athletes=athleteIds.map(id=>summarizeAthlete(id,combinedPace,completions,strength,strengthCheckins,practiceTiming,strengthMaxHistory));
     const latestExec=athletes.map(a=>a.sprint.latest?.execution_score_pct).filter(Number.isFinite);
     const summary={
       athletes_with_sprint_data:athletes.filter(a=>a.sprint.session_count>0).length,
