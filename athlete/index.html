@@ -1642,13 +1642,13 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div id="strengthTodayLabel" class="lockNote" style="margin-top:10px"></div>
 <div id="strengthPlan" class="strengthPlan"></div>
 <div id="strengthPerformanceCard" style="margin-top:14px">
-<div class="cardHead"><span>STRENGTH CHECK-IN</span><span class="smalllink">RIGHT HERE</span></div>
-<p class="muted">When you finish, tap what happened. Your coach sees the check-in automatically.</p>
+<div class="cardHead"><span>FINISH TODAY'S LIFT</span><span class="smalllink">QUICK CHECK-IN</span></div>
+<p class="muted">If you completed the lift as written, one tap is all you need. Only use Adjust if something changed.</p>
 <div id="strengthQuickCheckins" class="quickStrength"><div class="muted">Loading today’s strength check-in…</div></div>
 <div id="strengthPerformanceStatus" class="lockNote">Your coach sees these check-ins automatically.</div>
 </div>
 <button id="askStrength" class="smartBtn">ASK COACH MW ABOUT TODAY'S LIFT</button>
-<details class="advancedLog" id="strengthAdvancedLog"><summary>LOG / RESUME SPECIFIC SETS</summary>
+<details class="advancedLog" id="strengthAdvancedLog"><summary>ADJUST / LOG AN EXCEPTION</summary>
 <div class="strengthLogGrid">
 <label>TRAINING DAY<select id="strengthLogDay"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="7">Sunday</option></select></label>
 <label>EXERCISE<input id="strengthLogExercise" list="strengthExerciseList" placeholder="e.g. Back Squat"><datalist id="strengthExerciseList"></datalist></label>
@@ -1657,7 +1657,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <label>TARGET <span style="color:#6f8190">optional</span><input id="strengthLogTarget" type="number" min="0" step="0.5" placeholder="225"></label>
 <label>ACTUAL LOAD<input id="strengthLogActual" type="number" min="0" step="0.5" placeholder="225"></label>
 <label>UNIT<select id="strengthLogUnit"><option value="lb">lb</option><option value="kg">kg</option></select></label>
-<label>SET RPE <span style="color:#6f8190">optional</span><select id="strengthLogRpe"><option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></label>
+<label style="display:none">SET RPE <span style="color:#6f8190">optional</span><select id="strengthLogRpe"><option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></label>
 </div>
 <button id="saveStrengthPerformance" class="save">SAVE SPECIFIC SET</button>
 <div id="strengthFinishActions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
@@ -2630,10 +2630,12 @@ async function renderStrengthQuickCheckins(w){
   else if(life==='incomplete')txt='INCOMPLETE · SAVED SETS';
   else if(life==='absent')txt='ABSENT';
   if(saved?.completed_late&&life==='completed')txt+=' · LATE ENTRY';
-  parts.push(`<div class="strengthCheckRow ${life==='completed'?'saved':''}"><div class="rowTop"><span><b>${window.mwStrengthViewDayOverride?'Resume · ':'Today · '}${viewLabel}</b><br><small>${txt}</small></span><small>Week ${w}${meta.optional?' · OPTIONAL':''}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${viewDay}" data-label="${String(meta.label).replace(/"/g,'&quot;')}" data-optional="${meta.optional?'1':'0'}" data-status="as_prescribed">✅ DID IT</button><button class="strengthChanged" data-sday="${viewDay}" data-label="${String(meta.label).replace(/"/g,'&quot;')}" data-optional="${meta.optional?'1':'0'}" data-status="modified">↔ CHANGED IT</button></div></div>`);
+  parts.push(`<div class="strengthCheckRow ${life==='completed'?'saved':''}"><div class="rowTop"><span><b>${window.mwStrengthViewDayOverride?'Resume · ':'Today · '}${viewLabel}</b><br><small>${txt}</small></span><small>Week ${w}${meta.optional?' · OPTIONAL':''}</small></div><div class="strengthCheckActions"><button class="strengthDone" data-sday="${viewDay}" data-label="${String(meta.label).replace(/"/g,'&quot;')}" data-optional="${meta.optional?'1':'0'}" data-status="as_prescribed">✓ COMPLETE AS WRITTEN</button><button class="strengthChanged" type="button" data-adjust-strength="1">ADJUST</button></div><div class="mwLiftFeel" data-lift-feel hidden style="margin-top:10px"><small>HOW DID THE LIFT FEEL?</small><div class="strengthCheckActions" style="margin-top:7px"><button type="button" data-feel="strong">🟢 STRONG</button><button type="button" data-feel="normal">🟡 NORMAL</button><button type="button" data-feel="heavy">🔴 HEAVY</button></div></div></div>`);
   box.innerHTML=parts.join('');
   box.querySelectorAll('[data-resume-strength]').forEach(b=>b.onclick=()=>{const [rw,rd]=b.dataset.resumeStrength.split('-').map(Number);window.mwOpenStrengthSessionFor?.(rw,rd)});
-  box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b,b.dataset.optional==='1')}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
+  box.querySelectorAll('[data-sday]').forEach(b=>b.onclick=async()=>{try{await saveStrengthQuickCheckin(w,Number(b.dataset.sday),b.dataset.label,b.dataset.status,b,b.dataset.optional==='1');await renderStrengthQuickCheckins(w);const feel=box.querySelector('[data-lift-feel]');if(feel)feel.hidden=false}catch(e){const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Could not save: '+(e.message||'Please try again.')}})
+  box.querySelectorAll('[data-adjust-strength]').forEach(b=>b.onclick=()=>{const details=document.getElementById('strengthAdvancedLog');if(details){details.open=true;details.scrollIntoView({behavior:'smooth',block:'center'})}const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='Only log what changed. You do not need to re-enter the full lift.'});
+  box.querySelectorAll('[data-feel]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('mwLiftFeel:'+trainingCycleKey()+':'+w+':'+viewDay,b.dataset.feel)}catch{} box.querySelectorAll('[data-feel]').forEach(x=>x.disabled=true);b.disabled=false;const st=document.getElementById('strengthPerformanceStatus');if(st)st.textContent='✓ Lift saved · '+b.dataset.feel.toUpperCase()+'. You’re done.'});
 }
 function initStrength(){
   const sel=$('#strengthWeek'); if(!sel)return;
