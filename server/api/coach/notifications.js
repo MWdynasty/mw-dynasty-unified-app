@@ -9,6 +9,16 @@ module.exports=async(req,res)=>{
     const c=await getAccountContext(req);const role=String(c.profile.role||'');
     if(!['coach','admin','founder_owner'].includes(role))return res.status(403).json({error:'Coach access required'});
     if(req.method==='GET'){
+      // Keep Coach MW's time-sensitive operating reminders synchronized before
+      // returning the bell feed. The database function is idempotent, so polling
+      // the badge never creates duplicate reminders.
+      try{
+        await rest('rpc/mw_sync_coach_date_reminders',c.token,{method:'POST',body:{},prefer:'return=minimal'});
+      }catch(e){
+        // Reminders are additive intelligence. Never make the coach notification
+        // center unavailable just because reminder synchronization had a problem.
+        console.warn('MW_REMINDER_SYNC_FAILED',{userId:c.user.id,message:e.message});
+      }
       const rows=await rest(`coach_notifications?select=id,notification_type,title,body,action_page,entity_type,entity_id,read_at,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=50`,c.token);
       const items=Array.isArray(rows)?rows:[];return res.status(200).json({ok:true,unread:items.filter(x=>!x.read_at).length,items});
     }
