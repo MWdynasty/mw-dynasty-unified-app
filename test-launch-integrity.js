@@ -226,6 +226,16 @@ includes('athlete/index.html','mw_set_own_strength_session_feel','Existing lift 
 includes('supabase/migrations/20260930_weight_room_progression_v1.sql','athlete_strength_max_history','Weight-room max-history migration missing');
 includes('supabase/migrations/20260930_weight_room_progression_v1.sql','mw_set_own_strength_session_feel','Full strength response persistence RPC missing');
 
+includes('server/api/coach/performance.js','athlete_strength_max_history?select=athlete_id','Coach performance must load established strength max history');
+includes('server/api/coach/performance.js','combined_signal:combinedStrengthSprintSignal','Coach performance must expose combined sprint + strength signal');
+includes('server/api/coach/performance.js','max_progression:maxProgression','Coach performance must expose established max progression');
+includes('server/api/coach/coach-mw.js','session_feel,feel_recorded_at','Coach MW must receive persisted lift response');
+includes('server/api/coach/coach-mw.js','athlete_strength_max_history?select=athlete_id','Coach MW must receive established max history');
+includes('server/api/coach/coach-mw.js','strengthMaxHistory:strengthMaxHistory||[]','Coach MW secured context must include strength max history');
+includes('coach/app.js','Weight-Room Progression','Coach athlete detail must show weight-room progression');
+includes('coach/app.js','Combined sprint + strength:','Coach athlete detail must show combined sprint + strength interpretation');
+
+
 
 
 const athleteLoginHtml=read('athlete/index.html');
