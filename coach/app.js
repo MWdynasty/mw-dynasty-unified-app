@@ -821,16 +821,17 @@ function coachMWPage(){
     return bubble;
   };
   const appendCoachAction=(action)=>{
-    if(!action||action.type!=='calendar_block')return;
+    if(!action||!['calendar_create','calendar_block','calendar_update','calendar_delete'].includes(action.type))return;
+    const deleting=action.type==='calendar_delete',updating=action.type==='calendar_update';
     const card=document.createElement('div');card.className='tile mw-coach-message mw-coach-assistant mw-coach-action-card';
-    const title=document.createElement('b');title.textContent='Calendar change ready';
-    const detail=document.createElement('p');detail.textContent=(action.title||'Schedule update')+' · '+action.startDate+(action.endDate&&action.endDate!==action.startDate?' through '+action.endDate:'')+' · '+String(action.trainingImpact||'').replaceAll('_',' ');
-    const approve=document.createElement('button');approve.className='action';approve.type='button';approve.textContent='Approve & Add to Calendar';
-    const cancel=document.createElement('button');cancel.className='back';cancel.type='button';cancel.textContent='Keep Calendar Unchanged';cancel.style.marginLeft='8px';
+    const title=document.createElement('b');title.textContent=deleting?'Confirm calendar removal':(updating?'Calendar update ready':'Calendar action ready');
+    const detail=document.createElement('p');detail.textContent=(action.title||action.matchTitle||'Schedule update')+(action.startDate?' · '+action.startDate:'')+(action.endDate&&action.endDate!==action.startDate?' through '+action.endDate:'')+(action.trainingImpact?' · '+String(action.trainingImpact).replaceAll('_',' '):'');
+    const approve=document.createElement('button');approve.className='action';approve.type='button';approve.textContent=deleting?'Confirm & Remove':(updating?'Approve & Update Calendar':'Approve & Add to Calendar');
+    const cancel=document.createElement('button');cancel.className='back';cancel.type='button';cancel.textContent='Cancel';cancel.style.marginLeft='8px';
     card.append(title,detail,approve,cancel);chat.appendChild(card);chat.scrollTop=chat.scrollHeight;
     cancel.onclick=()=>{card.remove();toast('Calendar left unchanged')};
     approve.onclick=async()=>{
-      approve.disabled=true;cancel.disabled=true;approve.textContent='Adding…';
+      approve.disabled=true;cancel.disabled=true;approve.textContent=deleting?'Removing…':(updating?'Updating…':'Adding…');
       try{
         const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
         const rr=await fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({approvedAction:action})});
@@ -838,8 +839,8 @@ function coachMWPage(){
         card.remove();const confirmation=String(dd.answer||'Calendar updated.');
         history.push({role:'assistant',content:confirmation});history=history.slice(-40);
         appendCoachBubble('assistant',confirmation);try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}
-        toast('Added to MW Calendar');try{sessionStorage.setItem('mwCalendarRefreshNeeded','1')}catch{}
-      }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent='Approve & Add to Calendar';toast(e.message||'Calendar update failed')}
+        toast(deleting?'Removed from MW Calendar':(updating?'MW Calendar updated':'Added to MW Calendar'));try{sessionStorage.setItem('mwCalendarRefreshNeeded','1')}catch{}
+      }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent=deleting?'Confirm & Remove':(updating?'Approve & Update Calendar':'Approve & Add to Calendar');toast(e.message||'Calendar update failed')}
     };
   };
   const send=()=>{
