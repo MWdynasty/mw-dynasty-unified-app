@@ -23,6 +23,19 @@ function outputText(data){
   }
   return out.join('\n').trim();
 }
+function parseCoachAction(answer){
+  const raw=String(answer||'');
+  const match=raw.match(/\n?MW_ACTION_JSON:\s*(\{[^\n]+\})\s*$/);
+  if(!match)return {answer:raw.trim(),action:null};
+  try{return {answer:raw.slice(0,match.index).trim(),action:JSON.parse(match[1])}}catch{return {answer:raw.replace(match[0],'').trim(),action:null}}
+}
+function cleanActionText(v,max=160){return String(v||'').replace(/[<>]/g,'').trim().slice(0,max)}
+function isoDay(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):''}
+async function writeCoachCalendarEvent(token,payload){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/coach_calendar_events`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(payload)});
+  const d=await r.json().catch(()=>null);if(!r.ok)throw Object.assign(new Error(d?.message||'Calendar update failed'),{status:r.status});return Array.isArray(d)?d[0]:d;
+}
+
 module.exports=async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   if(!process.env.OPENAI_API_KEY)return res.status(500).json({error:'OPENAI_API_KEY is not configured'});
@@ -39,6 +52,17 @@ module.exports=async function handler(req,res){
     const tr=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_coach_access_tier`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:'{}'});
     coachTier=await tr.json().catch(()=>null);
     if(!tr.ok||!['intelligence','mw_sprint_performance'].includes(coachTier))return res.status(403).json({error:'Coach Intelligence or MW Sprint Performance access required'});
+  }
+
+  if(req.body?.approvedAction&&typeof req.body.approvedAction==='object'){
+    const a=req.body.approvedAction;
+    if(a.type!=='calendar_block')return res.status(400).json({error:'Unsupported Coach MW action'});
+    const start=isoDay(a.startDate),end=isoDay(a.endDate||a.startDate);
+    if(!start||!end||end<start)return res.status(400).json({error:'Coach MW needs valid start and end dates.'});
+    const eventType=['school_break','exam_week','holiday','facility_closure','travel','other'].includes(a.eventType)?a.eventType:'other';
+    const impact=['no_practice','reduced_load','awareness_only'].includes(a.trainingImpact)?a.trainingImpact:'awareness_only';
+    const event=await writeCoachCalendarEvent(token,{coach_user_id:user.id,title:cleanActionText(a.title||'Schedule update',120),event_type:eventType,starts_at:start+'T00:00:00.000Z',ends_at:end+'T23:59:59.999Z',training_impact:impact,notes:cleanActionText(a.notes||'Added through Coach MW',800)});
+    return res.status(200).json({ok:true,event,answer:`${event.title} is now on your MW calendar from ${start} through ${end}.`});
   }
 
   if(typeof req.body?.clientStage==='string'){
@@ -110,6 +134,14 @@ ${JSON.stringify(SUPPORTING_KNOWLEDGE)}
 For Coach Core / Coach Intelligence own-program customers, the coach's uploaded program is the source of truth; never pretend MW authored it.
 Use secured coach/team context when answering roster, attendance, PR, progression, flag, athlete, strength-log, workout-completion, pace-check-in, or scheduling questions. If the required data is absent, say so.
 Respect the coach's saved calendar constraints when discussing or recommending schedules. Treat event_type school_break, holiday, or facility_closure with training_impact no_practice as unavailable training dates. Treat exam_week or any event marked reduced_load as a signal to reduce scheduling pressure, complexity, or total load. Awareness-only events should be mentioned when relevant but not treated as automatic cancellations. Never silently move official training; recommend an adjustment and keep the coach in control.
+COACH MW ACTION PROTOCOL:
+- When the coach explicitly asks you to add, schedule, block, mark off, or put a school break, exam period, holiday, travel period, facility closure, or other date range on the calendar, prepare a calendar action for coach approval.
+- Do not claim the calendar changed before approval.
+- End that response with exactly one single-line marker: MW_ACTION_JSON: {"type":"calendar_block","title":"...","eventType":"school_break|exam_week|holiday|facility_closure|travel|other","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","trainingImpact":"no_practice|reduced_load|awareness_only","notes":"..."}
+- Resolve explicit month/day dates using the current conversation year when unambiguous. If the year is ambiguous, ask instead of emitting an action.
+- For requests to move training indoors, first preserve the purpose of the day. Explain the goal in plain language and give 1-3 easy-to-understand alternatives based on available distance, surface, spikes, equipment, group size, athlete event, and current phase. Prefer exercises already present in the approved MW program/context; if the exact approved library is unavailable, clearly label the suggestion as an alternative rather than pretending it is an official MW library item.
+- Indoor alternatives must be readable by a coach who has never seen the internal MW library: show Today's goal, Why it changed, Space/equipment, Modified workout, and a one-sentence How to do it for unfamiliar drills.
+- Do not silently replace the official workout. Significant workout changes remain coach-approved.
 SEASON INTELLIGENCE PRODUCT BOUNDARY:
 ${coachTier==='mw_sprint_performance'
   ? '- MW Sprint Performance has the full Season Intelligence Engine. You may reason about the athlete’s real season week, championship anchor, MW source-week mapping, synchronized track + strength phase, developmental tier/volume, meet priorities, and missed-session adaptation. Do not silently change official state; recommend and explain consequential changes.'
@@ -163,11 +195,13 @@ ${JSON.stringify(context).slice(0,70000)}`;
     console.warn('MW_COACH_AI_UPSTREAM_FAILED',{status:r.status,message});
     return res.status(r.status).json({error:message,code:'COACH_MW_UPSTREAM'});
   }
-  const answer=outputText(data);
+  const rawAnswer=outputText(data);
+  const parsed=parseCoachAction(rawAnswer);
+  const answer=parsed.answer;
   if(!answer){
     console.warn('MW_COACH_AI_EMPTY_RESPONSE',{responseId:data?.id||null});
     return res.status(502).json({error:'Coach MW received an empty AI response. Please try again.',code:'COACH_MW_EMPTY_RESPONSE'});
   }
   console.info('MW_COACH_AI_OK',{chars:answer.length,responseId:data?.id||null});
-  return res.status(200).json({answer});
+  return res.status(200).json({answer,action:parsed.action});
 }
