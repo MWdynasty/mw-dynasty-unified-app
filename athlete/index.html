@@ -1503,7 +1503,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
         </div>
 
         <div class="mwLoginRow">
-          <label class="mwLoginRemember"><input type="checkbox" id="mwRememberMe"><span>Keep me signed in</span></label>
+          <label class="mwLoginRemember"><input type="checkbox" id="mwRememberMe" checked><span>Keep me signed in</span></label>
           <button id="mwForgotPassword" class="mwLoginLink" type="button">Forgot password?</button>
         </div>
 
@@ -4046,6 +4046,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   async function resume(){
   const raw=localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY);
   if(!raw)return;
+  document.body.classList.add('mw-entering');
 
   try{
     mwSession=JSON.parse(raw);
@@ -4085,7 +4086,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     if(await waitForAthleteActivation(refreshed))return;
     try{
       await loadMe();
-      document.body.classList.remove('mw-auth-pending');
+      document.body.classList.remove('mw-auth-pending','mw-entering');
       document.body.classList.add('mw-auth-ready');
     }catch(accessErr){
       const msg=String(accessErr?.message||'');
@@ -4094,6 +4095,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     }
   }catch(e){
     console.warn('MW session restore failed:',e);
+    document.body.classList.remove('mw-entering');
     if(showRoleMismatch(e))return;
     if(mwSession?.access_token&&mwSession?.refresh_token){
       window.MWDiag?.event('athlete_session_restore_startup_error',{severity:'error',code:'session_restore_startup',context:{message:String(e?.message||e).slice(0,180)}});
