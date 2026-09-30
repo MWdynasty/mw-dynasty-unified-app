@@ -205,7 +205,7 @@ includes('athlete/index.html',"source=g.some(x=>x.entry_source==='coach')?'COACH
 
 includes('athlete/index.html','WEIGHT ROOM PROGRESSION','Athlete Progress must include weight-room progression');
 includes('athlete/index.html','id="progressStrengthSessions"','Athlete Progress strength session count missing');
-includes('athlete/index.html','id="progressStrengthSets"','Athlete Progress strength set count missing');
+includes('athlete/index.html','id="progressStrengthExecution"','Athlete Progress strength execution metric missing');
 includes('athlete/index.html','id="progressMaxPowerClean"','Athlete Progress current strength maxes missing');
 includes('athlete/index.html','function renderWeightRoomProgressUI()','Athlete weight-room progression renderer missing');
 includes('athlete/index.html',"String(x?.lifecycle_status||'')==='completed'",'Weight-room progression must count completed strength sessions');
@@ -213,12 +213,19 @@ includes('athlete/index.html','mwStrengthPerformanceRows','Weight-room progressi
 includes('athlete/index.html','Current maxes are your established benchmarks.','Weight-room progression must distinguish current benchmarks from session history');
 includes('athlete/index.html','async function saveStrengthFeel(w,day,feel)','Existing Strong / Normal / Heavy response must persist to MW');
 includes('athlete/index.html',"p_feel:String(feel)",'Strength response RPC payload missing');
-includes('athlete/index.html','session_feel,recorded_at','Athlete strength history must load persisted session response');
-includes('athlete/index.html','<span>AS WRITTEN</span>','Weight-room Progress must use low-friction completion quality instead of optional set-count logging');
-includes('athlete/index.html','<span>LAST RESPONSE</span>','Weight-room Progress must surface the existing session response');
+includes('athlete/index.html','session_feel,feel_recorded_at','Athlete strength history must load persisted session response');
+includes('athlete/index.html','<span>AS PRESCRIBED</span>','Weight-room Progress must use low-friction completion quality instead of optional set-count logging');
+includes('athlete/index.html','<span>RECENT RESPONSE</span>','Weight-room Progress must surface the existing session response');
 includes('server/api/coach/performance.js','response_trend:strengthResponseTrend','Coach intelligence must receive strength response trend');
 includes('server/api/coach/performance.js','as_prescribed_pct:asWrittenPct','Coach intelligence must receive strength completion quality');
 includes('supabase/migrations/20260930_persist_strength_session_feel.sql','mw_set_own_strength_feel','Strength response persistence migration missing');
+includes('athlete/index.html','id="progressStrengthSignal"','Weight-room Progress strength response signal missing');
+includes('athlete/index.html','id="progressStrengthSprintRead"','Weight-room Progress sprint + strength interpretation missing');
+includes('athlete/index.html','athlete_strength_max_history','Athlete Progress must load automatic max history');
+includes('athlete/index.html','mw_set_own_strength_session_feel','Existing lift response UI must use the persisted strength-response RPC');
+includes('supabase/migrations/20260930_weight_room_progression_v1.sql','athlete_strength_max_history','Weight-room max-history migration missing');
+includes('supabase/migrations/20260930_weight_room_progression_v1.sql','mw_set_own_strength_session_feel','Full strength response persistence RPC missing');
+
 
 
 const athleteLoginHtml=read('athlete/index.html');
