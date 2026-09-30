@@ -39,12 +39,23 @@ async function sendInviteEmail(email,inviteUrl,meta={}){
 
 module.exports=async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
-  if(req.method!=='POST')return res.status(405).json({error:'POST only'});
+  if(!['POST','DELETE'].includes(req.method))return res.status(405).json({error:'POST or DELETE only'});
   try{
     const c=await getAccountContext(req);
     const role=String(c.profile.role||'');
     if(!['coach','admin','founder_owner'].includes(role))return res.status(403).json({error:'Coach access required'});
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
+    if(req.method==='DELETE'){
+      const emails=Array.isArray(body.emails)?body.emails.map(x=>String(x||'').trim().toLowerCase()).filter(Boolean):[];
+      if(!emails.length)return res.status(400).json({error:'Provide invitation emails to clear.'});
+      const pending=await rest(`coach_invitations?select=id,athlete_email,billing_type&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.pending`,c.token);
+      const targets=(Array.isArray(pending)?pending:[]).filter(x=>emails.includes(String(x.athlete_email||'').toLowerCase()));
+      for(const inv of targets){
+        if(inv.billing_type==='coach_sponsored'){try{await syncSponsorSeat(inv.id,'self_pay',c.token)}catch{}}
+        await rest(`coach_invitations?id=eq.${encodeURIComponent(inv.id)}&coach_user_id=eq.${encodeURIComponent(c.user.id)}&status=eq.pending`,c.token,{method:'DELETE',prefer:'return=minimal'});
+      }
+      return res.status(200).json({ok:true,deleted:targets.length});
+    }
     const email=String(body.email||'').trim().toLowerCase();
     const inviteType=['coach_invite','team_invite'].includes(body.inviteType)?body.inviteType:'coach_invite';
     const billingType=body.billingType==='coach_sponsored'?'coach_sponsored':'self_pay';
