@@ -838,7 +838,7 @@ function coachMWPage(){
         card.remove();const confirmation=String(dd.answer||'Calendar updated.');
         history.push({role:'assistant',content:confirmation});history=history.slice(-40);
         appendCoachBubble('assistant',confirmation);try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}
-        toast('Added to MW Calendar');
+        toast('Added to MW Calendar');try{sessionStorage.setItem('mwCalendarRefreshNeeded','1')}catch{}
       }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent='Approve & Add to Calendar';toast(e.message||'Calendar update failed')}
     };
   };
@@ -2073,10 +2073,14 @@ function bindCoachApplicationActions(reload){
 }
 
 // === V12.0 CONNECTED COACH OPERATING SYSTEM ===
-async function sbRest(path,{method='GET',body=null,prefer='return=representation'}={}){
+async async function sbRest(path,{method='GET',body=null,prefer='return=representation',timeoutMs=12000}={}){
   const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method,headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,...(body?{'Content-Type':'application/json'}:{}),...(prefer?{Prefer:prefer}:{})},body:body?JSON.stringify(body):undefined});
-  const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||d?.hint||`MW data request failed (${r.status})`);return d;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method,signal:controller.signal,headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,...(body?{'Content-Type':'application/json'}:{}),...(prefer?{Prefer:prefer}:{})},body:body?JSON.stringify(body):undefined});
+    const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||d?.hint||`MW data request failed (${r.status})`);return d;
+  }catch(e){if(e?.name==='AbortError')throw new Error('Calendar data took too long to load. Please retry.');throw e}
+  finally{clearTimeout(timer)}
 }
 async function logCoachAction(action_type,entity_type=null,entity_id=null,detail={}){try{const u=await mwCurrentUser();if(u?.id)await sbRest('coach_activity_log',{method:'POST',body:{coach_user_id:u.id,action_type,entity_type,entity_id,detail}})}catch{}}
 async function liveGroups(){return await sbRest('coach_groups?select=id,name,event_group,description,archived,created_at&archived=eq.false&order=created_at.asc')||[]}
@@ -2139,6 +2143,7 @@ function smartScheduleTierCopy(){
 }
 async function calendarPage(){
   const smart=smartScheduleUnlocked(),tier=smartScheduleTierCopy();
+  try{sessionStorage.removeItem('mwCalendarRefreshNeeded')}catch{}
   pageBase('Calendar',smart?'School constraints, practices, meets, and team events in one coaching calendar.':'Practice, meet, testing, and team-event scheduling for Coach Core.',`
     ${smart?`<section class="school-calendar-hero">
       <div><span class="status-kicker">${tier.kicker}</span><h2>${tier.title}</h2><p>${tier.body}</p><span class="smart-schedule-badge">${tier.badge}</span></div>
