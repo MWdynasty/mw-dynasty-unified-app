@@ -202,6 +202,16 @@ includes('server/api/coach/practice-timing.js','rpc/mw_coach_sync_practice_sessi
 includes('server/api/coach/practice-timing.js','p_workout_key:meta.workoutKey','Coach Practice sync must preserve athlete workout identity');
 includes('coach/app.js','seasonPlanId:athletes.find(a=>a.id===x.athleteId)?.season_plan_id||null','Coach Practice save must include athlete season/workout context');
 includes('athlete/index.html',"source=g.some(x=>x.entry_source==='coach')?'COACH TIMED':'ATHLETE TIMED'",'Athlete Practice history must identify Coach-timed sessions');
+
+includes('athlete/index.html','WEIGHT ROOM PROGRESSION','Athlete Progress must include weight-room progression');
+includes('athlete/index.html','id="progressStrengthSessions"','Athlete Progress strength session count missing');
+includes('athlete/index.html','id="progressStrengthSets"','Athlete Progress strength set count missing');
+includes('athlete/index.html','id="progressMaxPowerClean"','Athlete Progress current strength maxes missing');
+includes('athlete/index.html','function renderWeightRoomProgressUI()','Athlete weight-room progression renderer missing');
+includes('athlete/index.html',"String(x?.lifecycle_status||'')==='completed'",'Weight-room progression must count completed strength sessions');
+includes('athlete/index.html','mwStrengthPerformanceRows','Weight-room progression must use saved detailed strength data');
+includes('athlete/index.html','Current maxes are your established benchmarks.','Weight-room progression must distinguish current benchmarks from session history');
+
 includes('server/api/coach/performance.js','entry_sources:[...new Set(reps.map(r=>r.entry_source','Coach intelligence must receive Practice timing provenance');
 includes('supabase/migrations/20260929_unify_coach_athlete_practice_history.sql','mw_coach_sync_practice_session_to_athlete','Shared Coach/Athlete practice sync migration missing');
 
