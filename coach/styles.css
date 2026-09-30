@@ -3182,3 +3182,18 @@ img,svg,video,canvas{max-width:100%}
   .practice-drawer summary{min-height:48px;padding:10px 12px}
   .practice-drawer summary small{font-size:.68rem}
 }
+
+
+/* MW attendance mobile containment */
+.mw-attendance-form,.mw-attendance-list{width:100%;max-width:100%;box-sizing:border-box}
+.mw-attendance-form label{display:block;width:100%;max-width:100%;box-sizing:border-box}
+.mw-attendance-form input,.mw-attendance-form select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.mw-attendance-list .row{width:100%;max-width:100%;box-sizing:border-box;gap:12px}
+.mw-attendance-list .row>span{min-width:0;flex:1}
+.mw-attendance-list .row select{max-width:46%;min-width:120px;box-sizing:border-box}
+@media(max-width:640px){
+ .mw-attendance-form{padding-left:0;padding-right:0}
+ .mw-attendance-form input,.mw-attendance-form select{margin-left:0;margin-right:0}
+ .mw-attendance-list .row{align-items:center}
+ .mw-attendance-list .row select{width:auto;max-width:44%;min-width:112px}
+}
