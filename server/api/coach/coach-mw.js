@@ -45,6 +45,18 @@ async function mutateCoachCalendarEvent(token,id,method,payload=null){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/coach_calendar_events?id=eq.${encodeURIComponent(id)}`,{method,headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},body:payload?JSON.stringify(payload):undefined});
   const d=await r.json().catch(()=>null);if(!r.ok)throw Object.assign(new Error(d?.message||'Calendar action failed'),{status:r.status});return Array.isArray(d)?d[0]:d;
 }
+async function writeCoachMessage(token,payload){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/coach_messages`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(payload)});
+  const d=await r.json().catch(()=>null);if(!r.ok)throw Object.assign(new Error(d?.message||'Message send failed'),{status:r.status});return Array.isArray(d)?d[0]:d;
+}
+async function coachOwnsGroup(token,userId,groupId){
+  const rows=await sb(`coach_groups?select=id&coach_user_id=eq.${encodeURIComponent(userId)}&id=eq.${encodeURIComponent(groupId)}&archived=eq.false&limit=1`,token);
+  return !!rows?.[0];
+}
+async function coachOwnsAthlete(token,userId,athleteId){
+  const rows=await sb(`coach_assignments?select=athlete_id&coach_user_id=eq.${encodeURIComponent(userId)}&athlete_id=eq.${encodeURIComponent(athleteId)}&status=eq.active&limit=1`,token);
+  return !!rows?.[0];
+}
 async function findCoachCalendarEvent(token,userId,a){
   const id=cleanActionText(a.eventId||'',80);
   if(id){
@@ -77,7 +89,27 @@ module.exports=async function handler(req,res){
 
   if(req.body?.approvedAction&&typeof req.body.approvedAction==='object'){
     const a=req.body.approvedAction;
-    if(!['calendar_create','calendar_block','calendar_update','calendar_delete'].includes(a.type))return res.status(400).json({error:'Unsupported Coach MW action'});
+    if(!['calendar_create','calendar_block','calendar_update','calendar_delete','message_send'].includes(a.type))return res.status(400).json({error:'Unsupported Coach MW action'});
+    if(a.type==='message_send'){
+      const body=cleanActionText(a.body||a.message||'',2000);
+      const audienceType=['all_assigned','group','athlete'].includes(a.audienceType)?a.audienceType:'';
+      if(!body||!audienceType)return res.status(400).json({error:'Coach MW needs a message and a valid audience.'});
+      let athleteId=null,groupId=null,audienceLabel='your assigned athletes';
+      if(audienceType==='athlete'){
+        athleteId=cleanActionText(a.athleteId||'',80);
+        if(!athleteId||!(await coachOwnsAthlete(token,user.id,athleteId)))return res.status(403).json({error:'That athlete is not currently assigned to this coach.'});
+        const ar=await sb(`athletes?select=id,user_id& id=eq.${encodeURIComponent(athleteId)}&limit=1`.replace('?select=id,user_id& id','?select=id,user_id&id'),token);
+        const pr=ar?.[0]?.user_id?await sb(`profiles?select=first_name,last_name&user_id=eq.${encodeURIComponent(ar[0].user_id)}&limit=1`,token):null;
+        audienceLabel=[pr?.[0]?.first_name,pr?.[0]?.last_name].filter(Boolean).join(' ')||'the athlete';
+      }else if(audienceType==='group'){
+        groupId=cleanActionText(a.groupId||'',80);
+        if(!groupId||!(await coachOwnsGroup(token,user.id,groupId)))return res.status(403).json({error:'That group is not available to this coach.'});
+        const gr=await sb(`coach_groups?select=id,name&id=eq.${encodeURIComponent(groupId)}&limit=1`,token);
+        audienceLabel=gr?.[0]?.name||'the group';
+      }
+      const message=await writeCoachMessage(token,{coach_user_id:user.id,audience_type:audienceType,body,group_id:groupId,athlete_id:athleteId});
+      return res.status(200).json({ok:true,message,actionPage:'messages',answer:`Message sent to ${audienceLabel}.`});
+    }
     if(a.type==='calendar_delete'){
       const existing=await findCoachCalendarEvent(token,user.id,a);if(!existing)return res.status(404).json({error:'I could not find that calendar entry to delete.'});
       await mutateCoachCalendarEvent(token,existing.id,'DELETE');
@@ -87,7 +119,15 @@ module.exports=async function handler(req,res){
     if(!start||!end||end<start)return res.status(400).json({error:'Coach MW needs valid start and end dates.'});
     const eventType=['school_break','exam_week','holiday','facility_closure','travel','practice','meet','testing','other'].includes(a.eventType)?a.eventType:'other';
     const impact=['no_practice','reduced_load','awareness_only'].includes(a.trainingImpact)?a.trainingImpact:'awareness_only';
-    const payload={title:cleanActionText(a.title||'Schedule update',120),event_type:eventType,starts_at:start+'T00:00:00.000Z',ends_at:end+'T23:59:59.999Z',training_impact:impact,notes:cleanActionText(a.notes||'Updated through Coach MW',800)};
+    const payload={title:cleanActionText(a.title||'Schedule update',120),event_type:eventType,starts_at:start+'T00:00:00.000Z',ends_at:end+'T23:59:59.999Z',training_impact:impact,notes:cleanActionText(a.notes||'Updated through Coach MW',800),location:cleanActionText(a.location||'',180)||null};
+    if(eventType==='meet'){
+      payload.meet_priority=['A','B','C'].includes(String(a.meetPriority||'').toUpperCase())?String(a.meetPriority).toUpperCase():null;
+      payload.qualification_stage=['regular','conference','district','sectional','regional','state','national','junior_olympics','ncaa_championship','professional_championship','other'].includes(String(a.qualificationStage||''))?String(a.qualificationStage):null;
+      payload.is_primary_target=!!a.isPrimaryTarget;
+      if(payload.is_primary_target){
+        await fetch(`${SUPABASE_URL}/rest/v1/coach_calendar_events?coach_user_id=eq.${encodeURIComponent(user.id)}&event_type=eq.meet&is_primary_target=eq.true`,{method:'PATCH',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({is_primary_target:false})});
+      }
+    }
     if(a.type==='calendar_update'){
       const existing=await findCoachCalendarEvent(token,user.id,a);if(!existing)return res.status(404).json({error:'I could not find that calendar entry to update.'});
       const event=await mutateCoachCalendarEvent(token,existing.id,'PATCH',payload);
@@ -104,7 +144,7 @@ module.exports=async function handler(req,res){
   }
 
   const repTrackingEnabled=coachTier==='mw_sprint_performance';
-  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,strengthMaxHistory,completions,calendarEvents,athleteAvailability,seasonContexts]=await Promise.all([
+  const [assignments,athletes,attendance,states,prs,flags,paceLogs,strengthLogs,strengthCheckins,strengthMaxHistory,completions,calendarEvents,athleteAvailability,seasonContexts,coachGroups]=await Promise.all([
     sb(`coach_assignments?select=*&coach_user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=200`,token),
     sb(`athletes?select=*&limit=200`,token),
     sb(`attendance_records?select=*&order=attendance_date.desc&limit=250`,token),
@@ -118,7 +158,8 @@ module.exports=async function handler(req,res){
     sb(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&order=completed_at.desc&limit=500`,token),
     sb(`coach_calendar_events?select=id,title,event_type,starts_at,ends_at,training_impact,location,notes,meet_priority,is_primary_target,qualification_stage,parent_event_id&coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_at.asc&limit=150`,token),
     sb(`athlete_schedule_constraints?select=id,athlete_id,constraint_type,title,starts_on,ends_on,training_impact,notes,review_status,coach_note,created_at&linked_coach_user_id=eq.${encodeURIComponent(user.id)}&order=starts_on.asc&limit=150`,token),
-    sb(`coach_season_contexts?select=id,group_id,season_year,season_type,competition_level_group,competition_state,competition_path,first_practice_date,first_meet_date,primary_peak_date,secondary_peak_date,goal,status&coach_user_id=eq.${encodeURIComponent(user.id)}&order=primary_peak_date.asc&limit=50`,token)
+    sb(`coach_season_contexts?select=id,group_id,season_year,season_type,competition_level_group,competition_state,competition_path,first_practice_date,first_meet_date,primary_peak_date,secondary_peak_date,goal,status&coach_user_id=eq.${encodeURIComponent(user.id)}&order=primary_peak_date.asc&limit=50`,token),
+    sb(`coach_groups?select=id,name,event_group&coach_user_id=eq.${encodeURIComponent(user.id)}&archived=eq.false&order=created_at.asc&limit=100`,token)
   ]);
   const assignedIds=new Set((assignments||[]).map(x=>String(x.athlete_id||'')).filter(Boolean));
   const performanceIntelligence=[...assignedIds].map(athleteId=>{
@@ -130,7 +171,7 @@ module.exports=async function handler(req,res){
     };
     return {athleteId,...evaluatePerformance(perfContext,{coachManaged:true,officialWeek:state.current_week,officialDay:state.current_day})};
   });
-  const context={coach:me,coachTier,seasonIntelligenceMode:coachTier==='mw_sprint_performance'?'engine':'insights',repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],athleteAvailability:athleteAvailability||[],seasonContexts:seasonContexts||[],performanceIntelligence,performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],strengthMaxHistory:strengthMaxHistory||[],workoutCompletions:completions||[]}};
+  const context={coach:me,coachTier,seasonIntelligenceMode:coachTier==='mw_sprint_performance'?'engine':'insights',repTrackingEnabled,assignments:assignments||[],athletes:athletes||[],attendance:attendance||[],programState:states||[],prs:prs||[],flags:flags||[],calendarEvents:calendarEvents||[],athleteAvailability:athleteAvailability||[],seasonContexts:seasonContexts||[],coachGroups:coachGroups||[],performanceIntelligence,performance:{paceLogs:paceLogs||[],strengthLogs:strengthLogs||[],strengthCheckins:strengthCheckins||[],strengthMaxHistory:strengthMaxHistory||[],workoutCompletions:completions||[]}};
 
   const messages=Array.isArray(req.body?.messages)?req.body.messages.slice(-40):[];
   const input=messages.map(m=>{
@@ -168,13 +209,18 @@ Use secured coach/team context when answering roster, attendance, PR, progressio
 Respect the coach's saved calendar constraints when discussing or recommending schedules. Treat event_type school_break, holiday, or facility_closure with training_impact no_practice as unavailable training dates. Treat exam_week or any event marked reduced_load as a signal to reduce scheduling pressure, complexity, or total load. Awareness-only events should be mentioned when relevant but not treated as automatic cancellations. Never silently move official training; recommend an adjustment and keep the coach in control.
 COACH MW ACTION PROTOCOL:
 - Current system date: ${new Date().toISOString().slice(0,10)}. Use it to resolve future month/day scheduling requests; never silently choose a past occurrence when the coach is clearly planning an upcoming season.
-- You are an operational assistant, not just a chat explainer. When the coach asks to create, update, reschedule, or remove a calendar item, translate the request into an executable calendar action.
+- You are an operational assistant, not just a chat explainer. Route the coach's intent to the correct MW platform action. Calendar/practice/meet scheduling actions operate the live coach calendar; messaging actions operate live Coach Messages.
 - For create/add/schedule requests use type calendar_create (calendar_block is accepted for backward compatibility). For edits use calendar_update. For removals use calendar_delete.
+- A meet is a calendar event with eventType "meet". Include location, meetPriority (A/B/C) when known, qualificationStage when known, and isPrimaryTarget when explicitly identified. Meets written here automatically appear in the Meets section because Calendar is the single source of truth.
+- A practice is a calendar event with eventType "practice". Practice scheduling belongs to the live team schedule.
+- When the coach explicitly asks Coach MW to SEND a message or announcement, use type message_send. audienceType must be "athlete", "group", or "all_assigned". For athlete/group messages, use athleteId/groupId from the secured roster/group context. Never invent an ID. If the intended recipient is ambiguous, ask instead.
+- Message sends always require one-tap coach approval. Drafting or rewriting a message alone does not emit a send action.
 - For update/delete, use the secured CALENDAR EVENTS context to identify the existing entry. Include eventId when you can identify one unambiguously; otherwise include matchTitle. If the request is ambiguous, ask which entry instead of guessing.
-- Normal create/update actions require one-tap approval. Delete actions always require explicit confirmation before execution.
+- Normal create/update/message-send actions require one-tap approval. Delete actions always require explicit confirmation before execution.
 - Do not claim the calendar changed before approval. Say clearly that the change is READY FOR APPROVAL and that the coach must tap the approval control shown below your response.
 - Never use phrases such as "I'll move forward", "I've marked it off", "it's scheduled", or "it's handled" until the approved calendar write has succeeded.
-- End that response with exactly one single-line marker: MW_ACTION_JSON: {"type":"calendar_create|calendar_update|calendar_delete","eventId":"existing-id-when-known","matchTitle":"existing title when needed","title":"...","eventType":"school_break|exam_week|holiday|facility_closure|travel|practice|meet|testing|other","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","trainingImpact":"no_practice|reduced_load|awareness_only","notes":"..."}
+- For calendar actions end with exactly one single-line marker: MW_ACTION_JSON: {"type":"calendar_create|calendar_update|calendar_delete","eventId":"existing-id-when-known","matchTitle":"existing title when needed","title":"...","eventType":"school_break|exam_week|holiday|facility_closure|travel|practice|meet|testing|other","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","trainingImpact":"no_practice|reduced_load|awareness_only","location":"optional","meetPriority":"A|B|C when applicable","qualificationStage":"optional","isPrimaryTarget":false,"notes":"..."}
+- For an approved message send end with exactly one single-line marker: MW_ACTION_JSON: {"type":"message_send","audienceType":"athlete|group|all_assigned","athleteId":"assigned athlete id when applicable","groupId":"coach group id when applicable","body":"message text"}
 - Resolve explicit month/day dates using the current conversation year when unambiguous. If the year is ambiguous, ask instead of emitting an action.
 - For requests to move training indoors, first preserve the purpose of the day. Explain the goal in plain language and give 1-3 easy-to-understand alternatives based on available distance, surface, spikes, equipment, group size, athlete event, and current phase. Prefer exercises already present in the approved MW program/context; if the exact approved library is unavailable, clearly label the suggestion as an alternative rather than pretending it is an official MW library item.
 - Indoor alternatives must be readable by a coach who has never seen the internal MW library: show Today's goal, Why it changed, Space/equipment, Modified workout, and a one-sentence How to do it for unfamiliar drills.
