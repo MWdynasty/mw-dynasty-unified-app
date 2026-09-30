@@ -961,6 +961,14 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 #progress .mwStrengthProgressRow b{display:block;font-size:9px;color:#fff}
 #progress .mwStrengthProgressRow small{display:block;margin-top:3px;font-size:7px;color:#8295a2;line-height:1.35}
 #progress .mwStrengthProgressRow strong{flex:none;font-size:11px;color:#f5c95e;text-align:right}
+#progress .mwStrengthSignalBlock{padding:12px;border:1px solid rgba(245,185,46,.2);border-radius:13px;background:linear-gradient(145deg,#0a151c,#060b10)}
+#progress .mwStrengthSignal{display:block;font-size:16px;letter-spacing:.04em;color:#fff}
+#progress .mwStrengthSignalBlock p{margin:7px 0 0;font-size:9px;line-height:1.5}
+#progress .mwStrengthSprintRead{margin-top:10px;padding-top:9px;border-top:1px solid #20313c;font-size:8px;line-height:1.5;color:#9fb0bb}
+#progress .mwStrengthSprintRead b{color:#f5c95e}
+#progress .mwStrengthDelta{display:block;margin-top:3px;font-size:7px!important;color:#6f8492!important}
+#progress .mwStrengthDelta.up{color:#65d997!important}
+#progress .mwStrengthDelta.down{color:#f2a98d!important}
 @media(max-width:380px){#progress .mwProgressHero{grid-template-columns:96px 1fr;padding:14px;gap:12px}#progress .mwProgressRing{width:92px;height:92px}#progress .mwPrGrid{gap:4px}#progress .mwPrGrid strong{font-size:12px}}
 </style>
 <style id="mw-profile-clean-v1">
@@ -1776,8 +1784,14 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div class="mwProgressTitle"><span>WEIGHT ROOM PROGRESSION</span><small>STRENGTH HISTORY</small></div>
   <div class="mwStrengthProgressStats">
     <div><strong id="progressStrengthSessions">0</strong><span>SESSIONS COMPLETE</span></div>
-    <div><strong id="progressStrengthSets">0</strong><span>SETS LOGGED</span></div>
-    <div><strong id="progressStrengthRpe">—</strong><span>AVG SET RPE</span></div>
+    <div><strong id="progressStrengthExecution">—</strong><span>AS PRESCRIBED</span></div>
+    <div><strong id="progressStrengthFeel">—</strong><span>RECENT RESPONSE</span></div>
+  </div>
+  <div class="mwStrengthProgressBlock mwStrengthSignalBlock">
+    <div class="mwStrengthProgressLabel"><span>MW STRENGTH READ</span><small id="progressStrengthPhase">CURRENT PHASE</small></div>
+    <strong id="progressStrengthSignal" class="mwStrengthSignal">BUILDING BASELINE</strong>
+    <p id="progressStrengthSignalNote" class="muted">Complete a few weight-room sessions and MW will start reading the response pattern automatically.</p>
+    <div class="mwStrengthSprintRead"><b>SPRINT + STRENGTH:</b> <span id="progressStrengthSprintRead">Building shared training history.</span></div>
   </div>
   <div class="mwStrengthProgressBlock">
     <div class="mwStrengthProgressLabel"><span>CURRENT MAXES</span><small id="progressStrengthUnit">LB</small></div>
