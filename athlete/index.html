@@ -2495,6 +2495,7 @@ async function renderCompletion(){
   if($('#unlockBadge'))$('#unlockBadge').textContent=isDone?'COMPLETE':status==='incomplete'?'INCOMPLETE':status==='in_progress'?'IN PROGRESS':'SCHEDULED';
   if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Continue the same saved workout from Practice Mode.':'Today’s session is scheduled and ready.';
 }
+let mwStrengthPerformanceRows=[];
 function renderWeightRoomProgressUI(){
   const checkins=Object.values(mwStrengthQuickCache||{}),rows=Array.isArray(mwStrengthPerformanceRows)?mwStrengthPerformanceRows:[];
   const completed=checkins.filter(x=>String(x?.lifecycle_status||'')==='completed');
@@ -2658,7 +2659,6 @@ async function renderStrengthWeek(w){
 }
 
 let mwStrengthQuickCache={};
-let mwStrengthPerformanceRows=[];
 let mwStrengthLogWeekOverride=null;
 function strengthDayNumber(label,index){const x=String(label||'').trim().toUpperCase();if(x.startsWith('MON')||x.startsWith('EARLY WEEK'))return 1;if(x.startsWith('TUE'))return 2;if(x.startsWith('WED'))return 3;if(x.startsWith('THU'))return 4;if(x.startsWith('FRI')||x.startsWith('LATE WEEK'))return 5;if(x.startsWith('SAT'))return 6;if(x.startsWith('SUN'))return 7;return null}
 function strengthLoggingWeek(){return Math.max(1,Math.min(41,Number(mwStrengthLogWeekOverride||activeMWWeek())))}
