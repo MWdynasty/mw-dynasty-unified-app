@@ -25,9 +25,15 @@ function outputText(data){
 }
 function parseCoachAction(answer){
   const raw=String(answer||'');
-  const match=raw.match(/\n?MW_ACTION_JSON:\s*(\{[^\n]+\})\s*$/);
-  if(!match)return {answer:raw.trim(),action:null};
-  try{return {answer:raw.slice(0,match.index).trim(),action:JSON.parse(match[1])}}catch{return {answer:raw.replace(match[0],'').trim(),action:null}}
+  const marker='MW_ACTION_JSON:';
+  const at=raw.lastIndexOf(marker);
+  if(at<0)return {answer:raw.trim(),action:null};
+  const tail=raw.slice(at+marker.length).trim();
+  let action=null;
+  try{action=JSON.parse(tail)}catch{
+    const start=tail.indexOf('{');if(start>=0){let depth=0,inString=false,escape=false,end=-1;for(let i=start;i<tail.length;i++){const ch=tail[i];if(escape){escape=false;continue}if(ch==='\\\\'&&inString){escape=true;continue}if(ch==='"')inString=!inString;if(!inString){if(ch==='{')depth++;else if(ch==='}'&&--depth===0){end=i+1;break}}}if(end>start)try{action=JSON.parse(tail.slice(start,end))}catch{}}
+  }
+  return {answer:raw.slice(0,at).trim(),action};
 }
 function cleanActionText(v,max=160){return String(v||'').replace(/[<>]/g,'').trim().slice(0,max)}
 function isoDay(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):''}
@@ -136,7 +142,8 @@ Use secured coach/team context when answering roster, attendance, PR, progressio
 Respect the coach's saved calendar constraints when discussing or recommending schedules. Treat event_type school_break, holiday, or facility_closure with training_impact no_practice as unavailable training dates. Treat exam_week or any event marked reduced_load as a signal to reduce scheduling pressure, complexity, or total load. Awareness-only events should be mentioned when relevant but not treated as automatic cancellations. Never silently move official training; recommend an adjustment and keep the coach in control.
 COACH MW ACTION PROTOCOL:
 - When the coach explicitly asks you to add, schedule, block, mark off, or put a school break, exam period, holiday, travel period, facility closure, or other date range on the calendar, prepare a calendar action for coach approval.
-- Do not claim the calendar changed before approval.
+- Do not claim the calendar changed before approval. Say clearly that the change is READY FOR APPROVAL and that the coach must tap the approval control shown below your response.
+- Never use phrases such as "I'll move forward", "I've marked it off", "it's scheduled", or "it's handled" until the approved calendar write has succeeded.
 - End that response with exactly one single-line marker: MW_ACTION_JSON: {"type":"calendar_block","title":"...","eventType":"school_break|exam_week|holiday|facility_closure|travel|other","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","trainingImpact":"no_practice|reduced_load|awareness_only","notes":"..."}
 - Resolve explicit month/day dates using the current conversation year when unambiguous. If the year is ambiguous, ask instead of emitting an action.
 - For requests to move training indoors, first preserve the purpose of the day. Explain the goal in plain language and give 1-3 easy-to-understand alternatives based on available distance, surface, spikes, equipment, group size, athlete event, and current phase. Prefer exercises already present in the approved MW program/context; if the exact approved library is unavailable, clearly label the suggestion as an alternative rather than pretending it is an official MW library item.
