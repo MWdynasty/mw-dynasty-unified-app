@@ -12,6 +12,16 @@
 <link rel="icon" href="/favicon.png" type="image/png">
 <title>MW Dynasty</title>
 <script>
+(()=>{try{
+  if(!/MWDynasty-iOS\//i.test(navigator.userAgent||''))return;
+  const role=localStorage.getItem('mwDynastyRoleChoice')||'';
+  const athlete=!!localStorage.getItem('mwSupabaseSession');
+  const coach=!!localStorage.getItem('mwCoachSupabaseSession');
+  if((role==='coach'&&coach)||(!athlete&&coach)){location.replace('/coach/');return}
+  if((role==='athlete'&&athlete)||athlete){location.replace('/athlete/');return}
+}catch(e){}})();
+</script>
+<script>
 if (window.location.hostname === 'founder.mwdynasty.com' && window.location.pathname === '/') {
   window.location.replace('/founder/' + window.location.search + window.location.hash);
 }
