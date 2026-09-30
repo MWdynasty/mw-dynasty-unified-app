@@ -212,6 +212,18 @@ includes('athlete/index.html',"String(x?.lifecycle_status||'')==='completed'",'W
 includes('athlete/index.html','mwStrengthPerformanceRows','Weight-room progression must use saved detailed strength data');
 includes('athlete/index.html','Current maxes are your established benchmarks.','Weight-room progression must distinguish current benchmarks from session history');
 
+includes('athlete/index.html','id="progressStrengthSignal"','Athlete Progress weight-room interpretation signal missing');
+includes('athlete/index.html','id="progressStrengthSprintRead"','Athlete Progress combined sprint + strength read missing');
+includes('athlete/index.html','mw_set_own_strength_session_feel','Existing Strong / Normal / Heavy check-in must persist to MW Dynasty');
+includes('athlete/index.html','athlete_strength_max_history','Athlete Progress must load established max history');
+includes('supabase/migrations/20260930_weight_room_progression_v1.sql','athlete_strength_max_history','Weight-room max history schema missing');
+includes('supabase/migrations/20260930_weight_room_progression_v1.sql','mw_set_own_strength_session_feel','Weight-room response persistence RPC missing');
+includes('server/api/coach/performance.js','strengthProgressionSummary','Coach performance endpoint must calculate strength progression');
+includes('server/api/coach/performance.js','combined_signal','Coach performance endpoint must combine sprint and strength signals');
+includes('server/api/coach/coach-mw.js','strengthMaxHistory','Coach MW must receive established max history');
+includes('coach/app.js','Weight-Room Progression','Coach athlete detail must show weight-room progression');
+
+
 const athleteLoginHtml=read('athlete/index.html');
 ok(athleteLoginHtml.indexOf('let mwStrengthPerformanceRows=[];')>=0,'Shared strength-performance state declaration missing');
 ok(athleteLoginHtml.indexOf('let mwStrengthPerformanceRows=[];')<athleteLoginHtml.indexOf('function renderWeightRoomProgressUI()'),'Strength-performance state must exist before Progress rendering can run');
