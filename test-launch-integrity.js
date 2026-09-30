@@ -216,8 +216,10 @@ includes('athlete/index.html',"p_feel:String(feel)",'Strength response RPC paylo
 includes('athlete/index.html','session_feel,feel_recorded_at','Athlete strength history must load persisted session response');
 includes('athlete/index.html','<span>AS PRESCRIBED</span>','Weight-room Progress must use low-friction completion quality instead of optional set-count logging');
 includes('athlete/index.html','<span>RECENT RESPONSE</span>','Weight-room Progress must surface the existing session response');
-includes('server/api/coach/performance.js','response_trend:strengthResponseTrend','Coach intelligence must receive strength response trend');
-includes('server/api/coach/performance.js','as_prescribed_pct:asWrittenPct','Coach intelligence must receive strength completion quality');
+includes('server/api/coach/performance.js','function strengthProgressionSummary(checkins,maxHistory,latestSprint)','Coach intelligence must derive the shared weight-room progression summary');
+includes('server/api/coach/performance.js','as_prescribed_pct:adherence','Coach intelligence must receive strength completion quality');
+includes('server/api/coach/performance.js','combined_signal:combined','Coach intelligence must combine sprint and strength response');
+includes('server/api/coach/performance.js','max_progression:','Coach intelligence must expose established-max progression');
 includes('supabase/migrations/20260930_persist_strength_session_feel.sql','mw_set_own_strength_feel','Strength response persistence migration missing');
 includes('athlete/index.html','id="progressStrengthSignal"','Weight-room Progress strength response signal missing');
 includes('athlete/index.html','id="progressStrengthSprintRead"','Weight-room Progress sprint + strength interpretation missing');
@@ -225,6 +227,13 @@ includes('athlete/index.html','athlete_strength_max_history','Athlete Progress m
 includes('athlete/index.html','mw_set_own_strength_session_feel','Existing lift response UI must use the persisted strength-response RPC');
 includes('supabase/migrations/20260930_weight_room_progression_v1.sql','athlete_strength_max_history','Weight-room max-history migration missing');
 includes('supabase/migrations/20260930_weight_room_progression_v1.sql','mw_set_own_strength_session_feel','Full strength response persistence RPC missing');
+includes('coach/app.js','<h3>Weight-Room Progression</h3>','Coach athlete detail must show weight-room progression');
+includes('coach/app.js','perf.strength.progression.as_prescribed_pct','Coach athlete detail must show strength completion quality');
+includes('coach/app.js','perf.strength.progression.combined_signal','Coach athlete detail must show the combined sprint + strength signal');
+includes('server/api/coach/coach-mw.js','athlete_strength_max_history?select=','Coach MW must receive established strength max history');
+includes('server/api/coach/coach-mw.js','For weight-room progression, the normal athlete workflow is deliberately low-friction','Coach MW must respect the existing low-friction strength workflow');
+includes('server/api/coach/coach-mw.js','Strong / Normal / Heavy','Coach MW must use the existing strength response choices');
+
 
 
 
