@@ -2227,6 +2227,27 @@ img,svg,video,canvas{max-width:100%}
     align-self:flex-end!important;background:linear-gradient(145deg,#161208,#0a0d0f)!important;
     border-color:rgba(218,171,74,.44)!important;
   }
+  .coach-mw-athlete-thread .mw-coach-action-card{
+    align-self:stretch!important;max-width:100%!important;min-height:0!important;
+    padding:16px!important;margin:2px 0 8px!important;overflow:visible!important;
+    border:1px solid rgba(239,198,89,.72)!important;border-radius:18px!important;
+    background:linear-gradient(155deg,#0a1720,#050b10)!important;
+    box-shadow:0 12px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.04)!important;
+  }
+  .coach-mw-athlete-thread .mw-coach-action-card>b{
+    display:block!important;color:var(--mwd-gold2,#efc659)!important;font-size:15px!important;
+    line-height:1.25!important;margin-bottom:8px!important;
+  }
+  .coach-mw-athlete-thread .mw-coach-action-card>p{
+    display:block!important;margin:0 0 13px!important;color:#eef2f5!important;font-size:12px!important;
+    line-height:1.45!important;white-space:normal!important;
+  }
+  .coach-mw-athlete-thread .mw-coach-action-card>button{
+    min-height:46px!important;margin:0!important;border-radius:13px!important;font-size:11px!important;
+  }
+  .coach-mw-athlete-thread .mw-coach-action-card>.action{width:100%!important}
+  .coach-mw-athlete-thread .mw-coach-action-card>.back{width:100%!important;margin-top:8px!important}
+
   .coach-mw-athlete-composer{
     display:grid!important;grid-template-columns:48px 48px minmax(0,1fr) 48px!important;
     gap:8px!important;align-items:center!important;margin-top:10px!important;
