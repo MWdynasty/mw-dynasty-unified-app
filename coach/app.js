@@ -875,7 +875,9 @@ function coachMWPage(){
     state.textContent='Coach MW is thinking…';
     const request=()=>{
       const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
-      return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history})});
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),45000);
+      return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:controller.signal}).finally(()=>clearTimeout(timeout));
     };
     request().then(async r=>{
       traceCoachStage('response_headers_received');
@@ -902,7 +904,9 @@ function coachMWPage(){
       state.textContent='Coach MW: '+(e?.message||'Please try again.');
     }).finally(()=>{
       coachMWInFlight=false;
-      if(state.textContent==='Coach MW is thinking…')state.textContent='';
+      // Always clear transient thinking state after this request settles.
+      // iOS WebView can preserve/repaint stale text even after the assistant bubble is appended.
+      if(state)state.textContent='';
     });
   };
   const sendButton=document.getElementById('askmw');
