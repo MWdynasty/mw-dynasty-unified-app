@@ -817,6 +817,14 @@ function coachMWPage(){
     body.textContent=content;
     bubble.appendChild(label);
     bubble.appendChild(body);
+    if(role==='assistant'){
+      const voiceButton=document.createElement('button');
+      voiceButton.className='back mw-read-aloud';
+      voiceButton.type='button';
+      voiceButton.textContent='🔊 Read Aloud';
+      voiceButton.onclick=()=>readAloud(content,voiceButton);
+      bubble.appendChild(voiceButton);
+    }
     chat.appendChild(bubble);
     return bubble;
   };
