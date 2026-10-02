@@ -1,5 +1,5 @@
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://keqgunlfwhjgcsurynef.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+const SUPABASE_URL = 'https://uuggbmccnyswiwkjgydo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
 
 function bearer(req){
   const h=String(req.headers?.authorization||'');
