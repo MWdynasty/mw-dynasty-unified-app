@@ -57,8 +57,9 @@ async function run() {
   const a=fixture(), saved=[];
   Object.assign(a.ctx,{
     getProfile:()=>({trainingTier:'performance',p100:10.50,p200:21.40,p400:48.00}), completionAthleteId:()=> 'test-athlete',
+    MWWorkoutIdentity:require('./lib/mw-workout-identity'),workoutIdentity:()=>require('./lib/mw-workout-identity').create({athleteId:'11111111-1111-1111-1111-111111111111',week:1,day:1}),
     workoutKey:()=> 'test-workout', completionHeaders:()=>({}),MW_SB_URL:'https://fixture.invalid',
-    activeSeasonPlanId:()=>null,sourceWeekForSeasonWeek:w=>w,
+    activeSeasonPlanId:()=>null,activeWorkoutCycleId:()=>null,sourceWeekForSeasonWeek:w=>w,
     fetch:async(url,opts)=>{if(opts?.method==='POST')saved.push(JSON.parse(opts.body));return {ok:true,json:async()=>[]}},
     setWorkoutStatus:async()=>{},workoutStatus:()=>({completion_status:'in_progress'}),
     loadMWProgramWeek:async()=>({track:{sessions:[{day:1,work:'2 x 100 m'}]}}),
@@ -104,13 +105,15 @@ async function run() {
   assert.equal(a.el('mwPracticeRetry').hidden,true,'completed workouts stay protected');
   a.click('mwPracticeExit');await a.flush();assert.equal(a.jobs.size,0,'exiting stops both clocks');
 
-  const c=fixture(), finishes=['a','b'].map(id=>{const b=c.el('finish-'+id);b.dataset.finishAthlete=id;return b});
+  const athleteA='11111111-1111-1111-1111-111111111111',athleteB='22222222-2222-2222-2222-222222222222';
+  const c=fixture(), finishes=[athleteA,athleteB].map(id=>{const b=c.el('finish-'+id);b.dataset.finishAthlete=id;return b});
   c.document.querySelectorAll=s=>s==='[data-finish-athlete]'?finishes:[];
   const coachSaves=[];
   Object.assign(c.ctx,{
+    MWWorkoutIdentity:require('./lib/mw-workout-identity'),
     pageBase:()=>{},hydrateCoachTodayPractice:()=>{},openPage:()=>{},experience:'performance',
     escapeHtml:x=>String(x),toast:()=>{},mwSessionToken:()=>'',prompt:()=> '12.34',
-    fetchCoachRoster:async()=>({athletes:[{id:'a',name:'Runner A'},{id:'b',name:'Runner B'}]}),
+    fetchCoachRoster:async()=>({athletes:[{id:athleteA,name:'Runner A'},{id:athleteB,name:'Runner B'}]}),
     fetch:async(url,opts)=>{coachSaves.push(JSON.parse(opts.body));return {ok:true,json:async()=>({count:2})}}
   });
   c.el('practiceEventGroup').value='All Sprinters';

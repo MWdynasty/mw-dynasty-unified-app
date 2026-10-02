@@ -13,7 +13,7 @@ window.MW_SUPABASE_KEY=window.MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjA
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MW Dynasty">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/manifest.webmanifest">\n<script src="/lib/mw-resilience.js"></script>
+<link rel="manifest" href="/manifest.webmanifest">\n<script src="/lib/mw-resilience.js"></script><script src="/lib/mw-workout-identity.js"></script>
 <script>if(/MWDynasty-iOS\//i.test(navigator.userAgent||'')){document.documentElement.classList.add('mw-native-app')}</script><title>MW Dynasty · Athlete</title>
 <style>
 :root{--bg:#02060b;--panel:#071019;--panel2:#091522;--blue:#159cff;--blue2:#55c9ff;--gold:#f5b92e;--text:#f5f7fb;--muted:#93a0ad;--line:#24313d}
@@ -2324,7 +2324,9 @@ function sourceWeekForSeasonWeek(w){
   const n=Number(map?.[String(Number(w))]?.sourceWeek||((Number(mwSeasonCalendar?.week)===Number(w))?mwSeasonCalendar?.sourceWeek:null)||w);
   return Math.max(1,Math.min(41,Number.isFinite(n)?n:Number(w)||1));
 }
-function workoutKey(w,i){const id=activeSeasonPlanId();return id?`mw-season-${id}-w${Number(w)}-d${Number(i)}`:`mw-track-w${Number(w)}-d${Number(i)}`}
+function activeWorkoutCycleId(){return activeSeasonPlanId()?null:(window.mwGetRemoteProfile?.()?.workoutCycleId||null)}
+function workoutIdentity(w,d){return MWWorkoutIdentity.create({athleteId:completionAthleteId(),seasonPlanId:activeSeasonPlanId(),workoutCycleId:activeWorkoutCycleId(),week:w,day:d,sessionId:'track'})}
+function workoutKey(w,i){return workoutIdentity(w,i).workoutKey}
 function workoutStatus(w,d){return mwWorkoutStatusCache[String(w)]?.['s'+Number(d)]||null}
 function latestIncompleteWorkout(){
   const rows=[];
@@ -2366,8 +2368,8 @@ async function mwPracticeNormalizeProgressTargets(rows){
 async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
-  const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,source_program_week,entry_source,timing_source,result_status,coach_session_id&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const planId=activeSeasonPlanId(),cycleId=activeWorkoutCycleId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null'+(cycleId?'&workout_cycle_id=eq.'+encodeURIComponent(cycleId):'&workout_cycle_id=is.null');
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,workout_cycle_id,source_program_week,entry_source,timing_source,result_status,coach_session_id&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
   mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(rows);
   renderPracticeProgress();
@@ -2389,7 +2391,9 @@ function rowsToCompletion(rows){
   const out={};mwPaceCheckCache={};mwWorkoutStatusCache={};
   for(const r of (Array.isArray(rows)?rows:[])){
     const w=String(Number(r.program_week||0)),d=Number(r.program_day||0);
-    if(!w||!d||String(r.workout_key||'')!==workoutKey(Number(w),d))continue;
+    if(Number(w)<1||Number(w)>41||d<1||d>7||!MWWorkoutIdentity.matches(r,workoutIdentity(Number(w),d)))continue;
+    const prior=mwWorkoutStatusCache[w]?.['s'+d];
+    if(prior&&(prior.completion_status==='completed'&&r.completion_status!=='completed'||prior.completion_status===r.completion_status&&prior.workout_key===workoutKey(Number(w),d)))continue;
     mwWorkoutStatusCache[w]=mwWorkoutStatusCache[w]||{};
     mwWorkoutStatusCache[w]['s'+d]={...r};
     if(r.completion_status!=='completed')continue;
@@ -2401,8 +2405,8 @@ function rowsToCompletion(rows){
 }
 async function loadWorkoutCompletions(){
   const aid=completionAthleteId();if(!aid)return;
-  const planId=activeSeasonPlanId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null';
-  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at,scheduled_date,started_at,last_activity_at,completed_late,season_plan_id,source_program_week',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const planId=activeSeasonPlanId(),cycleId=activeWorkoutCycleId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null'+(cycleId?'&workout_cycle_id=eq.'+encodeURIComponent(cycleId):'&workout_cycle_id=is.null');
+  const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=athlete_id,program_week,program_day,workout_key,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at,scheduled_date,started_at,last_activity_at,completed_late,season_plan_id,workout_cycle_id,source_program_week',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load workout completion history.');
   mwCompletionCache=rowsToCompletion(rows);mwCompletionLoaded=true;
 }
@@ -2419,7 +2423,7 @@ async function markWorkoutComplete(w,i,button,pace={status:'not_applicable',hit:
   if(getCompletion()[String(w)]?.['s'+i])return;
   if(button){button.disabled=true;button.textContent='SAVING…'}
   const total=repEnabled&&Number(pace?.total)>0?Number(pace.total):null,hit=total==null?null:Math.max(0,Math.min(total,Number(pace?.hit)||0));
-  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',session_rpe:null,pace_check_status:repEnabled?(pace?.status||'not_applicable'):'not_applicable',pace_reps_total:total,pace_reps_hit:hit,performance_checked_at:repEnabled&&total?new Date().toISOString():null,completed_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(w)};
+  const payload={athlete_id:aid,program_week:Number(w),program_day:Number(i),workout_key:workoutKey(w,i),completion_status:'completed',session_rpe:null,pace_check_status:repEnabled?(pace?.status||'not_applicable'):'not_applicable',pace_reps_total:total,pace_reps_hit:hit,performance_checked_at:repEnabled&&total?new Date().toISOString():null,completed_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),workout_cycle_id:activeWorkoutCycleId(),source_program_week:sourceWeekForSeasonWeek(w)};
   try{
     const r=await fetch(MW_SB_URL+'/rest/v1/workout_completions?on_conflict=athlete_id,workout_key',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
     const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
@@ -3544,6 +3548,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       coachConnected:window.mwCoachConnected===true,
       competitionPath:Array.isArray(d.athlete?.competition_paths)?(d.athlete.competition_paths[0]||'school'):'school',
       seasonPlan:d.seasonPlan||null,
+      workoutCycleId:ps.workout_cycle_id||null,
       email:d.user?.email||'',
       mode:d.mode||(hasAthlete?'athlete':role),
       repTracking:d.features?.repTracking===true,
@@ -4430,14 +4435,14 @@ function renderLog(){
 }
 async function loadExistingReps(w,d){
  const aid=completionAthleteId();if(!aid)return[];
- const key=workoutKey(w,d);
- const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+'&workout_key=eq.'+encodeURIComponent(key)+'&select=rep_number,distance_m,time_seconds,target_seconds,pace_status,mw_intent,mw_interpretation,recorded_at&order=rep_number.asc',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+ const identity=workoutIdentity(w,d),keys=MWWorkoutIdentity.readKeys(identity);
+ const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+'&workout_key=in.'+encodeURIComponent('('+keys.join(',')+')')+'&select=athlete_id,workout_key,season_plan_id,workout_cycle_id,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,mw_intent,mw_interpretation,recorded_at&order=rep_number.asc',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
  const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Saved rep data could not be loaded.');
- return (Array.isArray(rows)?rows:[]).map(x=>({...x,rep_number:Number(x.rep_number),time_seconds:Number(x.time_seconds),target_seconds:x.target_seconds==null?null:Number(x.target_seconds)}));
+ return MWWorkoutIdentity.preferRows(Array.isArray(rows)?rows:[],identity).map(x=>({...x,rep_number:Number(x.rep_number),time_seconds:Number(x.time_seconds),target_seconds:x.target_seconds==null?null:Number(x.target_seconds)}));
 }
 async function persistOneRep(row){
  const p=parsePrescription(),aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
- const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek),mw_intent:row.mw_intent||null,mw_interpretation:row.mw_interpretation||null};
+ const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),workout_cycle_id:activeWorkoutCycleId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek),mw_intent:row.mw_intent||null,mw_interpretation:row.mw_interpretation||null};
  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});
  if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep time could not be saved.')}
 }
