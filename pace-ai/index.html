@@ -188,7 +188,8 @@ async function init(){
  syncManual();
  renderPaceSummary();
 }
-async function loadTrackWeek(week){week=Number(week)||1;if(TRACK?.weeks?.[String(week)])return TRACK.weeks[String(week)];const tok=window.MW_SESSION?.access_token||'';if(!tok)return null;const r=await fetch('/api/program?week='+week,{headers:{Authorization:'Bearer '+tok},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'This MW week is locked');if(d.track)TRACK.weeks[String(week)]=d.track;return d.track||null}
+function mwPaceTimeZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{return'UTC'}}
+async function loadTrackWeek(week){week=Number(week)||1;if(TRACK?.weeks?.[String(week)])return TRACK.weeks[String(week)];const tok=window.MW_SESSION?.access_token||'';if(!tok)return null;const r=await fetch('/api/program?week='+week,{headers:{Authorization:'Bearer '+tok,'X-MW-Time-Zone':mwPaceTimeZone()},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'This MW week is locked');if(d.track)TRACK.weeks[String(week)]=d.track;return d.track||null}
 function mwPaceCompact(v,max=58){const s=String(v||'').replace(/\s+/g,' ').trim();return s.length>max?s.slice(0,max-1).trimEnd()+'…':s}
 function renderPaceSummary(state='ready'){
  const title=$('#mwPaceSummaryTitle'),work=$('#mwPaceSummaryWork'),target=$('#mwPaceSummaryTarget'),recovery=$('#mwPaceSummaryRecovery'),quality=$('#mwPaceSummaryQuality');
@@ -243,7 +244,7 @@ async function loadTodayWorkout(){
  try{
    const tok=window.MW_SESSION?.access_token||'';
    if(!tok)throw new Error('Your MW athlete session is still syncing.');
-   const r=await fetch('/api/program',{headers:{Authorization:'Bearer '+tok},cache:'no-store'});
+   const r=await fetch('/api/program',{headers:{Authorization:'Bearer '+tok,'X-MW-Time-Zone':mwPaceTimeZone()},cache:'no-store'});
    const d=await r.json().catch(()=>({}));
    if(!r.ok)throw new Error(d.error||'Today’s MW workout is unavailable.');
    const officialWeek=Math.max(1,Math.min(41,Number(d.seasonIntelligence?.week||d.officialWeek||d.week||1)));
