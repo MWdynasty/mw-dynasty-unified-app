@@ -30,6 +30,7 @@ function fixture() {
     setTimeout:(fn,ms)=>{const id=++serial;jobs.set(id,{fn,ms,at:now+ms});return id},
     clearTimeout:id=>jobs.delete(id), requestAnimationFrame:()=>++serial,cancelAnimationFrame:()=>{},
     speechSynthesis:{cancel(){},speak(){}},SpeechSynthesisUtterance:function(){},
+    addEventListener:()=>{},removeEventListener:()=>{},
     alert:msg=>{throw Error(msg)}
   });
   ctx.window=ctx;
