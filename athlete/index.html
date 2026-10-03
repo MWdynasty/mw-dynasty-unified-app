@@ -2676,7 +2676,7 @@ const MW={
 };
 const MW_STRENGTH={};
 const MW_PROGRAM_CACHE={};
-async function loadMWProgramWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(MW_PROGRAM_CACHE[w])return MW_PROGRAM_CACHE[w];const tok=window.mwGetSessionToken?.()||'';if(!tok)return null;const r=await fetch('/api/program?week='+w,{headers:{Authorization:'Bearer '+tok},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW program is unavailable');MW_PROGRAM_CACHE[w]=d;if(d.strength)MW_STRENGTH[w]=d.strength;return d}
+async function loadMWProgramWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(MW_PROGRAM_CACHE[w])return MW_PROGRAM_CACHE[w];const tok=window.mwGetSessionToken?.()||'';if(!tok)return null;const r=await fetch('/api/program?week='+w,{headers:{Authorization:'Bearer '+tok,'X-MW-Time-Zone':(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{return'UTC'}})()},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW program is unavailable');MW_PROGRAM_CACHE[w]=d;if(d.strength)MW_STRENGTH[w]=d.strength;return d}
 const MW_WORDS=[
   {ref:'Galatians 6:9',theme:'Stay faithful in the work. Growth can be happening before you can see it.'},
   {ref:'Philippians 4:13',theme:'Your strength is not limited to self-confidence; keep your dependence on Christ.'},
