@@ -89,25 +89,45 @@ module.exports=async(req,res)=>{
         code:'workout_already_completed',
         athletes:locked.map(x=>({athleteId:x.athlete_id,programWeek:Number(x.program_week),programDay:Number(x.program_day),workoutKey:x.workout_key||null,completedAt:x.completed_at||null}))
       });
-      for(const row of rows){const meta=athleteMeta.get(row.athlete_id);Object.assign(row,{workout_key:meta.workoutKey,season_plan_id:meta.seasonPlanId,workout_cycle_id:meta.workoutCycleId,program_week:meta.programWeek,program_day:meta.programDay})}
-      const saved=await rest('coach_practice_timing_results?on_conflict=session_id,athlete_id,rep_number',c.token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify(rows)});
-      const synced=[];
-      for(const meta of athleteMeta.values()){
-        const sync=await rest('rpc/mw_coach_sync_practice_session_to_athlete',c.token,{method:'POST',body:JSON.stringify({
-          p_session_id:sessionId,
-          p_athlete_id:meta.athleteId,
-          p_program_week:meta.programWeek,
-          p_program_day:meta.programDay,
-          p_source_program_week:meta.sourceProgramWeek,
-          p_workout_key:meta.workoutKey,
-          p_distance_m:meta.distanceM,
-          p_season_plan_id:meta.seasonPlanId,
-          p_workout_cycle_id:meta.workoutCycleId
-        })});
-        await rest('rpc/mw_coach_sync_practice_intelligence',c.token,{method:'POST',body:JSON.stringify({p_session_id:sessionId,p_athlete_id:meta.athleteId,p_workout_key:meta.workoutKey})});
-        synced.push(sync);
+      for(const row of rows){
+        const meta=athleteMeta.get(row.athlete_id);
+        Object.assign(row,{
+          workout_key:meta.workoutKey,
+          season_plan_id:meta.seasonPlanId,
+          workout_cycle_id:meta.workoutCycleId,
+          program_week:meta.programWeek,
+          program_day:meta.programDay,
+          source_program_week:meta.sourceProgramWeek,
+          distance_m:meta.distanceM
+        });
       }
-      return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length,sessionId,results:saved,synced});
+      // One database RPC owns raw timing + athlete reps + workout completion.
+      // Any failure rolls the entire session back instead of leaving a partial save.
+      const committed=await rest('rpc/mw_coach_commit_practice_session',c.token,{method:'POST',body:JSON.stringify({
+        p_session_id:sessionId,
+        p_results:rows
+      })});
+      // Intelligence is enrichment, not part of the durability boundary. A failure here
+      // must never make the coach think the already-committed practice failed to save.
+      const intelligenceWarnings=[];
+      for(const meta of athleteMeta.values()){
+        try{
+          await rest('rpc/mw_coach_sync_practice_intelligence',c.token,{method:'POST',body:JSON.stringify({
+            p_session_id:sessionId,
+            p_athlete_id:meta.athleteId,
+            p_workout_key:meta.workoutKey
+          })});
+        }catch(e){
+          intelligenceWarnings.push({athleteId:meta.athleteId,error:e.message||'Practice intelligence sync failed'});
+        }
+      }
+      return res.status(200).json({
+        ok:true,
+        count:Number(committed?.count)||rows.length,
+        sessionId,
+        synced:Array.isArray(committed?.synced)?committed.synced:[],
+        intelligenceWarnings
+      });
     }
     if(req.method==='GET'){
       const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,workout_key,season_plan_id,workout_cycle_id,program_week,program_day,session_date,division,group_name,group_id,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,result_status,pace_status,mw_intent,mw_interpretation,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
