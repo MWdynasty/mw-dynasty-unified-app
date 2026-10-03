@@ -2314,7 +2314,8 @@ function completionHeaders(extra={}){
   const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
   let sess=null;try{sess=JSON.parse(raw||'null')}catch{}
   const access=sess?.access_token||'';
-  return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,...extra};
+  let timeZone='UTC';try{timeZone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}
+  return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,'X-MW-Time-Zone':timeZone,...extra};
 }
 function completionAthleteId(){const remote=window.mwGetRemoteProfile?.();return remote?.athleteId||null}
 function activeSeasonPlanId(){const remote=window.mwGetRemoteProfile?.();return mwSeasonCalendar?.planId||remote?.seasonPlan?.id||remote?.seasonPlan?.season_plan_id||null}
@@ -2440,8 +2441,9 @@ async function markWorkoutComplete(w,i,button,pace={status:'not_applicable',hit:
     const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
     mwCompletionCache[String(w)]=mwCompletionCache[String(w)]||{};mwCompletionCache[String(w)]['s'+i]=true;
     mwWorkoutStatusCache[String(w)]=mwWorkoutStatusCache[String(w)]||{};
-    const prior=mwWorkoutStatusCache[String(w)]['s'+i]||{};
-    mwWorkoutStatusCache[String(w)]['s'+i]={...prior,...payload,completion_status:'completed',completed_late:!!(prior.scheduled_date&&prior.scheduled_date<new Date().toISOString().slice(0,10))};
+    const prior=mwWorkoutStatusCache[String(w)]['s'+i]||{},saved=Array.isArray(out)?out[0]:null;
+    const localToday=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
+    mwWorkoutStatusCache[String(w)]['s'+i]={...prior,...payload,...(saved||{}),completion_status:'completed',completed_late:saved?.completed_late??!!(prior.scheduled_date&&prior.scheduled_date<localToday)};
     if(total){mwPaceCheckCache[String(w)]=mwPaceCheckCache[String(w)]||{};mwPaceCheckCache[String(w)]['s'+i]={status:payload.pace_check_status,hit,total}}
     try{await window.mwReloadAccount?.()}catch{}
     renderCompletion();renderProgressUI();
