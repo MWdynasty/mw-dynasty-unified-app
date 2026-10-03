@@ -67,10 +67,16 @@ async function run(){
     calls.push({url,opts});let data=[];
     if(url.includes('/athlete_program_state?'))data=[state];
     else if(url.includes('/workout_completions?'))data=completions;
-    else if(url.includes('/coach_practice_timing_results?')&&opts.method==='POST'){rows.push(...JSON.parse(opts.body));data=rows}
-    else if(url.endsWith('/rpc/mw_coach_sync_practice_session_to_athlete')){
-      const p=JSON.parse(opts.body);assert.equal(p.p_workout_key,current.workoutKey);assert.equal(p.p_season_plan_id,P);
-      data={ok:true,workout_key:p.p_workout_key};completions=[...completions,completion(current,p.p_workout_key)];
+    else if(url.endsWith('/rpc/mw_coach_commit_practice_session')){
+      const p=JSON.parse(opts.body),saved=p.p_results;
+      assert.equal(p.p_session_id,'cccccccc-cccc-cccc-cccc-cccccccccccc');
+      assert.equal(saved[0].workout_key,current.workoutKey);
+      assert.equal(saved[0].season_plan_id,P);
+      rows.push(...saved);
+      completions=[...completions,completion(current,saved[0].workout_key)];
+      data={ok:true,count:saved.length,synced:[{ok:true,workout_key:saved[0].workout_key}]};
+    }else if(url.endsWith('/rpc/mw_coach_sync_practice_intelligence')){
+      data={ok:true};
     }
     return {ok:true,json:async()=>data};
   }};
@@ -80,8 +86,8 @@ async function run(){
     await context.module.exports({method:'POST',body:{sessionId:'cccccccc-cccc-cccc-cccc-cccccccccccc',results:[{athleteId:A,programWeek:3,programDay:2,sourceProgramWeek:12,seasonPlanId:P,workoutKey:'mw-track-w3-d2',repNumber:1,prescribedReps:2,timeSeconds:12,...overrides}]}},res);return result;
   }
   let result=await save();assert.equal(result.status,200,'old season does not lock current API save');
-  assert.equal(rows[0].workout_key,current.workoutKey,'server persists canonical identity for an old client');
-  assert.equal(athlete.rowsToCompletion(completions)['3'].s2,true,'coach save is recognized by actual athlete completion reader');
+  assert.equal(rows[0].workout_key,current.workoutKey,'atomic commit persists canonical identity for an old client');
+  assert.equal(athlete.rowsToCompletion(completions)['3'].s2,true,'atomic coach save is recognized by actual athlete completion reader');
   result=await save();assert.equal(result.status,409,'same-cycle completion still locks duplicates');
   completions=[];const writes=calls.filter(c=>c.opts.method==='POST').length;
   result=await save({seasonPlanId:OLD});assert.equal(result.status,409,'stale season rejected before writes');
