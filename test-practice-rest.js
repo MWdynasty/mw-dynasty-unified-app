@@ -138,6 +138,7 @@ async function run() {
   c.el('practiceTimerStart').click();c.advance(9000);finishes[0].click();c.advance(2000);finishes[1].click();
   await c.el('practiceFinishSession').click();
   assert.equal(coachSaves[0].results.length,2,'coach retry replaces earlier results without duplicates');
+  assert.ok(coachSaves[0].results.every(r=>r.workoutKey&&r.programWeek===1&&r.programDay===6),'coach save carries canonical workout identity for athlete history sync');
   assert.deepEqual(coachSaves[0].results.map(r=>r.timeSeconds),[9,11],'coach pause/resume preserves finish times');
   assert.deepEqual(coachSaves[0].results.map(r=>r.mwInterpretation),['above_target','above_target'],'technical/speed reps faster than target are recorded as quality speed, not TOO FAST');
   assert.deepEqual(coachSaves[0].results.map(r=>r.paceStatus),['on_pace','on_pace'],'quality-speed reps remain positive pace outcomes');
