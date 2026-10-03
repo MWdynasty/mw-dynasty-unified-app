@@ -2352,15 +2352,18 @@ async function mwPracticeNormalizeProgressTargets(rows){
   const plans=new Map();
   for(const row of list){
     const w=Number(row.program_week||0),d=Number(row.program_day||0),key=w+':'+d;
-    let p=plans.get(key);
-    if(p===undefined){
-      try{const data=await loadMWProgramWeek(w),s=data?.track?.sessions?.find(x=>Number(x.day)===d);p=s?parsePrescription(s):null}catch{p=null}
-      plans.set(key,p);
+    let entry=plans.get(key);
+    if(entry===undefined){
+      try{
+        const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===d);
+        entry={p:session?parsePrescription(session):null,session:session||null};
+      }catch{entry={p:null,session:null}}
+      plans.set(key,entry);
     }
+    const p=entry?.p,session=entry?.session;
     if(p?.target){
       const target=Number(p.target),actual=Number(row.time_seconds);
-      const s=(()=>{try{return data?.track?.sessions?.find(x=>Number(x.day)===d)}catch{return null}})();
-      const intentText=[s?.title,s?.focus,s?.prescribedWork,s?.work,s?.structure,s?.intensity,...(Array.isArray(s?.cues)?s.cues:[])].filter(Boolean).join(' ').toLowerCase();
+      const intentText=[session?.title,session?.focus,session?.prescribedWork,session?.work,session?.structure,session?.intensity,...(Array.isArray(session?.cues)?session.cues:[])].filter(Boolean).join(' ').toLowerCase();
       const intent=row.mw_intent||(/tempo|extensive|recovery|regeneration|easy/.test(intentText)?(/recovery|regeneration|easy/.test(intentText)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(intentText)?(/technical|technique|progressive|fly|flying|wicket/.test(intentText)?'technical':'speed'):'pace');
       const aboveTarget=Number.isFinite(actual)&&actual<target*.99&&['technical','speed'].includes(intent);
       row.target_seconds=target;
