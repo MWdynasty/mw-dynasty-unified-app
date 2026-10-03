@@ -28,7 +28,7 @@ function programPosition(state={},plan=null,localDate=new Date()){
     };
   }
   const start=dateOnly(state.start_date);
-  const startingWeek=Math.max(1,Math.min(41,Number(state.starting_week||state.current_week||1)));
+  const startingWeek=Math.max(1,Math.min(41,Number(state.starting_week||1)));
   if(start&&today){
     if(today<start)return {week:startingWeek,day:isoDay(today),phase:phaseFromWeek(startingWeek),sourceWeek:startingWeek,status:'not_started'};
     const offset=Math.max(0,Math.floor((today-start)/86400000/7));
