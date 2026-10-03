@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v5';
+const CACHE='mw-dynasty-shell-v6-workout-identity';
 const CORE=[
   '/',
   '/athlete/',
@@ -9,6 +9,7 @@ const CORE=[
   '/manifest.webmanifest',
   '/favicon.png',
   '/coach/app.js',
+  '/lib/mw-workout-identity.js',
   '/coach/styles.css',
   '/assets/mw-unified-theme.css',
   '/assets/mw-dynasty-luxe-v21.css',

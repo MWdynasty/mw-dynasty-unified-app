@@ -1,3 +1,4 @@
+const WorkoutIdentity=require('../../../lib/mw-workout-identity');
 const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../../lib/mw-coach-auth');
 
 async function get(path,token){
@@ -54,10 +55,10 @@ module.exports=async(req,res)=>{
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
     const [profiles,states,prs,seasonPlans,completedWorkouts]=await Promise.all([
       userIds.length?get(`profiles?select=user_id,first_name,last_name&user_id=in.${inList(userIds)}`,c.token):Promise.resolve([]),
-      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at,track_tier,strength_tier,starting_week,program_version&athlete_id=in.${inList(athleteIds)}`,c.token),
+      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at,track_tier,strength_tier,starting_week,program_version,season_plan_id,workout_cycle_id&athlete_id=in.${inList(athleteIds)}`,c.token),
       get(`athlete_prs?select=athlete_id,event,time_seconds,date_recorded,verified&athlete_id=in.${inList(athleteIds)}&order=event.asc`,c.token),
       get(`athlete_season_plans?select=id,athlete_id,source_week_map,plan_status,season_type,season_length_weeks&athlete_id=in.${inList(athleteIds)}&plan_status=eq.active`,c.token).catch(()=>[]),
-      get(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&athlete_id=in.${inList(athleteIds)}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,c.token).catch(()=>[])
+      get(`workout_completions?select=athlete_id,program_week,program_day,season_plan_id,workout_cycle_id,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&athlete_id=in.${inList(athleteIds)}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,c.token).catch(()=>[])
     ]);
 
     const pMap=new Map(profiles.map(p=>[p.user_id,p]));
@@ -68,6 +69,8 @@ module.exports=async(req,res)=>{
     const aMap=new Map(assignments.map(a=>[a.athlete_id,a]));
     const latestCompletionMap=new Map();
     for(const row of (completedWorkouts||[])){
+      const resolved=WorkoutIdentity.fromRow(row),state=sMap.get(row.athlete_id);
+      if(!resolved||!state||resolved.seasonPlanId!==(state.season_plan_id||null)||resolved.workoutCycleId!==(state.season_plan_id?null:(state.workout_cycle_id||null)))continue;
       if(!latestCompletionMap.has(row.athlete_id))latestCompletionMap.set(row.athlete_id,row);
     }
 
@@ -93,7 +96,8 @@ module.exports=async(req,res)=>{
         competition_division:a.competition_division||null,
         current_week:st.current_week||1,
         source_week:sourceWeek,
-        season_plan_id:plan?.id||null,
+        season_plan_id:st.season_plan_id||null,
+        workout_cycle_id:st.season_plan_id?null:(st.workout_cycle_id||null),
         season_type:plan?.season_type||null,
         season_length_weeks:plan?.season_length_weeks||null,
         current_day:st.current_day||1,
@@ -108,6 +112,8 @@ module.exports=async(req,res)=>{
           program_week:Number(latestCompletion.program_week)||null,
           program_day:Number(latestCompletion.program_day)||null,
           workout_key:latestCompletion.workout_key||null,
+          season_plan_id:latestCompletion.season_plan_id||null,
+          workout_cycle_id:latestCompletion.workout_cycle_id||null,
           completion_status:latestCompletion.completion_status||null,
           pace_check_status:latestCompletion.pace_check_status||null,
           pace_reps_total:latestCompletion.pace_reps_total==null?null:Number(latestCompletion.pace_reps_total),

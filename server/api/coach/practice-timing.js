@@ -1,3 +1,4 @@
+const WorkoutIdentity=require('../../../lib/mw-workout-identity');
 const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../../lib/mw-coach-auth');
 
 async function rest(path,token,options={}){
@@ -6,23 +7,16 @@ async function rest(path,token,options={}){
   if(!r.ok)throw Object.assign(new Error(d?.message||d?.hint||'Practice timing request failed'),{status:r.status});
   return d;
 }
-const cleanId=(v)=>String(v||'').replace(/[^a-f0-9-]/gi,'');
+const cleanId=(v)=>String(v||'').toLowerCase().replace(/[^a-f0-9-]/g,'');
 const inList=(values)=>`(${[...new Set(values.map(cleanId).filter(Boolean))].join(',')})`;
-async function completedCurrentWorkouts(athleteIds,token){
-  const ids=[...new Set((athleteIds||[]).map(cleanId).filter(Boolean))];
-  if(!ids.length)return [];
-  const [states,completed]=await Promise.all([
-    rest(`athlete_program_state?select=athlete_id,current_week,current_day&athlete_id=in.${inList(ids)}`,token),
-    rest(`workout_completions?select=athlete_id,program_week,program_day,workout_key,completion_status,completed_at&athlete_id=in.${inList(ids)}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,token)
-  ]);
-  const stateMap=new Map((states||[]).map(x=>[x.athlete_id,x]));
-  const locked=new Map();
-  for(const row of completed||[]){
-    const state=stateMap.get(row.athlete_id);
-    if(!state||locked.has(row.athlete_id))continue;
-    if(Number(row.program_week)===Number(state.current_week)&&Number(row.program_day)===Number(state.current_day))locked.set(row.athlete_id,row);
-  }
-  return [...locked.entries()].map(([athlete_id,row])=>({athlete_id,...row}));
+async function completedCurrentWorkouts(identities,token){
+  // Scope the query itself: old seasons cannot consume a global limit or lock a new one.
+  const matches=await Promise.all(identities.map(async identity=>{
+    const keys=WorkoutIdentity.readKeys(identity);
+    const completed=await rest(`workout_completions?select=athlete_id,program_week,program_day,season_plan_id,workout_cycle_id,workout_key,completion_status,completed_at&athlete_id=eq.${identity.athleteId}&program_week=eq.${identity.week}&program_day=eq.${identity.day}&workout_key=in.${encodeURIComponent('('+keys.join(',')+')')}&completion_status=eq.completed`,token);
+    return completed.find(row=>WorkoutIdentity.matches(row,identity))||null;
+  }));
+  return matches.filter(Boolean);
 }
 module.exports=async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
@@ -45,7 +39,7 @@ module.exports=async(req,res)=>{
       if(invalidRep)return res.status(400).json({error:'Timing result exceeds the prescribed rep count.',code:'rep_limit_exceeded'});
       const rows=results.map(x=>({
         coach_user_id:c.user.id,
-        athlete_id:String(x.athleteId||''),
+        athlete_id:cleanId(x.athleteId),
         session_date:String(x.sessionDate||new Date().toISOString().slice(0,10)),
         group_name:String(x.groupName||'All').slice(0,80),
         group_id:x.groupId||null,
@@ -67,23 +61,35 @@ module.exports=async(req,res)=>{
       }));
       if(rows.some(x=>!x.athlete_id||!Number.isFinite(x.time_seconds)||x.time_seconds<=0))return res.status(400).json({error:'Invalid timing result'});
       if(rows.some(x=>(x.target_min_seconds==null)!==(x.target_max_seconds==null)||((x.target_min_seconds!=null)&&x.target_min_seconds>x.target_max_seconds)))return res.status(400).json({error:'Invalid target pace range'});
+      const states=await rest(`athlete_program_state?select=athlete_id,current_week,current_day,season_plan_id,workout_cycle_id&athlete_id=in.${inList(results.map(x=>x.athleteId))}`,c.token);
+      const stateMap=new Map(states.map(state=>[state.athlete_id,state]));
       const athleteMeta=new Map();
       for(const x of results){
         const athleteId=cleanId(x.athleteId),programWeek=Number(x.programWeek),programDay=Number(x.programDay),sourceProgramWeek=Number(x.sourceProgramWeek||programWeek),distanceM=x.distanceM==null?null:Number(x.distanceM),workoutKey=String(x.workoutKey||''),seasonPlanId=cleanId(x.seasonPlanId);
         if(!athleteId||!Number.isInteger(programWeek)||programWeek<1||programWeek>41||!Number.isInteger(programDay)||programDay<1||programDay>7||!workoutKey)return res.status(400).json({error:'Practice workout identity is missing or invalid'});
-        if(workoutKey!==`mw-track-w${programWeek}-d${programDay}`)return res.status(400).json({error:'Practice workout identity does not match the athlete Week/Day'});
+        const state=stateMap.get(athleteId);
+        if(!state)return res.status(404).json({error:'Athlete program state not found'});
+        const currentPlan=state.season_plan_id||null,currentCycle=currentPlan?null:(state.workout_cycle_id||null);
+        if(x.workoutCycleId&&cleanId(x.workoutCycleId)!==currentCycle)return res.status(409).json({error:'Practice training cycle changed. Reload the roster.',code:'workout_scope_changed'});
+        // Old clients may omit plan metadata. A supplied plan must still match the database.
+        if(seasonPlanId&&seasonPlanId!==currentPlan)return res.status(409).json({error:'Practice season changed. Reload the roster.',code:'workout_scope_changed'});
+        if(role==='coach'&&(Number(state.current_week)!==programWeek||Number(state.current_day)!==programDay))return res.status(409).json({error:'Practice session no longer matches the athlete current workout',code:'workout_scope_changed'});
+        let identity;
+        try{identity=WorkoutIdentity.create({athleteId,seasonPlanId:currentPlan,workoutCycleId:currentCycle,week:programWeek,day:programDay})}catch(e){return res.status(400).json({error:e.message})}
+        if(!WorkoutIdentity.acceptsInput(workoutKey,identity))return res.status(400).json({error:'Practice workout identity does not match the athlete current season/workout'});
         if(distanceM!=null&&(!(distanceM>0)||!Number.isFinite(distanceM)))return res.status(400).json({error:'Invalid practice distance'});
-        const meta={athleteId,programWeek,programDay,sourceProgramWeek,workoutKey,distanceM,seasonPlanId:seasonPlanId||null};
+        const meta={athleteId,programWeek,programDay,sourceProgramWeek,workoutKey:identity.workoutKey,distanceM,seasonPlanId:identity.seasonPlanId,workoutCycleId:identity.workoutCycleId};
         const prior=athleteMeta.get(athleteId);
         if(prior&&JSON.stringify(prior)!==JSON.stringify(meta))return res.status(400).json({error:'Mixed workout identity for one athlete in the same practice save'});
         athleteMeta.set(athleteId,meta);
       }
-      const locked=await completedCurrentWorkouts(rows.map(x=>x.athlete_id),c.token);
+      const locked=await completedCurrentWorkouts([...athleteMeta.values()].map(meta=>WorkoutIdentity.create({athleteId:meta.athleteId,seasonPlanId:meta.seasonPlanId,workoutCycleId:meta.workoutCycleId,week:meta.programWeek,day:meta.programDay})),c.token);
       if(locked.length)return res.status(409).json({
         error:'One or more athletes already completed their current MW workout. Practice Mode will not create duplicate timing results.',
         code:'workout_already_completed',
         athletes:locked.map(x=>({athleteId:x.athlete_id,programWeek:Number(x.program_week),programDay:Number(x.program_day),workoutKey:x.workout_key||null,completedAt:x.completed_at||null}))
       });
+      for(const row of rows){const meta=athleteMeta.get(row.athlete_id);Object.assign(row,{workout_key:meta.workoutKey,season_plan_id:meta.seasonPlanId,workout_cycle_id:meta.workoutCycleId,program_week:meta.programWeek,program_day:meta.programDay})}
       const saved=await rest('coach_practice_timing_results?on_conflict=session_id,athlete_id,rep_number',c.token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify(rows)});
       const synced=[];
       for(const meta of athleteMeta.values()){
@@ -95,7 +101,8 @@ module.exports=async(req,res)=>{
           p_source_program_week:meta.sourceProgramWeek,
           p_workout_key:meta.workoutKey,
           p_distance_m:meta.distanceM,
-          p_season_plan_id:meta.seasonPlanId
+          p_season_plan_id:meta.seasonPlanId,
+          p_workout_cycle_id:meta.workoutCycleId
         })});
         await rest('rpc/mw_coach_sync_practice_intelligence',c.token,{method:'POST',body:JSON.stringify({p_session_id:sessionId,p_athlete_id:meta.athleteId,p_workout_key:meta.workoutKey})});
         synced.push(sync);
@@ -103,7 +110,7 @@ module.exports=async(req,res)=>{
       return res.status(200).json({ok:true,count:Array.isArray(saved)?saved.length:rows.length,sessionId,results:saved,synced});
     }
     if(req.method==='GET'){
-      const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,session_date,division,group_name,group_id,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,result_status,pace_status,mw_intent,mw_interpretation,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
+      const rows=await rest(`coach_practice_timing_results?select=id,session_id,athlete_id,workout_key,season_plan_id,workout_cycle_id,program_week,program_day,session_date,division,group_name,group_id,lane_number,rep_number,time_seconds,target_seconds,target_min_seconds,target_max_seconds,prescribed_rest_seconds,actual_rest_seconds,timing_source,result_status,pace_status,mw_intent,mw_interpretation,created_at&coach_user_id=eq.${encodeURIComponent(c.user.id)}&order=created_at.desc&limit=200`,c.token);
       return res.status(200).json({ok:true,results:rows});
     }
     return res.status(405).json({error:'GET, POST, or DELETE only'});

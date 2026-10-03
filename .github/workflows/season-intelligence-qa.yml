@@ -15,6 +15,9 @@ on:
       - 'test-season-intelligence-authority.js'
       - 'test-practice-rest.js'
       - 'test-launch-integrity.js'
+      - 'lib/mw-workout-identity.js'
+      - 'test-workout-identity*.js'
+      - 'test-fixtures/workout-identity.sql'
       - 'package.json'
       - 'vercel.json'
       - '.github/workflows/season-intelligence-qa.yml'
@@ -32,6 +35,11 @@ jobs:
 
       - name: Run MW regression suite
         run: npm test
+
+      - name: Test canonical workout identity in disposable PostgreSQL
+        run: |
+          npm install --prefix "$RUNNER_TEMP/mw-identity-tests" --no-audit --no-fund @electric-sql/pglite@0.4.1
+          MW_IDENTITY_PGLITE_PATH="$RUNNER_TEMP/mw-identity-tests/node_modules/@electric-sql/pglite" npm run test:workout-identity-db
 
       - name: Check Season Intelligence server syntax
         run: |
