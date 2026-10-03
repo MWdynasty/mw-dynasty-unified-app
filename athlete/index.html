@@ -4470,7 +4470,7 @@ async function loadExistingReps(w,d){
 }
 async function persistOneRep(row){
  const p=parsePrescription(),aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
- const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),workout_cycle_id:activeWorkoutCycleId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek),mw_intent:row.mw_intent||null,mw_interpretation:row.mw_interpretation||null};
+ const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:row.recorded_at||new Date().toISOString(),season_plan_id:activeSeasonPlanId(),workout_cycle_id:activeWorkoutCycleId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek),mw_intent:row.mw_intent||null,mw_interpretation:row.mw_interpretation||null};
  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});
  if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep time could not be saved.')}
 }
