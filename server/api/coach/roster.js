@@ -8,6 +8,14 @@ async function get(path,token){
   return Array.isArray(d)?d:[];
 }
 const inList=(values)=>`(${values.map(v=>String(v).replace(/[^a-f0-9-]/gi,'')).filter(Boolean).join(',')})`;
+function localIsoDay(timeZone){
+  const tz=String(timeZone||'').trim().slice(0,80);
+  if(!tz)return null;
+  try{
+    const wd=new Intl.DateTimeFormat('en-US',{timeZone:tz,weekday:'short'}).format(new Date());
+    return ({Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:7})[wd]||null;
+  }catch{return null}
+}
 
 module.exports=async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
@@ -15,6 +23,7 @@ module.exports=async(req,res)=>{
   try{
     const c=await getAccountContext(req);
     const role=String(c.profile.role||'');
+    const clientDay=localIsoDay(req.headers['x-mw-time-zone']);
     if(!['founder_owner','admin','coach'].includes(role))return res.status(403).json({error:'Coach access required'});
 
     let assignments=[];
@@ -100,7 +109,7 @@ module.exports=async(req,res)=>{
         workout_cycle_id:st.season_plan_id?null:(st.workout_cycle_id||null),
         season_type:plan?.season_type||null,
         season_length_weeks:plan?.season_length_weeks||null,
-        current_day:st.current_day||1,
+        current_day:clientDay||st.current_day||1,
         current_phase:st.current_phase||null,
         track_tier:st.track_tier||null,
         strength_tier:st.strength_tier||null,
