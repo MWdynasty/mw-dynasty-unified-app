@@ -34,6 +34,26 @@ async function completedCurrentWorkouts(identities,token){
   }));
   return matches.filter(Boolean);
 }
+async function isCommittedRetry(rows,sessionId,coachId,token){
+  // A lost HTTP response may hide a successful atomic commit. A retry may confirm
+  // the exact saved payload, but must never edit a completed workout.
+  const persistedColumns=Object.keys(rows[0]).filter(key=>!['source_program_week','distance_m'].includes(key));
+  const saved=await rest(`coach_practice_timing_results?select=${persistedColumns.join(',')}&session_id=eq.${encodeURIComponent(sessionId)}&coach_user_id=eq.${encodeURIComponent(coachId)}&limit=201`,token);
+  if(saved.length!==rows.length)return false;
+  const byRep=new Map(saved.map(row=>[row.athlete_id+':'+row.rep_number,row]));
+  if(byRep.size!==rows.length)return false;
+  const same=(a,b)=>a==null?b==null:typeof a==='number'?b!=null&&Number(b)===a:a===b;
+  if(!rows.every(row=>{
+    const prior=byRep.get(row.athlete_id+':'+row.rep_number);
+    return prior&&persistedColumns.every(key=>same(row[key],prior[key]));
+  }))return false;
+  const reps=await rest(`athlete_practice_rep_results?select=athlete_id,workout_key,rep_number,source_program_week,distance_m&coach_session_id=eq.${encodeURIComponent(sessionId)}&coach_user_id=eq.${encodeURIComponent(coachId)}&limit=201`,token);
+  const mirrored=new Map(reps.map(row=>[row.athlete_id+':'+row.rep_number,row]));
+  return mirrored.size===rows.length&&rows.every(row=>{
+    const prior=mirrored.get(row.athlete_id+':'+row.rep_number);
+    return prior&&prior.workout_key===row.workout_key&&same(row.source_program_week,prior.source_program_week)&&same(row.distance_m,prior.distance_m);
+  });
+}
 module.exports=async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   try{
@@ -110,11 +130,6 @@ module.exports=async(req,res)=>{
         athleteMeta.set(athleteId,meta);
       }
       const locked=await completedCurrentWorkouts([...athleteMeta.values()].map(meta=>WorkoutIdentity.create({athleteId:meta.athleteId,seasonPlanId:meta.seasonPlanId,workoutCycleId:meta.workoutCycleId,week:meta.programWeek,day:meta.programDay})),c.token);
-      if(locked.length)return res.status(409).json({
-        error:'One or more athletes already completed their current MW workout. Practice Mode will not create duplicate timing results.',
-        code:'workout_already_completed',
-        athletes:locked.map(x=>({athleteId:x.athlete_id,programWeek:Number(x.program_week),programDay:Number(x.program_day),workoutKey:x.workout_key||null,completedAt:x.completed_at||null}))
-      });
       for(const row of rows){
         const meta=athleteMeta.get(row.athlete_id);
         Object.assign(row,{
@@ -125,6 +140,16 @@ module.exports=async(req,res)=>{
           program_day:meta.programDay,
           source_program_week:meta.sourceProgramWeek,
           distance_m:meta.distanceM
+        });
+      }
+      if(locked.length){
+        if(locked.length===athleteMeta.size&&await isCommittedRetry(rows,sessionId,c.user.id,c.token)){
+          return res.status(200).json({ok:true,count:rows.length,sessionId,replayed:true,intelligenceWarnings:[]});
+        }
+        return res.status(409).json({
+          error:'One or more athletes already completed their current MW workout. Practice Mode will not create duplicate timing results.',
+          code:'workout_already_completed',
+          athletes:locked.map(x=>({athleteId:x.athlete_id,programWeek:Number(x.program_week),programDay:Number(x.program_day),workoutKey:x.workout_key||null,completedAt:x.completed_at||null}))
         });
       }
       // One database RPC owns raw timing + athlete reps + workout completion.

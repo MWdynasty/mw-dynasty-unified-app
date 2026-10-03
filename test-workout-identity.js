@@ -67,6 +67,8 @@ async function run(){
     calls.push({url,opts});let data=[];
     if(url.includes('/athlete_program_state?'))data=[state];
     else if(url.includes('/workout_completions?'))data=completions;
+    else if(url.includes('/coach_practice_timing_results?'))data=rows;
+    else if(url.includes('/athlete_practice_rep_results?'))data=rows;
     else if(url.endsWith('/rpc/mw_coach_commit_practice_session')){
       const p=JSON.parse(opts.body),saved=p.p_results;
       assert.equal(p.p_session_id,'cccccccc-cccc-cccc-cccc-cccccccccccc');
@@ -88,7 +90,11 @@ async function run(){
   let result=await save();assert.equal(result.status,200,'old season does not lock current API save');
   assert.equal(rows[0].workout_key,current.workoutKey,'atomic commit persists canonical identity for an old client');
   assert.equal(athlete.rowsToCompletion(completions)['3'].s2,true,'atomic coach save is recognized by actual athlete completion reader');
-  result=await save();assert.equal(result.status,409,'same-cycle completion still locks duplicates');
+  const savedWrites=calls.filter(c=>c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length;
+  result=await save();assert.equal(result.status,200,'lost-response retry confirms the same committed session');
+  assert.equal(result.body.replayed,true);
+  assert.equal(calls.filter(c=>c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length,savedWrites,'idempotent retry does not rewrite completed history');
+  result=await save({timeSeconds:11});assert.equal(result.status,409,'completed results cannot be changed through a retry');
   completions=[];const writes=calls.filter(c=>c.opts.method==='POST'&&c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length;
   result=await save({seasonPlanId:OLD});assert.equal(result.status,409,'stale season rejected before writes');
   result=await save({workoutKey:old.workout_key});assert.equal(result.status,400,'foreign season key rejected');
