@@ -115,7 +115,7 @@ module.exports=async(req,res)=>{
         workout_cycle_id:st.season_plan_id?null:(st.workout_cycle_id||null),
         season_type:plan?.season_type||null,
         season_length_weeks:plan?.season_length_weeks||null,
-        current_day:clientDay||st.current_day||1,
+        current_day:Number(livePosition.day||clientDay||st.current_day||1),
         current_phase:livePhase||null,
         track_tier:st.track_tier||null,
         strength_tier:st.strength_tier||null,
