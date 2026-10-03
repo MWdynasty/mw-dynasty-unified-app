@@ -80,7 +80,7 @@ module.exports=async(req,res)=>{
       }));
       if(rows.some(x=>!x.athlete_id||!Number.isFinite(x.time_seconds)||x.time_seconds<=0))return res.status(400).json({error:'Invalid timing result'});
       if(rows.some(x=>(x.target_min_seconds==null)!==(x.target_max_seconds==null)||((x.target_min_seconds!=null)&&x.target_min_seconds>x.target_max_seconds)))return res.status(400).json({error:'Invalid target pace range'});
-      for(const athleteId of [...new Set(rows.map(x=>x.athlete_id))]) await rest('rpc/mw_coach_refresh_assigned_athlete_program_position',c.token,{method:'POST',body:JSON.stringify({p_athlete_id:athleteId,p_session_date:localSessionDate})});
+      for(const athleteId of [...new Set(rows.map(x=>x.athlete_id))]) await rest('rpc/mw_coach_refresh_assigned_athlete_program_position',c.token,{method:'POST',headers:{'X-MW-Time-Zone':clientTimeZone},body:JSON.stringify({p_athlete_id:athleteId,p_session_date:localSessionDate})});
       const states=await rest(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,source_program_week,season_plan_id,workout_cycle_id&athlete_id=in.${inList(results.map(x=>x.athleteId))}`,c.token);
       const stateMap=new Map(states.map(state=>[state.athlete_id,state]));
       const planIds=[...new Set(states.map(x=>x.season_plan_id).filter(Boolean))];
