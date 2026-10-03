@@ -7,6 +7,20 @@ async function rest(path,token,options={}){
   if(!r.ok)throw Object.assign(new Error(d?.message||d?.hint||'Practice timing request failed'),{status:r.status});
   return d;
 }
+function safeTimeZone(value){
+  const tz=String(value||'').trim().slice(0,80);
+  if(!tz)return 'UTC';
+  try{new Intl.DateTimeFormat('en-US',{timeZone:tz}).format(new Date());return tz}catch{return 'UTC'}
+}
+function localDateInTimeZone(timeZone,now=new Date()){
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+  const map=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+  return `${map.year}-${map.month}-${map.day}`;
+}
+function isoDayFromDate(date){
+  const d=new Date(String(date)+'T12:00:00Z').getUTCDay();
+  return d===0?7:d;
+}
 const cleanId=(v)=>String(v||'').toLowerCase().replace(/[^a-f0-9-]/g,'');
 const inList=(values)=>`(${[...new Set(values.map(cleanId).filter(Boolean))].join(',')})`;
 async function completedCurrentWorkouts(identities,token){
@@ -31,6 +45,9 @@ module.exports=async(req,res)=>{
     }
     if(req.method==='POST'){
       const b=req.body||{},results=Array.isArray(b.results)?b.results:[];
+      const clientTimeZone=safeTimeZone(b.clientTimeZone||req.headers['x-mw-time-zone']);
+      const localSessionDate=localDateInTimeZone(clientTimeZone);
+      const localProgramDay=isoDayFromDate(localSessionDate);
       const sessionId=cleanId(b.sessionId);
       if(!sessionId)return res.status(400).json({error:'Practice session id is required'});
       if(!results.length)return res.status(400).json({error:'No timing results supplied'});
@@ -40,7 +57,7 @@ module.exports=async(req,res)=>{
       const rows=results.map(x=>({
         coach_user_id:c.user.id,
         athlete_id:cleanId(x.athleteId),
-        session_date:String(x.sessionDate||new Date().toISOString().slice(0,10)),
+        session_date:localSessionDate,
         group_name:String(x.groupName||'All').slice(0,80),
         group_id:x.groupId||null,
         session_id:sessionId,
@@ -73,7 +90,8 @@ module.exports=async(req,res)=>{
         if(x.workoutCycleId&&cleanId(x.workoutCycleId)!==currentCycle)return res.status(409).json({error:'Practice training cycle changed. Reload the roster.',code:'workout_scope_changed'});
         // Old clients may omit plan metadata. A supplied plan must still match the database.
         if(seasonPlanId&&seasonPlanId!==currentPlan)return res.status(409).json({error:'Practice season changed. Reload the roster.',code:'workout_scope_changed'});
-        if(role==='coach'&&(Number(state.current_week)!==programWeek||Number(state.current_day)!==programDay))return res.status(409).json({error:'Practice session no longer matches the athlete current workout',code:'workout_scope_changed'});
+        if(role==='coach'&&Number(state.current_week)!==programWeek)return res.status(409).json({error:'Practice session no longer matches the athlete current week',code:'workout_scope_changed'});
+        if(role==='coach'&&programDay!==localProgramDay)return res.status(409).json({error:'Practice session no longer matches today in the coach local timezone',code:'workout_day_changed'});
         let identity;
         try{identity=WorkoutIdentity.create({athleteId,seasonPlanId:currentPlan,workoutCycleId:currentCycle,week:programWeek,day:programDay})}catch(e){return res.status(400).json({error:e.message})}
         if(!WorkoutIdentity.acceptsInput(workoutKey,identity))return res.status(400).json({error:'Practice workout identity does not match the athlete current season/workout'});
