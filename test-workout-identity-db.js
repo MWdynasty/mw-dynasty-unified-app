@@ -51,18 +51,29 @@ async function apiSave(db,identity){
   :require(name.replace('../../../','./')),fetch:async(url,options={})=>{
    assert.ok(url.startsWith('https://fixture.invalid/rest/v1/'));
    const target=new URL(url),path=target.pathname.split('/').pop();let data;
-   if(path==='athlete_program_state')data=(await db.query('select * from public.athlete_program_state where athlete_id=$1',[identity.athleteId])).rows;
-   else if(path==='athlete_season_plans')data=identity.seasonPlanId?(await db.query('select * from public.athlete_season_plans where id=$1',[identity.seasonPlanId])).rows:[];
-   else if(path==='workout_completions')data=(await db.query("select * from public.workout_completions where athlete_id=$1 and program_week=$2 and program_day=$3 and workout_key=any($4::text[]) and completion_status='completed'",[identity.athleteId,identity.week,identity.day,Identity.readKeys(identity)])).rows;
-   else if(path==='mw_coach_refresh_assigned_athlete_program_position'){
+   if(path==='athlete_program_state'){
+    data=(await db.query('select * from public.athlete_program_state where athlete_id=$1',[identity.athleteId])).rows;
+   }else if(path==='athlete_season_plans'){
+    data=identity.seasonPlanId?(await db.query('select * from public.athlete_season_plans where id=$1',[identity.seasonPlanId])).rows:[];
+   }else if(path==='workout_completions'){
+    data=(await db.query("select * from public.workout_completions where athlete_id=$1 and program_week=$2 and program_day=$3 and workout_key=any($4::text[]) and completion_status='completed'",[identity.athleteId,identity.week,identity.day,Identity.readKeys(identity)])).rows;
+   }else if(path==='mw_coach_refresh_assigned_athlete_program_position'){
     data={ok:true};
    }else if(path==='mw_coach_commit_practice_session'){
     const p=JSON.parse(options.body),saved=Array.isArray(p.p_results)?p.p_results:[],synced=[];
     for(const row of saved){
      const columns=Object.keys(row);assert.ok(columns.every(c=>/^[a-z_]+$/.test(c)));
-     const update=columns.map(c=>`${c}=excluded.${c}`).join(',');
-     const query=`insert into public.coach_practice_timing_results(${columns.join(',')}) values (${columns.map((_,i)=>'
-    const p=JSON.parse(options.body);data=(await scalar(db,'select public.mw_coach_sync_practice_session_to_athlete($1,$2,$3,$4,$5,$6,$7,$8,$9) as result',[p.p_session_id,p.p_athlete_id,p.p_program_week,p.p_program_day,p.p_source_program_week,p.p_workout_key,p.p_distance_m,p.p_season_plan_id,p.p_workout_cycle_id])).result;
+     const update=columns.map(c=>c+'=excluded.'+c).join(',');
+     const placeholders=columns.map((_,i)=>'$'+(i+1)).join(',');
+     const query='insert into public.coach_practice_timing_results('+columns.join(',')+') values ('+placeholders+') on conflict(session_id,athlete_id,rep_number) do update set '+update+' returning *';
+     await db.query(query,Object.values(row));
+    }
+    for(const row of saved){
+     if(synced.some(x=>x.athlete_id===row.athlete_id))continue;
+     const out=(await scalar(db,'select public.mw_coach_sync_practice_session_to_athlete($1,$2,$3,$4,$5,$6,$7,$8,$9) as result',[p.p_session_id,row.athlete_id,row.program_week,row.program_day,row.source_program_week,row.workout_key,row.distance_m,row.season_plan_id,row.workout_cycle_id])).result;
+     synced.push({athlete_id:row.athlete_id,...out});
+    }
+    data={ok:true,count:saved.length,synced};
    }else if(path==='mw_coach_sync_practice_intelligence'){
     const p=JSON.parse(options.body);data=(await scalar(db,'select public.mw_coach_sync_practice_intelligence($1,$2,$3) as result',[p.p_session_id,p.p_athlete_id,p.p_workout_key])).result;
    }else throw new Error('Unexpected fixture request '+path);
