@@ -20,7 +20,7 @@ async function loadPerformanceContext(c){
   const id=encodeURIComponent(aid);
   const [workouts,pace,strength]=await Promise.all([
     restRows(`workout_completions?athlete_id=eq.${id}&select=program_week,program_day,completion_status,session_rpe,pace_check_status,pace_reps_total,pace_reps_hit,scheduled_date,started_at,last_activity_at,completed_at&order=last_activity_at.desc&limit=16`,c.token),
-    restRows(`athlete_pace_logs?athlete_id=eq.${id}&select=program_week,program_day,rep_number,distance_m,target_seconds,actual_seconds,intensity_percent,recorded_at&order=recorded_at.desc&limit=32`,c.token),
+    restRows(`athlete_practice_rep_results?athlete_id=eq.${id}&select=program_week,program_day,workout_key,season_plan_id,workout_cycle_id,rep_number,distance_m,target_seconds,time_seconds,pace_status,mw_intent,mw_interpretation,entry_source,timing_source,result_status,recorded_at&order=recorded_at.desc&limit=32`,c.token).then(rows=>rows.map(x=>({...x,actual_seconds:x.time_seconds}))),
     restRows(`athlete_strength_session_logs?athlete_id=eq.${id}&select=program_week,program_day,exercise_name,set_number,reps_completed,target_load,actual_load,weight_unit,set_rpe,recorded_at&order=recorded_at.desc&limit=24`,c.token)
   ]);
   return {recentWorkouts:workouts,recentPaceLogs:pace,recentStrengthLogs:strength};
