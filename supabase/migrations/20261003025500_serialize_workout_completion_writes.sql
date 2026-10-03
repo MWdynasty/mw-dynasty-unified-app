@@ -10,9 +10,11 @@ begin
   if new.athlete_id is null or new.workout_key is null then
     return new;
   end if;
-  perform pg_catalog.pg_advisory_xact_lock(
-    pg_catalog.hashtextextended(new.athlete_id::text || '|' || new.workout_key,0)
-  );
+  if new.completion_status='completed' then
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtextextended(new.athlete_id::text || '|' || new.workout_key,0)
+    );
+  end if;
   return new;
 end
 $function$;
@@ -48,6 +50,7 @@ declare
   v_current_cycle uuid;
   v_key text;
   v_locked_key text;
+  v_session_date date;
   v_total integer;
   v_hit integer;
   v_first_at timestamptz;
@@ -91,9 +94,8 @@ begin
     raise exception 'Athlete program state not found';
   end if;
 
-  if v_role='coach'
-     and (v_current_week is distinct from p_program_week or v_current_day is distinct from p_program_day) then
-    raise exception 'Practice session no longer matches the athlete current workout';
+  if v_role='coach' and v_current_week is distinct from p_program_week then
+    raise exception 'Practice session no longer matches the athlete current week';
   end if;
 
   -- The endpoint resolves older clients' omitted plan metadata before calling us.
@@ -132,9 +134,8 @@ begin
     raise exception 'Athlete program state not found';
   end if;
 
-  if v_role='coach'
-     and (v_current_week is distinct from p_program_week or v_current_day is distinct from p_program_day) then
-    raise exception 'Practice session no longer matches the athlete current workout';
+  if v_role='coach' and v_current_week is distinct from p_program_week then
+    raise exception 'Practice session no longer matches the athlete current week';
   end if;
 
   if v_current_plan is not null then v_current_cycle:=null; end if;
@@ -158,6 +159,20 @@ begin
   end if;
   if v_key is distinct from v_locked_key then
     raise exception 'Practice workout identity changed while saving; retry';
+  end if;
+
+  select min(r.session_date)
+    into v_session_date
+  from public.coach_practice_timing_results r
+  where r.session_id=p_session_id
+    and r.athlete_id=p_athlete_id
+    and (r.coach_user_id=v_uid or v_role in ('admin','founder_owner'));
+
+  if v_session_date is null then
+    raise exception 'Practice session date is required';
+  end if;
+  if extract(isodow from v_session_date)::integer is distinct from p_program_day then
+    raise exception 'Practice session day does not match the local training date';
   end if;
 
   -- A completed workout is immutable across different practice sessions.
