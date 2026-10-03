@@ -47,7 +47,8 @@ function buildStrengthSchedule(state,plan=null){
 async function refresh(req){
   try{
     const {token}=await authenticate(req);
-    const headers={apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'};
+    const clientTimeZone=String(req.headers['x-mw-time-zone']||'').slice(0,80);
+    const headers={apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json',...(clientTimeZone?{'X-MW-Time-Zone':clientTimeZone}:{})};
     const plan=await reconcileSeasonPlan(token);
     const refreshRpc=plan?.id?'mw_refresh_own_season_program_state':'mw_refresh_own_program_state';
     const stateRes=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${refreshRpc}`,{method:'POST',headers,body:'{}'});
@@ -102,7 +103,7 @@ module.exports=async function handler(req,res){
       });
     }
     if(c.athlete&&c.token){
-      const authority=await resolveAuthoritativeState(c);
+      const authority=await resolveAuthoritativeState(c,{timeZone:String(req.headers['x-mw-time-zone']||'').slice(0,80)||null});
       const storedProgramState=c.programState?{...c.programState}:null;
       c.programState=applyAuthoritativeState(c.programState,authority);
       c.authoritativeProgram={
