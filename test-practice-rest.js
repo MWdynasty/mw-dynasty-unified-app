@@ -143,6 +143,7 @@ async function run() {
   assert.deepEqual(coachSaves[0].results.map(r=>r.timeSeconds),[9,11],'coach pause/resume preserves finish times');
   assert.deepEqual(coachSaves[0].results.map(r=>r.mwInterpretation),['above_target','above_target'],'technical/speed reps faster than target are recorded as quality speed, not TOO FAST');
   assert.deepEqual(coachSaves[0].results.map(r=>r.paceStatus),['on_pace','on_pace'],'quality-speed reps remain positive pace outcomes');
+  assert.ok(coachSaves[0].results.every(r=>r.mwIntent==='technical'),'coach save preserves workout intent for downstream Coach MW interpretation');
   c.el('practiceTimerStart').click();c.advance(3000);c.el('practiceDNF').click();
   assert.equal(c.el('practiceNextRep').disabled,true,'Next Rep stays locked until the full selected group is accounted for');
   assert.equal(c.el('practiceFinishSession').disabled,false,'DNF enables session save');
