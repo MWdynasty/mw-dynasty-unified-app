@@ -201,7 +201,7 @@ includes('server/api/coach/practice-timing.js',"code:'rep_limit_exceeded'",'Coac
 includes('server/api/coach/practice-timing.js','rpc/mw_coach_commit_practice_session','Coach Practice saves must use the atomic canonical-history commit');
 includes('server/api/coach/practice-timing.js','p_results:rows','Coach Practice atomic commit must carry canonical workout identity in each result');
 includes('supabase/migrations/20261003025500_serialize_workout_completion_writes.sql','mw_coach_sync_practice_session_to_athlete','Atomic Practice commit must sync into canonical athlete history');
-includes('coach/app.js','seasonPlanId:athletes.find(a=>a.id===x.athleteId)?.season_plan_id||null','Coach Practice save must include athlete season/workout context');
+includes('coach/app.js','seasonPlanId:practicePlans[x.athleteId]?.seasonPlanId||null','Coach Practice save must preserve the captured athlete season/workout context');
 includes('athlete/index.html',"source=g.some(x=>x.entry_source==='coach')?'COACH TIMED':'ATHLETE TIMED'",'Athlete Practice history must identify Coach-timed sessions');
 
 includes('athlete/index.html','WEIGHT ROOM PROGRESSION','Athlete Progress must include weight-room progression');
@@ -259,7 +259,7 @@ includes('supabase/migrations/20260929_grant_coach_practice_timing_authenticated
 
 includes('coach/app.js',"function coachPracticeWorkoutComplete(a)",'Coach Practice Mode completion lock helper missing');
 includes('coach/app.js',"WORKOUT COMPLETE",'Coach Practice Mode must visibly lock completed athlete workouts');
-includes('coach/app.js',"if(coachPracticeWorkoutComplete(a))return false;",'Coach Practice Mode must exclude completed athletes from live timing');
+includes('coach/app.js',"if(coachPracticeWorkoutComplete(a)||practicePlans[a.id]?.error)return false;",'Coach Practice Mode must exclude completed athletes and unavailable prescriptions from live timing');
 includes('coach/app.js',"const timable=()=>visible().filter(a=>athleteEligibleForRep(a))",'Coach Practice Mode must gate live timing through authoritative eligibility');
 includes('server/api/coach/practice-timing.js',"completedCurrentWorkouts",'Coach practice timing API must check authoritative workout completion');
 includes('server/api/coach/practice-timing.js',"workout_already_completed",'Coach practice timing API must reject duplicate completed-workout timing');

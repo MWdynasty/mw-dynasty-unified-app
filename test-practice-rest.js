@@ -103,22 +103,30 @@ async function run() {
   assert.equal(saved[3].rep_number,2);assert.equal(saved[3].time_seconds,14);
   assert.equal((a.el('mwPracticeRepLog').innerHTML.match(/mwPracticeRepRow/g)||[]).length,2);
   a.click('mwPracticeSave');await a.flush();assert.equal(a.ctx.mwPracticeProgressCache.length,2,'completion contains only the corrected reps');
+  assert.deepEqual(a.ctx.mwPracticeProgressCache.map(r=>r.rep_number),[1,2],'athlete completion history keeps one canonical result per prescribed rep');
   assert.equal(a.el('mwPracticeRetry').hidden,true,'completed workouts stay protected');
   a.click('mwPracticeExit');await a.flush();assert.equal(a.jobs.size,0,'exiting stops both clocks');
 
   const athleteA='11111111-1111-1111-1111-111111111111',athleteB='22222222-2222-2222-2222-222222222222';
   const c=fixture(), finishes=[athleteA,athleteB].map(id=>{const b=c.el('finish-'+id);b.dataset.finishAthlete=id;return b});
   c.document.querySelectorAll=s=>s==='[data-finish-athlete]'?finishes:[];
-  const coachSaves=[];
+  const coachSaves=[];let rosterReads=0,rosterDay=2,rosterCycle=null;
   Object.assign(c.ctx,{
     MWWorkoutIdentity:require('./lib/mw-workout-identity'),
     pageBase:()=>{},hydrateCoachTodayPractice:()=>{},openPage:()=>{},experience:'performance',
-    escapeHtml:x=>String(x),toast:()=>{},mwSessionToken:()=>'',mwClientTimeZone:()=> 'America/Chicago',mwLocalIsoDate:()=> '2026-10-03',prompt:()=> '12.34',
-    fetchCoachRoster:async()=>({athletes:[{id:athleteA,name:'Runner A'},{id:athleteB,name:'Runner B'}]}),
+    escapeHtml:x=>String(x),toast:()=>{},mwSessionToken:()=>'',mwClientTimeZone:()=> 'America/Chicago',mwLocalIsoDate:()=> '2026-09-29',prompt:()=> '12.34',
+    fetchCoachRoster:async()=>{rosterReads++;return {athletes:[{id:athleteA,name:'Runner A',current_week:1,current_day:rosterDay,workout_cycle_id:rosterCycle},{id:athleteB,name:'Runner B',current_week:1,current_day:rosterDay,workout_cycle_id:rosterCycle}]}},
+    coachProgramData:async()=>({track:{sessions:[{day:2,title:'Technical speed',prescribedWork:'3 x 100m @ 80%'}]}}),
+    mwCoachEventPr:()=>({time_seconds:12}),
     fetch:async(url,opts)=>{coachSaves.push(JSON.parse(opts.body));return {ok:true,json:async()=>({count:2})}}
   });
   c.el('practiceEventGroup').value='All Sprinters';
   const coachApp=fs.readFileSync('coach/app.js','utf8');
+  vm.runInContext(coachApp.slice(coachApp.indexOf('function coachSessionDayNumber('),coachApp.indexOf('function coachTrainingDayLabel(')),c.ctx);
+  vm.runInContext(coachApp.slice(coachApp.indexOf('function coachPracticeTier('),coachApp.indexOf('function coachTodaySessionHTML(')),c.ctx);
+  vm.runInContext(coachApp.slice(coachApp.indexOf('function mwCoachPracticePrescription('),coachApp.indexOf('function mwCoachPracticeRecommendedTarget(')),c.ctx);
+  // An explicit PR-derived target keeps this timer test independent of target-model changes.
+  c.ctx.mwCoachPracticeRecommendedTarget=()=>15;
   const coachHelpers=coachApp.split('function coachPracticeWorkoutComplete(a){')[1].split('async function practiceModePage(){')[0];
   const coach=coachApp.split('async function practiceModePage(){')[1].split('\nfunction coreDashboard')[0];
   vm.runInContext('function coachPracticeWorkoutComplete(a){'+coachHelpers+'async function practiceModePage(){'+coach,c.ctx);
@@ -138,7 +146,11 @@ async function run() {
   c.el('practiceTimerStart').click();c.advance(9000);finishes[0].click();c.advance(2000);finishes[1].click();
   await c.el('practiceFinishSession').click();
   assert.equal(coachSaves[0].results.length,2,'coach retry replaces earlier results without duplicates');
+  assert.ok(coachSaves[0].results.every(r=>r.workoutKey===c.ctx.MWWorkoutIdentity.create({athleteId:r.athleteId,week:1,day:2}).workoutKey&&r.programWeek===1&&r.programDay===2),'coach save carries the prescribed canonical workout identity for athlete history sync');
   assert.deepEqual(coachSaves[0].results.map(r=>r.timeSeconds),[9,11],'coach pause/resume preserves finish times');
+  assert.deepEqual(coachSaves[0].results.map(r=>r.mwInterpretation),['above_target','above_target'],'technical/speed reps faster than target are recorded as quality speed, not TOO FAST');
+  assert.deepEqual(coachSaves[0].results.map(r=>r.paceStatus),['on_pace','on_pace'],'quality-speed reps remain positive pace outcomes');
+  assert.ok(coachSaves[0].results.every(r=>r.mwIntent==='technical'),'coach save preserves workout intent for downstream Coach MW interpretation');
   c.el('practiceTimerStart').click();c.advance(3000);c.el('practiceDNF').click();
   assert.equal(c.el('practiceNextRep').disabled,true,'Next Rep stays locked until the full selected group is accounted for');
   assert.equal(c.el('practiceFinishSession').disabled,false,'DNF enables session save');
@@ -147,6 +159,37 @@ async function run() {
   await c.el('practiceFinishSession').click();
   assert.deepEqual(coachSaves[1].results.map(r=>r.resultStatus),['dnf','manual'],'DNF and manual statuses persist in save payload');
   assert.equal(coachSaves[1].results[1].timingSource,'manual','manual time keeps manual provenance');
+  assert.equal(coachSaves[1].results[1].mwIntent,'technical');
+  assert.equal(coachSaves[1].results[1].mwInterpretation,'above_target','manual technical reps retain the same positive interpretation as timed reps');
+  assert.notEqual(coachSaves[0].sessionId,coachSaves[1].sessionId,'each new practice save gets a fresh session identity');
+
+  // Background refresh must not attach timed reps to a newly assigned cycle.
+  c.el('practiceTimerStart').click();c.advance(10000);finishes[0].click();finishes[1].click();
+  const readsBefore=rosterReads;
+  rosterCycle='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  await c.ctx.__mwCoachPracticeFocus();
+  assert.equal(rosterReads,readsBefore,'finished but unsaved results keep the roster snapshot');
+  c.advance(60000);c.el('practiceNextRep').click();c.el('practiceTimerStart').click();
+  c.advance(10000);finishes[0].click();finishes[1].click();c.advance(3000);
+  await c.el('practiceFinishSession').click();
+  assert.ok(coachSaves[2].results.every(r=>r.workoutCycleId===null),'pending reps retain their original cycle');
+  assert.ok(coachSaves[2].results.filter(r=>r.repNumber===2).every(r=>r.actualRestSeconds===60),'recovery records the interval before the rep, not the new rest after it');
+
+  // Weekend identities stay on the weekend rather than borrowing Friday's plan.
+  rosterDay=6;await c.ctx.practiceModePage();
+  c.el('practiceTimerStart').click();c.advance(10000);finishes[0].click();finishes[1].click();
+  let releaseSave;
+  c.ctx.fetch=async(url,opts)=>{coachSaves.push(JSON.parse(opts.body));await new Promise(resolve=>{releaseSave=resolve});throw new Error('Connection interrupted')};
+  const pendingSave=c.el('practiceFinishSession').click();
+  await c.flush();c.el('practiceFalseStart').click();c.el('practiceManualTime').click();
+  c.el('practiceFinishSession').click();
+  assert.equal(coachSaves.length,4,'double save and editing controls cannot mutate an in-flight save');
+  releaseSave();await pendingSave;
+  assert.equal(c.el('practiceFinishSession').textContent,'RETRY SAVE');
+  c.ctx.fetch=async(url,opts)=>{coachSaves.push(JSON.parse(opts.body));return {ok:true,json:async()=>({count:2,replayed:true})}};
+  await c.el('practiceFinishSession').click();
+  assert.deepEqual(coachSaves[4],coachSaves[3],'retry sends the same session and unmodified timing evidence');
+  assert.ok(coachSaves[4].results.every(r=>r.programDay===6&&r.workoutKey.includes(':d6:')&&r.distanceM===null),'Saturday does not inherit Friday prescription or identity');
   console.log('PASS: Rest timer controls, background elapsed time, athlete rep transitions, coach group recovery, pause/resume timing, current-rep reset, previous-rep replacement and cleanup.');
 }
 run().catch(e=>{console.error(e);process.exitCode=1});
