@@ -63,7 +63,7 @@ async function run(){
   // Execute the real API handler with a bounded REST fixture, never a live service.
   const calls=[],rows=[];
   let completions=[old,unscoped],state={athlete_id:A,current_week:3,current_day:2,season_plan_id:P};
-  const context={require:name=>name==='../../lib/mw-coach-auth'?{SUPABASE_URL:'https://fixture.invalid',SUPABASE_KEY:'fixture',getAccountContext:async()=>({token:'fixture',user:{id:B},profile:{role:'coach'}})}:name==='../../lib/mw-season-calendar'?require('./server/lib/mw-season-calendar'):name==='../../lib/mw-training-position'?require('./server/lib/mw-training-position'):require(name.replace('../../../','./')),module:{exports:{}},console,fetch:async(url,opts={})=>{
+  const context={require:name=>name==='../../lib/mw-coach-auth'?{SUPABASE_URL:'https://fixture.invalid',SUPABASE_KEY:'fixture',getAccountContext:async()=>({token:'fixture',user:{id:B},profile:{role:'coach'}})}:name==='../../lib/mw-season-calendar'?require('./server/lib/mw-season-calendar'):name==='../../lib/mw-training-position'?{programPosition:(state)=>({week:Number(state.current_week)||1,day:Number(state.current_day)||1,phase:Number(state.current_phase)||1,sourceWeek:Number(state.source_program_week||state.current_week)||1,status:state.program_status||'active'})}:require(name.replace('../../../','./')),module:{exports:{}},console,fetch:async(url,opts={})=>{
     calls.push({url,opts});let data=[];
     if(url.includes('/athlete_program_state?'))data=[state];
     else if(url.includes('/workout_completions?'))data=completions;
