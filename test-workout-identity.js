@@ -19,9 +19,18 @@ function coachReader(){
   vm.runInContext(source.slice(source.indexOf('function coachPracticeWorkoutComplete('),source.indexOf('async function practiceModePage(')),context);
   return context;
 }
+function notificationReader(){
+  const source=fs.readFileSync('athlete/index.html','utf8'),context={};vm.createContext(context);
+  vm.runInContext(source.slice(source.indexOf('function mwNotificationWorkoutPosition('),source.indexOf('function render()',source.indexOf('function mwNotificationWorkoutPosition('))),context);
+  return context;
+}
 function completion(identity,key=identity.workoutKey){return {athlete_id:identity.athleteId,season_plan_id:identity.seasonPlanId,workout_cycle_id:identity.workoutCycleId,program_week:identity.week,program_day:identity.day,workout_key:key,completion_status:'completed'}}
 async function run(){
-  const athlete=athleteReader(),coach=coachReader();
+  const athlete=athleteReader(),coach=coachReader(),notifications=notificationReader();
+  assert.deepEqual({...notifications.mwNotificationWorkoutPosition(current.workoutKey)},{week:3,day:2},'canonical notification opens its workout');
+  assert.deepEqual({...notifications.mwNotificationWorkoutPosition(`mw-season-${P}-w3-d2`)},{week:3,day:2},'season legacy notification still opens');
+  assert.deepEqual({...notifications.mwNotificationWorkoutPosition('mw-track-w3-d2')},{week:3,day:2},'bare legacy notification still opens');
+  assert.equal(notifications.mwNotificationWorkoutPosition(current.workoutKey.replace(':track',':track-extra')),null,'non-track workout notifications do not misroute');
   const roster={id:A,season_plan_id:P,current_week:3,current_day:2};
   assert.equal(athlete.workoutKey(3,2),coach.coachPracticeIdentity(roster).workoutKey,'coach and athlete share the actual shipped helper');
   assert.notEqual(current.workoutKey,Identity.create({athleteId:B,seasonPlanId:P,week:3,day:2}).workoutKey,'athlete participates in identity');
