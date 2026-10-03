@@ -20,6 +20,7 @@ async function fixture(){
  await db.exec(`alter table public.coach_practice_timing_results add column session_id uuid,add column division text,add column group_id uuid,add column lane_number integer,add column timing_source text,add column result_status text,add column target_min_seconds numeric,add column target_max_seconds numeric,add column actual_rest_seconds numeric,add column prescribed_rest_seconds numeric;grant select,insert,update on public.coach_practice_timing_results to authenticated;`);
  await db.exec(fs.readFileSync('supabase/migrations/20260929_unify_coach_athlete_practice_history.sql','utf8'));
  await db.exec(fs.readFileSync('supabase/migrations/20260929_persist_practice_workout_intelligence.sql','utf8'));
+ await db.exec("alter table public.coach_practice_timing_results add column if not exists workout_key text,add column if not exists season_plan_id uuid,add column if not exists workout_cycle_id uuid,add column if not exists program_week integer,add column if not exists program_day integer,add column if not exists source_program_week integer,add column if not exists distance_m integer,add column if not exists mw_intent text,add column if not exists mw_interpretation text;");
  await db.exec(fs.readFileSync('supabase/migrations/20260928_sync_completed_workout_to_coach.sql','utf8'));
  await db.exec(`create function private.mw_phase_for_week(integer) returns integer language sql as $$ select 1 $$;`);
  await db.exec(`insert into auth.users values ('${AU}'),('${C}'),('${OTHER}');
