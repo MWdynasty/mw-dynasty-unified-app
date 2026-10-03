@@ -24,6 +24,10 @@ async function run(){
   await db.exec(read('20261003190541_immutable_completed_practice_retries.sql'));
   assert.deepEqual(await security(),before,'function ownership, permissions and security configuration stay unchanged');
 
+  await db.exec(read('20261003191637_protect_completed_practice_table_evidence.sql'));
+  assert.equal((await scalar(db,"select has_function_privilege('authenticated','private.mw_protect_completed_practice_evidence()','execute') as allowed")).allowed,false);
+  // Match production coach DELETE grants/policy in this disposable fixture.
+  await db.exec("grant delete on public.coach_practice_timing_results to authenticated; create policy test_coach_delete on public.coach_practice_timing_results for delete to authenticated using(coach_user_id=auth.uid());");
   await db.exec(`update public.athlete_program_state set season_plan_id=null,start_date=current_date-7,starting_week=null,current_week=2,current_day=1,program_status='active';`);
   await role(db,AU);
   for(let i=0;i<3;i++){
@@ -71,7 +75,17 @@ async function run(){
   assert.equal(rep.mw_intent,'technical');assert.equal(rep.mw_interpretation,'above_target');assert.equal(rep.pace_status,'on_pace');assert.equal(rep.coach_session_id,S);
   const completed=await scalar(db,'select completion_status,pace_reps_total,pace_reps_hit,completed_at from public.workout_completions where workout_key=$1',[key]);
   assert.equal(completed.completion_status,'completed');assert.equal(completed.pace_reps_total,1);assert.equal(completed.pace_reps_hit,1);
+  await assert.rejects(db.query('update public.athlete_practice_rep_results set time_seconds=8.5 where workout_key=$1',[key]),/immutable/);
+  await assert.rejects(db.query("update public.athlete_practice_rep_results set mw_intent='recovery',coach_session_id=null where workout_key=$1",[key]),/immutable/);
+  await assert.rejects(db.query('insert into public.athlete_practice_rep_results(athlete_id,workout_key,program_week,program_day,rep_number,time_seconds,season_plan_id) values($1,$2,3,$3,2,8.5,$4)',[A,key,day,P]),/immutable/);
+  const draftKey=Identity.create({athleteId:A,seasonPlanId:P,week:4,day}).workoutKey;
+  await db.query('insert into public.athlete_practice_rep_results(athlete_id,workout_key,program_week,program_day,rep_number,time_seconds,season_plan_id) values($1,$2,4,$3,1,12,$4)',[A,draftKey,day,P]);
+  await db.query('update public.athlete_practice_rep_results set time_seconds=11 where workout_key=$1',[draftKey]);
+  assert.equal(Number((await scalar(db,'select time_seconds from public.athlete_practice_rep_results where workout_key=$1',[draftKey])).time_seconds),11,'unfinished athlete reps remain correctable');
   await role(db,C);
+  await assert.rejects(db.query('update public.coach_practice_timing_results set time_seconds=8.5 where session_id=$1',[S]),/immutable/);
+  await assert.rejects(db.query('delete from public.coach_practice_timing_results where session_id=$1',[S]),/immutable/);
+  await db.query('select public.mw_coach_sync_practice_intelligence($1,$2,$3)',[S,A,key]);
   const receipt=(await commit([result])).rows[0].result;assert.equal(receipt.replayed,true);
   for(const patch of [{time_seconds:8.5},{mw_intent:'recovery'},{mw_interpretation:'below_target'},{pace_status:'slow'},{source_program_week:13},{distance_m:200},{session_date:'2020-01-01'}])await assert.rejects(commit([{...result,...patch}]),/immutable/);
   await assert.rejects(commit([result,{...result,rep_number:2}]),/immutable/);

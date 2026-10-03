@@ -81,7 +81,7 @@ module.exports=async(req,res)=>{
         athlete_id:cleanId(x.athleteId),
         session_date:localSessionDate,
         group_name:String(x.groupName||'All').slice(0,80),
-        group_id:x.groupId||null,
+        group_id:x.groupId?String(x.groupId).toLowerCase():null,
         session_id:sessionId,
         division:['boys','girls','open'].includes(x.division)?x.division:null,
         lane_number:Number.isInteger(Number(x.laneNumber))&&Number(x.laneNumber)>=1&&Number(x.laneNumber)<=9?Number(x.laneNumber):null,

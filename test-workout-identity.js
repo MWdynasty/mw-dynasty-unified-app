@@ -85,7 +85,7 @@ async function run(){
   vm.createContext(context);vm.runInContext(fs.readFileSync('server/api/coach/practice-timing.js','utf8'),context);
   async function save(overrides={}){
     const result={};const res={setHeader(){},status(code){result.status=code;return this},json(body){result.body=body;return this}};
-    await context.module.exports({method:'POST',headers:{},body:{sessionId:'cccccccc-cccc-cccc-cccc-cccccccccccc',results:[{athleteId:A,programWeek:3,programDay:2,sourceProgramWeek:12,seasonPlanId:P,workoutKey:'mw-track-w3-d2',repNumber:1,prescribedReps:2,timeSeconds:12,...overrides}]}},res);return result;
+    await context.module.exports({method:'POST',headers:{},body:{sessionId:'cccccccc-cccc-cccc-cccc-cccccccccccc',results:[{athleteId:A,programWeek:3,programDay:2,sourceProgramWeek:12,seasonPlanId:P,workoutKey:'mw-track-w3-d2',repNumber:1,prescribedReps:2,timeSeconds:12,groupId:'ABCDEFAB-1234-4321-ABCD-ABCDEFABCDEF',...overrides}]}},res);return result;
   }
   let result=await save();assert.equal(result.status,200,'old season does not lock current API save');
   assert.equal(rows[0].workout_key,current.workoutKey,'atomic commit persists canonical identity for an old client');
@@ -93,6 +93,8 @@ async function run(){
   const savedWrites=calls.filter(c=>c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length;
   result=await save();assert.equal(result.status,200,'lost-response retry confirms the same committed session');
   assert.equal(result.body.replayed,true);
+  assert.equal(rows[0].group_id,'abcdefab-1234-4321-abcd-abcdefabcdef');
+  result=await save({groupId:'abcdefab-1234-4321-abcd-abcdefabcdef'});assert.equal(result.status,200,'UUID casing does not change the saved receipt');
   assert.equal(calls.filter(c=>c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length,savedWrites,'idempotent retry does not rewrite completed history');
   result=await save({timeSeconds:11});assert.equal(result.status,409,'completed results cannot be changed through a retry');
   state.current_day=3;state.current_week=4;
