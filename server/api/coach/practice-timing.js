@@ -121,7 +121,7 @@ module.exports=async(req,res)=>{
       }
       // One database RPC owns raw timing + athlete reps + workout completion.
       // Any failure rolls the entire session back instead of leaving a partial save.
-      const committed=await rest('rpc/mw_coach_commit_practice_session',c.token,{method:'POST',body:JSON.stringify({
+      const committed=await rest('rpc/mw_coach_commit_practice_session',c.token,{method:'POST',headers:{'X-MW-Time-Zone':clientTimeZone},body:JSON.stringify({
         p_session_id:sessionId,
         p_results:rows
       })});
