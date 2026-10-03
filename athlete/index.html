@@ -4346,10 +4346,17 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
     const n=items.filter(x=>!x.read_at).length,b=document.getElementById('mwAthleteNotificationBadge');
     if(!b)return;const alerts=(window.getPrefs?.().messageAlerts||'on')!=='off';b.hidden=!alerts||n<1;b.textContent=n>99?'99+':String(n);
   }
+  function mwNotificationWorkoutPosition(value){
+    const id=String(value||'');
+    const canonical=id.match(/^mw-workout-v1:[0-9a-f-]+:(?:mw-41|(?:season|cycle):[0-9a-f-]+):w(\d+):d(\d+):track$/i);
+    const legacy=id.match(/^mw-track-w(\d+)-d(\d+)$/)||id.match(/^mw-season-[0-9a-f-]+-w(\d+)-d(\d+)$/i);
+    const m=canonical||legacy;
+    return m?{week:Number(m[1]),day:Number(m[2])}:null;
+  }
   function render(){
     const wrap=document.getElementById('mwAthleteNotificationList');if(!wrap)return;
     wrap.innerHTML=items.length?items.map(n=>`<button type="button" class="mwAthleteNotificationRow ${n.read_at?'':'unread'}" data-mw-notification="${esc(n.id)}" data-mw-action="${esc(n.action_view||'home')}"><div><b>${esc(n.title)}</b><span>${esc(n.body)}</span></div><small>${new Date(n.created_at).toLocaleDateString([], {month:'short',day:'numeric'})}</small></button>`).join(''):'<div class="lockNote">You’re all caught up. New MW alerts will appear here.</div>';
-    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const id=String(n.entity_id||''),m=id.match(/^mw-track-w(\d+)-d(\d+)$/)||id.match(/^mw-season-[0-9a-f-]+-w(\d+)-d(\d+)$/i);if(m)setTimeout(()=>window.mwOpenPracticeFor?.(Number(m[1]),Number(m[2])),80)}if(n?.notification_type==='strength_incomplete'){const id=String(n.entity_id||''),m=id.match(/^mw-strength-w(\d+)-d(\d+)$/)||id.match(/^mw-season-strength-[0-9a-f-]+-w(\d+)-d(\d+)$/i);if(m)setTimeout(()=>window.mwOpenStrengthSessionFor?.(Number(m[1]),Number(m[2])),80)}});
+    wrap.querySelectorAll('[data-mw-notification]').forEach(btn=>btn.onclick=async()=>{const n=items.find(x=>x.id===btn.dataset.mwNotification);try{await request('POST',{action:'mark_read',id:btn.dataset.mwNotification});if(n)n.read_at=new Date().toISOString();updateBadge();render()}catch{}const view=btn.dataset.mwAction||'home';window.openView?.(view,true);if(n?.notification_type==='workout_incomplete'){const pos=mwNotificationWorkoutPosition(n.entity_id);if(pos)setTimeout(()=>window.mwOpenPracticeFor?.(pos.week,pos.day),80)}if(n?.notification_type==='strength_incomplete'){const id=String(n.entity_id||''),m=id.match(/^mw-strength-w(\d+)-d(\d+)$/)||id.match(/^mw-season-strength-[0-9a-f-]+-w(\d+)-d(\d+)$/i);if(m)setTimeout(()=>window.mwOpenStrengthSessionFor?.(Number(m[1]),Number(m[2])),80)}});
   }
   async function load(){try{const d=await request();if(!d)return;items=Array.isArray(d.items)?d.items:[];updateBadge();render()}catch(e){const wrap=document.getElementById('mwAthleteNotificationList');if(wrap)wrap.innerHTML='<div class="lockNote">'+esc(e.message)+'</div>'}}
   document.getElementById('mwAthleteNotificationBell')?.addEventListener('click',()=>{window.openView?.('notifications',true);load()});
