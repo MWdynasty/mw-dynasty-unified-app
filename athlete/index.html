@@ -4142,7 +4142,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     send=async function(t){
       t=(t||document.querySelector('#q').value).trim();if(!t)return;add(t,'me');document.querySelector('#q').value='';conversation.push({role:'user',content:t});saveConversation();add('Coach MW is thinking…','coach');const bubble=document.querySelector('#chat').lastElementChild;
       try{
-        const request=()=>fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify({messages:conversation})});
+        const request=()=>fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token()},body:JSON.stringify({messages:conversation,clientTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone||null})});
         let r=await request();
         if(r.status===401&&mwSession?.refresh_token){
           const rr=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({refresh_token:mwSession.refresh_token})});

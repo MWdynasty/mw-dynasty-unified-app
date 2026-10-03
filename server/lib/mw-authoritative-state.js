@@ -16,7 +16,17 @@ function phaseFromWeek(w){
   if(n<=33)return 4;
   return 5;
 }
-function isoDay(now=new Date()){
+function validTimeZone(value){
+  const tz=String(value||'').trim();
+  if(!tz)return null;
+  try{new Intl.DateTimeFormat('en-US',{timeZone:tz}).format(new Date());return tz}catch{return null}
+}
+function isoDay(now=new Date(),timeZone=null){
+  const tz=validTimeZone(timeZone);
+  if(tz){
+    const weekday=new Intl.DateTimeFormat('en-US',{timeZone:tz,weekday:'short'}).format(now);
+    return ({Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:7})[weekday]||1;
+  }
   const d=now.getDay();
   return d===0?7:d;
 }
@@ -31,7 +41,7 @@ function isoDay(now=new Date()){
  * - storedWeek is retained only for diagnostics; it must not override the
  *   Season Intelligence week in athlete-facing code.
  */
-function resolveFromCalendar(stored={},calendar=null,{now=new Date()}={}){
+function resolveFromCalendar(stored={},calendar=null,{now=new Date(),timeZone=null}={}){
   const hasCalendar=calendar&&Number.isFinite(Number(calendar.week));
   const week=hasCalendar?clampWeek(calendar.week):clampWeek(stored.current_week||1);
   const phase=hasCalendar
@@ -40,7 +50,7 @@ function resolveFromCalendar(stored={},calendar=null,{now=new Date()}={}){
   const sourceWeek=hasCalendar
     ? clampWeek(calendar.sourceWeek||week)
     : clampWeek(stored.source_program_week||week);
-  const day=clampDay(isoDay(now));
+  const day=clampDay(isoDay(now,timeZone));
 
   return {
     authority:hasCalendar?'season_intelligence':'program_state_fallback',
@@ -59,13 +69,13 @@ function resolveFromCalendar(stored={},calendar=null,{now=new Date()}={}){
   };
 }
 
-async function resolveAuthoritativeState(c,{now=new Date()}={}){
+async function resolveAuthoritativeState(c,{now=new Date(),timeZone=null}={}){
   const stored=c?.programState||{};
   let calendar=null;
   try{
     if(c?.token)calendar=await effectiveCalendar(c.token);
   }catch{}
-  return resolveFromCalendar(stored,calendar,{now});
+  return resolveFromCalendar(stored,calendar,{now,timeZone});
 }
 
 function applyAuthoritativeState(programState,authority){
@@ -86,4 +96,4 @@ function applyAuthoritativeState(programState,authority){
   };
 }
 
-module.exports={resolveAuthoritativeState,resolveFromCalendar,applyAuthoritativeState,clampWeek,clampDay,phaseFromWeek,isoDay};
+module.exports={resolveAuthoritativeState,resolveFromCalendar,applyAuthoritativeState,clampWeek,clampDay,phaseFromWeek,isoDay,validTimeZone};
