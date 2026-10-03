@@ -1,7 +1,7 @@
 const WorkoutIdentity=require('../../../lib/mw-workout-identity');
 const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../../lib/mw-coach-auth');
-const {positionForPlan}=require('../../lib/mw-season-intelligence');
-const {calendarPosition,localCalendarDate}=require('../../lib/mw-season-calendar');
+const {localCalendarDate}=require('../../lib/mw-season-calendar');
+const {programPosition}=require('../../lib/mw-training-position');
 
 async function get(path,token){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}});
@@ -86,15 +86,14 @@ module.exports=async(req,res)=>{
     }
 
     const rosterNow=localCalendarDate(new Date(),req.headers['x-mw-time-zone']);
-    const fallbackCalendar=calendarPosition({mode:'standard',now:rosterNow});
     const out=athletes.map(a=>{
       const p=pMap.get(a.user_id)||{};
       const st=sMap.get(a.id)||{},plan=planMap.get(a.id)||null,latestCompletion=latestCompletionMap.get(a.id)||null;
       const athletePrs=prMap.get(a.id)||[];
-      const livePosition=plan?positionForPlan(plan,rosterNow):fallbackCalendar;
-      const liveWeek=Math.max(1,Math.min(41,Number(livePosition?.week||st.current_week||1)));
-      const livePhase=Number(livePosition?.phase||st.current_phase||1);
-      let sourceWeek=liveWeek;
+      const livePosition=programPosition(st,plan,rosterNow);
+      const liveWeek=Math.max(1,Math.min(41,Number(livePosition.week||st.current_week||1)));
+      const livePhase=Number(livePosition.phase||st.current_phase||1);
+      let sourceWeek=Number(livePosition.sourceWeek||liveWeek);
       if(plan?.source_week_map){
         try{
           const map=typeof plan.source_week_map==='string'?JSON.parse(plan.source_week_map):plan.source_week_map;
