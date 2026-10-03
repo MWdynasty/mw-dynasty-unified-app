@@ -103,6 +103,7 @@ async function run() {
   assert.equal(saved[3].rep_number,2);assert.equal(saved[3].time_seconds,14);
   assert.equal((a.el('mwPracticeRepLog').innerHTML.match(/mwPracticeRepRow/g)||[]).length,2);
   a.click('mwPracticeSave');await a.flush();assert.equal(a.ctx.mwPracticeProgressCache.length,2,'completion contains only the corrected reps');
+  assert.deepEqual(a.ctx.mwPracticeProgressCache.map(r=>r.rep_number),[1,2],'athlete completion history keeps one canonical result per prescribed rep');
   assert.equal(a.el('mwPracticeRetry').hidden,true,'completed workouts stay protected');
   a.click('mwPracticeExit');await a.flush();assert.equal(a.jobs.size,0,'exiting stops both clocks');
 
