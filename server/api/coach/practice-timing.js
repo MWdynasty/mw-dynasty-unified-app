@@ -100,6 +100,20 @@ module.exports=async(req,res)=>{
       }));
       if(rows.some(x=>!x.athlete_id||!Number.isFinite(x.time_seconds)||x.time_seconds<=0))return res.status(400).json({error:'Invalid timing result'});
       if(rows.some(x=>(x.target_min_seconds==null)!==(x.target_max_seconds==null)||((x.target_min_seconds!=null)&&x.target_min_seconds>x.target_max_seconds)))return res.status(400).json({error:'Invalid target pace range'});
+      const previous=await rest(`coach_practice_timing_results?select=athlete_id,rep_number,session_date,workout_key,season_plan_id,workout_cycle_id&session_id=eq.${encodeURIComponent(sessionId)}&coach_user_id=eq.${encodeURIComponent(c.user.id)}&limit=201`,c.token);
+      if(previous.length){
+        const priorByRep=new Map(previous.map(row=>[row.athlete_id+':'+row.rep_number,row]));
+        const retryRows=rows.map((row,i)=>{
+          const x=results[i],prior=priorByRep.get(row.athlete_id+':'+row.rep_number);
+          if(!prior)return row;
+          let identity;
+          try{identity=WorkoutIdentity.create({athleteId:row.athlete_id,seasonPlanId:x.seasonPlanId||prior.season_plan_id,workoutCycleId:x.workoutCycleId||prior.workout_cycle_id,week:Number(x.programWeek),day:Number(x.programDay)})}catch{return row}
+          if(!WorkoutIdentity.acceptsInput(String(x.workoutKey||''),identity))return row;
+          return {...row,session_date:x.sessionDate||prior.session_date,workout_key:identity.workoutKey,season_plan_id:identity.seasonPlanId,workout_cycle_id:identity.workoutCycleId,program_week:Number(x.programWeek),program_day:Number(x.programDay),source_program_week:Number(x.sourceProgramWeek||x.programWeek),distance_m:x.distanceM==null?null:Number(x.distanceM)};
+        });
+        if(await isCommittedRetry(retryRows,sessionId,c.user.id,c.token))return res.status(200).json({ok:true,count:rows.length,sessionId,replayed:true,intelligenceWarnings:[]});
+        return res.status(409).json({error:'Saved practice session does not match this retry.',code:'workout_already_completed'});
+      }
       for(const athleteId of [...new Set(rows.map(x=>x.athlete_id))]) await rest('rpc/mw_coach_refresh_assigned_athlete_program_position',c.token,{method:'POST',headers:{'X-MW-Time-Zone':clientTimeZone},body:JSON.stringify({p_athlete_id:athleteId,p_session_date:localSessionDate})});
       const states=await rest(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,source_program_week,season_plan_id,workout_cycle_id&athlete_id=in.${inList(results.map(x=>x.athleteId))}`,c.token);
       const stateMap=new Map(states.map(state=>[state.athlete_id,state]));

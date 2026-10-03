@@ -95,6 +95,11 @@ async function run(){
   assert.equal(result.body.replayed,true);
   assert.equal(calls.filter(c=>c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length,savedWrites,'idempotent retry does not rewrite completed history');
   result=await save({timeSeconds:11});assert.equal(result.status,409,'completed results cannot be changed through a retry');
+  state.current_day=3;state.current_week=4;
+  const refreshes=calls.filter(c=>c.url.endsWith('/rpc/mw_coach_refresh_assigned_athlete_program_position')).length;
+  result=await save({sessionDate:rows[0].session_date});assert.equal(result.status,200,'committed retry survives local midnight and program advancement');
+  assert.equal(calls.filter(c=>c.url.endsWith('/rpc/mw_coach_refresh_assigned_athlete_program_position')).length,refreshes,'receipt confirmation never refreshes live state');
+  state.current_day=2;state.current_week=3;rows.length=0;
   completions=[];const writes=calls.filter(c=>c.opts.method==='POST'&&c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length;
   result=await save({seasonPlanId:OLD});assert.equal(result.status,409,'stale season rejected before writes');
   result=await save({workoutKey:old.workout_key});assert.equal(result.status,400,'foreign season key rejected');

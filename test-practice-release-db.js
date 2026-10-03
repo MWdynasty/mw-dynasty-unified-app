@@ -21,6 +21,7 @@ async function run(){
   const before=await security();
   await db.exec(read('20261003155114_stabilize_legacy_program_refresh.sql'));
   await db.exec(read('20261003155417_preserve_atomic_practice_intent.sql'));
+  await db.exec(read('20261003190541_immutable_completed_practice_retries.sql'));
   assert.deepEqual(await security(),before,'function ownership, permissions and security configuration stay unchanged');
 
   await db.exec(`update public.athlete_program_state set season_plan_id=null,start_date=current_date-7,starting_week=null,current_week=2,current_day=1,program_status='active';`);
@@ -70,7 +71,15 @@ async function run(){
   assert.equal(rep.mw_intent,'technical');assert.equal(rep.mw_interpretation,'above_target');assert.equal(rep.pace_status,'on_pace');assert.equal(rep.coach_session_id,S);
   const completed=await scalar(db,'select completion_status,pace_reps_total,pace_reps_hit,completed_at from public.workout_completions where workout_key=$1',[key]);
   assert.equal(completed.completion_status,'completed');assert.equal(completed.pace_reps_total,1);assert.equal(completed.pace_reps_hit,1);
-  await role(db,C);await commit([result]);await role(db,AU);
+  await role(db,C);
+  const receipt=(await commit([result])).rows[0].result;assert.equal(receipt.replayed,true);
+  for(const patch of [{time_seconds:8.5},{mw_intent:'recovery'},{mw_interpretation:'below_target'},{pace_status:'slow'},{source_program_week:13},{distance_m:200},{session_date:'2020-01-01'}])await assert.rejects(commit([{...result,...patch}]),/immutable/);
+  await assert.rejects(commit([result,{...result,rep_number:2}]),/immutable/);
+  await assert.rejects(commit([result,result]),/immutable/);
+  await assert.rejects(db.query('select public.mw_coach_sync_practice_session_to_athlete($1,$2,3,$3,12,$4,200,$5,null)',[S,A,day,key,P]),/immutable/,'direct sync cannot mutate completed distance');
+  await db.exec('reset role');await db.exec('update public.athlete_program_state set current_week=4,current_day=1');await role(db,C);
+  assert.equal((await commit([result])).rows[0].result.replayed,true,'receipt survives live program advancement');
+  await role(db,AU);
   assert.deepEqual(await scalar(db,'select mw_intent,mw_interpretation,pace_status,coach_session_id,recorded_at from public.athlete_practice_rep_results where workout_key=$1',[key]),rep,'same-session retry preserves one canonical rep and timestamp');
   assert.equal((await scalar(db,'select count(*)::int as n from public.athlete_practice_rep_results where workout_key=$1',[key])).n,1);
   await db.query("update public.workout_completions set completion_status='completed',pace_reps_total=0,pace_reps_hit=0,completed_at=now()+interval '1 day' where workout_key=$1",[key]);
