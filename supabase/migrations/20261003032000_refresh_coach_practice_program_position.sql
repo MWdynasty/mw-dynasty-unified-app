@@ -71,8 +71,8 @@ begin
     end;
   elsif v_state.start_date is not null then
     v_expected_week:=case
-      when p_session_date<v_state.start_date then coalesce(v_state.starting_week,v_state.current_week,1)
-      else least(41,coalesce(v_state.starting_week,v_state.current_week,1)+greatest(0,floor((p_session_date-v_state.start_date)/7.0)::integer))
+      when p_session_date<v_state.start_date then coalesce(v_state.starting_week,1)
+      else least(41,coalesce(v_state.starting_week,1)+greatest(0,floor((p_session_date-v_state.start_date)/7.0)::integer))
     end;
   else
     v_expected_week:=v_state.current_week;
