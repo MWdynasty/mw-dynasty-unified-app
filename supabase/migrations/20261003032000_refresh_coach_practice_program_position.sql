@@ -68,8 +68,7 @@ begin
   update public.athlete_program_state
   set current_week=v_expected_week,
       current_day=v_expected_day,
-      updated_at=now(),
-      updated_by=v_uid
+      updated_at=now()
   where athlete_id=p_athlete_id;
 
   return jsonb_build_object(
