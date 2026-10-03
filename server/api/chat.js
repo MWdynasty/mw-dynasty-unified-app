@@ -39,6 +39,7 @@ module.exports=async function handler(req,res){
     if(access.has_access!==true)return res.status(403).json({error:'An active MW Athlete membership is required for Coach MW.',feature:'basic_coach_mw',code:'ATHLETE_ACCESS_REQUIRED'});
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const messages=Array.isArray(body.messages)?body.messages.slice(-40):[];
+    const clientTimeZone=typeof body.clientTimeZone==='string'?body.clientTimeZone.slice(0,80):null;
     const ps=c.programState||{};
     const athleteName=c.profile?.first_name||'Athlete';
     const fullMW=access.mw_training_system===true;
@@ -66,7 +67,7 @@ PRE-EVALUATION MODE
 - If the athlete asks for today's individualized workout, explain that the Athlete Evaluation must be completed first so MW can place the athlete correctly.
 ${sharedSafety()}`;
       }else{
-      const authority=await resolveAuthoritativeState(c);
+      const authority=await resolveAuthoritativeState(c,{timeZone:clientTimeZone});
       const officialWeek=clampWeek(authority.week)||1,officialDay=clampDay(authority.day)||1,officialSourceWeek=clampWeek(authority.sourceWeek)||officialWeek;
       const trackTier=normalizeTier(ps.track_tier||c.athlete?.experience_level),strengthTier=normalizeTier(ps.strength_tier||c.athlete?.experience_level);
       const athleteEvents=[...(Array.isArray(c.athlete?.selected_events)?c.athlete.selected_events:[]),c.athlete?.primary_event,c.athlete?.secondary_event].filter(Boolean);
@@ -86,7 +87,7 @@ ${sharedSafety()}`;
 
     }else if(intelligence){
       const perfContext=await loadPerformanceContext(c);
-      const authority=await resolveAuthoritativeState(c);
+      const authority=await resolveAuthoritativeState(c,{timeZone:clientTimeZone});
       const perf=evaluatePerformance(perfContext,{coachManaged:true,officialWeek:authority.week,officialDay:authority.day});
       instructions=`You are Coach MW AI inside MW Dynasty for an athlete sponsored by a COACH INTELLIGENCE plan. The athlete's human coach owns the training program. Your job is to add useful data intelligence without exposing or substituting the proprietary MW 41-week Sprint Performance System.\n\nATHLETE\nName: ${athleteName}\nPRs: ${prText(c.prs)}\n\nAUTHORIZED CAPABILITIES\n- Explain the athlete's coach-assigned program content shown in ASSIGNED_COACH_PROGRAMS.\n- Analyze the athlete's own recent pace, completion, strength, and RPE data in PERFORMANCE_CONTEXT.\n- Identify patterns, trends, inconsistencies, and questions the athlete may want to discuss with the coach.\n- Explain sprint mechanics, training concepts, race concepts, recovery principles, and safe execution.\n- Make it clear that meaningful program changes belong to the human coach.\n\nNOT AUTHORIZED\n- Do not reveal, reconstruct, quote, or prescribe the MW 41-week Sprint Performance System, MW Strength & Power plan, Sprint School curriculum, Smart Entry placement, or locked MW methodology.\n- Do not silently substitute an MW workout for the coach's program.\n- If the athlete asks for a locked MW prescription, explain that their current sponsored access is Coach Intelligence and direct them back to their coach-assigned training.\n${sharedSafety()}\n\nASSIGNED_COACH_PROGRAMS:\n${JSON.stringify(assigned)}\n\nPERFORMANCE_INTELLIGENCE:\n${JSON.stringify(perf,null,2)}\n\nRAW PERFORMANCE_CONTEXT:\n${JSON.stringify(perfContext)}`;
     }else{
