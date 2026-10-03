@@ -3863,6 +3863,27 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     return d
   }
   window.mwReloadAccount=loadMe;
+
+  let mwCompletionRefreshBusy=false;
+  async function mwRefreshLiveCompletion(){
+    if(mwCompletionRefreshBusy||document.hidden||!token()||!mwRemoteProfile?.athleteId)return;
+    mwCompletionRefreshBusy=true;
+    try{
+      await loadWorkoutCompletions();
+      await renderCompletion();
+      renderProgressUI();
+      window.mwReloadAthleteNotifications?.();
+    }catch(e){
+      console.warn('MW live completion refresh unavailable',e);
+    }finally{
+      mwCompletionRefreshBusy=false;
+    }
+  }
+  window.mwRefreshLiveCompletion=mwRefreshLiveCompletion;
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)mwRefreshLiveCompletion()});
+  window.addEventListener('focus',mwRefreshLiveCompletion);
+  window.addEventListener('pageshow',mwRefreshLiveCompletion);
+  setInterval(mwRefreshLiveCompletion,15000);
   const websiteCheckoutPlan=new URLSearchParams(location.search).get('plan')==='mw_athlete'?'mw_athlete':'';
   async function beginWebsiteCheckout(accessToken){
     authStatus('Taking you to secure payment…');
