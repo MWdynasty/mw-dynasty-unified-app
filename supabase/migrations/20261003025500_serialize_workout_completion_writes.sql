@@ -290,7 +290,7 @@ begin
   values(
     p_athlete_id,p_program_week,p_program_day,v_key,'completed',
     coalesce(v_last_at,now()),null,v_pace_status,v_total,v_hit,
-    now(),current_date,coalesce(v_first_at,now()),coalesce(v_last_at,now()),
+    now(),v_session_date,coalesce(v_first_at,now()),coalesce(v_last_at,now()),
     p_season_plan_id,coalesce(p_source_program_week,p_program_week)
   )
   on conflict (athlete_id,workout_key)
