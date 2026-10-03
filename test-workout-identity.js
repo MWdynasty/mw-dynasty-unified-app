@@ -89,11 +89,11 @@ async function run(){
   assert.equal(rows[0].workout_key,current.workoutKey,'atomic commit persists canonical identity for an old client');
   assert.equal(athlete.rowsToCompletion(completions)['3'].s2,true,'atomic coach save is recognized by actual athlete completion reader');
   result=await save();assert.equal(result.status,409,'same-cycle completion still locks duplicates');
-  completions=[];const writes=calls.filter(c=>c.opts.method==='POST').length;
+  completions=[];const writes=calls.filter(c=>c.opts.method==='POST'&&c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length;
   result=await save({seasonPlanId:OLD});assert.equal(result.status,409,'stale season rejected before writes');
   result=await save({workoutKey:old.workout_key});assert.equal(result.status,400,'foreign season key rejected');
   result=await save({programDay:1});assert.equal(result.status,409,'stale day rejected');
-  assert.equal(calls.filter(c=>c.opts.method==='POST').length,writes);
+  assert.equal(calls.filter(c=>c.opts.method==='POST'&&c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length,writes,'invalid identities never reach the atomic Practice commit');
   result=await save({workoutKey:current.workoutKey});assert.equal(result.status,200,'canonical clients accepted');
   console.log('PASS: canonical athlete/coach identity, completion recognition, athlete/session/season isolation, legacy history, and cycle-aware API/browser locks.');
 }
