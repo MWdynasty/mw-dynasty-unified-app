@@ -3169,7 +3169,7 @@ function renderSeasonCalendarSummary(){
 async function loadSeasonCalendar(){
   try{
     const tok=window.mwGetSessionToken?.()||'';if(!tok){renderSeasonCalendarSummary();return null}
-    const r=await fetch('/api/season-calendar',{cache:'no-store',headers:{Authorization:'Bearer '+tok}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Calendar unavailable');
+    const r=await fetch('/api/season-calendar',{cache:'no-store',headers:{Authorization:'Bearer '+tok,'X-MW-Time-Zone':(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{return'UTC'}})()}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Calendar unavailable');
     mwSeasonCalendar=d.calendar||null;
     if(mwSeasonCalendar){
       const seasonWeek=Math.max(1,Math.min(41,Number(mwSeasonCalendar.week||1)));
