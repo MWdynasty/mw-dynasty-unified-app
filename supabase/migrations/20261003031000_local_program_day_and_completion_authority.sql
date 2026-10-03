@@ -79,6 +79,7 @@ as $function$
 declare
   v_is_athlete_self boolean := false;
   v_has_coach_evidence boolean := false;
+  v_tz text := private.mw_request_time_zone();
 begin
   if tg_op='UPDATE' and old.completion_status='completed' and new.completion_status<>'completed' then
     new.completion_status:='completed';
@@ -119,8 +120,11 @@ begin
   end if;
   if new.completion_status='completed' then
     new.completed_at:=coalesce(new.completed_at,now());
-    if new.scheduled_date is not null and new.completed_at::date>new.scheduled_date then
+    if new.scheduled_date is not null
+       and (new.completed_at at time zone v_tz)::date>new.scheduled_date then
       new.completed_late:=true;
+    elsif new.scheduled_date is not null then
+      new.completed_late:=false;
     end if;
   end if;
   new.last_activity_at:=now();
