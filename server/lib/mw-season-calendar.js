@@ -10,6 +10,14 @@ async function sj(path,token,opts={}){
 function dateOnlyUTC(d){return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()))}
 function isoDate(d){return d.toISOString().slice(0,10)}
 function addDays(d,n){const x=new Date(d.getTime());x.setUTCDate(x.getUTCDate()+n);return x}
+function localCalendarDate(now=new Date(),timeZone=null){
+  if(!timeZone)return now;
+  try{
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+    const m=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+    return new Date(Date.UTC(Number(m.year),Number(m.month)-1,Number(m.day),12,0,0));
+  }catch{return now}
+}
 function standardStartForYear(year){
   const sep1=new Date(Date.UTC(year,8,1));
   const offset=(8-sep1.getUTCDay())%7;
@@ -40,10 +48,10 @@ function calendarPosition({mode='standard',customStart=null,now=new Date()}){
   const week=Math.max(1,Math.min(41,Math.floor(days/7)+1));
   return {mode:'standard',status,week,phase:phaseFromWeek(week),startDate:isoDate(start),nextStartDate:isoDate(nextStart)};
 }
-async function effectiveCalendar(token){
+async function effectiveCalendar(token,{now=new Date(),timeZone=null}={}){
   const seasonPlan=await reconcileSeasonPlan(token);
   if(seasonPlan?.id){
-    const pos=positionForPlan(seasonPlan);
+    const pos=positionForPlan(seasonPlan,localCalendarDate(now,timeZone));
     return {
       mode:'season_plan',
       status:pos.status,
@@ -73,6 +81,6 @@ async function effectiveCalendar(token){
     if(Array.isArray(d)&&d[0])row=d[0]; else if(d&&typeof d==='object')row=d;
   }catch(e){}
   const mode=row.calendar_mode==='custom'&&row.season_start_date?'custom':'standard';
-  return {...calendarPosition({mode,customStart:row.season_start_date}),source:row.source||'mw_standard',coachUserId:row.coach_user_id||null};
+  return {...calendarPosition({mode,customStart:row.season_start_date,now:localCalendarDate(now,timeZone)}),source:row.source||'mw_standard',coachUserId:row.coach_user_id||null};
 }
-module.exports={effectiveCalendar,calendarPosition,standardStartForYear,phaseFromWeek,sj};
+module.exports={effectiveCalendar,calendarPosition,standardStartForYear,phaseFromWeek,sj,localCalendarDate};

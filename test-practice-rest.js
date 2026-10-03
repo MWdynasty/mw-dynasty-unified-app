@@ -30,6 +30,7 @@ function fixture() {
     setTimeout:(fn,ms)=>{const id=++serial;jobs.set(id,{fn,ms,at:now+ms});return id},
     clearTimeout:id=>jobs.delete(id), requestAnimationFrame:()=>++serial,cancelAnimationFrame:()=>{},
     speechSynthesis:{cancel(){},speak(){}},SpeechSynthesisUtterance:function(){},
+    addEventListener:()=>{},removeEventListener:()=>{},
     alert:msg=>{throw Error(msg)}
   });
   ctx.window=ctx;
@@ -112,7 +113,7 @@ async function run() {
   Object.assign(c.ctx,{
     MWWorkoutIdentity:require('./lib/mw-workout-identity'),
     pageBase:()=>{},hydrateCoachTodayPractice:()=>{},openPage:()=>{},experience:'performance',
-    escapeHtml:x=>String(x),toast:()=>{},mwSessionToken:()=>'',prompt:()=> '12.34',
+    escapeHtml:x=>String(x),toast:()=>{},mwSessionToken:()=>'',mwClientTimeZone:()=> 'America/Chicago',mwLocalIsoDate:()=> '2026-10-03',prompt:()=> '12.34',
     fetchCoachRoster:async()=>({athletes:[{id:athleteA,name:'Runner A'},{id:athleteB,name:'Runner B'}]}),
     fetch:async(url,opts)=>{coachSaves.push(JSON.parse(opts.body));return {ok:true,json:async()=>({count:2})}}
   });

@@ -20,6 +20,7 @@ async function fixture(){
  await db.exec(`alter table public.coach_practice_timing_results add column session_id uuid,add column division text,add column group_id uuid,add column lane_number integer,add column timing_source text,add column result_status text,add column target_min_seconds numeric,add column target_max_seconds numeric,add column actual_rest_seconds numeric,add column prescribed_rest_seconds numeric;grant select,insert,update on public.coach_practice_timing_results to authenticated;`);
  await db.exec(fs.readFileSync('supabase/migrations/20260929_unify_coach_athlete_practice_history.sql','utf8'));
  await db.exec(fs.readFileSync('supabase/migrations/20260929_persist_practice_workout_intelligence.sql','utf8'));
+ await db.exec("alter table public.coach_practice_timing_results add column if not exists workout_key text,add column if not exists season_plan_id uuid,add column if not exists workout_cycle_id uuid,add column if not exists program_week integer,add column if not exists program_day integer,add column if not exists source_program_week integer,add column if not exists distance_m integer,add column if not exists mw_intent text,add column if not exists mw_interpretation text;");
  await db.exec(fs.readFileSync('supabase/migrations/20260928_sync_completed_workout_to_coach.sql','utf8'));
  await db.exec(`create function private.mw_phase_for_week(integer) returns integer language sql as $$ select 1 $$;`);
  await db.exec(`insert into auth.users values ('${AU}'),('${C}'),('${OTHER}');
@@ -46,21 +47,34 @@ async function apiSave(db,identity){
  // Real Node handler + real PostgreSQL writes/RPCs. Only transport/auth are fixtures.
  const context={module:{exports:{}},console,require:name=>name==='../../lib/mw-coach-auth'
   ?{SUPABASE_URL:'https://fixture.invalid',SUPABASE_KEY:'fixture',getAccountContext:async()=>({token:'fixture',user:{id:C},profile:{role:'coach'}})}
+  :name==='../../lib/mw-season-calendar'?{localCalendarDate:()=> '2026-09-29'}
+  :name==='../../lib/mw-training-position'?{programPosition:(state)=>({week:Number(state.current_week)||1,day:Number(state.current_day)||1,phase:Number(state.current_phase)||1,sourceWeek:Number(state.source_program_week||state.current_week)||1,status:state.program_status||'active'})}
   :require(name.replace('../../../','./')),fetch:async(url,options={})=>{
    assert.ok(url.startsWith('https://fixture.invalid/rest/v1/'));
    const target=new URL(url),path=target.pathname.split('/').pop();let data;
-   if(path==='athlete_program_state')data=(await db.query('select * from public.athlete_program_state where athlete_id=$1',[identity.athleteId])).rows;
-   else if(path==='workout_completions')data=(await db.query("select * from public.workout_completions where athlete_id=$1 and program_week=$2 and program_day=$3 and workout_key=any($4::text[]) and completion_status='completed'",[identity.athleteId,identity.week,identity.day,Identity.readKeys(identity)])).rows;
-   else if(path==='coach_practice_timing_results'&&options.method==='POST'){
-    data=[];
-    for(const row of JSON.parse(options.body)){
+   if(path==='athlete_program_state'){
+    data=(await db.query('select * from public.athlete_program_state where athlete_id=$1',[identity.athleteId])).rows;
+   }else if(path==='athlete_season_plans'){
+    data=identity.seasonPlanId?(await db.query('select * from public.athlete_season_plans where id=$1',[identity.seasonPlanId])).rows:[];
+   }else if(path==='workout_completions'){
+    data=(await db.query("select * from public.workout_completions where athlete_id=$1 and program_week=$2 and program_day=$3 and workout_key=any($4::text[]) and completion_status='completed'",[identity.athleteId,identity.week,identity.day,Identity.readKeys(identity)])).rows;
+   }else if(path==='mw_coach_refresh_assigned_athlete_program_position'){
+    data={ok:true};
+   }else if(path==='mw_coach_commit_practice_session'){
+    const p=JSON.parse(options.body),saved=Array.isArray(p.p_results)?p.p_results:[],synced=[];
+    for(const row of saved){
      const columns=Object.keys(row);assert.ok(columns.every(c=>/^[a-z_]+$/.test(c)));
-     const update=columns.map(c=>`${c}=excluded.${c}`).join(',');
-     const query=`insert into public.coach_practice_timing_results(${columns.join(',')}) values (${columns.map((_,i)=>'$'+(i+1)).join(',')}) on conflict(session_id,athlete_id,rep_number) do update set ${update} returning *`;
-     data.push(...(await db.query(query,Object.values(row))).rows);
+     const update=columns.map(c=>c+'=excluded.'+c).join(',');
+     const placeholders=columns.map((_,i)=>'$'+(i+1)).join(',');
+     const query='insert into public.coach_practice_timing_results('+columns.join(',')+') values ('+placeholders+') on conflict(session_id,athlete_id,rep_number) do update set '+update+' returning *';
+     await db.query(query,Object.values(row));
     }
-   }else if(path==='mw_coach_sync_practice_session_to_athlete'){
-    const p=JSON.parse(options.body);data=(await scalar(db,'select public.mw_coach_sync_practice_session_to_athlete($1,$2,$3,$4,$5,$6,$7,$8,$9) as result',[p.p_session_id,p.p_athlete_id,p.p_program_week,p.p_program_day,p.p_source_program_week,p.p_workout_key,p.p_distance_m,p.p_season_plan_id,p.p_workout_cycle_id])).result;
+    for(const row of saved){
+     if(synced.some(x=>x.athlete_id===row.athlete_id))continue;
+     const out=(await scalar(db,'select public.mw_coach_sync_practice_session_to_athlete($1,$2,$3,$4,$5,$6,$7,$8,$9) as result',[p.p_session_id,row.athlete_id,row.program_week,row.program_day,row.source_program_week,row.workout_key,row.distance_m,row.season_plan_id,row.workout_cycle_id])).result;
+     synced.push({athlete_id:row.athlete_id,...out});
+    }
+    data={ok:true,count:saved.length,synced};
    }else if(path==='mw_coach_sync_practice_intelligence'){
     const p=JSON.parse(options.body);data=(await scalar(db,'select public.mw_coach_sync_practice_intelligence($1,$2,$3) as result',[p.p_session_id,p.p_athlete_id,p.p_workout_key])).result;
    }else throw new Error('Unexpected fixture request '+path);
@@ -68,7 +82,7 @@ async function apiSave(db,identity){
   }};
  vm.createContext(context);vm.runInContext(fs.readFileSync('server/api/coach/practice-timing.js','utf8'),context);
  const result={},res={setHeader(){},status(status){result.status=status;return this},json(body){result.body=body;return this}};
- await context.module.exports({method:'POST',body:{sessionId:'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',results:[{
+ await context.module.exports({method:'POST',headers:{},body:{sessionId:'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',results:[{
   athleteId:identity.athleteId,seasonPlanId:identity.seasonPlanId,workoutCycleId:identity.workoutCycleId,programWeek:identity.week,programDay:identity.day,sourceProgramWeek:12,workoutKey:identity.workoutKey,distanceM:160,repNumber:1,prescribedReps:2,timeSeconds:12,paceStatus:'on_pace',mwIntent:'speed',mwInterpretation:'on_target'
  }]}},res);
  return result;

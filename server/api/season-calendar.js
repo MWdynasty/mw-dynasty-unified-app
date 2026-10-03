@@ -1,6 +1,6 @@
 const {authenticate}=require('../lib/mw-auth');
 const {SUPABASE_URL,SUPABASE_KEY}=require('../lib/mw-auth');
-const {effectiveCalendar}=require('../lib/mw-season-calendar');
+const {effectiveCalendar,localCalendarDate}=require('../lib/mw-season-calendar');
 const {
   loadTemplate,loadStateRegistry,weeksBetween,dateOnly,iso,addDays,
   phaseAllocation,phaseAtWeek,uiPhaseForCode
@@ -43,8 +43,8 @@ function defaultPeakDate(group,seasonType,seasonYear){
   if(group==='professional')return `${y}-08-01`;
   return `${y}-05-31`;
 }
-function currentPosition(startDate,peakDate){
-  const start=dateOnly(startDate),peak=dateOnly(peakDate),today=dateOnly(new Date());
+function currentPosition(startDate,peakDate,nowDate=new Date()){
+  const start=dateOnly(startDate),peak=dateOnly(peakDate),today=dateOnly(nowDate);
   const length=weeksBetween(start,peak);
   if(!start||!peak||!length)return {};
   let status='active',week=1;
@@ -55,7 +55,7 @@ function currentPosition(startDate,peakDate){
   const phaseCode=phaseAtWeek(phasePlan,week);
   return {status,week,phase:uiPhaseForCode(phaseCode),phaseCode,seasonLengthWeeks:length,peakDate:iso(peak)};
 }
-function decorateCalendar(base,row){
+function decorateCalendar(base,row,nowDate=new Date()){
   if(!row)return base;
   const out={...base,
     competitionState:row.competition_state||null,
@@ -67,7 +67,7 @@ function decorateCalendar(base,row){
     calendarSource:row.calendar_source||base?.source||null
   };
   if(row.season_start_date)out.startDate=row.season_start_date;
-  if(row.season_start_date&&row.primary_peak_date)Object.assign(out,currentPosition(row.season_start_date,row.primary_peak_date));
+  if(row.season_start_date&&row.primary_peak_date)Object.assign(out,currentPosition(row.season_start_date,row.primary_peak_date,nowDate));
   return out;
 }
 async function coachSettings(token,userId){
@@ -144,11 +144,13 @@ module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store, private');
   try{
     const {token,user}=await authenticate(req);
+    const clientTimeZone=String(req.headers['x-mw-time-zone']||'').slice(0,80)||null;
+    const localNow=localCalendarDate(new Date(),clientTimeZone);
     if(req.method==='GET'){
-      const calendar=await effectiveCalendar(token);
+      const calendar=await effectiveCalendar(token,{timeZone:clientTimeZone});
       let settings=null;
       try{settings=await coachSettings(token,user.id)}catch{}
-      return res.status(200).json({ok:true,calendar:decorateCalendar(calendar,settings)});
+      return res.status(200).json({ok:true,calendar:decorateCalendar(calendar,settings,localNow)});
     }
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
     await requireCoach(token,user.id);
@@ -178,7 +180,7 @@ module.exports=async function handler(req,res){
       updated_at:new Date().toISOString()
     };
     await rest('coach_season_settings?on_conflict=coach_user_id',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(payload)});
-    const calendar=decorateCalendar(await effectiveCalendar(token),payload);
+    const calendar=decorateCalendar(await effectiveCalendar(token,{timeZone:clientTimeZone}),payload,localNow);
     return res.status(200).json({ok:true,calendar});
   }catch(e){return res.status(e.status||500).json({error:e.message||'Season calendar could not be saved'})}
 };

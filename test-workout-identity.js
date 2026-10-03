@@ -63,7 +63,7 @@ async function run(){
   // Execute the real API handler with a bounded REST fixture, never a live service.
   const calls=[],rows=[];
   let completions=[old,unscoped],state={athlete_id:A,current_week:3,current_day:2,season_plan_id:P};
-  const context={require:name=>name==='../../lib/mw-coach-auth'?{SUPABASE_URL:'https://fixture.invalid',SUPABASE_KEY:'fixture',getAccountContext:async()=>({token:'fixture',user:{id:B},profile:{role:'coach'}})}:require(name.replace('../../../','./')),module:{exports:{}},console,fetch:async(url,opts={})=>{
+  const context={require:name=>name==='../../lib/mw-coach-auth'?{SUPABASE_URL:'https://fixture.invalid',SUPABASE_KEY:'fixture',getAccountContext:async()=>({token:'fixture',user:{id:B},profile:{role:'coach'}})}:name==='../../lib/mw-season-calendar'?require('./server/lib/mw-season-calendar'):name==='../../lib/mw-training-position'?{programPosition:(state)=>({week:Number(state.current_week)||1,day:Number(state.current_day)||1,phase:Number(state.current_phase)||1,sourceWeek:Number(state.source_program_week||state.current_week)||1,status:state.program_status||'active'})}:require(name.replace('../../../','./')),module:{exports:{}},console,fetch:async(url,opts={})=>{
     calls.push({url,opts});let data=[];
     if(url.includes('/athlete_program_state?'))data=[state];
     else if(url.includes('/workout_completions?'))data=completions;
@@ -83,17 +83,17 @@ async function run(){
   vm.createContext(context);vm.runInContext(fs.readFileSync('server/api/coach/practice-timing.js','utf8'),context);
   async function save(overrides={}){
     const result={};const res={setHeader(){},status(code){result.status=code;return this},json(body){result.body=body;return this}};
-    await context.module.exports({method:'POST',body:{sessionId:'cccccccc-cccc-cccc-cccc-cccccccccccc',results:[{athleteId:A,programWeek:3,programDay:2,sourceProgramWeek:12,seasonPlanId:P,workoutKey:'mw-track-w3-d2',repNumber:1,prescribedReps:2,timeSeconds:12,...overrides}]}},res);return result;
+    await context.module.exports({method:'POST',headers:{},body:{sessionId:'cccccccc-cccc-cccc-cccc-cccccccccccc',results:[{athleteId:A,programWeek:3,programDay:2,sourceProgramWeek:12,seasonPlanId:P,workoutKey:'mw-track-w3-d2',repNumber:1,prescribedReps:2,timeSeconds:12,...overrides}]}},res);return result;
   }
   let result=await save();assert.equal(result.status,200,'old season does not lock current API save');
   assert.equal(rows[0].workout_key,current.workoutKey,'atomic commit persists canonical identity for an old client');
   assert.equal(athlete.rowsToCompletion(completions)['3'].s2,true,'atomic coach save is recognized by actual athlete completion reader');
   result=await save();assert.equal(result.status,409,'same-cycle completion still locks duplicates');
-  completions=[];const writes=calls.filter(c=>c.opts.method==='POST').length;
+  completions=[];const writes=calls.filter(c=>c.opts.method==='POST'&&c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length;
   result=await save({seasonPlanId:OLD});assert.equal(result.status,409,'stale season rejected before writes');
   result=await save({workoutKey:old.workout_key});assert.equal(result.status,400,'foreign season key rejected');
   result=await save({programDay:1});assert.equal(result.status,409,'stale day rejected');
-  assert.equal(calls.filter(c=>c.opts.method==='POST').length,writes);
+  assert.equal(calls.filter(c=>c.opts.method==='POST'&&c.url.endsWith('/rpc/mw_coach_commit_practice_session')).length,writes,'invalid identities never reach the atomic Practice commit');
   result=await save({workoutKey:current.workoutKey});assert.equal(result.status,200,'canonical clients accepted');
   console.log('PASS: canonical athlete/coach identity, completion recognition, athlete/session/season isolation, legacy history, and cycle-aware API/browser locks.');
 }

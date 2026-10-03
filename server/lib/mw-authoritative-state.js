@@ -73,7 +73,7 @@ async function resolveAuthoritativeState(c,{now=new Date(),timeZone=null}={}){
   const stored=c?.programState||{};
   let calendar=null;
   try{
-    if(c?.token)calendar=await effectiveCalendar(c.token);
+    if(c?.token)calendar=await effectiveCalendar(c.token,{now,timeZone:validTimeZone(timeZone)});
   }catch{}
   return resolveFromCalendar(stored,calendar,{now,timeZone});
 }

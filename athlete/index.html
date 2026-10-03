@@ -2314,7 +2314,8 @@ function completionHeaders(extra={}){
   const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
   let sess=null;try{sess=JSON.parse(raw||'null')}catch{}
   const access=sess?.access_token||'';
-  return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,...extra};
+  let timeZone='UTC';try{timeZone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}
+  return {'apikey':MW_SB_KEY,'Authorization':'Bearer '+access,'X-MW-Time-Zone':timeZone,...extra};
 }
 function completionAthleteId(){const remote=window.mwGetRemoteProfile?.();return remote?.athleteId||null}
 function activeSeasonPlanId(){const remote=window.mwGetRemoteProfile?.();return mwSeasonCalendar?.planId||remote?.seasonPlan?.id||remote?.seasonPlan?.season_plan_id||null}
@@ -2352,15 +2353,26 @@ async function mwPracticeNormalizeProgressTargets(rows){
   const plans=new Map();
   for(const row of list){
     const w=Number(row.program_week||0),d=Number(row.program_day||0),key=w+':'+d;
-    let p=plans.get(key);
-    if(p===undefined){
-      try{const data=await loadMWProgramWeek(w),s=data?.track?.sessions?.find(x=>Number(x.day)===d);p=s?parsePrescription(s):null}catch{p=null}
-      plans.set(key,p);
+    let entry=plans.get(key);
+    if(entry===undefined){
+      try{
+        const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===d);
+        entry={p:session?parsePrescription(session):null,session:session||null};
+      }catch{entry={p:null,session:null}}
+      plans.set(key,entry);
     }
+    const p=entry?.p,session=entry?.session;
     if(p?.target){
       const target=Number(p.target),actual=Number(row.time_seconds);
+      const intentText=[session?.title,session?.focus,session?.prescribedWork,session?.work,session?.structure,session?.intensity,...(Array.isArray(session?.cues)?session.cues:[])].filter(Boolean).join(' ').toLowerCase();
+      const intent=row.mw_intent||(/tempo|extensive|recovery|regeneration|easy/.test(intentText)?(/recovery|regeneration|easy/.test(intentText)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(intentText)?(/technical|technique|progressive|fly|flying|wicket/.test(intentText)?'technical':'speed'):'pace');
+      const aboveTarget=Number.isFinite(actual)&&actual<target*.99&&['technical','speed'].includes(intent);
       row.target_seconds=target;
-      if(Number.isFinite(actual))row.pace_status=actual>=target*.99&&actual<=target*1.01?'on_pace':'outside_target';
+      row.mw_intent=intent;
+      if(Number.isFinite(actual)){
+        row.pace_status=(aboveTarget||actual>=target*.99&&actual<=target*1.01)?'on_pace':'outside_target';
+        row.mw_interpretation=aboveTarget?'above_target':row.pace_status==='on_pace'?'on_target':actual<target?'pace_violation':'below_target';
+      }
     }
   }
   return list;
@@ -2369,7 +2381,7 @@ async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
   const planId=activeSeasonPlanId(),cycleId=activeWorkoutCycleId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null'+(cycleId?'&workout_cycle_id=eq.'+encodeURIComponent(cycleId):'&workout_cycle_id=is.null');
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,recorded_at,season_plan_id,workout_cycle_id,source_program_week,entry_source,timing_source,result_status,coach_session_id&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,mw_intent,mw_interpretation,recorded_at,season_plan_id,workout_cycle_id,source_program_week,entry_source,timing_source,result_status,coach_session_id&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
   mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(rows);
   renderPracticeProgress();
@@ -2429,8 +2441,9 @@ async function markWorkoutComplete(w,i,button,pace={status:'not_applicable',hit:
     const out=await r.json().catch(()=>[]);if(!r.ok)throw new Error(out?.message||out?.details||'Workout completion save failed.');
     mwCompletionCache[String(w)]=mwCompletionCache[String(w)]||{};mwCompletionCache[String(w)]['s'+i]=true;
     mwWorkoutStatusCache[String(w)]=mwWorkoutStatusCache[String(w)]||{};
-    const prior=mwWorkoutStatusCache[String(w)]['s'+i]||{};
-    mwWorkoutStatusCache[String(w)]['s'+i]={...prior,...payload,completion_status:'completed',completed_late:!!(prior.scheduled_date&&prior.scheduled_date<new Date().toISOString().slice(0,10))};
+    const prior=mwWorkoutStatusCache[String(w)]['s'+i]||{},saved=Array.isArray(out)?out[0]:null;
+    const localToday=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
+    mwWorkoutStatusCache[String(w)]['s'+i]={...prior,...payload,...(saved||{}),completion_status:'completed',completed_late:saved?.completed_late??!!(prior.scheduled_date&&prior.scheduled_date<localToday)};
     if(total){mwPaceCheckCache[String(w)]=mwPaceCheckCache[String(w)]||{};mwPaceCheckCache[String(w)]['s'+i]={status:payload.pace_check_status,hit,total}}
     try{await window.mwReloadAccount?.()}catch{}
     renderCompletion();renderProgressUI();
@@ -2665,7 +2678,7 @@ const MW={
 };
 const MW_STRENGTH={};
 const MW_PROGRAM_CACHE={};
-async function loadMWProgramWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(MW_PROGRAM_CACHE[w])return MW_PROGRAM_CACHE[w];const tok=window.mwGetSessionToken?.()||'';if(!tok)return null;const r=await fetch('/api/program?week='+w,{headers:{Authorization:'Bearer '+tok},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW program is unavailable');MW_PROGRAM_CACHE[w]=d;if(d.strength)MW_STRENGTH[w]=d.strength;return d}
+async function loadMWProgramWeek(w){w=Math.max(1,Math.min(41,Number(w)||1));if(MW_PROGRAM_CACHE[w])return MW_PROGRAM_CACHE[w];const tok=window.mwGetSessionToken?.()||'';if(!tok)return null;const r=await fetch('/api/program?week='+w,{headers:{Authorization:'Bearer '+tok,'X-MW-Time-Zone':(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{return'UTC'}})()},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'MW program is unavailable');MW_PROGRAM_CACHE[w]=d;if(d.strength)MW_STRENGTH[w]=d.strength;return d}
 const MW_WORDS=[
   {ref:'Galatians 6:9',theme:'Stay faithful in the work. Growth can be happening before you can see it.'},
   {ref:'Philippians 4:13',theme:'Your strength is not limited to self-confidence; keep your dependence on Christ.'},
@@ -3156,7 +3169,7 @@ function renderSeasonCalendarSummary(){
 async function loadSeasonCalendar(){
   try{
     const tok=window.mwGetSessionToken?.()||'';if(!tok){renderSeasonCalendarSummary();return null}
-    const r=await fetch('/api/season-calendar',{cache:'no-store',headers:{Authorization:'Bearer '+tok}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Calendar unavailable');
+    const r=await fetch('/api/season-calendar',{cache:'no-store',headers:{Authorization:'Bearer '+tok,'X-MW-Time-Zone':(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{return'UTC'}})()}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Calendar unavailable');
     mwSeasonCalendar=d.calendar||null;
     if(mwSeasonCalendar){
       const seasonWeek=Math.max(1,Math.min(41,Number(mwSeasonCalendar.week||1)));
@@ -3457,7 +3470,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
   function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
-  async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status,d);return d}
+  async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();try{h['X-MW-Time-Zone']=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status,d);return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
   function applyAthleteAccessUI(){
     const a=window.mwFeatureAccess||{};
@@ -4470,7 +4483,7 @@ async function loadExistingReps(w,d){
 }
 async function persistOneRep(row){
  const p=parsePrescription(),aid=completionAthleteId();if(!aid)throw new Error('Athlete profile not found.');
- const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:new Date().toISOString(),season_plan_id:activeSeasonPlanId(),workout_cycle_id:activeWorkoutCycleId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek),mw_intent:row.mw_intent||null,mw_interpretation:row.mw_interpretation||null};
+ const payload={athlete_id:aid,workout_key:workoutKey(practiceWeek,practiceDay),program_week:Number(practiceWeek),program_day:Number(practiceDay),rep_number:Number(row.rep_number),distance_m:p.dist,time_seconds:Number(row.time_seconds),target_seconds:row.target_seconds==null?null:Number(row.target_seconds),pace_status:row.pace_status,recorded_at:row.recorded_at||new Date().toISOString(),season_plan_id:activeSeasonPlanId(),workout_cycle_id:activeWorkoutCycleId(),source_program_week:sourceWeekForSeasonWeek(practiceWeek),mw_intent:row.mw_intent||null,mw_interpretation:row.mw_interpretation||null};
  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?on_conflict=athlete_id,workout_key,rep_number',{method:'POST',headers:completionHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(payload)});
  if(!r.ok){const out=await r.json().catch(()=>({}));throw new Error(out?.message||'Rep time could not be saved.')}
 }

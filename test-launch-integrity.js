@@ -198,8 +198,9 @@ includes('coach/app.js',"nextBtn.textContent=prescriptionFinished?'REPS COMPLETE
 includes('coach/app.js','prescribedReps:prescribedRepLimit(x.athleteId)','Coach Practice save payload must carry its prescribed rep limit');
 includes('server/api/coach/practice-timing.js',"code:'rep_limit_exceeded'",'Coach Practice API must reject reps beyond the prescription');
 
-includes('server/api/coach/practice-timing.js','rpc/mw_coach_sync_practice_session_to_athlete','Coach Practice saves must sync into canonical athlete history');
-includes('server/api/coach/practice-timing.js','p_workout_key:meta.workoutKey','Coach Practice sync must preserve athlete workout identity');
+includes('server/api/coach/practice-timing.js','rpc/mw_coach_commit_practice_session','Coach Practice saves must use the atomic canonical-history commit');
+includes('server/api/coach/practice-timing.js','p_results:rows','Coach Practice atomic commit must carry canonical workout identity in each result');
+includes('supabase/migrations/20261003025500_serialize_workout_completion_writes.sql','mw_coach_sync_practice_session_to_athlete','Atomic Practice commit must sync into canonical athlete history');
 includes('coach/app.js','seasonPlanId:athletes.find(a=>a.id===x.athleteId)?.season_plan_id||null','Coach Practice save must include athlete season/workout context');
 includes('athlete/index.html',"source=g.some(x=>x.entry_source==='coach')?'COACH TIMED':'ATHLETE TIMED'",'Athlete Practice history must identify Coach-timed sessions');
 
