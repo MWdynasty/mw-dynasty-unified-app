@@ -83,7 +83,7 @@ async function run(){
   vm.createContext(context);vm.runInContext(fs.readFileSync('server/api/coach/practice-timing.js','utf8'),context);
   async function save(overrides={}){
     const result={};const res={setHeader(){},status(code){result.status=code;return this},json(body){result.body=body;return this}};
-    await context.module.exports({method:'POST',body:{sessionId:'cccccccc-cccc-cccc-cccc-cccccccccccc',results:[{athleteId:A,programWeek:3,programDay:2,sourceProgramWeek:12,seasonPlanId:P,workoutKey:'mw-track-w3-d2',repNumber:1,prescribedReps:2,timeSeconds:12,...overrides}]}},res);return result;
+    await context.module.exports({method:'POST',headers:{},body:{sessionId:'cccccccc-cccc-cccc-cccc-cccccccccccc',results:[{athleteId:A,programWeek:3,programDay:2,sourceProgramWeek:12,seasonPlanId:P,workoutKey:'mw-track-w3-d2',repNumber:1,prescribedReps:2,timeSeconds:12,...overrides}]}},res);return result;
   }
   let result=await save();assert.equal(result.status,200,'old season does not lock current API save');
   assert.equal(rows[0].workout_key,current.workoutKey,'atomic commit persists canonical identity for an old client');
