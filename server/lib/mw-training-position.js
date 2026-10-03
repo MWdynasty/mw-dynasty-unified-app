@@ -39,7 +39,7 @@ function programPosition(state={},plan=null,localDate=new Date()){
   const week=Math.max(1,Math.min(41,Number(state.current_week||1)));
   return {
     week,
-    day:Number(state.current_day||isoDay(today)),
+    day:isoDay(today),
     phase:Number(state.current_phase||phaseFromWeek(week)),
     sourceWeek:Number(state.source_program_week||week),
     status:state.program_status||'active'
