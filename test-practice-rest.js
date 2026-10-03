@@ -139,6 +139,8 @@ async function run() {
   await c.el('practiceFinishSession').click();
   assert.equal(coachSaves[0].results.length,2,'coach retry replaces earlier results without duplicates');
   assert.deepEqual(coachSaves[0].results.map(r=>r.timeSeconds),[9,11],'coach pause/resume preserves finish times');
+  assert.deepEqual(coachSaves[0].results.map(r=>r.mwInterpretation),['above_target','above_target'],'technical/speed reps faster than target are recorded as quality speed, not TOO FAST');
+  assert.deepEqual(coachSaves[0].results.map(r=>r.paceStatus),['on_pace','on_pace'],'quality-speed reps remain positive pace outcomes');
   c.el('practiceTimerStart').click();c.advance(3000);c.el('practiceDNF').click();
   assert.equal(c.el('practiceNextRep').disabled,true,'Next Rep stays locked until the full selected group is accounted for');
   assert.equal(c.el('practiceFinishSession').disabled,false,'DNF enables session save');
