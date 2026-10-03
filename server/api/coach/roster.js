@@ -66,7 +66,7 @@ module.exports=async(req,res)=>{
     const userIds=athletes.map(a=>a.user_id).filter(Boolean);
     const [profiles,states,prs,seasonPlans,completedWorkouts]=await Promise.all([
       userIds.length?get(`profiles?select=user_id,first_name,last_name&user_id=in.${inList(userIds)}`,c.token):Promise.resolve([]),
-      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,last_completed_workout_at,track_tier,strength_tier,starting_week,program_version,season_plan_id,workout_cycle_id&athlete_id=in.${inList(athleteIds)}`,c.token),
+      get(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,last_completed_workout_at,track_tier,strength_tier,starting_week,program_version,season_plan_id,workout_cycle_id&athlete_id=in.${inList(athleteIds)}`,c.token),
       get(`athlete_prs?select=athlete_id,event,time_seconds,date_recorded,verified&athlete_id=in.${inList(athleteIds)}&order=event.asc`,c.token),
       get(`athlete_season_plans?select=id,athlete_id,source_week_map,phase_plan,plan_status,season_type,season_length_weeks,season_start_date,primary_peak_date&athlete_id=in.${inList(athleteIds)}&plan_status=eq.active`,c.token).catch(()=>[]),
       get(`workout_completions?select=athlete_id,program_week,program_day,season_plan_id,workout_cycle_id,workout_key,completion_status,pace_check_status,pace_reps_total,pace_reps_hit,performance_checked_at,completed_at&athlete_id=in.${inList(athleteIds)}&completion_status=eq.completed&order=completed_at.desc&limit=1000`,c.token).catch(()=>[])
