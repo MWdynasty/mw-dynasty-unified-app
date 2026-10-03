@@ -15,6 +15,7 @@ declare
   v_state public.athlete_program_state%rowtype;
   v_plan_start date;
   v_plan_length integer;
+  v_peak_date date;
   v_expected_week integer;
   v_expected_day integer;
 begin
@@ -43,8 +44,8 @@ begin
   v_expected_day:=extract(isodow from p_session_date)::integer;
 
   if v_state.season_plan_id is not null then
-    select season_start_date,season_length_weeks
-      into v_plan_start,v_plan_length
+    select season_start_date,season_length_weeks,primary_peak_date
+      into v_plan_start,v_plan_length,v_peak_date
     from public.athlete_season_plans
     where id=v_state.season_plan_id and athlete_id=p_athlete_id;
 
@@ -54,6 +55,7 @@ begin
 
     v_expected_week:=case
       when p_session_date<v_plan_start then 1
+      when v_peak_date is not null and p_session_date>v_peak_date then least(coalesce(v_plan_length,41),41)
       else least(coalesce(v_plan_length,41),greatest(1,floor((p_session_date-v_plan_start)/7.0)::integer+1))
     end;
   elsif v_state.start_date is not null then
