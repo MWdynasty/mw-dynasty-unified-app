@@ -47,6 +47,7 @@ declare
   v_current_plan uuid;
   v_current_cycle uuid;
   v_key text;
+  v_locked_key text;
   v_total integer;
   v_hit integer;
   v_first_at timestamptz;
@@ -79,11 +80,12 @@ begin
     raise exception 'This athlete is not assigned to your coach account' using errcode='42501';
   end if;
 
+  -- Read identity without a row lock so every completion path can acquire
+  -- the per-workout advisory lock before athlete_program_state.
   select current_week,current_day,season_plan_id,workout_cycle_id
     into v_current_week,v_current_day,v_current_plan,v_current_cycle
   from public.athlete_program_state
-  where athlete_id=p_athlete_id
-  for update;
+  where athlete_id=p_athlete_id;
 
   if not found then
     raise exception 'Athlete program state not found';
@@ -111,9 +113,52 @@ begin
   end if;
 
   -- Serialize all writes for this athlete/workout with the table trigger below.
+  -- Lock ordering is advisory lock -> athlete_program_state everywhere.
+  v_locked_key:=v_key;
   perform pg_catalog.pg_advisory_xact_lock(
-    pg_catalog.hashtextextended(p_athlete_id::text || '|' || v_key,0)
+    pg_catalog.hashtextextended(p_athlete_id::text || '|' || v_locked_key,0)
   );
+
+  -- Re-read and lock authoritative state after obtaining the advisory lock.
+  -- If the athlete advanced while we waited, abort instead of writing under
+  -- an identity that is no longer current.
+  select current_week,current_day,season_plan_id,workout_cycle_id
+    into v_current_week,v_current_day,v_current_plan,v_current_cycle
+  from public.athlete_program_state
+  where athlete_id=p_athlete_id
+  for update;
+
+  if not found then
+    raise exception 'Athlete program state not found';
+  end if;
+
+  if v_role='coach'
+     and (v_current_week is distinct from p_program_week or v_current_day is distinct from p_program_day) then
+    raise exception 'Practice session no longer matches the athlete current workout';
+  end if;
+
+  if v_current_plan is not null then v_current_cycle:=null; end if;
+  if p_workout_cycle_id is distinct from v_current_cycle then
+    raise exception 'Practice training cycle no longer matches the athlete current workout';
+  end if;
+  if p_season_plan_id is distinct from v_current_plan then
+    raise exception 'Practice season no longer matches the athlete current workout';
+  end if;
+  if v_current_plan is not null and not exists (
+    select 1 from public.athlete_season_plans where id=v_current_plan and athlete_id=p_athlete_id
+  ) then raise exception 'Season plan does not belong to athlete'; end if;
+
+  v_key:=private.mw_normalize_workout_key(
+    p_athlete_id,v_current_plan,p_program_week,p_program_day,p_workout_key,v_current_cycle
+  );
+  if v_key<>public.mw_workout_identity_key(
+    p_athlete_id,v_current_plan,p_program_week,p_program_day,'track',v_current_cycle
+  ) then
+    raise exception 'Coach practice requires the track workout slot';
+  end if;
+  if v_key is distinct from v_locked_key then
+    raise exception 'Practice workout identity changed while saving; retry';
+  end if;
 
   -- A completed workout is immutable across different practice sessions.
   -- Retries of the same coach session remain idempotent.
