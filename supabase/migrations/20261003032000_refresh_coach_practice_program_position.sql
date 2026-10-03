@@ -18,6 +18,9 @@ declare
   v_peak_date date;
   v_expected_week integer;
   v_expected_day integer;
+  v_headers jsonb := coalesce(nullif(current_setting('request.headers', true), '')::jsonb, '{}'::jsonb);
+  v_request_tz text := coalesce(nullif(v_headers->>'x-mw-time-zone',''),'UTC');
+  v_request_date date;
 begin
   if v_uid is null then
     raise exception 'Authentication required' using errcode='42501';
@@ -30,6 +33,14 @@ begin
   end if;
   if p_session_date is null then
     raise exception 'Session date is required';
+  end if;
+
+  if not exists(select 1 from pg_catalog.pg_timezone_names where name=v_request_tz) then
+    v_request_tz:='UTC';
+  end if;
+  v_request_date:=(now() at time zone v_request_tz)::date;
+  if p_session_date<>v_request_date then
+    raise exception 'Session date must match the current request-local date' using errcode='22023';
   end if;
 
   select * into v_state
