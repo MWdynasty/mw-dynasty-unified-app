@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const {isoDay,resolveFromCalendar}=require('./server/lib/mw-authoritative-state');
 const {calendarPosition,localCalendarDate}=require('./server/lib/mw-season-calendar');
 const {positionForPlan}=require('./server/lib/mw-season-intelligence');
+const {programPosition}=require('./server/lib/mw-training-position');
 
 const lateFridayUtc=new Date('2026-10-03T02:20:00.000Z');
 assert.equal(isoDay(lateFridayUtc,'America/Chicago'),5,'9:20 PM in Huntsville/Chicago time must remain Friday / Day 5');
@@ -33,4 +34,9 @@ assert.equal(
   1,
   'season-plan week must use the athlete local calendar date'
 );
+const staleStored=programPosition({
+  current_week:1,current_day:5,current_phase:1,start_date:'2026-09-29',starting_week:1,program_status:'active'
+},null,new Date('2026-10-06T12:00:00.000Z'));
+assert.equal(staleStored.week,2,'coach Practice Mode must derive the live week from start_date even when stored current_week is stale');
+assert.equal(staleStored.day,2,'coach Practice Mode must derive the same live local day as the live week');
 console.log('PASS: authoritative MW day and week respect athlete local timezone.');
