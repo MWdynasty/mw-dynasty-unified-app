@@ -57,7 +57,7 @@ async function refresh(req){
 
     let scheduleState=state;
     try{
-      const calendar=await effectiveCalendar(token);
+      const calendar=await effectiveCalendar(token,{timeZone:clientTimeZone||null});
       if(calendar&&Number.isFinite(Number(calendar.week))){
         scheduleState={
           ...state,
