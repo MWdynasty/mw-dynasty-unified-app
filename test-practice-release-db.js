@@ -25,6 +25,7 @@ async function run(){
   assert.deepEqual(await security(),before,'function ownership, permissions and security configuration stay unchanged');
 
   await db.exec(read('20261003191637_protect_completed_practice_table_evidence.sql'));
+  await db.exec(read('20261003192608_validate_coach_evidence_session_links.sql'));
   assert.equal((await scalar(db,"select has_function_privilege('authenticated','private.mw_protect_completed_practice_evidence()','execute') as allowed")).allowed,false);
   // Match production coach DELETE grants/policy in this disposable fixture.
   await db.exec("grant delete on public.coach_practice_timing_results to authenticated; create policy test_coach_delete on public.coach_practice_timing_results for delete to authenticated using(coach_user_id=auth.uid());");
@@ -63,7 +64,7 @@ async function run(){
   const {today,day}=await scalar(db,'select current_date::text as today,extract(isodow from current_date)::int as day');
   await db.query("update public.athlete_program_state set season_plan_id=$1,start_date=current_date-14,starting_week=1,current_week=3,current_day=$2,program_status='active'",[P,day]);
   const key=Identity.create({athleteId:A,seasonPlanId:P,week:3,day}).workoutKey;
-  const result={athlete_id:A,session_date:today,program_week:3,program_day:day,source_program_week:12,workout_key:key,season_plan_id:P,distance_m:100,rep_number:1,time_seconds:9,target_seconds:15,pace_status:'on_pace',mw_intent:'technical',mw_interpretation:'above_target'};
+  const result={athlete_id:A,session_date:today,program_week:3,program_day:day,source_program_week:12,workout_key:key,season_plan_id:P,distance_m:100,rep_number:1,time_seconds:9.876,target_seconds:15,pace_status:'on_pace',mw_intent:'technical',mw_interpretation:'above_target'};
   await role(db,C);
   const commit=rows=>db.query('select public.mw_coach_commit_practice_session($1,$2::jsonb) as result',[S,JSON.stringify(rows)]);
   const rawBefore=await scalar(db,'select count(*)::int as n from public.coach_practice_timing_results');
@@ -82,10 +83,13 @@ async function run(){
   await db.query('insert into public.athlete_practice_rep_results(athlete_id,workout_key,program_week,program_day,rep_number,time_seconds,season_plan_id) values($1,$2,4,$3,1,12,$4)',[A,draftKey,day,P]);
   await db.query('update public.athlete_practice_rep_results set time_seconds=11 where workout_key=$1',[draftKey]);
   assert.equal(Number((await scalar(db,'select time_seconds from public.athlete_practice_rep_results where workout_key=$1',[draftKey])).time_seconds),11,'unfinished athlete reps remain correctable');
+  await assert.rejects(db.query('update public.athlete_practice_rep_results set coach_session_id=$1,coach_user_id=$2 where workout_key=$3',[S,C,draftKey]),/linkage/);
+  await assert.rejects(db.query('insert into public.athlete_practice_rep_results(athlete_id,workout_key,program_week,program_day,rep_number,time_seconds,season_plan_id,coach_session_id,coach_user_id) values($1,$2,4,$3,2,12,$4,$5,$6)',[A,draftKey,day,P,S,C]),/linkage/);
   await role(db,C);
   await assert.rejects(db.query('update public.coach_practice_timing_results set time_seconds=8.5 where session_id=$1',[S]),/immutable/);
   await assert.rejects(db.query('delete from public.coach_practice_timing_results where session_id=$1',[S]),/immutable/);
   await db.query('select public.mw_coach_sync_practice_intelligence($1,$2,$3)',[S,A,key]);
+  assert.equal((await db.query('select public.mw_coach_sync_practice_session_to_athlete($1,$2,3,$3,12,$4,100,$5,null) as result',[S,A,day,key,P])).rows[0].result.replayed,true,'millisecond evidence replays at athlete numeric precision');
   const receipt=(await commit([result])).rows[0].result;assert.equal(receipt.replayed,true);
   for(const patch of [{time_seconds:8.5},{mw_intent:'recovery'},{mw_interpretation:'below_target'},{pace_status:'slow'},{source_program_week:13},{distance_m:200},{session_date:'2020-01-01'}])await assert.rejects(commit([{...result,...patch}]),/immutable/);
   await assert.rejects(commit([result,{...result,rep_number:2}]),/immutable/);
