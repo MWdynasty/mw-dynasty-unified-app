@@ -29,7 +29,7 @@ module.exports=async function handler(req,res){
   if(req.method!=='GET')return res.status(405).json({error:'GET only'});
   try{
     const c=await getAccountContext(req);
-    const authority=await resolveAuthoritativeState(c);
+    const authority=await resolveAuthoritativeState(c,{timeZone:String(req.headers['x-mw-time-zone']||'').slice(0,80)||null});
     const week=req.query?.week==null?authority.week:clampWeek(req.query?.week);
     const role=String(c.profile?.role||'athlete');
     const privileged=['founder_owner','admin','coach'].includes(role);
