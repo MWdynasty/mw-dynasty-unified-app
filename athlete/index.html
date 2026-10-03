@@ -4554,7 +4554,15 @@ async function openPracticeFor(w,d){
  const p=parsePrescription();
  if(p.target&&results.length){
    let repaired=false;const target=Number(p.target);
-   results=results.map(row=>{const actual=Number(row.time_seconds),status=Number.isFinite(actual)&&(actual>=target*.99&&actual<=target*1.01)?'on_pace':'outside_target';if(Math.abs(Number(row.target_seconds||0)-target)>.01||row.pace_status!==status)repaired=true;return {...row,target_seconds:target,pace_status:status}});
+   const intentText=[session?.title,session?.focus,session?.prescribedWork,session?.work,session?.structure,session?.intensity,...(Array.isArray(session?.cues)?session.cues:[])].filter(Boolean).join(' ').toLowerCase();
+   const intent=/tempo|extensive|recovery|regeneration|easy/.test(intentText)?(/recovery|regeneration|easy/.test(intentText)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(intentText)?(/technical|technique|progressive|fly|flying|wicket/.test(intentText)?'technical':'speed'):'pace';
+   results=results.map(row=>{
+     const actual=Number(row.time_seconds),aboveTarget=Number.isFinite(actual)&&actual<target*.99&&['technical','speed'].includes(intent);
+     const status=Number.isFinite(actual)&&(aboveTarget||actual>=target*.99&&actual<=target*1.01)?'on_pace':'outside_target';
+     const interpretation=aboveTarget?'above_target':status==='on_pace'?'on_target':actual<target?'pace_violation':'below_target';
+     if(Math.abs(Number(row.target_seconds||0)-target)>.01||row.pace_status!==status||row.mw_interpretation!==interpretation||row.mw_intent!==intent)repaired=true;
+     return {...row,target_seconds:target,pace_status:status,mw_interpretation:interpretation,mw_intent:intent};
+   });
    if(repaired)Promise.all(results.map(row=>persistOneRep(row))).catch(()=>{});
  }
  renderLog();const next=Math.min(p.reps,results.length+1);
