@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>MW sign-in layout verification</title>
+<style>
+body{margin:0;background:#e9eef2;color:#182735;font:14px system-ui,sans-serif;padding:20px}header{max-width:1150px;margin:0 auto 18px}h1{font-size:20px;margin:0 0 10px}button{min-height:44px;padding:8px 12px;border:1px solid #bac8d2;border-radius:8px;background:white;color:#182735;cursor:pointer}button[aria-pressed=true]{background:#152e42;color:white}.controls{display:flex;gap:8px;flex-wrap:wrap}.phones{display:flex;gap:20px;justify-content:center;align-items:flex-start}.phone h2{font-size:14px;margin:0 0 8px;text-align:center}.phone iframe{display:block;border:0;box-shadow:0 6px 24px #22354633;background:#040c14}#report{max-width:1100px;margin:20px auto;background:white;padding:14px;border-radius:10px;white-space:pre-wrap;font-size:12px}#summary{padding:10px 0;font-weight:650}
+</style></head>
+<body>
+<header><h1>Actual Athlete and Coach entry pages at matching viewports</h1><div class="controls"><button data-size="390,844" aria-pressed="true">390 × 844</button><button data-size="320,568">320 × 568</button><button data-size="430,932">430 × 932</button><button data-size="844,390">844 × 390</button><button id="native" aria-pressed="false">Native + safe areas</button><button id="inspect">Check layout</button></div><div id="summary" role="status">Loading actual entry pages…</div></header>
+<div class="phones"><section class="phone"><h2>Athlete</h2><iframe id="athlete" title="Athlete phone viewport" width="390" height="844"></iframe></section><section class="phone"><h2>Coach</h2><iframe id="coach" title="Coach phone viewport" width="390" height="844"></iframe></section></div>
+<pre id="report"></pre>
+<script>
+(async()=>{
+  const frames=[document.getElementById('athlete'),document.getElementById('coach')];
+  let width=390,height=844,native=false;
+  const sources=await Promise.all(['athlete','coach'].map(async role=>{
+    const response=await fetch('/'+role+'/');
+    if(!response.ok)throw new Error('Entry fetch failed: '+role);
+    return response.text();
+  }));
+  function draw(){
+    frames.forEach((frame,i)=>{
+      frame.width=width;frame.height=height;
+      const role=i===0?'athlete':'coach';
+      // srcdoc renders the actual page source without weakening its DENY framing headers.
+      // The base is the real role directory, so every production bundle/style is used.
+      const source=sources[i].replace(/<base\b[^>]*>/gi,'').replace('<head>','<head><base href="'+location.origin+'/'+role+'/">'+(native?'<script>document.documentElement.classList.add("mw-native-app")<\/script><style>.mw-signin{--signin-safe-top:47px!important;--signin-safe-bottom:34px!important}</style>':''));
+      frame.srcdoc=source;
+    });
+    document.getElementById('summary').textContent='Rendering '+width+' × '+height+(native?' · native safe-area simulation':' · web');
+  }
+  function measure(frame){
+    const doc=frame.contentDocument,root=doc.querySelector('[data-mw-signin]');
+    if(!root)return {role:frame.id,ready:false};
+    const win=frame.contentWindow,card=root.querySelector('[data-mw-signin-card]');
+    const rect=e=>{const r=e.getBoundingClientRect();return {x:+r.x.toFixed(2),y:+r.y.toFixed(2),width:+r.width.toFixed(2),height:+r.height.toFixed(2),right:+r.right.toFixed(2),bottom:+r.bottom.toFixed(2)};};
+    const nodes=[...root.querySelectorAll('input,button,a')].filter(e=>e.getBoundingClientRect().height>0);
+    const clipped=nodes.filter(e=>{const r=e.getBoundingClientRect();return r.left<-.5||r.right>width+.5||e.scrollWidth>e.clientWidth+2}).map(e=>e.id||e.textContent.trim());
+    const scrollWidth=Math.max(root.scrollWidth,doc.documentElement.scrollWidth);
+    const targets=[...root.querySelectorAll('button,a,.mw-signin-remember')].filter(e=>e.getBoundingClientRect().height>0);
+    const smallTargets=targets.filter(e=>e.getBoundingClientRect().height<43.5).map(e=>e.id||e.textContent.trim());
+    const bottom=Math.max(...nodes.map(e=>e.getBoundingClientRect().bottom));
+    const reachable=bottom<=height+.5||root.scrollHeight>root.clientHeight||doc.documentElement.scrollHeight>height;
+    return {role:frame.id,ready:true,viewport:{width:win.innerWidth,height:win.innerHeight},card:rect(card),email:rect(root.querySelector('input[type=email]')),password:rect(root.querySelector('.mw-signin-password')),submit:rect(root.querySelector('.mw-signin-submit')),horizontalOverflow:scrollWidth>width+1,clipped,smallTargets,allInInitialViewport:bottom<=height+.5,allVerticallyReachable:reachable,lastControlBottom:+bottom.toFixed(2),scrollHeight:root.scrollHeight,clientHeight:root.clientHeight};
+  }
+  function inspect(){
+    const results=frames.map(measure);
+    const ready=results.every(r=>r.ready);
+    const matching=ready&&['card','email','password','submit'].every(k=>Math.abs(results[0][k].width-results[1][k].width)<.5&&Math.abs(results[0][k].height-results[1][k].height)<.5&&Math.abs(results[0][k].x-results[1][k].x)<.5&&Math.abs(results[0][k].y-results[1][k].y)<.5);
+    const pass=matching&&results.every(r=>!r.horizontalOverflow&&!r.clipped.length&&!r.smallTargets.length&&r.allVerticallyReachable);
+    window.signinVerification={width,height,native,matching,pass,results};
+    document.getElementById('summary').textContent=(pass?'PASS':'NOT PASSED')+' · '+width+' × '+height+(native?' · native safe areas':' · web')+' · identical geometry, no horizontal clipping, 44px tap targets';
+    document.getElementById('report').textContent=JSON.stringify(window.signinVerification,null,2);
+    return window.signinVerification;
+  }
+  document.querySelectorAll('[data-size]').forEach(button=>button.onclick=()=>{[width,height]=button.dataset.size.split(',').map(Number);document.querySelectorAll('[data-size]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));draw()});
+  document.getElementById('native').onclick=()=>{native=!native;document.getElementById('native').setAttribute('aria-pressed',String(native));draw()};
+  document.getElementById('inspect').onclick=inspect;
+  draw();
+})().catch(error=>{document.getElementById('summary').textContent=error.message;});
+</script></body></html>
