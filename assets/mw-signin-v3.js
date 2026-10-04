@@ -41,9 +41,9 @@
       </header>
       <section class="mw-signin-card" data-mw-signin-card aria-labelledby="mwSignInTitle">
         <div class="mw-signin-heading"><span class="mw-signin-role">${c.name.toUpperCase()} ACCESS</span><h1 id="mwSignInTitle">${c.name} sign in</h1><p>${c.description}</p></div>
-        <form id="${c.form}" class="mw-signin-form" novalidate>
-          <label class="mw-signin-field" for="${c.email}"><span>Email address</span><input id="${c.email}" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="you@example.com" required></label>
-          <div class="mw-signin-field"><label for="${c.password}">Password</label><div class="mw-signin-password"><input id="${c.password}" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required><button id="${c.toggle}" class="mw-signin-toggle" type="button" aria-label="Show password" aria-controls="${c.password}" aria-pressed="false">Show</button></div></div>
+        <form id="${c.form}" class="mw-signin-form" novalidate onsubmit="return false">
+          <label class="mw-signin-field" for="${c.email}"><span>Email address</span><input id="${c.email}" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="you@example.com" required></label>
+          <div class="mw-signin-field"><label for="${c.password}">Password</label><div class="mw-signin-password"><input id="${c.password}" type="password" autocomplete="current-password" placeholder="Enter your password" required><button id="${c.toggle}" class="mw-signin-toggle" type="button" aria-label="Show password" aria-controls="${c.password}" aria-pressed="false">Show</button></div></div>
           <div class="mw-signin-options"><label class="mw-signin-remember"><input id="${c.remember}" type="checkbox" checked><span>Keep me signed in</span></label><button id="${c.forgot}" class="mw-signin-forgot" type="button">Forgot password?</button></div>
           <button id="${c.submit}" class="mw-signin-submit" type="submit"><span>Sign in</span><span aria-hidden="true">→</span></button>
         </form>

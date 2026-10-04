@@ -28,6 +28,8 @@ for (const role of ['athlete', 'coach']) {
   assert(html.includes('autocomplete="current-password"'));
   assert(html.includes('inputmode="email"'));
   assert(html.includes('role="status" aria-live="polite"'));
+  assert(baseForm(html).includes('onsubmit="return false"'), 'Early form submission must not navigate before auth wiring');
+  assert(!/<input\b[^>]*\bname=/.test(baseForm(html)), 'Credentials must never be native GET form parameters');
   for (const label of baseForm(html).matchAll(/<label\b[^>]*>[\s\S]*?<\/label>/g)) {
     assert(!label[0].includes('<button'), 'Password toggle must not be nested inside a field label');
   }
@@ -64,6 +66,11 @@ assert(css.includes('html:has(.mw-signin:not([hidden]):not([style*="display: non
 assert(!css.includes('position: absolute'), 'The shared component must never absolutely position form elements');
 const launch = fs.readFileSync('assets/mw-session-launch-live-20261004-r1.js','utf8');
 assert(launch.includes('#app [data-mw-signin]'), 'Returning-session overlay must recognize the new Coach screen');
+const serviceWorker = fs.readFileSync('mw-sw.js','utf8');
+assert(serviceWorker.includes("mw-dynasty-shell-v7-shared-signin"), 'Refresh the cached shell for the shared sign-in');
+for (const path of ['/assets/mw-signin-v3.js','/assets/mw-signin-v3.css']) {
+  assert(serviceWorker.includes("'" + path + "'"), 'Offline shell must cache ' + path);
+}
 
 // Test the real Coach renderLogin function with its original bindLogin hook.
 const renderFn = coach.slice(coach.indexOf("function renderLogin(message=''){"), coach.indexOf('/* MW coach signup tab hook */'));
