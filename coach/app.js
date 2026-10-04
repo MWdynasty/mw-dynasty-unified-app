@@ -948,6 +948,7 @@ function coachMWPage(){
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       traceCoachStage('before_assistant_append');
+      if(coachMWPendingBubble){coachMWPendingBubble.remove();coachMWPendingBubble=null}
       appendCoachBubble('assistant',answer);
       if(d.action)appendCoachAction(d.action);
       traceCoachStage('assistant_appended');
