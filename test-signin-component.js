@@ -60,6 +60,7 @@ assert(css.includes('min-width: 0'));
 assert(css.includes('font-size: 16px !important'));
 assert(css.includes('min-height: 44px'));
 assert(/\.mw-signin,\s*#mwAuth\.mw-signin\s*\{[^}]*position: fixed;[^}]*inset: 0;/s.test(css), 'Both roles must scroll in the same viewport-sized container');
+assert(css.includes('html:has(.mw-signin:not([hidden]):not([style*="display: none"])'), 'Do not leave a second document scrollbar behind the visible sign-in');
 assert(!css.includes('position: absolute'), 'The shared component must never absolutely position form elements');
 const launch = fs.readFileSync('assets/mw-session-launch-live-20261004-r1.js','utf8');
 assert(launch.includes('#app [data-mw-signin]'), 'Returning-session overlay must recognize the new Coach screen');
