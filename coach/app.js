@@ -835,7 +835,18 @@ function coachMWPage(){
   pick.onchange=()=>{const f=pick.files?.[0];if(!f)return;if(f.size>3*1024*1024){state.textContent='Photo too large. Use 3 MB or less.';pick.value='';return}const r=new FileReader();r.onload=()=>{pendingImage=String(r.result||'');state.textContent='Photo attached.'};r.readAsDataURL(f)};
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(SR){const recognition=new SR();recognition.lang='en-US';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{mic.classList.add('listening');mic.textContent='●';state.textContent='Listening…'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';if(text){q.value=text;state.textContent='Voice captured. Tap Ask when ready.'}};recognition.onerror=()=>{state.textContent='Voice input could not start. You can still type your question.'};recognition.onend=()=>{mic.classList.remove('listening');mic.textContent='🎙'};mic.onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}try{recognition.start()}catch{}}}else{mic.onclick=()=>toast('Voice input is not available in this browser yet.')}
-  let coachMWInFlight=false;
+  let coachMWInFlight=false,coachMWWatchdog=0;
+  const resetCoachMWUi=(message='')=>{
+    coachMWInFlight=false;
+    clearTimeout(coachMWWatchdog);
+    const liveState=document.getElementById('mwcoachrequeststate');
+    if(liveState)liveState.textContent=message;
+    const liveSend=document.getElementById('askmw');
+    if(liveSend)liveSend.disabled=false;
+    document.querySelectorAll('.coach-mw-athlete-composer button,.coach-mw-athlete-suggestions button').forEach(b=>b.disabled=false);
+    const loader=document.getElementById('mw-native-resume-loader');
+    if(loader){loader.classList.remove('mw-show');loader.remove()}
+  };
   const traceCoachStage=(stage)=>{
     try{
       const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
@@ -899,8 +910,14 @@ function coachMWPage(){
   const runCoachRequest=()=>{
     if(coachMWInFlight)return;
     coachMWInFlight=true;
+    clearTimeout(coachMWWatchdog);
     if(sendButton)sendButton.disabled=true;
     requestState.textContent='Coach MW is thinking…';
+    coachMWWatchdog=setTimeout(()=>{
+      if(!coachMWInFlight)return;
+      traceCoachStage('watchdog_reset');
+      resetCoachMWUi('Coach MW took too long to respond. Please try again.');
+    },20000);
     const showRetry=(message)=>{
       requestState.textContent=message;
       const retry=document.createElement('button');
@@ -943,11 +960,9 @@ function coachMWPage(){
       const timedOut=e?.name==='AbortError';
       showRetry(timedOut?'Coach MW is taking too long to respond. Check your connection and tap Retry.':'Coach MW could not respond: '+(e?.message||'check your connection and try again.'));
     }).finally(()=>{
-      // iOS WebView can repaint stale transient text after the assistant bubble is appended.
-      // Always release the request lock and clear the thinking state when this request settles.
-      coachMWInFlight=false;
-      if(sendButton)sendButton.disabled=false;
-      if(requestState)requestState.textContent='';
+      // Always reset the live Coach MW controls, even if the page was re-rendered.
+      traceCoachStage('request_settled');
+      resetCoachMWUi('');
     });
   };
   const send=()=>{
