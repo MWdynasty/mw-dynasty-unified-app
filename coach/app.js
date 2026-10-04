@@ -934,7 +934,7 @@ function coachMWPage(){
       try{return await fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:controller.signal})}
       finally{clearTimeout(timeout)}
     };
-    request().then(async r=>{
+    return request().then(async r=>{
       traceCoachStage('response_headers_received');
       if(r.status===401&&authSession?.refresh_token){
         const refreshed=await refreshCoachSession(authSession);
@@ -948,27 +948,8 @@ function coachMWPage(){
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       traceCoachStage('before_assistant_append');
-      // Render through a guarded direct DOM path; never let a WebView DOM exception leave the request frozen.
-      try{
-        const pending=coachMWPendingBubble;
-        const body=pending?.querySelector?.('p');
-        if(body){
-          body.textContent=answer;
-          pending.classList.remove('mw-coach-thinking');
-          pending.classList.add('mw-coach-answered');
-          coachMWPendingBubble=null;
-        }else{
-          const node=document.createElement('div');
-          node.className='mw-coach-message mw-coach-assistant';
-          node.innerHTML='<b>Coach MW</b><p></p>';
-          node.querySelector('p').textContent=answer;
-          chat.appendChild(node);
-        }
-      }catch(renderError){
-        console.error('MW_COACH_ASSISTANT_RENDER_FAILED',renderError);
-        traceCoachStage('assistant_render_error');
-      }
-      try{if(d.action)appendCoachAction(d.action)}catch(actionError){console.warn('MW_COACH_ACTION_RENDER_FAILED',actionError)}
+      appendCoachBubble('assistant',answer);
+      if(d.action)appendCoachAction(d.action);
       traceCoachStage('assistant_appended');
       chat.scrollTop=chat.scrollHeight;
       requestState.textContent='';
@@ -976,14 +957,8 @@ function coachMWPage(){
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
     }).catch(e=>{
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
-      if(coachMWPendingBubble){
-        const body=coachMWPendingBubble.querySelector('p');
-        if(body)body.textContent='Coach MW could not respond: '+(e?.message||'check your connection and try again.');
-        coachMWPendingBubble.classList.remove('mw-coach-thinking');
-        coachMWPendingBubble.classList.add('mw-coach-error');
-        coachMWPendingBubble=null;
-      }
       const timedOut=e?.name==='AbortError';
+      appendCoachBubble('assistant',timedOut?'Coach MW timed out. Please try again.':'Coach MW could not respond: '+(e?.message||'Please try again.'));
       showRetry(timedOut?'Coach MW is taking too long to respond. Check your connection and tap Retry.':'Coach MW could not respond: '+(e?.message||'check your connection and try again.'));
     }).finally(()=>{
       // Always reset the live Coach MW controls, even if the page was re-rendered.
