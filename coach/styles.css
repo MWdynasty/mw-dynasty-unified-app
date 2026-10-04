@@ -2928,6 +2928,7 @@ img,svg,video,canvas{max-width:100%}
     grid-template-areas:
       "presence thread"
       "presence composer"
+      "presence requeststate"
       "presence attach"
       "presence suggestions"!important;
     column-gap:24px!important;
@@ -3060,6 +3061,10 @@ img,svg,video,canvas{max-width:100%}
 
   .coach-mw-athlete-shell>#mwattachstate{
     grid-area:attach!important;
+    min-height:0!important;
+  }
+  .coach-mw-athlete-shell>#mwcoachrequeststate{
+    grid-area:requeststate!important;
     min-height:0!important;
   }
   .coach-mw-athlete-suggestions{
