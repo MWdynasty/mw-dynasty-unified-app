@@ -21,7 +21,11 @@
 
   const setVoiceButtons = () => {
     document.querySelectorAll('.mw-read-aloud').forEach((button) => {
-      if (button !== activeButton) button.textContent = '▶ Start Voice';
+      if (button !== activeButton && button.textContent !== '▶ Start Voice') {
+        // textContent replaces child nodes even when the value is unchanged.
+        // Only write when needed so our childList observer cannot trigger itself forever.
+        button.textContent = '▶ Start Voice';
+      }
     });
   };
 
