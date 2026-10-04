@@ -2803,14 +2803,43 @@ async function speak(t,btn){if(!t)return;if(mwVoiceButton===btn&&btn?.classList.
 function mwEscape(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function mwMessageHtml(t){let s=mwEscape(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n\n+/g,'<br><br>').replace(/\n/g,'<br>');return s}
 function add(t,c){let d=document.createElement('div');d.className='msg '+c;if(c==='coach')d.innerHTML=mwMessageHtml(t);else d.textContent=t;if(c==='coach'){let b=document.createElement('button');b.className='speak';b.textContent='🔊 READ ALOUD';b.onclick=()=>speak(t,b);d.appendChild(b);let v=document.createElement('span');v.className='voiceLabel';v.textContent='MW NATURAL VOICE';d.appendChild(v)}$('#chat').appendChild(d);$('#chat').scrollTop=$('#chat').scrollHeight}
-const MW_CONVERSATION_KEY='mwConversationV2';
-const conversation=JSON.parse(localStorage.getItem(MW_CONVERSATION_KEY)||'[]');
+const MW_CONVERSATION_PREFIX='mwConversationV3:';
+function mwConversationSession(){
+  try{
+    const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
+    return raw?JSON.parse(raw):null;
+  }catch{return null}
+}
+function mwConversationKey(session){
+  const userId=String(session?.user?.id||session?.user?.sub||session?.user_id||'').trim();
+  return MW_CONVERSATION_PREFIX+(userId||'anonymous');
+}
+function readConversation(key){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(key)||'[]');
+    return Array.isArray(parsed)?parsed.filter(m=>m&&typeof m.content==='string'&&['user','assistant'].includes(m.role)).slice(-30):[];
+  }catch{return []}
+}
+let MW_CONVERSATION_KEY=mwConversationKey(mwConversationSession());
+let conversation=readConversation(MW_CONVERSATION_KEY);
 function saveConversation(){localStorage.setItem(MW_CONVERSATION_KEY,JSON.stringify(conversation.slice(-30)))}
 function renderSavedConversation(){
-  if(!conversation.length)return;
-  $('#chat').innerHTML='';
+  const chat=$('#chat');if(!chat)return;
+  chat.innerHTML='';
+  if(!conversation.length){
+    chat.innerHTML='<div class="msg coach">I’m Coach MW. What can I help you with today?</div>';
+    return;
+  }
   for(const m of conversation)add(m.content,m.role==='assistant'?'coach':'me');
 }
+function switchConversationIdentity(session){
+  const nextKey=mwConversationKey(session);
+  if(nextKey===MW_CONVERSATION_KEY)return;
+  MW_CONVERSATION_KEY=nextKey;
+  conversation=readConversation(MW_CONVERSATION_KEY);
+  renderSavedConversation();
+}
+window.mwSetConversationIdentity=switchConversationIdentity;
 async function refreshPremiumStatus(){
   const p=getProfile(), ep=p.entryAssessment||{};
   if($('#ctxAthlete')) $('#ctxAthlete').textContent=p.name||'Athlete';
@@ -3391,8 +3420,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     box.querySelector('[data-mw-target="coach"]')?.addEventListener('click',()=>handoffMWSession('/coach/','mwCoachSupabaseSession'));
     return true;
   }
-  function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
-  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
+  function saveSession(s,persist=null){mwSession=s;window.mwSetConversationIdentity?.(s);const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
+  function clearSession(){mwSession=null;window.mwSetConversationIdentity?.(null);localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();try{h['X-MW-Time-Zone']=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status,d);return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
