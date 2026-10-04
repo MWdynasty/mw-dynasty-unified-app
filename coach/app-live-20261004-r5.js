@@ -1179,9 +1179,38 @@ const COACH_UPGRADE_TOURS={
     {icon:'◷',title:'Pacing Tools',body:'Use live athlete PRs to calculate individualized target times for the prescribed work.',hint:'The complete performance platform is ready.',target:'[data-page="pacing"]',label:'NEW · PACING'}
   ]
 };
+const COACH_MOBILE_TOURS={
+  core:[
+    {icon:'✦',title:'Welcome to Coach MW',body:'This quick tour shows how MW helps you coach without hunting through the app.',hint:'Coach MW is your assistant. You stay in control.',target:null,label:'COACH CORE'},
+    {icon:'⌂',title:'Home — See What Needs Attention',body:'Start here to see your coaching command center, team picture and current priorities.',hint:'Use Home to orient yourself before you act.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team — Know Your Athletes',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train — Turn the Plan Into Work',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'☰',title:'Menu — Find the Rest of MW',body:'Calendar, Profile, Settings, Attendance, Help and Coach MW tools live here.',hint:'Menu is your access point for everything else.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✦',title:'Coach MW Is Your Assistant',body:'Open Coach MW from your coach tools to ask questions, plan practices, organize schedules and get help with your coaching workflow.',hint:'Coach MW recommends; you approve what gets changed.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'COACH MW'},
+    {icon:'✓',title:'You’re Ready',body:'Your flow is simple: ask Coach MW → review the recommendation → approve → execute.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+  ],
+  intelligence:[
+    {icon:'✦',title:'Welcome to Coach Intelligence',body:'Coach MW is the intelligence layer that helps you organize decisions without taking control away from you.',hint:'You ask. MW organizes and recommends. You approve.',target:null,label:'COACH INTELLIGENCE'},
+    {icon:'MW',title:'Coach MW — Your Coaching Intelligence Assistant',body:'Coach MW can help plan practices, build schedules, organize around meets, breaks, exams and travel, explain workouts, review team needs, draft communication and recommend adjustments.',hint:'It can organize the work across your coaching environment, but you remain the decision-maker.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'⌂',title:'Home — See What Needs Attention',body:'Start with the big picture before opening an athlete or making a change.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team — Move From Signal to Athlete',body:'Inspect the athlete behind a flag, recommendation or coaching question.',hint:'Use Team for athlete-specific context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train — Execute the Plan',body:'Open the training workspace and manage the work your athletes execute.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'☰',title:'Menu — Calendar, Profile & More',body:'Find Messages, Calendar, Profile, Settings and the rest of your tools here.',hint:'Menu holds the deeper workspace.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✓',title:'You’re Ready',body:'Your flow is: ask Coach MW → review → approve → execute → communicate.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+  ],
+  performance:[
+    {icon:'✦',title:'Welcome to MW Sprint Performance',body:'Coach MW is the intelligence layer that helps you use the complete MW system without getting lost.',hint:'You ask. MW organizes and recommends. You approve.',target:null,label:'SPRINT PERFORMANCE'},
+    {icon:'MW',title:'Coach MW — Your MW System Assistant',body:'Coach MW can help plan practices, build schedules, organize around meets, breaks, exams and travel, explain today’s work, review athletes, draft communication and recommend adjustments across the MW system.',hint:'Coach MW can organize the work; you remain in control of every change.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'⌂',title:'Home — Start With Today’s Picture',body:'Start here to see what needs attention before opening the system.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team — Connect the System to the Athlete',body:'Review athlete placement, assignments and the context that should shape how you coach the prescribed work.',hint:'Use Team for athlete-specific coaching.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train — Execute the MW System',body:'Open the synchronized training workspace for track, strength, pacing and practice execution.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'☰',title:'Menu — Open the Deeper Tools',body:'Find Messages, Calendar, Profile, Settings and the deeper performance tools here.',hint:'Menu is your access point for the rest of MW.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✓',title:'You’re Ready',body:'Your coaching flow is: ask Coach MW → review the recommendation → approve → execute → communicate.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+  ]
+};
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v29`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v34`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
@@ -1202,10 +1231,16 @@ function maybeStartCoachTour(){
 function coachTourEnsureDashboard(){
   if(!document.querySelector('.app'))dashboard();
 }
+function coachTourIsPhone(){return !!document.querySelector('.coach-mobile-nav')||window.matchMedia('(max-width:820px)').matches||Math.min(window.innerWidth||9999,document.documentElement.clientWidth||9999)<=820}
+function coachTourNavigateToStep(step){
+  if(!coachTourIsPhone()||!step?.navigate)return;
+  const button=document.querySelector(`.coach-mobile-nav [data-page="${step.navigate}"]`);
+  if(button&&!button.classList.contains('active'))button.click();
+}
 function coachTourResolvedTarget(step){
   const raw=step?.target||'';
   if(!raw)return '';
-  if(!window.matchMedia('(max-width:820px)').matches)return raw;
+  if(!coachTourIsPhone())return raw;
   if(raw==='#sideNav')return '.coach-mobile-nav';
   const m=raw.match(/^#sideNav \[data-page="([^"]+)"\]$/);
   if(!m)return raw;
@@ -1214,16 +1249,16 @@ function coachTourResolvedTarget(step){
   return '.coach-mobile-nav [data-page="more"]';
 }
 function coachTourOpenNavIfNeeded(step){
-  if(window.matchMedia('(max-width:820px)').matches)return;
+  if(coachTourIsPhone())return;
   const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');
   if(!navEl||!menu)return;
   if(step?.target==='#sideNav'||step?.target?.includes('#sideNav')){navEl.classList.add('open');menu.setAttribute('aria-expanded','true');menu.textContent='Close';}
 }
-function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');if(navEl&&menu&&window.matchMedia('(max-width:820px)').matches){navEl.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu';}}
+function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');if(navEl&&menu&&coachTourIsPhone()){navEl.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu';}}
 function startCoachTour(opts={}){
   const mode=opts.mode||'full';
   if(opts.force){document.getElementById('coachTour')?.remove();coachTourEnsureDashboard();}
-  const steps=mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_TOURS[experience]):COACH_TOURS[experience];
+  const steps=mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_MOBILE_TOURS[experience]):(COACH_MOBILE_TOURS[experience]||COACH_TOURS[experience]);
   if(!steps?.length)return;
   if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
   document.getElementById('coachTour')?.remove();
@@ -1239,6 +1274,7 @@ function startCoachTour(opts={}){
 }
 function renderCoachTourStep(){
   const st=coachTourState;if(!st)return;const step=st.steps[st.index],root=st.root;
+  coachTourNavigateToStep(step);
   coachTourOpenNavIfNeeded(step);
   root.querySelector('#coachTourStep').textContent=`${st.index+1} OF ${st.steps.length}`;
   const tourIcon=root.querySelector('#coachTourIcon'),navPreview=root.querySelector('#coachTourNavPreview');
@@ -1251,7 +1287,7 @@ function renderCoachTourStep(){
     if(bg&&bg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=bg;tourIcon.textContent=''}
   }
   if(step.navPreview&&navPreview){
-    const buttons=window.matchMedia('(max-width:820px)').matches?[...document.querySelectorAll('.coach-mobile-nav button')].slice(0,5):[...document.querySelectorAll('#sideNav .nav-btn')].slice(0,5);
+    const buttons=coachTourIsPhone()?[...document.querySelectorAll('.coach-mobile-nav button')].slice(0,5):[...document.querySelectorAll('#sideNav .nav-btn')].slice(0,5);
     navPreview.innerHTML=buttons.map(btn=>{
       const art=btn.querySelector('.mwNavArt'),label=btn.querySelector('span:last-child')?.textContent?.trim()||'MW';
       const bg=art?getComputedStyle(art).backgroundImage:'none';
@@ -1268,7 +1304,7 @@ function renderCoachTourStep(){
   root.querySelector('#coachTourNext').textContent=st.index===st.steps.length-1?'FINISH':'NEXT';
   root.querySelector('#coachTourDots').innerHTML=st.steps.map((_,i)=>`<i class="${i===st.index?'active':''}"></i>`).join('');
   root.classList.toggle('no-target',!step.target);
-  window.setTimeout(()=>coachTourPosition(step),60);
+  window.setTimeout(()=>coachTourPosition(step),180);
 }
 function coachTourPosition(step){
   const root=coachTourState?.root;if(!root)return;const spot=root.querySelector('#coachTourSpotlight'),tag=root.querySelector('#coachTourTag'),card=root.querySelector('#coachTourCard');
