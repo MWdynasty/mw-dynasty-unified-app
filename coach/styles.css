@@ -1947,7 +1947,7 @@ html.mw-native-app .coach-login-bg:after{
 
 
 /* MW Dynasty Coach post-login transition */
-.coach-entering-overlay{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;overflow:hidden;background:
+.coach-entering-overlay{pointer-events:none;position:fixed;inset:0;z-index:12000;display:grid;place-items:center;overflow:hidden;background:
 radial-gradient(circle at 50% 42%,rgba(28,104,148,.22),transparent 27%),
 radial-gradient(circle at 50% 46%,rgba(232,186,77,.08),transparent 42%),
 linear-gradient(180deg,#07141d 0%,#02080c 64%,#010406 100%);color:#fff;text-align:center;padding:24px;opacity:0;transition:opacity .16s ease}
