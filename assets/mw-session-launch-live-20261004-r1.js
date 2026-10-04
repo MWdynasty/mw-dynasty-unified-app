@@ -62,8 +62,8 @@
     }, wait);
   };
   const ready = () => {
-    if (role === 'coach') return Boolean(document.querySelector('#app .app, #app .coach-login-screen, #app .coach-membership-screen'));
-    return document.body.classList.contains('mw-auth-ready');
+    if (role === 'coach') return Boolean(document.querySelector('#app .app, #app .page, #app .coach-login-screen, #app .coach-membership-screen'));
+    return document.body.classList.contains('mw-auth-ready') || Boolean(document.querySelector('#mwAuthReset.show, #mwRoleMismatch:not([hidden]), #mwAthleteMembershipContinue'));
   };
   const observer = new MutationObserver(() => { if (ready()) { observer.disconnect(); close(); } });
   observer.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
