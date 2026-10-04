@@ -1232,10 +1232,11 @@ function maybeStartCoachTour(){
 function coachTourEnsureDashboard(){
   if(!document.querySelector('.app'))dashboard();
 }
+function coachTourIsPhone(){return !!document.querySelector('.coach-mobile-nav')||coachTourIsPhone()||Math.min(window.innerWidth||9999,document.documentElement.clientWidth||9999)<=820}
 function coachTourResolvedTarget(step){
   const raw=step?.target||'';
   if(!raw)return '';
-  if(!window.matchMedia('(max-width:820px)').matches)return raw;
+  if(!coachTourIsPhone())return raw;
   if(raw==='#sideNav')return '.coach-mobile-nav';
   const m=raw.match(/^#sideNav \[data-page="([^"]+)"\]$/);
   if(!m)return raw;
@@ -1245,16 +1246,16 @@ function coachTourResolvedTarget(step){
   return '.coach-mobile-nav [data-page="more"]';
 }
 function coachTourOpenNavIfNeeded(step){
-  if(window.matchMedia('(max-width:820px)').matches)return;
+  if(coachTourIsPhone())return;
   const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');
   if(!navEl||!menu)return;
   if(step?.target==='#sideNav'||step?.target?.includes('#sideNav')){navEl.classList.add('open');menu.setAttribute('aria-expanded','true');menu.textContent='Close';}
 }
-function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');if(navEl&&menu&&window.matchMedia('(max-width:820px)').matches){navEl.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu';}}
+function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');if(navEl&&menu&&coachTourIsPhone()){navEl.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu';}}
 function startCoachTour(opts={}){
   const mode=opts.mode||'full';
   if(opts.force){document.getElementById('coachTour')?.remove();coachTourEnsureDashboard();}
-  const phone=window.matchMedia('(max-width:820px)').matches;
+  const phone=coachTourIsPhone();
   const steps=phone&&mode==='full'?(COACH_MOBILE_TOURS[experience]||COACH_TOURS[experience]):mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_TOURS[experience]):COACH_TOURS[experience];
   if(!steps?.length)return;
   if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
@@ -1270,7 +1271,7 @@ function startCoachTour(opts={}){
   renderCoachTourStep();
 }
 function coachTourNavigateToStep(step){
-  if(!window.matchMedia('(max-width:820px)').matches||!step?.navigate)return;
+  if(!coachTourIsPhone()||!step?.navigate)return;
   const button=document.querySelector(`.coach-mobile-nav [data-page="${step.navigate}"]`);
   if(button&&!button.classList.contains('active'))button.click();
 }
@@ -1289,7 +1290,7 @@ function renderCoachTourStep(){
     if(bg&&bg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=bg;tourIcon.textContent=''}
   }
   if(step.navPreview&&navPreview){
-    const buttons=window.matchMedia('(max-width:820px)').matches?[...document.querySelectorAll('.coach-mobile-nav button')].slice(0,5):[...document.querySelectorAll('#sideNav .nav-btn')].slice(0,5);
+    const buttons=coachTourIsPhone()?[...document.querySelectorAll('.coach-mobile-nav button')].slice(0,5):[...document.querySelectorAll('#sideNav .nav-btn')].slice(0,5);
     navPreview.innerHTML=buttons.map(btn=>{
       const art=btn.querySelector('.mwNavArt'),label=btn.querySelector('span:last-child')?.textContent?.trim()||'MW';
       const bg=art?getComputedStyle(art).backgroundImage:'none';
