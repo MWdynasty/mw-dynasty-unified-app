@@ -1,7 +1,8 @@
 /* Shared geometry, outside the legacy login namespaces. No split panels or absolute form positioning. */
-/* The visible sign-in owns scrolling; do not also scroll the app behind it.
-   Athlete keeps its auth host after login, so exclude that inline-hidden host. */
-html:has(.mw-signin:not([hidden]):not([style*="display: none"]):not([style*="display:none"])) {
+/* The sign-in owns scrolling only while authentication is pending.
+   Athlete retains its CSS-hidden auth host after login; Coach removes its host. */
+html:has(body.mw-auth-pending #mwAuth.mw-signin),
+html:has(#app [data-mw-signin="coach"]) {
   overflow: hidden !important;
 }
 .mw-signin,

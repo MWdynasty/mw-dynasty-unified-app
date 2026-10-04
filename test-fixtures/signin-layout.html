@@ -5,7 +5,7 @@
 body{margin:0;background:#e9eef2;color:#182735;font:14px system-ui,sans-serif;padding:20px}header{max-width:1150px;margin:0 auto 18px}h1{font-size:20px;margin:0 0 10px}button{min-height:44px;padding:8px 12px;border:1px solid #bac8d2;border-radius:8px;background:white;color:#182735;cursor:pointer}button[aria-pressed=true]{background:#152e42;color:white}.controls{display:flex;gap:8px;flex-wrap:wrap}.phones{display:flex;gap:20px;justify-content:center;align-items:flex-start}.phone h2{font-size:14px;margin:0 0 8px;text-align:center}.phone iframe{display:block;border:0;box-shadow:0 6px 24px #22354633;background:#040c14}#report{max-width:1100px;margin:20px auto;background:white;padding:14px;border-radius:10px;white-space:pre-wrap;font-size:12px}#summary{padding:10px 0;font-weight:650}
 </style></head>
 <body>
-<header><h1>Actual Athlete and Coach entry pages at matching viewports</h1><div class="controls"><button data-size="390,844" aria-pressed="true">390 × 844</button><button data-size="320,568">320 × 568</button><button data-size="430,932">430 × 932</button><button data-size="844,390">844 × 390</button><button id="native" aria-pressed="false">Native + safe areas</button><button id="inspect">Check layout</button></div><div id="summary" role="status">Loading actual entry pages…</div></header>
+<header><h1>Actual Athlete and Coach entry pages at matching viewports</h1><div class="controls"><button data-size="390,844" aria-pressed="true">390 × 844</button><button data-size="320,568">320 × 568</button><button data-size="430,932">430 × 932</button><button data-size="844,390">844 × 390</button><button id="native" aria-pressed="false">Native + safe areas</button><button id="inspect">Check layout</button><button id="inspectLifecycle">Check auth-scroll lifecycle</button></div><div id="summary" role="status">Loading actual entry pages…</div></header>
 <div class="phones"><section class="phone"><h2>Athlete</h2><iframe id="athlete" title="Athlete phone viewport" width="390" height="844"></iframe></section><section class="phone"><h2>Coach</h2><iframe id="coach" title="Coach phone viewport" width="390" height="844"></iframe></section></div>
 <pre id="report"></pre>
 <script>
@@ -55,6 +55,21 @@ body{margin:0;background:#e9eef2;color:#182735;font:14px system-ui,sans-serif;pa
   document.querySelectorAll('[data-size]').forEach(button=>button.onclick=()=>{[width,height]=button.dataset.size.split(',').map(Number);document.querySelectorAll('[data-size]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));draw()});
   document.getElementById('native').onclick=()=>{native=!native;document.getElementById('native').setAttribute('aria-pressed',String(native));draw()};
   document.getElementById('inspect').onclick=inspect;
+  document.getElementById('inspectLifecycle').onclick=()=>{
+    // CSS-only lifecycle simulation; no auth state, credentials or network writes.
+    const doc=frames[0].contentDocument,auth=doc.getElementById('mwAuth');
+    const selector='html:has(body.mw-auth-pending #mwAuth.mw-signin)';
+    const original=doc.body.className;
+    let result;
+    try{
+      const lockedWhilePending=doc.documentElement.matches(selector);
+      doc.body.classList.remove('mw-auth-pending');doc.body.classList.add('mw-auth-ready');
+      result={lockedWhilePending,authHostRetained:!!doc.getElementById('mwAuth'),authHiddenAfterReady:doc.defaultView.getComputedStyle(auth).display==='none',loginLockReleasedAfterReady:!doc.documentElement.matches(selector)};
+      result.pass=Object.values(result).every(Boolean);
+    }finally{doc.body.className=original;}
+    document.getElementById('summary').textContent=(result.pass?'PASS':'NOT PASSED')+' · retained Athlete auth host releases the login-only scroll lock';
+    document.getElementById('report').textContent=JSON.stringify(result,null,2);
+  };
   draw();
 })().catch(error=>{document.getElementById('summary').textContent=error.message;});
 </script></body></html>
