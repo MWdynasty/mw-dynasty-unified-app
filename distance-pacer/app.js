@@ -320,3 +320,20 @@ function receiveMwPaceHandoff(){
   }
 }
 receiveMwPaceHandoff();
+async function loadAuthoritativeScheduleContext(){
+  const token=window.MW_SESSION?.access_token||'';
+  if(!token)return;
+  try{
+    const r=await fetch('/api/program',{headers:{Authorization:'Bearer '+token,'X-MW-Time-Zone':Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'},cache:'no-store'});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)return;
+    const week=Number(d.seasonIntelligence?.week||d.officialWeek||d.week||0),day=Number(d.seasonIntelligence?.day||d.officialDay||0);
+    const track=d.track||null,session=track?.sessions?.find(x=>Number(x.day)===day)||null;
+    const panel=$('#scheduleContext'),title=$('#scheduleContextTitle'),text=$('#scheduleContextText');
+    if(!panel||!title||!text)return;
+    panel.classList.remove('hidden');
+    if(session){title.textContent='Today’s MW session connected';text.textContent=`Week ${week||'—'} Day ${day||'—'} • ${session.title||'MW Track Session'}${session.work?` • ${session.work}`:''}`}
+    else {title.textContent='MW recovery context connected';text.textContent=`Week ${week||'—'} Day ${day||'—'} • No track session scheduled today.`}
+  }catch(e){console.warn('MW Distance Pacer schedule context',e)}
+}
+document.addEventListener('mw-athlete-ready',loadAuthoritativeScheduleContext);
