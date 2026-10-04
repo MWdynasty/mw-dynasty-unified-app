@@ -945,8 +945,11 @@ function coachMWPage(){
       const timedOut=e?.name==='AbortError';
       showRetry(timedOut?'Coach MW is taking too long to respond. Check your connection and tap Retry.':'Coach MW could not respond: '+(e?.message||'check your connection and try again.'));
     }).finally(()=>{
+      // iOS WebView can repaint stale transient text after the assistant bubble is appended.
+      // Always release the request lock and clear the thinking state when this request settles.
       coachMWInFlight=false;
       if(sendButton)sendButton.disabled=false;
+      if(requestState)requestState.textContent='';
     });
   };
   const send=()=>{
