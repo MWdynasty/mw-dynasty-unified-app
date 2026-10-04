@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 85816)
+Total output lines: 2792
+
 const app=document.getElementById('app');
 const MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
 const SUPABASE_URL=MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':'https://keqgunlfwhjgcsurynef.supabase.co';
@@ -448,7 +451,7 @@ async function practiceModePage(){
   targetMinInput.oninput=targetMaxInput.oninput=()=>{if(!repStart&&!repResults.length)renderTiming()};
   undoFinishBtn.onclick=()=>{if(saving)return;if(repStart&&repResults.length){const undone=repResults.pop();toast(`${athletes.find(a=>a.id===undone?.athleteId)?.name||'Athlete'} finish removed`);undoFinishBtn.disabled=!repResults.length;renderTiming();return}toast('No finish to undo')};
   dnfBtn.onclick=()=>{if(saving)return;if(!repStart)return toast('Start the rep first');const remaining=timable().filter(a=>!repResults.some(x=>x.athleteId===a.id));if(!remaining.length)return toast('No unfinished athlete');const a=remaining[0],t=targetFor(a.id);repResults.push({athleteId:a.id,ms:elapsedRep(),laneNumber:visible().findIndex(x=>x.id===a.id)+1,division:sexGroups[a.id]||null,paceStatus:null,paceLabel:'DNF',resultStatus:'dnf',targetSeconds:t.target,targetMinSeconds:t.fast,targetMaxSeconds:t.slow});if(repAthleteIds.length&&repAthleteIds.every(aid=>repResults.some(x=>x.athleteId===aid)))finishTimingRep();undoFinishBtn.disabled=false;nextBtn.disabled=!(repFinished&&canAdvanceRep());finishBtn.disabled=false;toast(`${a.name} marked DNF`);renderTiming()};
-  manualTimeBtn.onclick=()=>{if(saving)return;const remaining=timable().filter(a=>!repResults.some(x=>x.athleteId===a.id));if(!remaining.length)return toast('No unfinished athlete');if(rep>1&&repRestSeconds==null)repRestSeconds=Number(restTimer.seconds().toFixed(2));const raw=prompt(`Manual time for ${remaining[0].name} (seconds)`);const sec=Number(raw);if(!(sec>0))return;const a=remaining[0],p=pace(sec*1000,a.id);repResults.push({athleteId:a.id,ms:sec*1000,laneNumber:visible().findIndex(x=>x.id===a.id)+1,division:sexGroups[a.id]||null,paceStatus:p.status,paceLabel:p.label,mwIntent:p.intent||practiceIntent(a.id),mwInterpretation:p.interpretation||null,resultStatus:'manual',targetSeconds:p.target,targetMinSeconds:p.fast,targetMaxSeconds:p.slow});if(repAthleteIds.length&&repAthleteIds.every(aid=>repResults.some(x=>x.athleteId===aid)))finishTimingRep();undoFinishBtn.disabled=false;nextBtn.disabled=!(repFinished&&canAdvanceRep());finishBtn.disabled=false;toast(`${a.name} — ${sec.toFixed(2)} ✓`);renderTiming()};
+    manualTimeBtn.onclick=()=>{if(saving)return;const remaining=timable().filter(a=>!repResults.some(x=>x.athleteId===a.id));if(!remaining.length)return toast('No unfinished athlete');if(rep>1&&repRestSeconds==null)repRestSeconds=Number(restTimer.seconds().toFixed(2));const raw=prompt(`Manual time for ${remaining[0].name} (seconds)`);const sec=Number(raw);if(!(sec>0))return;const a=remaining[0],p=pace(sec*1000,a.id);repResults.push({athleteId:a.id,ms:sec*1000,laneNumber:visible().findIndex(x=>x.id===a.id)+1,division:sexGroups[a.id]||null,paceStatus:p.status,paceLabel:p.label,mwIntent:p.intent||practiceIntent(a.id),mwInterpretation:p.interpretation||null,resultStatus:'manual',targetSeconds:p.target,targetMinSeconds:p.fast,targetMaxSeconds:p.slow});if(repAthleteIds.length&&repAthleteIds.every(aid=>repResults.some(x=>x.athleteId===aid)))finishTimingRep();undoFinishBtn.disabled=false;nextBtn.disabled=!(repFinished&&canAdvanceRep());finishBtn.disabled=false;toast(`${a.name} — ${sec.toFixed(2)} ✓`);renderTiming()};
   falseStartBtn.onclick=()=>{if(saving)return;stopTick();repStart=0;repElapsed=0;repFinished=false;repAthleteIds=[];repResults=[];restTimer.reset();restTimer.setDisabled(false);paintClock();startBtn.textContent='START REP';clockState.textContent=`Rep ${rep} restarted · ready`;undoFinishBtn.disabled=true;nextBtn.disabled=true;renderTiming()};
   document.querySelectorAll('[data-practice-group]').forEach(btn=>btn.onclick=()=>{activeGroup=btn.dataset.practiceGroup;document.querySelectorAll('[data-practice-group]').forEach(x=>x.classList.toggle('active',x===btn));renderTiming()});
   startBtn.onclick=()=>{if(saving)return;if(repFinished)return;if(repStart){repElapsed=elapsedRep();stopTick();repStart=0;paintClock();startBtn.textContent='RESUME REP';clockState.textContent='Timer paused';restTimer.setDisabled(true,'REP PAUSED');return}const open=timable();if(!open.length){const max=groupMaxPrescribedReps();return toast(max!=null&&rep>max?'Prescribed reps are complete. Finish & Save this session.':'This workout is already complete for the selected athletes')}if(!repElapsed){repAthleteIds=open.map(a=>a.id);repRestSeconds=rep>1?Number(restTimer.seconds().toFixed(2)):null}restTimer.setDisabled(true);repStart=performance.now();startBtn.textContent='PAUSE';retryBtn.disabled=true;clockState.textContent=`Rep ${rep} running — tap athletes at the line`;loop()};
@@ -769,9 +772,6 @@ function renderCoachSeasonAssessment(existing={}){
   };
 }
 function coachMWPage(){
-  // Coach MW owns the full mobile surface. Clear any global layer left by a prior
-  // page or interrupted transition before rendering the chat controls.
-  ['mwCoachEntering','experienceVeil','coachTour','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
   pageBase('Coach MW','Your coaching assistant. Ask, review, decide.',`
   <section class="coach-mw-athlete-match">
     <div class="coach-mw-athlete-top">
@@ -797,7 +797,6 @@ function coachMWPage(){
         <button class="action" id="askmw" aria-label="Send message">↑</button>
       </div>
       <div id="mwattachstate" class="mw-coach-state"></div>
-      <div id="mwcoachrequeststate" class="mw-coach-state" role="status" aria-live="polite"></div>
 
       <div class="mw-coach-suggestions coach-mw-athlete-suggestions">
         <button class="back" data-mw-prompt="Who on my team needs attention today?">Team attention</button>
@@ -808,7 +807,7 @@ function coachMWPage(){
   </section>`);
   document.querySelector('.page')?.classList.add('coach-mw-athlete-page');
   let pendingImage='',activeAudio=null,activeVoiceButton=null,activeVoiceURL='',voiceRun=0;
-  const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate'),requestState=document.getElementById('mwcoachrequeststate');
+  const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate');
   const draftPrompt=sessionStorage.getItem('mwCoachDraftPrompt')||'';if(draftPrompt){q.value=draftPrompt;sessionStorage.removeItem('mwCoachDraftPrompt')}
   let history=[];
   try{
@@ -835,18 +834,8 @@ function coachMWPage(){
   pick.onchange=()=>{const f=pick.files?.[0];if(!f)return;if(f.size>3*1024*1024){state.textContent='Photo too large. Use 3 MB or less.';pick.value='';return}const r=new FileReader();r.onload=()=>{pendingImage=String(r.result||'');state.textContent='Photo attached.'};r.readAsDataURL(f)};
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(SR){const recognition=new SR();recognition.lang='en-US';recognition.interimResults=false;recognition.continuous=false;recognition.onstart=()=>{mic.classList.add('listening');mic.textContent='●';state.textContent='Listening…'};recognition.onresult=e=>{const text=e.results?.[0]?.[0]?.transcript||'';if(text){q.value=text;state.textContent='Voice captured. Tap Ask when ready.'}};recognition.onerror=()=>{state.textContent='Voice input could not start. You can still type your question.'};recognition.onend=()=>{mic.classList.remove('listening');mic.textContent='🎙'};mic.onclick=async()=>{try{await window.mwNativePermission?.('voice')}catch{}try{recognition.start()}catch{}}}else{mic.onclick=()=>toast('Voice input is not available in this browser yet.')}
-  let coachMWInFlight=false,coachMWWatchdog=0;
-  const resetCoachMWUi=(message='')=>{
-    coachMWInFlight=false;
-    clearTimeout(coachMWWatchdog);
-    const liveState=document.getElementById('mwcoachrequeststate');
-    if(liveState)liveState.textContent=message;
-    const liveSend=document.getElementById('askmw');
-    if(liveSend)liveSend.disabled=false;
-    document.querySelectorAll('.coach-mw-athlete-composer button,.coach-mw-athlete-suggestions button').forEach(b=>b.disabled=false);
-    const loader=document.getElementById('mw-native-resume-loader');
-    if(loader){loader.classList.remove('mw-show');loader.remove()}
-  };
+  let coachMWInFlight=false;
+  let coachMWPendingBubble=null;
   const traceCoachStage=(stage)=>{
     try{
       const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
@@ -907,34 +896,28 @@ function coachMWPage(){
       }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent=idleLabel;toast(e.message||(messaging?'Message send failed':'Calendar update failed'))}
     };
   };
-  const runCoachRequest=()=>{
+  const send=()=>{
+    const text=q.value.trim();if(!text)return toast('Type or speak a question first');
     if(coachMWInFlight)return;
     coachMWInFlight=true;
-    clearTimeout(coachMWWatchdog);
-    if(sendButton)sendButton.disabled=true;
-    requestState.textContent='Coach MW is thinking…';
-    coachMWWatchdog=setTimeout(()=>{
-      if(!coachMWInFlight)return;
-      traceCoachStage('watchdog_reset');
-      resetCoachMWUi('Coach MW took too long to respond. Please try again.');
-    },20000);
-    const showRetry=(message)=>{
-      requestState.textContent=message;
-      const retry=document.createElement('button');
-      retry.type='button';retry.className='back';retry.textContent='Retry Coach MW';
-      retry.setAttribute('aria-label','Retry Coach MW response');
-      retry.onclick=()=>runCoachRequest();
-      requestState.appendChild(document.createTextNode(' '));
-      requestState.appendChild(retry);
-    };
-    const request=async()=>{
+    q.value='';q.blur();
+    const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
+    history.push(userMsg);
+    traceCoachStage('tap_received');
+    appendCoachBubble('user',text);
+    traceCoachStage('user_bubble_appended');
+    state.textContent='Coach MW is thinking…';
+    // Match the working Athlete Coach flow: render one temporary thinking
+    // bubble, then remove it before rendering either the answer or an error.
+    coachMWPendingBubble=appendCoachBubble('assistant','Coach MW is thinking…');
+    coachMWPendingBubble.classList.add('mw-coach-thinking');
+    const request=()=>{
       const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
       const controller=new AbortController();
       const timeout=setTimeout(()=>controller.abort(),45000);
-      try{return await fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:controller.signal})}
-      finally{clearTimeout(timeout)}
+      return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:controller.signal}).finally(()=>clearTimeout(timeout));
     };
-    return request().then(async r=>{
+    request().then(async r=>{
       traceCoachStage('response_headers_received');
       if(r.status===401&&authSession?.refresh_token){
         const refreshed=await refreshCoachSession(authSession);
@@ -948,35 +931,25 @@ function coachMWPage(){
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       traceCoachStage('before_assistant_append');
+      if(coachMWPendingBubble){coachMWPendingBubble.remove();coachMWPendingBubble=null}
       appendCoachBubble('assistant',answer);
       if(d.action)appendCoachAction(d.action);
       traceCoachStage('assistant_appended');
-      chat.scrollTop=chat.scrollHeight;
-      requestState.textContent='';
+      state.textContent='';
       pendingImage='';pick.value='';
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
     }).catch(e=>{
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
-      const timedOut=e?.name==='AbortError';
-      appendCoachBubble('assistant',timedOut?'Coach MW timed out. Please try again.':'Coach MW could not respond: '+(e?.message||'Please try again.'));
-      showRetry(timedOut?'Coach MW is taking too long to respond. Check your connection and tap Retry.':'Coach MW could not respond: '+(e?.message||'check your connection and try again.'));
+      if(coachMWPendingBubble){coachMWPendingBubble.remove();coachMWPendingBubble=null}
+      state.textContent='Coach MW: '+(e?.message||'Please try again.');
+      appendCoachBubble('assistant','I couldn’t reach Coach MW right now. '+(e?.message||'Please try again.'));
     }).finally(()=>{
-      // Always reset the live Coach MW controls, even if the page was re-rendered.
-      traceCoachStage('request_settled');
-      resetCoachMWUi('');
+      coachMWInFlight=false;
+      // Always clear transient thinking state after this request settles.
+      // iOS WebView can preserve/repaint stale text even after the assistant bubble is appended.
+      if(state)state.textContent='';
+      coachMWPendingBubble=null;
     });
-  };
-  const send=()=>{
-    const text=q.value.trim();if(!text)return toast('Type or speak a question first');
-    if(coachMWInFlight)return;
-    q.value='';q.blur();
-    const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
-    history.push(userMsg);
-    traceCoachStage('tap_received');
-    appendCoachBubble('user',text);
-    traceCoachStage('user_bubble_appended');
-    chat.scrollTop=chat.scrollHeight;
-    runCoachRequest();
   };
   const sendButton=document.getElementById('askmw');
   if(sendButton){
@@ -1048,785 +1021,7 @@ function resumeCoachActivePage(){
   if(page&&page!=='dashboard'&&allowed.has(page)){openPage(page,false);return}
   dashboard();
 }
-function openPage(id,pushHistory=true){if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}if(id!=='practice'){if(window.__mwCoachPracticePoll){clearInterval(window.__mwCoachPracticePoll);window.__mwCoachPracticePoll=null}if(window.__mwCoachPracticeFocus){window.removeEventListener('focus',window.__mwCoachPracticeFocus);window.__mwCoachPracticeFocus=null}}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,school:schoolPage,race:racePage,pacing:pacingPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';rememberCoachActivePage(page);if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
-if(!window.__mwCoachHistoryBound){window.__mwCoachHistoryBound=true;window.addEventListener('popstate',e=>{if(mwSessionToken())openPage(e.state?.mwCoachPage||'dashboard',false)})}
-function bindPageNavigation(root=document){
-  root.querySelectorAll('[data-page]').forEach(b=>{if(b.dataset.mwBound==='1')return;b.dataset.mwBound='1';b.addEventListener('click',()=>openPage(b.dataset.page))});
-  root.querySelectorAll('[data-stat]').forEach(b=>{if(b.dataset.mwStatBound==='1')return;b.dataset.mwStatBound='1';b.addEventListener('click',()=>{const m={'Athletes':'athletes','Teams':'teams','Upcoming Meets':'meets','Attendance':'attendance','Active Workouts':'programs','Week Program':'mwtrack','Pace Execution':'insights'};openPage(m[b.dataset.stat]||'dashboard')})});
-}
-async function coachSearchResults(query){
-  const q=String(query||'').trim().toLowerCase();if(!q)return [];
-  const navItems=[['athletes','Athletes','People you coach'],['teams','Teams','Groups and squads'],['calendar','Calendar',experience==='core'?'Practices, meets and team events':'School constraints, practices and events'],['meets','Meets','Competition schedule'],['attendance','Attendance','Training attendance'],['messages','Messages','Coach communication'],['programs','Programs','Your training programs'],['activity','Activity Log','Recent coach activity'],['account','Account','Settings and training year'],['support','Help','Support and privacy']];
-  if(experience!=='core')navItems.push(['insights','Performance Intelligence','Coach intelligence'],['coachmw','Coach MW AI','AI coaching assistant'],['taskboard','Task Board','Athlete priorities']);
-  if(experience==='performance')navItems.push(['mwtrack','MW Training','41-week MW system'],['strength','Strength & Power','MW strength system'],['school','Sprint School','Education library'],['race','Race Strategy','Race planning'],['pacing','Pacing Tools','Training targets']);
-  const results=navItems.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q)).map(x=>({kind:'page',page:x[0],title:x[1],sub:x[2]}));
-  try{
-    const [roster,groups,programs,events]=await Promise.all([
-      fetchCoachRoster().then(d=>d.athletes||[]).catch(()=>[]),
-      sbRest('coach_groups?select=id,name,event_group&archived=eq.false&order=created_at.asc').catch(()=>[]),
-      sbRest('coach_programs?select=id,name,program_type,status&order=updated_at.desc').catch(()=>[]),
-      sbRest('coach_calendar_events?select=id,title,event_type,starts_at,location&order=starts_at.asc').catch(()=>[])
-    ]);
-    roster.filter(a=>`${a.name} ${a.event||''}`.toLowerCase().includes(q)).slice(0,5).forEach(a=>results.push({kind:'athlete',id:a.id,title:a.name,sub:a.event||'Athlete'}));
-    groups.filter(g=>`${g.name} ${g.event_group||''}`.toLowerCase().includes(q)).slice(0,4).forEach(g=>results.push({kind:'group',id:g.id,title:g.name,sub:g.event_group||'Team / Group'}));
-    programs.filter(x=>`${x.name} ${x.program_type||''}`.toLowerCase().includes(q)).slice(0,4).forEach(x=>results.push({kind:'program',id:x.id,title:x.name,sub:`${x.program_type||'program'} · ${x.status||'draft'}`}));
-    events.filter(e=>`${e.title} ${e.location||''} ${e.event_type||''}`.toLowerCase().includes(q)).slice(0,4).forEach(e=>results.push({kind:'event',id:e.id,title:e.title,sub:`${e.event_type||'event'}${e.location?' · '+e.location:''}`}));
-  }catch{}
-  return results.slice(0,12);
-}
-function openCoachSearchResult(r){
-  if(r.kind==='athlete')return athleteDetail(r.id);
-  if(r.kind==='group')return groupWorkspaceLive(r.id);
-  if(r.kind==='program')return programEditor(r.id);
-  if(r.kind==='event')return calendarEventModal(r.id);
-  openPage(r.page||'dashboard');
-}
-function bindCoachSearch(){
-  const q=document.getElementById('dashSearch'),box=document.getElementById('dashSearchResults');if(!q||!box)return;let seq=0,last=[];
-  const render=async()=>{const term=q.value.trim();const my=++seq;if(!term){box.hidden=true;box.innerHTML='';return}box.hidden=false;box.innerHTML='<div class="mw-search-loading">Searching MW Dynasty…</div>';const rows=await coachSearchResults(term);if(my!==seq)return;last=rows;box.innerHTML=rows.length?rows.map((r,i)=>`<button type="button" class="mw-search-result" data-search-i="${i}"><b>${escapeHtml(r.title)}</b><small>${escapeHtml(r.sub||'')}</small></button>`).join(''):'<div class="mw-search-loading">No matches found.</div>';box.querySelectorAll('[data-search-i]').forEach(b=>b.onclick=()=>{box.hidden=true;openCoachSearchResult(last[Number(b.dataset.searchI)])});};
-  q.addEventListener('input',()=>{clearTimeout(q.__mwSearchTimer);q.__mwSearchTimer=setTimeout(render,180)});
-  q.addEventListener('focus',()=>{if(q.value.trim())render()});
-  q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(last[0]){box.hidden=true;openCoachSearchResult(last[0])}else render()}if(e.key==='Escape')box.hidden=true});
-  document.addEventListener('click',e=>{if(!e.target.closest('.mw-search-wrap'))box.hidden=true},{once:false});
-}
-async function fetchCoachNotifications(){
-  const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const r=await fetch('/api/coach/notifications',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Notifications unavailable.');return d;
-}
-async function hydrateNotificationBadge(){const badge=document.getElementById('notificationBadge');if(!badge)return;try{const d=await fetchCoachNotifications(),n=Number(d.unread||0);badge.textContent=n>99?'99+':String(n);badge.hidden=n===0}catch{badge.hidden=true}}
-async function openNotifications(){
-  const modal=mwModal('Notifications','<div id="notificationLive" class="list"><div class="tile">Loading notifications…</div></div><button class="back" id="markNotificationsRead" style="margin-top:12px">Mark All Read</button>');const wrap=modal.querySelector('#notificationLive');
-  try{const d=await fetchCoachNotifications(),items=d.items||[];wrap.innerHTML=items.length?items.map(n=>`<button class="row mw-notification-row ${n.read_at?'':'unread'}" data-notification-id="${escapeHtml(n.id)}" data-notification-page="${escapeHtml(n.action_page||'dashboard')}" style="width:100%;text-align:left"><span><b>${escapeHtml(n.title)}</b><br><small>${escapeHtml(n.body)}</small></span><small>${new Date(n.created_at).toLocaleString()}</small></button>`).join(''):'<div class="tile"><h3>You’re all caught up</h3><p>No coach notifications yet.</p></div>';wrap.querySelectorAll('[data-notification-id]').forEach(b=>b.onclick=async()=>{try{await fetch('/api/coach/notifications',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'mark_read',id:b.dataset.notificationId})})}catch{}modal.remove();openPage(b.dataset.notificationPage||'dashboard')});}catch(e){wrap.innerHTML=`<div class="tile"><h3>Notifications unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}
-  const all=modal.querySelector('#markNotificationsRead');all.onclick=async()=>{all.disabled=true;try{await fetch('/api/coach/notifications',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:'mark_all_read'})});await hydrateNotificationBadge();modal.remove()}finally{all.disabled=false}};
-}
-function bindGlobal(){const mm=document.getElementById('mobileMenu');const nav=document.getElementById('sideNav');if(mm&&nav){mm.addEventListener('click',()=>{const open=nav.classList.toggle('open');mm.setAttribute('aria-expanded',String(open));mm.textContent=open?'Close':'Menu';});}bindPageNavigation(document);const s=document.getElementById('signout');if(s)s.onclick=signOut;bindCoachSearch();const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;hydrateNotificationBadge();if(window.__mwCoachNotificationPoll)clearInterval(window.__mwCoachNotificationPoll);window.__mwCoachNotificationPoll=setInterval(()=>{if(document.getElementById('notificationBell'))hydrateNotificationBadge()},30000);}
-function bindPageActions(){document.querySelectorAll('[data-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.toast))}
-function toast(msg){let el=document.querySelector('.toast');if(!el){el=document.createElement('div');el.className='toast';document.body.appendChild(el)}el.textContent=msg;el.classList.add('show');clearTimeout(window.__mwToast);window.__mwToast=setTimeout(()=>el.classList.remove('show'),1600)}
-function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function smoothSwitchExperience(next,button){
-  if(!PLANS[next]||next===experience){dashboard();return;}
-  if(button){button.disabled=true;button.textContent='Opening…';}
-  const current=document.querySelector('.app,.page');
-  if(current)current.classList.add('experience-leaving');
-  let veil=document.getElementById('experienceVeil');
-  if(!veil){veil=document.createElement('div');veil.id='experienceVeil';veil.className='experience-veil';document.body.appendChild(veil);}
-  const nextPlan=PLANS[next];
-  veil.innerHTML=`<div class="experience-card ${nextPlan.theme}"><div class="experience-kicker">MW DYNASTY COACH</div><div class="experience-name">${nextPlan.title}</div><div class="experience-tag">${nextPlan.tag}</div><div class="experience-line"><span></span></div></div>`;
-  requestAnimationFrame(()=>veil.classList.add('show'));
-  window.setTimeout(()=>{
-    experience=next;localStorage.setItem('mwCoachExperience',experience);dashboard();
-    const fresh=document.querySelector('.app');if(fresh)fresh.classList.add('experience-entering');
-    requestAnimationFrame(()=>{if(fresh)fresh.classList.add('experience-entered')});
-    veil.classList.remove('show');
-    window.setTimeout(()=>{veil.remove();if(fresh){fresh.classList.remove('experience-entering','experience-entered')}},520);
-  },420);
-}
-
-
-/* ===== V2.6 COACH PLATFORM GUIDED TOURS ===== */
-const COACH_TOUR_RANK={core:1,intelligence:2,performance:3};
-const COACH_TOURS={
-  core:[
-    {icon:'✦',title:'Welcome to MW Coach Core',body:'This walkthrough is built around how you will actually coach inside MW Dynasty — where to start, where to go next, and why each main button matters.',hint:'The goal is not just to show you buttons. It is to teach you the coaching flow so you can move through the app without guessing.',target:null,label:'COACH CORE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAINING, MESSAGES and MENU are the five anchors of Coach Core on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Almost everything you do starts from one of these buttons.',hint:'Learn these five first. Once they make sense, the rest of the platform becomes much easier to navigate.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
-    {icon:'',title:'1. Home — Know What Needs Your Attention',body:'HOME is where a coaching day should begin. It brings you back to your command center so you can see the current picture before jumping into individual tasks.',hint:'Why it matters: good coaching decisions start with context. Use Home to orient yourself before you act.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
-    {icon:'',title:'2. Team — Know the Athlete Before You Coach the Athlete',body:'TEAM is where you move from the big picture to the people you coach. Open your roster, review athlete information, assignments and the athletes connected to your account.',hint:'Why it matters: training decisions should be athlete-specific. Team is the bridge between your roster and the work you assign.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
-    {icon:'',title:'3. Training — Turn the Plan Into Action',body:'TRAINING is where your coaching plan lives. Create, organize and manage the workouts and programs your athletes need to execute.',hint:'Why it matters: this is where coaching intent becomes actual work. Build the plan here, then use Team to make sure the right athletes are connected to it.',target:'#sideNav [data-page="programs"]',label:'TRAINING'},
-    {icon:'',title:'4. Messages — Close the Coaching Loop',body:'MESSAGES keeps communication with your athletes inside the same coaching workspace. Use it for clarification, follow-up and the communication that helps the plan get executed correctly.',hint:'Why it matters: a workout on a screen is not enough. Communication is how you correct, reinforce and keep athletes connected to the plan.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile, Meets, Attendance, Activity and Help. Your coaching identity, training-year settings, membership and account controls stay under Settings / Profile.',hint:'Why it matters: MW uses these settings to know who you are, what access you have and how your coaching environment should operate.',target:'#sideNav [data-page="account"]',label:'MENU'},
-    {icon:'📅',title:'Set the Training Year Before You Build Around It',body:'Your training-year setting gives the rest of the platform a calendar reference. Keep the MW Standard Week 1 or choose a Custom Season Start when your team needs a different starting point.',hint:'Assigned athletes follow your coach calendar and placement. Getting this right early keeps your roster and training weeks aligned.',target:'.coach-training-year-card',label:'TRAINING YEAR'},
-    {icon:'',title:'Your Everyday Coach Core Flow',body:'A simple rhythm is HOME → TEAM → TRAINING → MESSAGES. Use MENU when you need Calendar, Settings or secondary tools, then return HOME to reset your view.',hint:'You do not need to hunt through the app. Let the five main buttons organize how you coach.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
-  ],
-  intelligence:[
-    {icon:'✦',title:'Welcome to MW Coach Intelligence',body:'This walkthrough is built around how you will actually use intelligence while coaching — orient yourself, understand the athlete, ask better questions and act on what matters.',hint:'MW Intelligence should make your coaching decisions clearer, not make the app feel more complicated.',target:null,label:'COACH INTELLIGENCE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Coach Intelligence on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Think of them as the permanent map underneath the intelligence tools.',hint:'The intelligence features are powerful, but these five buttons keep you grounded and make the platform easy to move through.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
-    {icon:'',title:'1. Home — Start With the Big Picture',body:'HOME is where every coaching day should begin. Use it to see the overall state of your roster and what deserves attention before opening a single athlete.',hint:'Why it matters: intelligence is most useful when you begin with the whole picture instead of reacting to one isolated data point.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
-    {icon:'',title:'2. Team — Move From Signal to Athlete',body:'TEAM is where you inspect the actual athlete behind a status, flag or recommendation. Open profiles, assignments and the information connected to the people you coach.',hint:'Why it matters: MW can surface a signal, but you still need athlete context before making a coaching decision.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
-    {icon:'',title:'3. Coach MW — Turn Information Into a Coaching Question',body:'COACH MW lets you ask about athletes, workload, planning and the signals MW is seeing across your roster.',hint:'Why it matters: use Coach MW to understand and organize information faster. It recommends — you decide what should actually happen.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW'},
-    {icon:'',title:'4. Messages — Turn the Decision Into Communication',body:'MESSAGES is where you follow through with the athlete after you review the data and decide what needs to be addressed.',hint:'Why it matters: intelligence only helps if it improves what the athlete understands and executes.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile and the rest of the coaching tools. Settings / Profile keeps your coaching identity, organization, training-year setup, membership and account settings accurate.',hint:'Why it matters: these settings give MW the correct coaching context and keep your platform access organized.',target:'#sideNav [data-page="account"]',label:'MENU'},
-    {icon:'◉',title:'Use Athlete Status as Your Early-Warning Board',body:'The Athlete Status Board separates the roster into On Track, Watch and Needs Attention so you know where to look first.',hint:'Do not treat a flag as the final answer. Use it as a reason to open Team, inspect the athlete and make the coaching decision yourself.',target:'.athlete-status-section',label:'ATHLETE STATUS'},
-    {icon:'☑',title:'Use the Task Board to Prioritize Follow-Up',body:'The AI Task Board turns roster signals into an organized coaching queue so important follow-up does not disappear underneath everything else you are managing.',hint:'A useful rhythm is Status → Athlete → Coach MW if needed → Coach decision → Message or action.',target:'[data-page="taskboard"]',label:'AI TASK BOARD'},
-    {icon:'',title:'Your Everyday Intelligence Flow',body:'A simple rhythm is HOME → TEAM → TRAIN → COACH MW. MENU holds Messages, Calendar, Settings and secondary tools. The intelligence tools support that flow instead of replacing it.',hint:'Start broad, inspect the athlete, ask the right question, make the decision, then communicate it.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
-  ],
-  performance:[
-    {icon:'✦',title:'Welcome to MW Sprint Performance',body:'This walkthrough shows you how to operate the complete MW system without getting lost in all of its power — where to start, how to move, and what each main button is responsible for.',hint:'The 41-week system, strength, pacing and intelligence all become easier when you understand the five navigation anchors first.',target:null,label:'SPRINT PERFORMANCE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Sprint Performance on mobile. MENU holds Calendar, Settings / Profile and the rest of the performance tools. The complete MW system branches out from this navigation.',hint:'When you always know which anchor you are working from, the full performance platform stays organized instead of overwhelming.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
-    {icon:'',title:'1. Home — Start With Today’s Coaching Picture',body:'HOME is where you orient yourself before touching the program. See what is happening across the coaching environment and what needs your attention first.',hint:'Why it matters: the training system is structured, but your coaching day still starts with understanding what is happening right now.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
-    {icon:'',title:'2. Team — Connect the System to the Athlete',body:'TEAM is where the MW system becomes personal. Review the athlete, their placement, assignments and the information that should shape how you coach the prescribed work.',hint:'Why it matters: the system provides structure; Team gives you the athlete context needed to coach that structure correctly.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
-    {icon:'',title:'3. Coach MW — Understand the System in Context',body:'COACH MW connects the MW methodology, your roster and coaching intelligence so you can ask questions about the work and the athletes doing it.',hint:'Why it matters: use Coach MW to understand, compare and prepare. The final coaching decision still belongs to you.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW'},
-    {icon:'',title:'4. Messages — Make Sure the Athlete Understands',body:'MESSAGES gives you the communication layer around the training system. Use it to reinforce cues, clarify expectations and follow up when execution needs attention.',hint:'Why it matters: even the best program fails if the athlete does not understand what the coach wants executed.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile and the rest of your performance tools. Settings / Profile controls your coaching identity, organization, training-year setup, membership and account settings.',hint:'Why it matters: these settings keep the 41-week system, your roster and your access tied to the correct coaching environment.',target:'#sideNav [data-page="account"]',label:'MENU'},
-    {icon:'🏃',title:'The 41-Week Track System Is the Backbone',body:'The protected MW Track Program gives you the progressive sprint prescription, recovery, cues and circuit order across the season.',hint:'Use the navigation anchors to manage the coaching day; use the MW Track Program when you need the actual system prescription.',target:'[data-page="mwtrack"]',label:'MW TRACK PROGRAM'},
-    {icon:'🏋',title:'Strength Supports the Track Work',body:'Strength & Power is synchronized with the sprint progression so the weight room supports the same performance objective as the track.',hint:'Do not treat track and strength as two unrelated programs. They are designed to progress together.',target:'[data-page="strength"]',label:'STRENGTH & POWER'},
-    {icon:'◷',title:'Pacing Makes the Prescription Individual',body:'Pacing Tools use athlete PR data to turn the prescribed work into individualized target times.',hint:'The program tells you the training intent. Pacing helps each athlete execute that intent at the right target.',target:'[data-page="pacing"]',label:'PACING TOOLS'},
-    {icon:'',title:'Your Everyday Sprint Performance Flow',body:'A simple rhythm is HOME → TEAM → COACH MW → execute the MW system → MESSAGES. MENU gives you Calendar, Settings and the deeper performance tools. Use those tools when the coaching question requires them.',hint:'The five main buttons keep you oriented; the 41-week system and performance tools give you the depth.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
-  ]
-};
-
-const COACH_UPGRADE_TOURS={
-  intelligence:[
-    {icon:'⚡',title:'Coach Intelligence Is Unlocked',body:'Your platform now adds live roster intelligence and AI decision support on top of your coaching workflow.',hint:'Here are the biggest new tools.',target:null,label:'WHAT’S NEW'},
-    {icon:'◉',title:'Athlete Status Board',body:'Your roster is now organized into On Track, Watch and Needs Attention so you can prioritize faster.',hint:'Every flag includes the reason MW detected it.',target:'.athlete-status-section',label:'NEW · ATHLETE STATUS'},
-    {icon:'☑',title:'AI Priorities',body:'The AI Task Board turns athlete signals into daily coaching priorities for you to review.',hint:'You decide what gets approved and acted on.',target:'[data-page="taskboard"]',label:'NEW · AI TASK BOARD'},
-    {icon:'☻',title:'Coach MW + Insights',body:'Coach MW AI and AI Insights give you deeper context without taking control away from the coach.',hint:'Your upgraded platform is ready.',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MW'}
-  ],
-  performance:[
-    {icon:'⚡',title:'MW Sprint Performance Is Unlocked',body:'You now have the complete MW system plus the full Coach Intelligence layer.',hint:'Here are the major tools added with this platform.',target:null,label:'WHAT’S NEW'},
-    {icon:'🏃',title:'41-Week Track System',body:'The complete progressive MW Track Program is now available. Standard Week 1 begins the day after Labor Day, or your team can use a coach-controlled Custom Season Start.',hint:'Athletes do not freely jump weeks: coached athletes follow coach placement; independent late joiners use Smart Entry.',target:'[data-page="mwtrack"]',label:'NEW · TRACK PROGRAM'},
-    {icon:'🏋',title:'Strength & Power',body:'The synchronized MW weight-room progression is now connected to the sprint program.',hint:'Track and strength now live together.',target:'[data-page="strength"]',label:'NEW · STRENGTH'},
-    {icon:'▤',title:'Sprint School + Race Strategy',body:'Technique education, starts, race strategy and execution resources are now part of your platform.',hint:'Teach the athlete as well as train the athlete.',target:'[data-page="school"]',label:'NEW · SPRINT SCHOOL'},
-    {icon:'◷',title:'Pacing Tools',body:'Use live athlete PRs to calculate individualized target times for the prescribed work.',hint:'The complete performance platform is ready.',target:'[data-page="pacing"]',label:'NEW · PACING'}
-  ]
-};
-let coachTourState=null;
-function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v29`}
-function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
-function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
-function maybeStartCoachTour(){
-  if(document.getElementById('coachTour'))return;
-  const uid=coachTourUserKey();if(uid==='local')return;
-  if(accountAccess.isFounder){
-    if(localStorage.getItem(coachTourCompleteKey(experience))!=='1')startCoachTour({mode:'full'});
-    return;
-  }
-  const last=localStorage.getItem(coachTourLastTierKey())||'';
-  const current=experience;
-  if(last&&coachTourRank(current)>coachTourRank(last)&&COACH_UPGRADE_TOURS[current]){
-    startCoachTour({mode:'upgrade'});return;
-  }
-  if(localStorage.getItem(coachTourCompleteKey(current))!=='1')startCoachTour({mode:'full'});
-  else localStorage.setItem(coachTourLastTierKey(),current);
-}
-function coachTourEnsureDashboard(){
-  if(!document.querySelector('.app'))dashboard();
-}
-function coachTourResolvedTarget(step){
-  const raw=step?.target||'';
-  if(!raw)return '';
-  if(!window.matchMedia('(max-width:820px)').matches)return raw;
-  if(raw==='#sideNav')return '.coach-mobile-nav';
-  const m=raw.match(/^#sideNav \[data-page="([^"]+)"\]$/);
-  if(!m)return raw;
-  const page=m[1];
-  if(['dashboard','athletes','programs','coachmw','messages'].includes(page))return `.coach-mobile-nav [data-page="${page}"]`;
-  return '.coach-mobile-nav [data-page="more"]';
-}
-function coachTourOpenNavIfNeeded(step){
-  if(window.matchMedia('(max-width:820px)').matches)return;
-  const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');
-  if(!navEl||!menu)return;
-  if(step?.target==='#sideNav'||step?.target?.includes('#sideNav')){navEl.classList.add('open');menu.setAttribute('aria-expanded','true');menu.textContent='Close';}
-}
-function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu=document.getElementById('mobileMenu');if(navEl&&menu&&window.matchMedia('(max-width:820px)').matches){navEl.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu';}}
-function startCoachTour(opts={}){
-  const mode=opts.mode||'full';
-  if(opts.force){document.getElementById('coachTour')?.remove();coachTourEnsureDashboard();}
-  const steps=mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_TOURS[experience]):COACH_TOURS[experience];
-  if(!steps?.length)return;
-  if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
-  document.getElementById('coachTour')?.remove();
-  const root=document.createElement('div');root.id='coachTour';root.className=`coach-tour ${PLANS[experience].theme} ${mode==='upgrade'?'upgrade':''}`;
-  root.innerHTML=`<div class="coach-tour-spotlight" id="coachTourSpotlight"></div><div class="coach-tour-tag" id="coachTourTag"></div><section class="coach-tour-card" id="coachTourCard" role="dialog" aria-modal="true" aria-label="${escapeHtml(PLANS[experience].name)} tutorial"><div class="coach-tour-top"><div class="coach-tour-kicker">MW DYNASTY · ${mode==='upgrade'?'WHAT’S NEW':'GUIDED TOUR'}</div><div class="coach-tour-step" id="coachTourStep"></div></div><div class="coach-tour-lead"><div class="coach-tour-icon" id="coachTourIcon"></div><div><h2 id="coachTourTitle"></h2><p id="coachTourBody"></p></div></div><div class="coach-tour-nav-preview" id="coachTourNavPreview"></div><div class="coach-tour-hint" id="coachTourHint"></div><div class="coach-tour-dots" id="coachTourDots"></div><div class="coach-tour-actions"><button type="button" class="coach-tour-skip" id="coachTourSkip">SKIP</button><button type="button" class="coach-tour-back" id="coachTourBack">BACK</button><button type="button" class="coach-tour-next" id="coachTourNext">NEXT</button></div></section>`;
-  document.body.appendChild(root);
-  coachTourState={mode,steps,index:0,root};
-  root.querySelector('#coachTourSkip').onclick=()=>finishCoachTour(true);
-  root.querySelector('#coachTourBack').onclick=()=>{if(coachTourState.index>0){coachTourState.index--;renderCoachTourStep()}};
-  root.querySelector('#coachTourNext').onclick=()=>{if(coachTourState.index>=steps.length-1)finishCoachTour(false);else{coachTourState.index++;renderCoachTourStep()}};
-  window.addEventListener('resize',coachTourReposition,{passive:true});
-  renderCoachTourStep();
-}
-function renderCoachTourStep(){
-  const st=coachTourState;if(!st)return;const step=st.steps[st.index],root=st.root;
-  coachTourOpenNavIfNeeded(step);
-  root.querySelector('#coachTourStep').textContent=`${st.index+1} OF ${st.steps.length}`;
-  const tourIcon=root.querySelector('#coachTourIcon'),navPreview=root.querySelector('#coachTourNavPreview');
-  if(tourIcon){tourIcon.classList.remove('mw-tour-nav-art');tourIcon.style.backgroundImage='';tourIcon.textContent=step.icon||'✦'}
-  if(navPreview){navPreview.classList.toggle('show',!!step.navPreview);navPreview.innerHTML=''}
-  const resolvedTarget=coachTourResolvedTarget(step);const tourTarget=resolvedTarget?document.querySelector(resolvedTarget):null;
-  const targetArt=tourTarget?.matches?.('.nav-btn')?tourTarget.querySelector('.mwNavArt'):tourTarget?.querySelector?.('.mwNavArt');
-  if(targetArt&&tourIcon){
-    const bg=getComputedStyle(targetArt).backgroundImage;
-    if(bg&&bg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=bg;tourIcon.textContent=''}
-  }
-  if(step.navPreview&&navPreview){
-    const buttons=window.matchMedia('(max-width:820px)').matches?[...document.querySelectorAll('.coach-mobile-nav button')].slice(0,5):[...document.querySelectorAll('#sideNav .nav-btn')].slice(0,5);
-    navPreview.innerHTML=buttons.map(btn=>{
-      const art=btn.querySelector('.mwNavArt'),label=btn.querySelector('span:last-child')?.textContent?.trim()||'MW';
-      const bg=art?getComputedStyle(art).backgroundImage:'none';
-      return `<div><i style='background-image:${bg}'></i><span>${escapeHtml(label)}</span></div>`;
-    }).join('');
-    const firstArt=buttons[0]?.querySelector('.mwNavArt');
-    const firstBg=firstArt?getComputedStyle(firstArt).backgroundImage:'none';
-    if(tourIcon&&firstBg&&firstBg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=firstBg;tourIcon.textContent=''}
-  }
-  root.querySelector('#coachTourTitle').textContent=step.title;
-  root.querySelector('#coachTourBody').textContent=step.body;
-  root.querySelector('#coachTourHint').textContent=step.hint||'';
-  root.querySelector('#coachTourBack').disabled=st.index===0;
-  root.querySelector('#coachTourNext').textContent=st.index===st.steps.length-1?'FINISH':'NEXT';
-  root.querySelector('#coachTourDots').innerHTML=st.steps.map((_,i)=>`<i class="${i===st.index?'active':''}"></i>`).join('');
-  root.classList.toggle('no-target',!step.target);
-  window.setTimeout(()=>coachTourPosition(step),60);
-}
-function coachTourPosition(step){
-  const root=coachTourState?.root;if(!root)return;const spot=root.querySelector('#coachTourSpotlight'),tag=root.querySelector('#coachTourTag'),card=root.querySelector('#coachTourCard');
-  if(!step.target){spot.style.display='none';tag.style.display='none';card.classList.remove('at-top');return;}
-  const resolvedTarget=coachTourResolvedTarget(step);const target=resolvedTarget?document.querySelector(resolvedTarget):null;if(!target){spot.style.display='none';tag.style.display='none';return;}
-  target.scrollIntoView({block:'nearest',inline:'nearest'});
-  const r=target.getBoundingClientRect(),pad=7;
-  const left=Math.max(8,r.left-pad),top=Math.max(8,r.top-pad),width=Math.min(window.innerWidth-left-8,r.width+pad*2),height=Math.min(window.innerHeight-top-8,r.height+pad*2);
-  spot.style.display='block';spot.style.left=`${left}px`;spot.style.top=`${top}px`;spot.style.width=`${Math.max(38,width)}px`;spot.style.height=`${Math.max(34,height)}px`;
-  tag.style.display='block';tag.textContent=step.label||'';tag.style.left=`${Math.max(10,Math.min(left,window.innerWidth-150))}px`;tag.style.top=`${Math.max(8,top-30)}px`;
-  card.classList.toggle('at-top',r.top>window.innerHeight*.52);
-}
-function coachTourReposition(){const st=coachTourState;if(st)coachTourPosition(st.steps[st.index])}
-function finishCoachTour(skipped=false){
-  const st=coachTourState;if(!st)return;
-  localStorage.setItem(coachTourCompleteKey(experience),'1');
-  if(!accountAccess.isFounder)localStorage.setItem(coachTourLastTierKey(),experience);
-  window.removeEventListener('resize',coachTourReposition);
-  st.root?.remove();coachTourState=null;coachTourCloseNav();
-  toast(skipped?'Tutorial skipped — replay it from Account anytime.':'Tutorial complete — you’re ready to coach.');
-}
-
-function renderLogin(message=''){
-  app.innerHTML=window.MWSignIn.render('coach',{message});
-  bindLogin();
-  if(new URLSearchParams(location.search).get('apply')==='1')renderCoachApplication();
-}
-/* MW coach signup tab hook */
-document.addEventListener('click',function(e){const b=e.target.closest&&e.target.closest('[data-coach-signup]');if(!b)return;e.preventDefault();renderCoachApplication();});
-function renderCoachApplication(){
-  try{window.MWWebAnalytics?.track('signup_start',{audience:'coach',metadata:{flow:'coach_application'}})}catch{}
-  const existing=document.getElementById('coachApplyModal');if(existing)existing.remove();
-  const wrap=document.createElement('div');wrap.id='coachApplyModal';wrap.className='coach-apply-modal';
-  wrap.innerHTML=`<div class="coach-apply-backdrop" data-close="1" aria-hidden="true"><img src="/assets/mw-coach-system-signup.png" alt="" fetchpriority="high" decoding="async"></div><div class="coach-apply-shell"><div class="coach-apply-brand"><img src="/assets/mw-official-crest.png" alt="MW Dynasty crest"><div><b>MW DYNASTY</b><span>MORE THAN SPORTS</span></div></div><section class="coach-apply-card coach-signup-wizard" role="dialog" aria-modal="true" aria-labelledby="coachApplyTitle">
-    <div class="coach-apply-head">
-      <div><div class="coach-apply-kicker">MW DYNASTY • COACH ACCESS</div><h2 id="coachApplyTitle">Apply for Coach Access</h2><p>Coach accounts are verified before access is activated. Complete the steps below to build your coach profile and verify your coaching role.</p></div>
-      <button type="button" class="coach-apply-close" data-close="1" aria-label="Close">×</button>
-    </div>
-    <div class="coach-signup-progress" aria-label="Coach application progress">
-      <div class="active" data-progress-step="1"><b>1</b><span>Profile</span></div>
-      <div data-progress-step="2"><b>2</b><span>Verification</span></div>
-      <div data-progress-step="3"><b>3</b><span>Review</span></div>
-    </div>
-    <form id="coachApplyForm" class="coach-apply-form">
-      <section class="coach-signup-step active" data-signup-step="1">
-        <div class="coach-signup-step-head"><span>STEP 1 OF 3</span><h3>Coach Profile</h3><p>Tell MW Dynasty who you are and where you coach.</p></div>
-        <div class="coach-apply-two"><label>First name<input id="applyFirst" required maxlength="80" autocomplete="given-name"></label><label>Last name<input id="applyLast" required maxlength="80" autocomplete="family-name"></label></div>
-        <label>Email<input id="applyEmail" type="email" required maxlength="320" autocomplete="email"></label>
-        <label>School / club / organization<input id="applyOrg" required maxlength="160" placeholder="Your current program or organization"></label>
-        <label>Coach role / title<input id="applyCoachTitle" required maxlength="120" placeholder="Head Coach, Sprints Coach, Assistant Coach…"></label>
-        <div class="coach-apply-two"><label>City<input id="applyCity" required maxlength="100" autocomplete="address-level2"></label><label>State<input id="applyState" required maxlength="80" autocomplete="address-level1"></label></div>
-        <button class="coach-login-submit coach-signup-next" type="button" data-next-step="2"><span>Continue to Verification</span><span>→</span></button>
-      </section>
-
-      <section class="coach-signup-step" data-signup-step="2">
-        <div class="coach-signup-step-head"><span>STEP 2 OF 3</span><h3>Verify Your Coaching Role</h3><p>This information helps MW Dynasty confirm that coach access is being requested by a real coach.</p></div>
-        <div class="coach-apply-two">
-          <label>Coaching level<select id="applyLevel" required><option value="">Select</option><option>High School</option><option>College</option><option>Club / AAU</option><option>Private Coach</option><option>Middle School</option><option>Professional</option><option>Other</option></select></label>
-          <label>Years coaching<input id="applyYears" type="number" min="0" max="80" inputmode="numeric" required></label>
-        </div>
-        <label>Approximate athletes coached <span class="coach-apply-optional">(optional)</span><input id="applyAthleteCount" type="number" min="1" max="5000" inputmode="numeric" placeholder="Example: 24"></label>
-        <label>How can we verify your coaching role?
-          <select id="applyVerifyMethod" required>
-            <option value="">Select a verification method</option>
-            <option>School or organization staff directory</option>
-            <option>School or organization website</option>
-            <option>Professional coaching profile</option>
-            <option>Program administrator / reference contact</option>
-            <option>Other verifiable source</option>
-          </select>
-        </label>
-        <label>Verification link or contact<input id="applyVerifyDetail" required maxlength="500" placeholder="Website URL, staff directory, administrator name/email, or other verification detail"></label>
-        <label>Website or social coaching profile<input id="applySocial" maxlength="300" placeholder="Optional additional profile"></label>
-        <div class="coach-signup-actions"><button class="coach-signup-back" type="button" data-prev-step="1">← Back</button><button class="coach-login-submit coach-signup-next" type="button" data-next-step="3"><span>Continue to Review</span><span>→</span></button></div>
-      </section>
-
-      <section class="coach-signup-step" data-signup-step="3">
-        <div class="coach-signup-step-head"><span>STEP 3 OF 3</span><h3>Review & Submit</h3><p>We'll verify what we can automatically. If anything is unclear, MW Dynasty will review it—no extra work from you.</p></div>
-        <div id="coachApplySummary" class="coach-apply-summary"></div>
-        <label>Anything you'd like us to know? <span class="coach-apply-optional">(optional)</span><textarea id="applyReason" rows="3" maxlength="1600" placeholder="Optional"></textarea></label>
-        <label class="coach-apply-certify"><input id="applyCertify" type="checkbox" required><span>I certify that the coaching and organization information I provided is accurate and may be verified by MW Dynasty.</span></label>
-        <div id="coachApplyMessage" class="login-message" role="status" aria-live="polite"></div>
-        <div class="coach-signup-actions"><button class="coach-signup-back" type="button" data-prev-step="2">← Back</button><button id="coachApplySubmit" class="coach-login-submit" type="submit"><span>Submit for Coach Verification</span><span>→</span></button></div>
-      </section>
-    </form>
-    <p class="coach-apply-foot"><b>That's it.</b> We'll verify your coaching role first. If approved, you'll choose your membership, optionally add sponsored-athlete seats, and complete payment before Coach access is activated.</p>
-  </section></div>`;
-  document.body.appendChild(wrap);
-  wrap.querySelectorAll('[data-close="1"]').forEach(x=>x.addEventListener('click',()=>wrap.remove()));
-  wrap.querySelectorAll('[data-next-step]').forEach(x=>x.addEventListener('click',()=>goCoachSignupStep(Number(x.dataset.nextStep))));
-  wrap.querySelectorAll('[data-prev-step]').forEach(x=>x.addEventListener('click',()=>showCoachSignupStep(Number(x.dataset.prevStep))));
-  document.getElementById('coachApplyForm').addEventListener('submit',submitCoachApplication);
-}
-function showCoachSignupStep(step){
-  document.querySelectorAll('#coachApplyModal [data-signup-step]').forEach(x=>x.classList.toggle('active',Number(x.dataset.signupStep)===step));
-  document.querySelectorAll('#coachApplyModal [data-progress-step]').forEach(x=>{const n=Number(x.dataset.progressStep);x.classList.toggle('active',n===step);x.classList.toggle('done',n<step)});
-  document.querySelector('#coachApplyModal .coach-apply-card')?.scrollTo({top:0,behavior:'smooth'});
-}
-function goCoachSignupStep(step){
-  const current=step-1;
-  const section=document.querySelector(`#coachApplyModal [data-signup-step="${current}"]`);
-  if(section){
-    const fields=[...section.querySelectorAll('input,select,textarea')];
-    for(const field of fields){if(!field.checkValidity()){field.reportValidity();field.focus();return}}
-  }
-  if(step===3)renderCoachApplySummary();
-  showCoachSignupStep(step);
-}
-function renderCoachApplySummary(){
-  const v=id=>escapeHtml((document.getElementById(id)?.value||'').trim());
-  const summary=document.getElementById('coachApplySummary');if(!summary)return;
-  summary.innerHTML=`<div><span>Coach</span><b>${v('applyFirst')} ${v('applyLast')}</b></div>
-    <div><span>Organization</span><b>${v('applyOrg')}</b></div>
-    <div><span>Role</span><b>${v('applyCoachTitle')}</b></div>
-    <div><span>Level</span><b>${v('applyLevel')}</b></div>
-    <div><span>Verification</span><b>${v('applyVerifyMethod')}</b></div>`;
-}
-async function submitCoachApplication(e){
-  e.preventDefault();
-  const b=document.getElementById('coachApplySubmit'),m=document.getElementById('coachApplyMessage');
-  const form=document.getElementById('coachApplyForm');
-  if(!form.checkValidity()){form.reportValidity();return}
-  const rawReason=document.getElementById('applyReason').value.trim();
-  const verifyMethod=document.getElementById('applyVerifyMethod').value;
-  const verifyDetail=document.getElementById('applyVerifyDetail').value.trim();
-  const athleteCount=document.getElementById('applyAthleteCount').value;
-  const payload={
-    first_name:document.getElementById('applyFirst').value.trim(),
-    last_name:document.getElementById('applyLast').value.trim(),
-    email:document.getElementById('applyEmail').value.trim(),
-    organization:document.getElementById('applyOrg').value.trim(),
-    coach_title:document.getElementById('applyCoachTitle').value.trim(),
-    city:document.getElementById('applyCity').value.trim(),
-    state:document.getElementById('applyState').value.trim(),
-    coaching_level:document.getElementById('applyLevel').value,
-    years_coaching:document.getElementById('applyYears').value||null,
-    website_or_social:document.getElementById('applySocial').value.trim(),
-    verification_method:verifyMethod,
-    verification_detail:verifyDetail,
-    athlete_count:athleteCount?Number(athleteCount):null,
-    channel:document.documentElement.classList.contains('mw-native-app')?'ios':'website',
-    reason:rawReason
-  };
-  b.disabled=true;b.innerHTML='<span class="login-spinner"></span><span>Submitting for verification…</span>';m.textContent='Creating your pending coach application…';m.className='login-message show neutral';
-  try{
-    const r=await fetch(`${SUPABASE_URL}/functions/v1/mw-coach-apply`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Application could not be submitted.');
-    try{window.MWWebAnalytics?.track('signup_complete',{audience:'coach',metadata:{flow:'coach_application',verification_status:String(d.verification_status||'submitted')}})}catch{}
-    const card=document.querySelector('#coachApplyModal .coach-apply-card');
-    const auto=d.verification_status==='auto_approved',denied=d.verification_status==='denied';
-    const kicker=auto?'COACH VERIFIED':denied?'VERIFICATION COMPLETE':'APPLICATION RECEIVED';
-    const title=auto?'You’re Verified':denied?'Application Not Approved':'Quick Review Needed';
-    const copy=auto?'We verified your coaching role automatically. Check your email for your secure setup link—membership and optional sponsored athletes are next.':denied?'We couldn’t approve this Coach application. If you believe this decision should be reviewed, MW Support can help.':'We received everything. A quick MW Dynasty review is needed before membership and payment unlock. You don’t need to submit anything again.';
-    const steps=auto?'<span>1. Open the secure setup email.</span><span>2. Create your password and choose your Coach membership.</span><span>3. Add sponsored athletes if you want.</span><span>4. Complete payment and enter Coach MW Dynasty.</span>':denied?'<span>Contact MW Support if you believe the information should be reviewed.</span>':'<span>1. MW Dynasty reviews the verification details.</span><span>2. If approved, we email your secure setup link.</span><span>3. Choose membership, optional sponsored athletes, and pay.</span><span>4. Enter Coach MW Dynasty.</span>';
-    if(card)card.innerHTML=`<div class="coach-apply-result">
-      <div class="coach-apply-result-icon">${denied?'!':'✓'}</div>
-      <div class="coach-apply-kicker">${kicker}</div>
-      <h2>${title}</h2>
-      <p>${copy}</p>
-      <div class="coach-apply-next-steps"><b>What happens next</b>${steps}</div>
-      <button type="button" class="coach-login-submit" data-finish-coach-apply="1"><span>Return to Coach Sign In</span><span>→</span></button>
-    </div>`;
-    card.querySelector('[data-finish-coach-apply]')?.addEventListener('click',()=>document.getElementById('coachApplyModal')?.remove());
-  }catch(err){
-    m.textContent=err.message;m.className='login-message show error';b.disabled=false;b.innerHTML='<span>Submit for Coach Verification</span><span>→</span>';
-  }
-}
-async function verifyCoachAccess(session){
-  let r;
-  try{r=await fetch('/api/coach/access',{headers:{Authorization:`Bearer ${session.access_token}`}})}
-  catch(e){const err=coachAccessError('Coach access is temporarily unavailable.',503);err.mwTransient=true;throw err}
-  const d=await r.json().catch(()=>({}));
-  if(!r.ok){
-    if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError(d.error||'Coach access is temporarily unavailable.',r.status);
-    throw coachAccessError(r.status===403?'This login is not an approved, active MW Coach account.':(d.error||'Coach access could not be verified.'),r.status)
-  }
-  accountAccess={role:d.role||null,tier:d.tier||null,isFounder:!!d.isFounder,firstName:d.firstName||'',lastName:d.lastName||'',organization:d.organization||'',coachTitle:d.coachTitle||'',email:d.email||'',features:d.features||{}};
-  window.MWDiag?.snapshot({audience:'coach',role:String(d.role||''),tier:String(d.tier||''),founder:!!d.isFounder,native:document.documentElement.classList.contains('mw-native-app')});
-  if(accountAccess.isFounder){experience='performance';return d;}
-  const map={core:'core',intelligence:'intelligence',mw_sprint_performance:'performance'};
-  if(!map[d.tier])throw new Error('This coach account does not have an active MW Coach tier.');
-  experience=map[d.tier];
-  return d;
-}
-function setLoginMessage(text,type='error'){
-  const el=document.getElementById('loginMessage');if(!el)return;el.textContent=text;el.className=`login-message show ${type}`;
-}
-function setLoginBusy(busy){
-  const b=document.getElementById('loginSubmit');if(!b)return;b.disabled=busy;b.innerHTML=busy?'<span class="login-spinner" aria-hidden="true"></span><span>Signing In…</span>':'<span>Sign In</span><span aria-hidden="true">→</span>';
-}
-async function supabasePasswordLogin(email,password){
-  const r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-  const data=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(data.error_description||data.msg||data.message||'Unable to sign in. Check your email and password.');
-  return data;
-}
-async function validateSession(session){
-  if(!session?.access_token)return false;
-  let r;
-  try{r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`}})}
-  catch(e){const err=coachAccessError('Coach authentication is temporarily unavailable.',503);err.mwTransient=true;throw err}
-  if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError('Coach authentication is temporarily unavailable.',r.status);
-  return r.ok;
-}
-function storedSessionIsPersistent(){return !!localStorage.getItem(SESSION_KEY)}
-async function refreshCoachSession(session){
-  if(!session?.refresh_token)return null;
-  let r;
-  try{r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})})}
-  catch(e){const err=coachAccessError('Coach session refresh is temporarily unavailable.',503);err.mwTransient=true;throw err}
-  const d=await r.json().catch(()=>null);
-  if(!r.ok||!d?.access_token){
-    if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError(d?.error_description||d?.msg||'Coach session refresh is temporarily unavailable.',r.status);
-    return null
-  }
-  persistSession(d,storedSessionIsPersistent());return d;
-}
-function persistSession(session,remember=true){
-  authSession=session;
-  if(remember){localStorage.setItem(SESSION_KEY,JSON.stringify(session));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));localStorage.removeItem(SESSION_KEY)}
-}
-function clearSession(){authSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);try{sessionStorage.removeItem(COACH_ACTIVE_PAGE_KEY)}catch{}}
-function readStoredSession(){
-  try{return JSON.parse(localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY)||'null')}catch{return null}
-}
-async function signOut(){
-  if(window.__mwCoachNotificationPoll){clearInterval(window.__mwCoachNotificationPoll);window.__mwCoachNotificationPoll=null}
-  const token=authSession?.access_token;
-  clearSession();
-  if(token){try{await fetch(`${SUPABASE_URL}/auth/v1/logout`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}})}catch{}}
-  renderLogin('You have been signed out.');
-}
-
-function renderCoachMembershipSelection(session=authSession){
-  if(session?.access_token)authSession=session;
-  const isNative=document.documentElement.classList.contains('mw-native-app');
-  let selected='core',sponsorOn=false,sponsorQty=1;
-  const planCards=()=>Object.entries(PLANS).map(([key,p])=>`<button type="button" class="coach-member-plan ${key===selected?'selected':''}" data-member-plan="${key}">
-    <span class="coach-member-check">✓</span><span class="coach-member-plan-name">${escapeHtml(p.name)}</span>
-    <b>&#36;${p.monthly}<small>/mo</small></b><span>${key==='core'?'Team management + core coaching tools':key==='intelligence'?'Core tools + Coach MW intelligence':'Complete MW sprint system + intelligence'}</span>
-  </button>`).join('');
-  const draw=()=>{
-    const p=PLANS[selected],sponsorTotal=sponsorOn?sponsorQty*p.sponsor:0,total=p.monthly+sponsorTotal;
-    app.innerHTML=`<div class="coach-membership-screen">
-      <section class="coach-membership-shell">
-        <div class="coach-membership-nav"><button type="button" id="coachMembershipBack" class="coach-membership-back" aria-label="Back to Coach sign in">← Back</button></div>
-        <div class="coach-membership-progress"><span class="done">✓ Verified</span><i></i><span class="active">2 Membership</span><i></i><span>3 Payment</span><i></i><span>4 Start Coaching</span></div>
-        <div class="coach-membership-head"><div class="coach-apply-kicker">MW DYNASTY • COACH</div><h1>Choose what fits your program.</h1><p>Your coaching role is verified. Pick a membership, add sponsored athletes only if you want them, then you're ready for checkout.</p></div>
-        <div class="coach-membership-plans">${planCards()}</div>
-        <div class="coach-sponsor-choice">
-          ${isNative
-            ? `<div><b>Sponsored athletes come next</b><span>Activate your Coach membership through the App Store first. You can add sponsored-athlete seats from Account & Billing immediately after activation.</span></div>`
-            : `<div><b>Sponsor athletes?</b><span>Optional. You can also add sponsored athletes later.</span></div>
-               <div class="coach-sponsor-buttons"><button type="button" data-sponsor="no" class="${!sponsorOn?'selected':''}">No thanks</button><button type="button" data-sponsor="yes" class="${sponsorOn?'selected':''}">Yes, add athletes</button></div>
-               ${sponsorOn?`<div class="coach-sponsor-qty"><button type="button" data-qty="-1" aria-label="Remove one athlete">−</button><div><b>${sponsorQty}</b><span>Sponsored athlete${sponsorQty===1?'':'s'} · &#36;${p.sponsor}/athlete/mo</span></div><button type="button" data-qty="1" aria-label="Add one athlete">+</button></div>`:''}`}
-        </div>
-        <div class="coach-membership-total"><div><span>Coach membership</span><b>&#36;${p.monthly}/mo</b></div>${!isNative&&sponsorOn?`<div><span>${sponsorQty} sponsored athlete${sponsorQty===1?'':'s'}</span><b>&#36;${sponsorTotal}/mo</b></div>`:''}<div class="total"><span>Total today</span><b>&#36;${isNative?p.monthly:total}/mo</b></div></div>
-        <button type="button" id="coachMembershipContinue" class="coach-login-submit coach-membership-continue"><span>${isNative?'Continue to App Purchase':'Continue to Secure Payment'}</span><span>→</span></button>
-        ${isNative?'<button type="button" id="coachRestorePurchase" class="back" style="width:100%;margin-top:10px">Restore App Store Purchase</button>':''}
-        <p class="coach-membership-note">No setup fee. Sponsorship is optional. Your Coach dashboard unlocks after payment is confirmed.</p>
-        <div id="coachMembershipMessage" class="login-message" role="status" aria-live="polite"></div>
-      </section>
-    </div>`;
-    document.getElementById('coachMembershipBack').onclick=()=>renderLogin('Your verified Coach profile is saved. Sign in whenever you’re ready to continue membership setup.');
-    app.querySelectorAll('[data-member-plan]').forEach(b=>b.onclick=()=>{selected=b.dataset.memberPlan;draw()});
-    app.querySelectorAll('[data-sponsor]').forEach(b=>b.onclick=()=>{sponsorOn=b.dataset.sponsor==='yes';draw()});
-    app.querySelectorAll('[data-qty]').forEach(b=>b.onclick=()=>{sponsorQty=Math.max(1,Math.min(250,sponsorQty+Number(b.dataset.qty||0)));draw()});
-    document.getElementById('coachMembershipContinue').onclick=async()=>{
-      const btn=document.getElementById('coachMembershipContinue'),msg=document.getElementById('coachMembershipMessage'),plan=PLANS[selected],qty=sponsorOn?sponsorQty:0;
-      btn.disabled=true;msg.textContent='Preparing your membership…';msg.className='login-message show neutral';
-      try{
-        const token=authSession?.access_token||session?.access_token;if(!token)throw new Error('Your secure setup session expired. Sign in again.');
-        if(isNative){
-          if(qty>0)throw new Error('Sponsored-athlete seats are added through Coach billing after your App Store Coach membership is active. Choose “No thanks” here, then add seats from your Coach account.');
-          const save=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_mark_membership_checkout_started`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({p_plan_code:plan.planCode,p_sponsor_quantity:0,p_provider:'apple',p_provider_reference:null})});
-          const saved=await save.json().catch(()=>({}));if(!save.ok)throw new Error(saved.message||saved.hint||'Membership choice could not be saved.');
-          const nativePurchase=window.webkit?.messageHandlers?.mwPurchase;
-          if(!nativePurchase)throw new Error('App Store purchase is not available in this build yet. Your membership choice is saved.');
-          nativePurchase.postMessage({planCode:plan.planCode,sponsorQuantity:0,accessToken:token});
-          msg.textContent='Opening the App Store purchase…';return;
-        }
-        const r=await fetch('/api/stripe/checkout',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({planCode:plan.planCode,sponsorQuantity:qty})});
-        const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Secure checkout could not start.');
-        if(!d.url)throw new Error('Secure checkout link was not returned.');
-        location.assign(d.url);
-      }catch(e){msg.textContent=e.message||'Membership setup could not continue.';msg.className='login-message show error';btn.disabled=false}
-    };
-    if(isNative&&document.getElementById('coachRestorePurchase')){
-      document.getElementById('coachRestorePurchase').onclick=()=>{
-        const token=authSession?.access_token||session?.access_token,restore=window.webkit?.messageHandlers?.mwRestorePurchase;
-        if(!token||!restore){msg.textContent='App Store restore is not available in this build yet.';msg.className='login-message show error';return}
-        msg.textContent='Checking your App Store membership…';msg.className='login-message show neutral';
-        restore.postMessage({planCode:PLANS[selected].planCode,accessToken:token});
-      };
-    }
-  };
-  draw();
-  (async()=>{
-    const token=authSession?.access_token||session?.access_token;if(!token)return;
-    try{
-      const r=await fetch(`${SUPABASE_URL}/rest/v1/onboarding_journeys?audience=eq.coach&select=selected_plan_code,sponsored_athlete_seats,payment_status&order=updated_at.desc&limit=1`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}});
-      const rows=await r.json().catch(()=>[]),journey=Array.isArray(rows)?rows[0]:null;
-      if(journey){
-        const map={coach_core:'core',coach_intelligence:'intelligence',mw_sprint_performance:'performance'},key=map[journey.selected_plan_code];
-        if(key&&PLANS[key])selected=key;
-        sponsorQty=Math.max(1,Math.min(250,Number(journey.sponsored_athlete_seats||1)));sponsorOn=!isNative&&Number(journey.sponsored_athlete_seats||0)>0;draw();
-      }
-      if(new URLSearchParams(location.search).get('checkout')==='cancelled'){
-        const msg=document.getElementById('coachMembershipMessage');if(msg){msg.textContent='Checkout was cancelled. Your membership choice is saved — continue whenever you’re ready.';msg.className='login-message show neutral'}
-      }
-    }catch{}
-  })();
-}
-
-window.mwNativePurchaseResult=function(result){
-  window.MWDiag?.event('storekit_result',{severity:result?.ok?'info':(result?.cancelled?'info':'warn'),code:result?.ok?'verified':result?.cancelled?'cancelled':result?.pending?'pending':'failed',context:{ok:!!result?.ok,restored:!!result?.restored,pending:!!result?.pending,cancelled:!!result?.cancelled,plan_code:String(result?.planCode||'')}});
-  const msg=document.getElementById('coachMembershipMessage'),btn=document.getElementById('coachMembershipContinue');
-  if(result?.ok){
-    if(msg){msg.textContent='Payment confirmed. Activating your Coach account…';msg.className='login-message show neutral'}
-    setTimeout(()=>location.reload(),700);return;
-  }
-  if(msg){msg.textContent=result?.error||'App Store purchase could not be confirmed.';msg.className='login-message show error'}
-  if(btn)btn.disabled=false;
-};
-
-function showCoachEntering(){
-  document.getElementById('mwCoachEntering')?.remove();
-  const el=document.createElement('div');
-  el.id='mwCoachEntering';
-  el.className='coach-entering-overlay';
-  el.setAttribute('aria-live','polite');
-  el.innerHTML=`<div class="coach-entering-inner"><div class="coach-entering-orb"><img src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty"></div><div class="coach-entering-copy"><b>ENTERING MW DYNASTY</b><span>COACH EXPERIENCE</span></div><div class="coach-entering-line" aria-hidden="true"><i></i></div></div>`;
-  document.body.appendChild(el);
-  requestAnimationFrame(()=>el.classList.add('show'));
-  return performance.now();
-}
-function hideCoachEntering(){document.getElementById('mwCoachEntering')?.remove()}
-async function holdCoachEntering(start,minMs=420){const left=Math.max(0,minMs-(performance.now()-start));if(left)await new Promise(r=>setTimeout(r,left))}
-function bindLogin(){
-  const form=document.getElementById('loginForm'),pass=document.getElementById('loginPassword'),toggle=document.getElementById('togglePassword'),forgot=document.getElementById('forgotPassword');
-  toggle.addEventListener('click',()=>{const show=pass.type==='password';pass.type=show?'text':'password';toggle.textContent=show?'Hide':'Show';toggle.setAttribute('aria-label',show?'Hide password':'Show password');toggle.setAttribute('aria-pressed',String(show))});
-  forgot.addEventListener('click',async()=>{
-    const email=document.getElementById('loginEmail').value.trim();
-    if(!email)return setLoginMessage('Enter your email address first, then tap Forgot password.');
-    forgot.disabled=true;forgot.textContent='Sending…';
-    try{const redirectTo=location.origin+'/coach/';const r=await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.msg||d.message||'Unable to send reset email.')}setLoginMessage('Password reset email sent. Check your inbox.','success')}catch(e){setLoginMessage(e.message)}finally{forgot.disabled=false;forgot.textContent='Forgot password?'}
-  });
-  form.addEventListener('submit',async e=>{
-    e.preventDefault();
-    const email=document.getElementById('loginEmail').value.trim(),password=pass.value,remember=document.getElementById('rememberMe').checked;
-    if(!email||!password)return setLoginMessage('Enter both your email address and password.');
-    setLoginBusy(true);setLoginMessage('Signing you in…','neutral');
-    try{
-      const session=await supabasePasswordLogin(email,password);
-      persistSession(session,remember);
-      const enteringStarted=showCoachEntering();
-      try{
-        await verifyCoachAccess(session);
-        await holdCoachEntering(enteringStarted);
-        dashboard();
-        hideCoachEntering();
-      }
-      catch(accessErr){
-        hideCoachEntering();
-        if(coachTransient(accessErr)){setLoginMessage('Signed in, but MW is having a temporary connection issue. Your Coach session is safe and will reconnect automatically.','neutral');return}
-        renderCoachMembershipSelection(session)
-      }
-    }catch(err){
-      hideCoachEntering();
-      if(coachTransient(err)&&authSession?.access_token){setLoginMessage('Connection interrupted after sign-in. Your Coach session is safe and will reconnect automatically.','neutral')}
-      else{clearSession();setLoginMessage(err.message)}
-    }finally{setLoginBusy(false)}
-  });
-}
-function recoverySessionFromUrl(){
-  const h=new URLSearchParams(location.hash.replace(/^#/,''));
-  const type=h.get('type')||'';
-  if(!['recovery','invite'].includes(type)||!h.get('access_token'))return null;
-  return {mw_link_type:type,access_token:h.get('access_token'),refresh_token:h.get('refresh_token')||'',token_type:h.get('token_type')||'bearer',expires_in:Number(h.get('expires_in')||3600),expires_at:Math.floor(Date.now()/1000)+Number(h.get('expires_in')||3600)};
-}
-function renderCoachPasswordReset(session){
-  authSession=session;
-  app.innerHTML=`<div class="coach-login-screen"><section class="coach-login-stage"><div class="coach-login-bg" aria-hidden="true"></div><div class="coach-login-content"><div class="coach-login-card-wrap"><div class="coach-login-card"><div class="coach-login-mobile-brand"><span>MW</span> DYNASTY · COACH</div><h2>${session.mw_link_type==='invite'?'Finish Your Coach Setup':'Create New Password'}</h2><p>${session.mw_link_type==='invite'?'You’re verified. Create your password, then choose your membership.':'Choose a new password for your MW Dynasty Coach account.'}</p><form id="coachResetForm" class="coach-login-form"><label class="coach-field"><span>▣</span><input id="coachResetPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters" required></label><label class="coach-field"><span>▣</span><input id="coachResetConfirm" type="password" autocomplete="new-password" placeholder="Confirm new password" required></label><div id="coachResetMessage" class="login-message" role="status"></div><button id="coachResetSubmit" class="coach-login-submit" type="submit"><span>Save New Password</span><span>→</span></button></form></div></div></div></section></div>`;
-  document.getElementById('coachResetForm').onsubmit=async e=>{
-    e.preventDefault();const p=document.getElementById('coachResetPassword').value,q=document.getElementById('coachResetConfirm').value,m=document.getElementById('coachResetMessage'),b=document.getElementById('coachResetSubmit');
-    const say=(t,bad=true)=>{m.textContent=t;m.className='login-message show '+(bad?'error':'success')};
-    if(p.length<8)return say('Use at least 8 characters.');if(p!==q)return say('The passwords do not match.');
-    b.disabled=true;b.textContent='Saving…';
-    try{const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{method:'PUT',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({password:p})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.msg||d.message||'Password could not be updated.');history.replaceState({},document.title,location.pathname);if(session.mw_link_type==='invite'){persistSession(session,true);renderCoachMembershipSelection(session)}else{clearSession();renderLogin('Password updated. Sign in with your new password.')}}catch(err){say(err.message||'Password could not be updated.');b.disabled=false;b.innerHTML='<span>Save New Password</span><span>→</span>'}
-  };
-}
-async function waitForCoachActivation(session){
-  const params=new URLSearchParams(location.search);
-  if(params.get('checkout')!=='success')return false;
-  app.innerHTML=`<div class="coach-membership-screen"><section class="coach-membership-shell coach-membership-finalizing"><div class="coach-apply-kicker">MW DYNASTY • PAYMENT RECEIVED</div><h1>Setting up your Coach account…</h1><p>Payment is complete. We’re unlocking your membership and sponsored-athlete seats now.</p><div class="login-spinner" aria-hidden="true"></div></section></div>`;
-  for(let i=0;i<10;i++){
-    try{await verifyCoachAccess(session);history.replaceState({},document.title,location.pathname);dashboard();return true}catch{}
-    await new Promise(r=>setTimeout(r,1200));
-  }
-  history.replaceState({},document.title,location.pathname);
-  renderCoachMembershipSelection(session);
-  const msg=document.getElementById('coachMembershipMessage');
-  if(msg){msg.textContent='Payment was received and activation is still syncing. Give it a moment, then sign in again.';msg.className='login-message show neutral'}
-  return true;
-}
-
-async function initAuth(){
-  await loadPricingCatalog();
-  const recovery=recoverySessionFromUrl();if(recovery){renderCoachPasswordReset(recovery);return}
-  const stored=readStoredSession();
-  if(stored){
-    authSession=stored;
-    try{
-      let active=stored;
-      if(!(await validateSession(active)))active=await refreshCoachSession(active);
-      if(active&&await validateSession(active)){
-        if(await waitForCoachActivation(active))return;
-        try{await verifyCoachAccess(active);resumeCoachActivePage();return}
-        catch(accessErr){
-          if(coachTransient(accessErr))throw accessErr;
-          renderCoachMembershipSelection(active);return
-        }
-      }
-    }catch(err){
-      if(coachTransient(err)){
-        renderLogin('MW is having a temporary connection issue. Your saved Coach session is safe; we’ll reconnect automatically.');
-        return
-      }
-    }
-    clearSession();
-  }
-  renderLogin();
-  const params=new URLSearchParams(location.search);
-  if(params.get('apply')==='1'){setTimeout(()=>renderCoachApplication(),50);}
-}
-
-
-/* ===== V11.21 FULL INTERACTIVE INTERFACES ===== */
-function mwSessionToken(){return authSession?.access_token||readStoredSession()?.access_token||''}
-async function mwCurrentUser(){
-  if(authSession?.user?.id)return authSession.user;
-  const token=mwSessionToken(); if(!token)return null;
-  const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}});
-  if(!r.ok)return null; return await r.json();
-}
-function mwModal(title,body){
-  document.getElementById('mwModal')?.remove();
-  const el=document.createElement('div');el.id='mwModal';el.className=`mw-modal ${PLANS[experience].theme}`;
-  el.innerHTML=`<div class="mw-modal-backdrop" data-close-modal></div><section class="mw-modal-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}"><div class="mw-modal-head"><div><div class="eyebrow">${PLANS[experience].name}</div><h2>${escapeHtml(title)}</h2></div><button class="back" type="button" data-close-modal>✕</button></div><div class="mw-modal-body">${body}</div></section>`;
-  document.body.appendChild(el);el.querySelectorAll('[data-close-modal]').forEach(x=>x.onclick=()=>el.remove());return el;
-}
-function mwStore(key,value){localStorage.setItem('mwCoach:'+key,JSON.stringify(value))}
-function mwLoad(key,fallback){try{return JSON.parse(localStorage.getItem('mwCoach:'+key)||'null')??fallback}catch{return fallback}}
-function mwClientTimeZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{return'UTC'}}
-function mwLocalIsoDate(date=new Date()){
-  const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');
-  return `${y}-${m}-${d}`;
-}
-async function fetchCoachRoster(){
-  const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const r=await fetch('/api/coach/roster',{headers:{Authorization:`Bearer ${token}`,'X-MW-Time-Zone':mwClientTimeZone()}});
-  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Roster could not be loaded.');return d;
-}
-async function fetchCoachPerformance(athleteId=''){
-  const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const qs=athleteId?`?athleteId=${encodeURIComponent(athleteId)}`:'';
-  const r=await fetch('/api/coach/performance'+qs,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});
-  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Performance intelligence could not be loaded.');return d;
-}
-async function fetchCoachSeasonIntelligence(){
-  const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const r=await fetch('/api/coach/season-intelligence',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});
-  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Season Intelligence could not be loaded.');return d;
-}
-async function hydrateLivePerformanceSummary(){
-  const stat=document.querySelector('[data-stat="Pace Execution"] b');if(!stat)return;
-  try{const d=await fetchCoachPerformance();if(d.rep_tracking_enabled===false){stat.textContent='MW ONLY';return}const v=d.summary?.average_latest_execution_pct;stat.textContent=v==null?'—':`${v}%`}catch{stat.textContent='—'}
-}
-async function hydratePerformanceInsightPreview(){
-  const el=document.getElementById('performanceInsightPreview');if(!el)return;
-  try{const d=await fetchCoachPerformance();if(d.rep_tracking_enabled===false){el.innerHTML='<div class="insight"><span class="insight-symbol" style="color:#e3b51d">★</span><div><h4>Rep Tracking — MW System Exclusive</h4><p>Rep-by-rep sprint execution is reserved for the MW Sprint Performance System. Coach Intelligence still supports your coaching workflow without exposing MW rep tracking.</p></div><span>PREMIUM</span></div>';return}const a=d.athletes||[],s=d.summary||{},flagged=a.filter(x=>(x.flags||[]).length).sort((x,y)=>((y.flags||[]).some(f=>f.level==='attention')?2:1)-((x.flags||[]).some(f=>f.level==='attention')?2:1)),first=flagged[0];
-    const cards=[`<div class="insight"><span class="insight-symbol" style="color:#159bff">◷</span><div><h4>Pace Execution</h4><p>${s.average_latest_execution_pct!=null?`${s.average_latest_execution_pct}% average across latest check-ins.`:'No pace check-ins recorded yet.'}</p></div><span>LIVE</span></div>`,`<div class="insight"><span class="insight-symbol" style="color:#e3b51d">!</span><div><h4>Coach Review</h4><p>${s.review_flags||0} review flag${Number(s.review_flags||0)===1?'':'s'} · ${s.watch_flags||0} watch flag${Number(s.watch_flags||0)===1?'':'s'}.</p></div><span>LIVE</span></div>`];
-    if(first){const roster=await fetchCoachRoster(),name=(roster.athletes||[]).find(x=>x.id===first.athlete_id)?.name||'Athlete',msg=first.flags?.[0]?.message||'Performance trend worth review';cards.push(`<div class="insight"><span class="insight-symbol" style="color:#ff8d66">↗</span><div><h4>${escapeHtml(name)}</h4><p>${escapeHtml(msg)}</p></div><span>REVIEW</span></div>`)}
-    el.innerHTML=cards.join('');
-  }catch(e){el.innerHTML=`<div class="tile"><h3>Performance intelligence unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}
-}
-async function hydrateLiveAthleteCount(){
-  const stat=document.querySelector('[data-stat="Athletes"] b');if(!stat)return;
-  try{const d=await fetchCoachRoster();stat.textContent=String(d.count??d.athletes?.length??0)}catch{}
-}
-function fmtDate(v){if(!v)return '—';try{return new Date(v).toLocaleDateString()}catch{return '—'}}
-async function athleteDetail(athleteId){
-  const modal=mwModal('Athlete Profile',`<div id="athleteDetailState" class="tile">Loading live athlete record…</div>`);
-  const state=modal.querySelector('#athleteDetailState');
-  try{
-    const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-    const [r,perfResult]=await Promise.all([fetch(`/api/coach/athlete?id=${encodeURIComponent(athleteId)}`,{headers:{Authorization:`Bearer ${token}`}}),fetchCoachPerformance(athleteId).then(data=>({data,error:null})).catch(error=>({data:{athlete:null},error}))]);
-    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Athlete record could not be loaded.');
-    const perfD=perfResult.data||{athlete:null},perfError=perfResult.error||null;
-    const a=d.athlete||{},prs=Array.isArray(a.prs)?a.prs:[],notes=Array.isArray(a.notes)?a.notes:[],assignedCheckins=Array.isArray(a.assigned_training_checkins)?a.assigned_training_checkins:[],sponsorship=a.sponsorship||{billing_type:'self_pay',has_entitlement:false},isSponsored=sponsorship.billing_type==='coach_sponsored',sponsorshipEnding=sponsorship.sponsorship_status==='ending',perf=perfD.athlete||null,repTrackingEnabled=perfD.rep_tracking_enabled!==false;
-    modal.querySelector('.mw-modal-head h2').textContent=a.name||'Athlete Profile';
-    state.outerHTML=`<div id="athleteDetailLive">
-      <div class="panel-grid">
-        <div class="tile"><h3>Events</h3><p>${escapeHtml(a.event||'Events not set')}</p><small>${a.track_training_years!=null?escapeHtml(String(a.track_training_years))+' years consistent training':escapeHtml(a.experience_level||'Experience level not set')}</small></div>
-        <div class="tile"><h3>Program</h3><p><b>Week ${Number(a.current_week||1)} · Day ${Number(a.current_day||1)}</b></p><small>${escapeHtml(String(a.program_status||'On Track'))}</small></div>
-        <div class="tile"><h3>Track Tier</h3><p><b>${escapeHtml(String(a.track_tier||'foundation').toUpperCase())}</b></p><small>${escapeHtml(a.program_version||'mw-41-tiered-v2.9')}</small></div>
-        <div class="tile"><h3>Strength Tier</h3><p><b>${escapeHtml(String(a.strength_tier||'foundation').toUpperCase())}</b></p><small>Shared with athlete + Coach MW</small></div>
-        <div class="tile"><h3>Starting Week</h3><p>${Number(a.starting_week||1)}</p><small>Program start: ${escapeHtml(fmtDate(a.program_start_date))}</small></div>
-        <div class="tile"><h3>Last Workout</h3><p>${escapeHtml(fmtDate(a.last_completed_workout_at))}</p><small>Live MW athlete record</small></div>
-      </div>
-      <div class="tile" style="margin-top:14px"><h3>Athlete Goal</h3><p>${escapeHtml(a.training_goal||'No Athlete Goal has been set yet.')}</p><small>Set by the athlete in MW Smart Entry or Athlete Profile</small></div>
-      <div class="tile" style="margin-top:14px"><h3>Membership Responsibility</h3><p><b>${isSponsored?'Coach Sponsored':'Athlete Self-Pay'}</b></p><small>${isSponsored?`Sponsored rate: ${sponsorship.sponsored_athlete_price_cents?mwMoney(Number(sponsorship.sponsored_athlete_price_cents))+'/month':'current coach tier rate'}${sponsorship.access_ends_at?' · access scheduled through '+escapeHtml(fmtDate(sponsorship.access_ends_at)):''}`:'This athlete is responsible for their own MW Athlete membership.'}</small>${accountAccess.role==='coach'&&isSponsored?`<div style="margin-top:12px"><button class="${sponsorshipEnding?'action':'back'}" id="athSponsorshipAction">${sponsorshipEnding?'Resume Sponsorship':'Schedule Sponsorship End'}</button><div id="athSponsorshipState" style="margin-top:8px"></div></div>`:''}</div>
-      <div class="tile" style="margin-top:14px"><h3>Performance Intelligence</h3>${perfError?`<div class="lockNote"><b>PERFORMANCE INTELLIGENCE UNAVAILABLE</b><br>${escapeHtml(perfError.message||'Live performance data could not be loaded. Refresh and try again.')}</div>`:!repTrackingEnabled?'<div class="lockNote"><b>MW SPRINT PERFORMANCE EXCLUSIVE</b><br>Rep-by-rep sprint tracking is available only inside the MW Sprint Performance System.</div>':perf?.sprint?.latest?`<div class="panel-grid" style="margin-top:10px"><div class="tile"><h3>Pace Execution</h3><p><b>${perf.sprint.latest.execution_score_pct??'—'}%</b></p><small>${perf.sprint.latest.source==='quick_checkin'?'Quick athlete check-in':'Detailed timed session'}</small></div><div class="tile"><h3>Consistency</h3><p><b>${perf.sprint.latest.consistency_score??'—'}</b></p><small>Rep execution score</small></div><div class="tile"><h3>Late Drop-Off</h3><p><b>${perf.sprint.latest.first_to_last_dropoff_pct??'—'}%</b></p><small>First rep → last rep</small></div><div class="tile"><h3>Session RPE</h3><p><b>${perf.sprint.latest.session_rpe??'—'}/10</b></p><small>Athlete reported effort</small></div></div><p style="margin-top:10px"><b>${escapeHtml(perf.sprint.latest.reason||'Performance recorded')}</b><br><small>Trend: ${escapeHtml(String(perf.sprint.trend||'insufficient data').replaceAll('_',' '))}. These are coaching signals, not medical conclusions.</small></p><div class="list" style="margin-top:10px">${(perf.sprint.sessions||[]).slice(0,5).map(x=>`<div class="row"><span><b>Week ${x.program_week} · Day ${x.program_day}</b><br><small>${x.rep_count} timed reps · ${x.session_rpe?`RPE ${x.session_rpe}/10 · `:''}${escapeHtml(x.reason||'Recorded')}</small></span><b>${x.execution_score_pct==null?'—':x.execution_score_pct+'%'}</b></div>`).join('')}</div>`:'<p>No pace check-in yet. Once the athlete taps DONE, their pace check-in will appear here.</p>'}${perf?.strength?.latest_checkin?`<div style="margin-top:14px;border-top:1px solid #263641;padding-top:12px"><h3>Strength Check-In</h3><p><b>${perf.strength.latest_checkin.status==='as_prescribed'?'✓ Completed as written':'↔ Modified'}</b></p><small>Week ${perf.strength.latest_checkin.program_week} · ${escapeHtml(perf.strength.latest_checkin.day_label||'Strength day')}</small></div>`:''}${perf?.strength?.session_count?`<div style="margin-top:14px;border-top:1px solid #263641;padding-top:12px"><h3>Weight-Room Progression</h3><div class="panel-grid" style="margin-top:8px"><div class="tile"><h3>Sessions</h3><p><b>${Number(perf.strength.session_count||0)}</b></p><small>Completed</small></div><div class="tile"><h3>As Prescribed</h3><p><b>${perf.strength.as_prescribed_pct==null?'—':perf.strength.as_prescribed_pct+'%'}</b></p><small>Completion quality</small></div><div class="tile"><h3>Recent Response</h3><p><b>${escapeHtml(String(perf.strength.latest_response||'—').toUpperCase())}</b></p><small>Strong / Normal / Heavy</small></div></div><p style="margin-top:10px"><b>${escapeHtml(String(perf.strength.response_trend||'insufficient_data').replaceAll('_',' ').toUpperCase())}</b><br><small>Combined sprint + strength: ${escapeHtml(String(perf.strength.combined_signal||'insufficient_shared_data').replaceAll('_',' '))}. These are coaching signals; no program change is automatic.</small></p>${perf.strength.max_progression?.changes?`<details style="margin-top:10px"><summary style="cursor:pointer;color:#adbdc8">Established max progression</summary><div class="list" style="margin-top:8px">${[['Power Clean','power_clean'],['Front Squat','front_squat'],['Back Squat','back_squat'],['Deadlift','deadlift']].map(([label,key])=>{const x=perf.strength.max_progression.changes[key]||{},unit=perf.strength.max_progression.weight_unit||'lb';return `<div class="row"><span>${label}<br><small>${x.baseline==null?'No baseline yet':'Baseline '+x.baseline+' '+escapeHtml(unit)}</small></span><b>${x.current==null?'—':x.current+' '+escapeHtml(unit)+(x.delta==null?'':` · ${x.delta>=0?'+':''}${x.delta}`)}</b></div>`}).join('')}</div></details>`:''}</div>`:''}${perf?.strength?.latest?`<details style="margin-top:12px"><summary style="cursor:pointer;color:#adbdc8">Detailed strength log</summary><p>${perf.strength.latest.set_count} logged sets · ${perf.strength.latest.actual_volume??0} volume (${escapeHtml(perf.strength.latest.sets?.[0]?.weight_unit||'lb')})</p><small>${escapeHtml((perf.strength.latest.exercises||[]).join(' · '))}</small></details>`:''}</div>
-      <div class="tile" style="margin-top:14px"><h3>Coach-Assigned Training Check-Ins</h3>${assignedCheckins.length?`<div class="list">${assignedCheckins.slice(0,10).map(x=>`<div class="row"><span><b>${escapeHtml(String(x.status||'completed').replaceAll('_',' ').toUpperCase())}</b><br><small>${escapeHtml(fmtDate(x.completed_at))}${x.session_rpe?` · RPE ${x.session_rpe}/10`:''}${x.pace_check_status?` · ${escapeHtml(String(x.pace_check_status).replaceAll('_',' '))}`:''}${x.pace_reps_total!=null?` · ${Number(x.pace_reps_hit||0)}/${Number(x.pace_reps_total)} reps`:''}</small>${x.athlete_note?`<br><small>${escapeHtml(x.athlete_note)}</small>`:''}</span></div>`).join('')}</div>`:'<p>No coach-assigned training check-ins yet.</p>'}</div>
-      <div class="tile" style="margin-top:14px"><h3>Personal Records</h3>${prs.length?`<div class="list">${prs.map(pr=>`<div class="row"><span><b>${escapeHtml(pr.event)}</b><br><small>${pr.verified?'Verified':'Athlete entered'} · ${pr.timing_method==='fat'?'Fully automatic':pr.timing_method==='hand'?'Hand timed':'Timing unknown'}${pr.date_recorded?' · '+escapeHtml(fmtDate(pr.date_recorded)):''}</small></span><b>${escapeHtml(String(pr.time_seconds))}s</b></div>`).join('')}</div>`:'<p>No PRs recorded yet.</p>'}</div>
-      <div class="tile" style="margin-top:14px"><h3>Assessment Weight-Room Maximums</h3>${a.strength_maxes?`<div class="list"><div class="row"><span>Power Clean</span><b>${a.strength_maxes.power_clean_max??'Not established'} ${a.strength_maxes.power_clean_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div><div class="row"><span>Front Squat</span><b>${a.strength_maxes.front_squat_max??'Not established'} ${a.strength_maxes.front_squat_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div><div class="row"><span>Back Squat</span><b>${a.strength_maxes.back_squat_max??'Not established'} ${a.strength_maxes.back_squat_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div><div class="row"><span>${a.strength_maxes.deadlift_type==='trap_bar'?'Trap-Bar Deadlift':'Deadlift'}</span><b>${a.strength_maxes.deadlift_max??'Not established'} ${a.strength_maxes.deadlift_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div></div>`:'<p>No lifting maximums established. Use Foundation technique loading.</p>'}</div>
-      <div class="form" style="margin-top:14px"><h3>Coach-Approved Assignment</h3><label>Track Tier<select id="athTrackTier"><option value="foundation">Foundation</option><option value="development">Development</option><option value="performance">Performance</option></select></label><label>Strength Tier<select id="athStrengthTier"><option value="foundation">Foundation</option><option value="development">Development</option><option value="performance">Performance</option></select></label><label>Official Week<input id="athProgramWeek" type="number" min="1" max="41" value="${Number(a.current_week||1)}"></label><label>Reason<textarea id="athAssignmentReason" rows="3" maxlength="1000" placeholder="Why is this assignment appropriate?"></textarea></label><button class="action" id="saveAthAssignment">Approve & Sync Assignment</button><div id="athAssignmentState"></div></div>
-      <div class="tile" style="margin-top:14px"><h3>Private Coach Notes</h3><div id="athleteNotes">${notes.length?notes.map(n=>`<div class="row"><span>${escapeHtml(n.note)}<br><small>${escapeHtml(fmtDate(n.created_at))}</small></span></div>`).join(''):'<p>No coach notes yet.</p>'}</div></div>
-      <div class="form" style="margin-top:14px"><label>Add Private Coach Note<textarea rows="4" id="athNote" maxlength="5000" placeholder="Add a private coaching note…"></textarea></label><button class="action" id="saveAthNote">Save Note</button><div id="athNoteState"></div></div>
-    </div>`;
-    const sponsorshipBtn=modal.querySelector('#athSponsorshipAction');
-    if(sponsorshipBtn)sponsorshipBtn.onclick=async()=>{
-      const msg=modal.querySelector('#athSponsorshipState'),ending=sponsorshipEnding;
-      if(!ending&&!confirm('Schedule this coach sponsorship to end in 30 days? The athlete keeps their account and can move to self-pay.'))return;
-      sponsorshipBtn.disabled=true;sponsorshipBtn.textContent=ending?'Resuming…':'Scheduling…';if(msg)msg.textContent='';
-      try{
-        const rr=await fetch('/api/coach/athlete',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({action:ending?'resume_sponsorship':'end_sponsorship',athleteId})});
-        const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||'Sponsorship could not be updated.');
-        if(msg)msg.textContent=ending?'✓ Sponsorship resumed.':'✓ Sponsorship end scheduled. Athlete access remains active during the transition.';
-        toast(ending?'Sponsorship resumed':'Sponsorship end scheduled');
-        window.setTimeout(()=>{modal.remove();athleteDetail(athleteId)},650);
-      }catch(e){if(msg)msg.textContent=e.message;sponsorshipBtn.disabled=false;sponsorshipBtn.textContent=ending?'Resume Sponsorship':'Schedule Sponsorship End'}
-    };
-    modal.querySelector('#athTrackTier').value=a.track_tier||'foundation';
-    modal.querySelector('#athStrengthTier').value=a.strength_tier||'foundation';
-    modal.querySelector('#saveAthAssignment').onclick=async()=>{
-      const btn=modal.querySelector('#saveAthAssignment'),msg=modal.querySelector('#athAssignmentState');btn.disabled=true;btn.textContent='Syncing…';msg.textContent='';
-      try{const payload={action:'update_assignment',athleteId,trackTier:modal.querySelector('#athTrackTier').value,strengthTier:modal.querySelector('#athStrengthTier').value,week:Number(modal.querySelector('#athProgramWeek').value),reason:modal.querySelector('#athAssignmentReason').value.trim()};const rr=await fetch('/api/coach/athlete',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify(payload)});const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||'Assignment could not be synced.');msg.textContent='✓ Saved. Athlete app, coach dashboard, and Coach MW now use this assignment.';toast('Athlete assignment synced')}catch(e){msg.textContent=e.message}finally{btn.disabled=false;btn.textContent='Approve & Sync Assignment'}
-    };
-    modal.querySelector('#saveAthNote').onclick=async()=>{
-      const text=modal.querySelector('#athNote').value.trim(),btn=modal.querySelector('#saveAthNote'),msg=modal.querySelector('#athNoteState');
-      if(!text)return toast('Enter a note first');btn.disabled=true;btn.textContent='Saving…';msg.textContent='';
-      try{const rr=await fetch('/api/coach/athlete',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({athleteId,note:text})});const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||'Note could not be saved.');modal.querySelector('#athNote').value='';msg.textContent='Saved to MW Dynasty.';const notesEl=modal.querySelector('#athleteNotes');const empty=notesEl.querySelector('p');if(empty)notesEl.innerHTML='';notesEl.insertAdjacentHTML('afterbegin',`<div class="row"><span>${escapeHtml(text)}<br><small>Just now</small></span></div>`);toast('Coach note saved')}catch(e){msg.textContent=e.message}finally{btn.disabled=false;btn.textContent='Save Note'}
-    };
-  }catch(e){state.innerHTML=`<h3>Could not open athlete</h3><p>${escapeHtml(e.message)}</p>`}
-}
-async function inviteAthleteModal(){
-  const sponsorPrice=PLANS[experience].sponsor;
-  let sponsoredBillingActive=false,sponsorSeatsAvailable=0,sponsorSeatsTotal=0;
-  try{const b=await coachBillingRequest();sponsoredBillingActive=!!b?.status?.sponsored_billing_active;sponsorSeatsAvailable=Number(b?.status?.sponsored_seats_available||0);sponsorSeatsTotal=Number(b?.status?.sponsored_seats_total||0)}catch{}
-  const canSponsor=sponsoredBillingActive&&sponsorSeatsAvailable>0;
-  const modal=mwModal('Invite Athlete',`<div class="tile"><h3>Connect an athlete to your dashboard</h3><p>The athlete can be new to MW Dynasty or already have an account. Choose the access path, then send one invitation.</p></div><div class="form" style="margin-top:14px"><label>Athlete Email<input id="inviteEmail" type="email" inputmode="email" placeholder="athlete@example.com"></label><label>Invite Type<select id="inviteType"><option value="coach_invite">Coach invitation</option><option value="team_invite">Team invitation</option></select></label><label>Membership<select id="inviteBillingType"><option value="coach_sponsored" ${canSponsor?'':'disabled'}>Use 1 sponsored-athlete seat${canSponsor?` — ${sponsorSeatsAvailable} available`:' — no seats available'}</option><option value="self_pay">Athlete pays for their own membership</option></select></label><div class="tile" id="inviteBillingHelp">${canSponsor?`<b>Coach Sponsored</b><br><small>This uses 1 of your ${sponsorSeatsTotal} prepaid sponsored-athlete seats. The athlete skips membership checkout.</small>`:'<b>Athlete Self-Pay</b><br><small>No sponsored seat is currently available. You can still invite this athlete as self-pay.</small>'}</div><button class="action" id="createInvite">Send Athlete Invitation</button><div id="inviteState" class="tile" style="display:none"></div></div>`);
-  const billingSelect=modal.querySelector('#inviteBillingType'),billingHelp=modal.querySelector('#inviteBillingHelp');if(!canSponsor)billingSelect.value='self_pay';
-  billingSelect.onchange=()=>{billingHelp.innerHTML=billingSelect.value==='coach_sponsored'?`<b>Coach Sponsored</b><br><small>This reserves 1 prepaid sponsored-athlete seat. The athlete creates or signs into their profile and skips membership checkout.</small>`:`<b>Athlete Self-Pay</b><br><small>The invitation connects the athlete to you, but the athlete completes their own MW Athlete membership.</small>`};
-  modal.querySelector('#createInvite').onclick=async()=>{
-    const email=modal.querySelector('#inviteEmail').value.trim().toLowerCase(),state=modal.querySelector('#inviteState'),btn=modal.querySelector('#createInvite'),billingType=billingSelect.value;
-    if(!email||!email.includes('@'))return toast('Enter a valid athlete email');btn.disabled=true;btn.textContent='Creating…';
-    try{const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');const r=await fetch('/api/coach/invite',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({email,inviteType:modal.querySelector('#inviteType').value,billingType})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Invitation could not be created');const inv=d.invitation||{},isSponsored=(inv.billing_type||billingType)==='coach_sponsored';state.style.display='block';state.innerHTML=`<h3>${d.reused?'Pending Invitation Ready':'Invitation Created'}</h3><p><b>${escapeHtml(email)}</b></p><p>${isSponsored?'Coach Sponsored':'Athlete Self-Pay'} · Pending · expires ${escapeHtml(fmtDate(inv.expires_at))}</p><p><b>${d.emailSent?'✓ Invitation email sent':'⚠ Invitation email not sent'}</b>${d.emailError?`<br><small>${escapeHtml(d.emailError)}</small>`:''}</p>${d.inviteUrl?`<label>Invite Link<input id="inviteLink" readonly value="${escapeHtml(d.inviteUrl)}"></label><button class="back" id="copyInviteLink" type="button">Copy Invite Link</button>`:''}<label>Backup Invite Code<input id="inviteCode" readonly value="${escapeHtml(inv.invite_token||'')}"></label><button class="back" id="copyInvite" type="button">Copy Backup Code</button><p><small>${isSponsored?'When accepted, the athlete profile is covered by your sponsorship.':'When accepted, the athlete is connected to you and keeps responsibility for their own membership.'}</small></p>`;const copy=async(id,label)=>{const input=modal.querySelector(id);if(!input)return;try{await navigator.clipboard.writeText(input.value);toast(label)}catch{input.select();document.execCommand('copy');toast(label)}};modal.querySelector('#copyInviteLink')?.addEventListener('click',()=>copy('#inviteLink','Invite link copied'));modal.querySelector('#copyInvite').onclick=()=>copy('#inviteCode','Invite code copied');}catch(e){state.style.display='block';state.innerHTML=`<h3>Invitation Error</h3><p>${escapeHtml(e.message)}</p>`}finally{btn.disabled=false;btn.textContent='Create Secure Invitation'}
+function openPage(id,pushHistory=true){if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}if(id!=='practice'){if(window.__mwCoachPracticePoll){clearInterval(window.__mwCoachPracticePoll);window.__mwCoachPracticePoll=null}if(window.__mwCoachPracticeFocus){window.removeEventListener('focus',window.__mwCoachPracticeFocus);window.__mwCoachPracticeFocus=null}}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,school:schoolPage,race:racePage,pacing:pacingPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';rememberCoachActivePage(page);if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]|…25816 tokens truncated…,'Content-Type':'application/json'},body:JSON.stringify({email,inviteType:modal.querySelector('#inviteType').value,billingType})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Invitation could not be created');const inv=d.invitation||{},isSponsored=(inv.billing_type||billingType)==='coach_sponsored';state.style.display='block';state.innerHTML=`<h3>${d.reused?'Pending Invitation Ready':'Invitation Created'}</h3><p><b>${escapeHtml(email)}</b></p><p>${isSponsored?'Coach Sponsored':'Athlete Self-Pay'} · Pending · expires ${escapeHtml(fmtDate(inv.expires_at))}</p><p><b>${d.emailSent?'✓ Invitation email sent':'⚠ Invitation email not sent'}</b>${d.emailError?`<br><small>${escapeHtml(d.emailError)}</small>`:''}</p>${d.inviteUrl?`<label>Invite Link<input id="inviteLink" readonly value="${escapeHtml(d.inviteUrl)}"></label><button class="back" id="copyInviteLink" type="button">Copy Invite Link</button>`:''}<label>Backup Invite Code<input id="inviteCode" readonly value="${escapeHtml(inv.invite_token||'')}"></label><button class="back" id="copyInvite" type="button">Copy Backup Code</button><p><small>${isSponsored?'When accepted, the athlete profile is covered by your sponsorship.':'When accepted, the athlete is connected to you and keeps responsibility for their own membership.'}</small></p>`;const copy=async(id,label)=>{const input=modal.querySelector(id);if(!input)return;try{await navigator.clipboard.writeText(input.value);toast(label)}catch{input.select();document.execCommand('copy');toast(label)}};modal.querySelector('#copyInviteLink')?.addEventListener('click',()=>copy('#inviteLink','Invite link copied'));modal.querySelector('#copyInvite').onclick=()=>copy('#inviteCode','Invite code copied');}catch(e){state.style.display='block';state.innerHTML=`<h3>Invitation Error</h3><p>${escapeHtml(e.message)}</p>`}finally{btn.disabled=false;btn.textContent='Create Secure Invitation'}
   };
 }
 function csvCell(v){const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replaceAll('"','""')+'"':s}
