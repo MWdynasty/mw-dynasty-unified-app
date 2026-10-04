@@ -948,8 +948,13 @@ function coachMWPage(){
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       traceCoachStage('before_assistant_append');
-      if(coachMWPendingBubble){coachMWPendingBubble.remove();coachMWPendingBubble=null}
-      appendCoachBubble('assistant',answer);
+      if(coachMWPendingBubble){
+        const body=coachMWPendingBubble.querySelector('p');
+        if(body)body.textContent=answer;
+        coachMWPendingBubble.classList.remove('mw-coach-thinking');
+        coachMWPendingBubble.classList.add('mw-coach-answered');
+        coachMWPendingBubble=null;
+      }else appendCoachBubble('assistant',answer);
       if(d.action)appendCoachAction(d.action);
       traceCoachStage('assistant_appended');
       chat.scrollTop=chat.scrollHeight;
@@ -958,6 +963,13 @@ function coachMWPage(){
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
     }).catch(e=>{
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
+      if(coachMWPendingBubble){
+        const body=coachMWPendingBubble.querySelector('p');
+        if(body)body.textContent='Coach MW could not respond: '+(e?.message||'check your connection and try again.');
+        coachMWPendingBubble.classList.remove('mw-coach-thinking');
+        coachMWPendingBubble.classList.add('mw-coach-error');
+        coachMWPendingBubble=null;
+      }
       const timedOut=e?.name==='AbortError';
       showRetry(timedOut?'Coach MW is taking too long to respond. Check your connection and tap Retry.':'Coach MW could not respond: '+(e?.message||'check your connection and try again.'));
     }).finally(()=>{
