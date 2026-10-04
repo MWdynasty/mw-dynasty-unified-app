@@ -1182,36 +1182,36 @@ const COACH_UPGRADE_TOURS={
 /* Phone-first tour: every spotlight points to a visible Coach mobile button. */
 const COACH_MOBILE_TOURS={
   core:[
-    {icon:'✦',title:'Welcome to Coach MW',body:'This quick tour shows the five buttons you will use most on your phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'COACH CORE'},
-    {icon:'⌂',title:'Home',body:'Start here to see your coaching command center and what needs attention today.',hint:'Home is your starting point.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
-    {icon:'♟',title:'Team',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
-    {icon:'🏃',title:'Train',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'✉',title:'Messages',body:'Keep athlete communication connected to the training plan.',hint:'Use Messages for follow-up and clarification.',navigate:'messages',target:'.coach-mobile-nav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'☰',title:'Menu',body:'Find Calendar, Profile, Settings, Attendance, Help and the rest of your tools here.',hint:'Menu is your access point for everything else.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
-    {icon:'✓',title:'You’re Ready',body:'That is the Coach mobile map: Home, Team, Train, Messages and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+    {icon:'✦',title:'Welcome to Coach MW',body:'This quick tour shows how MW helps you coach without hunting through the app.',hint:'Coach MW is your assistant. You stay in control.',target:null,label:'COACH CORE'},
+    {icon:'⌂',title:'Home — See What Needs Attention',body:'Start here to see your coaching command center, team picture and current priorities.',hint:'Use Home to orient yourself before you act.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team — Know Your Athletes',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train — Turn the Plan Into Work',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'☰',title:'Menu — Find the Rest of MW',body:'Calendar, Profile, Settings, Attendance, Help and Coach MW tools live here.',hint:'Menu is your access point for everything else.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✦',title:'Coach MW Is Your Assistant',body:'Open Coach MW from your coach tools to ask questions, plan practices, organize schedules and get help with your coaching workflow.',hint:'Coach MW recommends; you approve what gets changed.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'COACH MW'},
+    {icon:'✓',title:'You’re Ready',body:'Your flow is simple: ask Coach MW → review the recommendation → approve → execute.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ],
   intelligence:[
-    {icon:'✦',title:'Welcome to Coach Intelligence',body:'This quick tour shows the five buttons that organize your coaching day on the phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'COACH INTELLIGENCE'},
-    {icon:'⌂',title:'Home',body:'Start with the big picture and see what deserves your attention.',hint:'Use Home to orient before acting.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
-    {icon:'♟',title:'Team',body:'Inspect the athlete behind a signal, flag or recommendation.',hint:'Use Team for athlete-specific context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
-    {icon:'🏃',title:'Train',body:'Open the training workspace and manage the work your athletes execute.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'MW',title:'Coach MW',body:'Ask Coach MW about athletes, workload, planning and the context behind your coaching decisions.',hint:'Coach MW recommends; you decide.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
-    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and the rest of your tools here.',hint:'Menu holds the deeper workspace.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
-    {icon:'✓',title:'You’re Ready',body:'That is your Coach Intelligence map: Home, Team, Train, Coach MW and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+    {icon:'✦',title:'Welcome to Coach Intelligence',body:'Coach MW is the intelligence layer that helps you organize decisions without taking control away from you.',hint:'You ask. MW organizes and recommends. You approve.',target:null,label:'COACH INTELLIGENCE'},
+    {icon:'MW',title:'Coach MW — Your Coaching Intelligence Assistant',body:'Coach MW can help plan practices, build schedules, organize around meets, breaks, exams and travel, explain workouts, review team needs, draft communication and recommend adjustments.',hint:'It can organize the work across your coaching environment, but you remain the decision-maker.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'⌂',title:'Home — See What Needs Attention',body:'Start with the big picture before opening an athlete or making a change.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team — Move From Signal to Athlete',body:'Inspect the athlete behind a flag, recommendation or coaching question.',hint:'Use Team for athlete-specific context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train — Execute the Plan',body:'Open the training workspace and manage the work your athletes execute.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'☰',title:'Menu — Calendar, Profile & More',body:'Find Messages, Calendar, Profile, Settings and the rest of your tools here.',hint:'Menu holds the deeper workspace.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✓',title:'You’re Ready',body:'Your flow is: ask Coach MW → review → approve → execute → communicate.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ],
   performance:[
-    {icon:'✦',title:'Welcome to MW Sprint Performance',body:'This quick tour shows the five buttons that organize the complete MW system on your phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'SPRINT PERFORMANCE'},
-    {icon:'⌂',title:'Home',body:'Start here to see your coaching picture before opening the system.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
-    {icon:'♟',title:'Team',body:'Connect the MW system to the athlete, assignments and roster context.',hint:'Use Team for athlete-specific coaching.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
-    {icon:'🏃',title:'Train',body:'Open the synchronized training workspace and execute the plan.',hint:'Track, strength and training tools live behind Train.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'MW',title:'Coach MW',body:'Ask Coach MW to explain the system, the work and the athlete context.',hint:'Use it to understand and prepare; the coach remains in control.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
-    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and deeper performance tools here.',hint:'Menu is your access point for the rest of MW.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
-    {icon:'✓',title:'You’re Ready',body:'That is your MW map: Home, Team, Train, Coach MW and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+    {icon:'✦',title:'Welcome to MW Sprint Performance',body:'Coach MW is the intelligence layer that helps you use the complete MW system without getting lost.',hint:'You ask. MW organizes and recommends. You approve.',target:null,label:'SPRINT PERFORMANCE'},
+    {icon:'MW',title:'Coach MW — Your MW System Assistant',body:'Coach MW can help plan practices, build schedules, organize around meets, breaks, exams and travel, explain today’s work, review athletes, draft communication and recommend adjustments across the MW system.',hint:'Coach MW can organize the work; you remain in control of every change.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'⌂',title:'Home — Start With Today’s Picture',body:'Start here to see what needs attention before opening the system.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team — Connect the System to the Athlete',body:'Review athlete placement, assignments and the context that should shape how you coach the prescribed work.',hint:'Use Team for athlete-specific coaching.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train — Execute the MW System',body:'Open the synchronized training workspace for track, strength, pacing and practice execution.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'☰',title:'Menu — Open the Deeper Tools',body:'Find Messages, Calendar, Profile, Settings and the deeper performance tools here.',hint:'Menu is your access point for the rest of MW.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✓',title:'You’re Ready',body:'Your coaching flow is: ask Coach MW → review the recommendation → approve → execute → communicate.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ]
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v31`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v32`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
