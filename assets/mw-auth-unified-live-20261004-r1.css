@@ -1,0 +1,62 @@
+/* MW Dynasty unified premium sign-in polish · mobile-first visual layer */
+:root{--mw-signin-gold:#efbd43;--mw-signin-navy:#06141d;--mw-signin-blue:#17364d}
+@media (max-width:640px){
+  /* Coach and Athlete share the same centered, premium entry composition. */
+  .coach-login-screen{padding:0!important;display:block!important;background:#02070b!important;min-height:100svh!important}
+  .coach-login-stage{width:100%!important;min-height:100svh!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:
+    radial-gradient(circle at 50% 18%,rgba(28,111,157,.17),transparent 30%),
+    radial-gradient(circle at 50% 55%,rgba(239,189,67,.06),transparent 42%),
+    linear-gradient(180deg,#07151e 0%,#02080d 72%,#010406 100%)!important;display:block!important;overflow:auto!important}
+  .coach-login-bg{display:block!important;opacity:.32!important;background:
+    linear-gradient(180deg,rgba(5,17,25,.18),rgba(1,5,8,.92)),
+    repeating-linear-gradient(90deg,transparent 0 24%,rgba(239,189,67,.09) 24.2% 24.45%,transparent 24.7% 49%)!important}
+  .coach-login-header{position:relative!important;inset:auto!important;display:flex!important;justify-content:center!important;padding:30px 18px 10px!important}
+  .coach-login-brand{display:grid!important;justify-items:center!important;gap:8px!important;transform:none!important;text-align:center!important;line-height:1!important}
+  .coach-login-crest{width:84px!important;height:84px!important;border-radius:22px!important}
+  .coach-login-wordmark{min-width:0!important}
+  .coach-login-coach{font-size:46px!important;letter-spacing:-.06em!important}
+  .coach-login-tagline{margin-top:8px!important;font-size:9px!important;letter-spacing:.19em!important}
+  .coach-login-nav,.coach-login-mission,.coach-login-copy,.coach-login-person,.coach-login-standard,.coach-login-features{display:none!important}
+  .coach-login-content{display:block!important;min-height:0!important;padding:16px 14px 24px!important}
+  .coach-login-card-wrap{position:static!important;width:100%!important;display:flex!important;justify-content:center!important;padding:0!important}
+  .coach-login-card{width:min(100%,520px)!important;padding:24px 18px 20px!important;border-radius:24px!important;border-color:rgba(239,189,67,.66)!important;background:linear-gradient(180deg,rgba(5,17,25,.97),rgba(2,8,13,.99))!important;box-shadow:0 22px 60px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.04)!important}
+  .coach-login-role-back,.coach-login-mobile-brand{display:none!important}
+  .coach-login-card h2{font-size:34px!important;line-height:.98!important;margin-bottom:9px!important;letter-spacing:-.04em!important}
+  .coach-login-card>p{font-size:14px!important;line-height:1.45!important;margin-bottom:20px!important;color:#ccd8df!important}
+  .coach-field{min-height:56px!important;border-radius:14px!important;background:#071821!important;border-color:#345264!important}
+  .coach-field input{font-size:16px!important}
+  .coach-login-options{margin-top:2px!important}
+  .coach-login-submit{min-height:56px!important;border-radius:14px!important;font-size:18px!important}
+  .coach-login-athlete-switch,.coach-login-signup-tab{min-height:52px!important;border-radius:14px!important}
+  .coach-login-access-note{font-size:10px!important;line-height:1.45!important}
+  .coach-login-screen .coach-login-content:after{content:"MW DYNASTY  •  COACHING INTELLIGENCE";display:block;text-align:center;color:#718897;font-size:8px;font-weight:800;letter-spacing:.17em;margin:2px auto 0}
+
+  .mwLoginStage{padding:max(22px,env(safe-area-inset-top)) 14px max(22px,env(safe-area-inset-bottom))!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:100svh!important;background:
+    radial-gradient(circle at 50% 18%,rgba(28,111,157,.17),transparent 30%),
+    radial-gradient(circle at 50% 55%,rgba(239,189,67,.06),transparent 42%),
+    linear-gradient(180deg,#07151e 0%,#02080d 72%,#010406 100%)!important}
+  .mwLoginMain{display:flex!important;flex-direction:column!important;align-items:center!important;gap:0!important;width:100%!important;min-height:0!important;overflow:visible!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+  .mwLoginTopbar{position:static!important;inset:auto!important;display:flex!important;justify-content:center!important;width:100%!important;padding:0 0 16px!important;pointer-events:auto!important}
+  .mwLoginBrand{display:grid!important;justify-items:center!important;gap:8px!important;text-align:center!important;line-height:1!important}
+  .mwLoginCrest{width:84px!important;height:84px!important;border-radius:22px!important}
+  .mwLoginBrandWordmark{min-width:0!important}
+  .mwLoginBrandName{font-size:46px!important;letter-spacing:-.06em!important;line-height:1!important}
+  .mwLoginBrandTag{margin-top:8px!important;font-size:9px!important;letter-spacing:.19em!important}
+  .mwLoginDesktopNav,.mwLoginFuture,.mwLoginStory,.mwLoginFeatureBar{display:none!important}
+  .mwLoginCard{position:static!important;transform:none!important;width:min(100%,520px)!important;margin:0 auto!important;padding:24px 18px 20px!important;border-radius:24px!important;border-color:rgba(239,189,67,.66)!important;background:linear-gradient(180deg,rgba(5,17,25,.97),rgba(2,8,13,.99))!important;box-shadow:0 22px 60px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.04)!important}
+  .mwLoginCardHead h2{font-size:34px!important;line-height:.98!important;margin-bottom:9px!important;letter-spacing:-.04em!important}
+  .mwLoginCardHead p{font-size:14px!important;line-height:1.45!important;margin-bottom:20px!important;color:#ccd8df!important}
+  .mwLoginField{margin:12px 0!important}
+  .mwLoginField input{height:56px!important;border-radius:14px!important;background:#071821!important;border-color:#345264!important}
+  .mwLoginRow{margin:10px 1px 14px!important}
+  .mwLoginButton{height:56px!important;border-radius:14px!important;font-size:18px!important}
+  .mwLoginRoleSwitch,.mwLoginSignupTab{min-height:52px!important;border-radius:14px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+  .mwLoginAccessNote{font-size:10px!important;line-height:1.45!important}
+  #mwAuth .mwLoginCard:after{content:"MW DYNASTY  •  ATHLETE PERFORMANCE";display:block;text-align:center;color:#718897;font-size:8px;font-weight:800;letter-spacing:.17em;margin:2px auto 0}
+}
+@media (max-width:380px){
+  .coach-login-crest,.mwLoginCrest{width:72px!important;height:72px!important}
+  .coach-login-coach,.mwLoginBrandName{font-size:39px!important}
+  .coach-login-card,.mwLoginCard{padding:20px 14px 17px!important}
+  .coach-login-card h2,.mwLoginCardHead h2{font-size:30px!important}
+}
