@@ -794,6 +794,7 @@ function coachMWPage(){
         <button class="action" id="askmw" aria-label="Send message">↑</button>
       </div>
       <div id="mwattachstate" class="mw-coach-state"></div>
+      <div id="mwcoachrequeststate" class="mw-coach-state" role="status" aria-live="polite"></div>
 
       <div class="mw-coach-suggestions coach-mw-athlete-suggestions">
         <button class="back" data-mw-prompt="Who on my team needs attention today?">Team attention</button>
@@ -804,7 +805,7 @@ function coachMWPage(){
   </section>`);
   document.querySelector('.page')?.classList.add('coach-mw-athlete-page');
   let pendingImage='',activeAudio=null,activeVoiceButton=null,activeVoiceURL='',voiceRun=0;
-  const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate');
+  const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate'),requestState=document.getElementById('mwcoachrequeststate');
   const draftPrompt=sessionStorage.getItem('mwCoachDraftPrompt')||'';if(draftPrompt){q.value=draftPrompt;sessionStorage.removeItem('mwCoachDraftPrompt')}
   let history=[];
   try{
@@ -896,15 +897,15 @@ function coachMWPage(){
     if(coachMWInFlight)return;
     coachMWInFlight=true;
     if(sendButton)sendButton.disabled=true;
-    state.textContent='Coach MW is thinking…';
+    requestState.textContent='Coach MW is thinking…';
     const showRetry=(message)=>{
-      state.textContent=message;
+      requestState.textContent=message;
       const retry=document.createElement('button');
       retry.type='button';retry.className='back';retry.textContent='Retry Coach MW';
       retry.setAttribute('aria-label','Retry Coach MW response');
       retry.onclick=()=>runCoachRequest();
-      state.appendChild(document.createTextNode(' '));
-      state.appendChild(retry);
+      requestState.appendChild(document.createTextNode(' '));
+      requestState.appendChild(retry);
     };
     const request=async()=>{
       const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
@@ -931,7 +932,7 @@ function coachMWPage(){
       if(d.action)appendCoachAction(d.action);
       traceCoachStage('assistant_appended');
       chat.scrollTop=chat.scrollHeight;
-      state.textContent='';
+      requestState.textContent='';
       pendingImage='';pick.value='';
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
     }).catch(e=>{
