@@ -892,22 +892,26 @@ function coachMWPage(){
       }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent=idleLabel;toast(e.message||(messaging?'Message send failed':'Calendar update failed'))}
     };
   };
-  const send=()=>{
-    const text=q.value.trim();if(!text)return toast('Type or speak a question first');
+  const runCoachRequest=()=>{
     if(coachMWInFlight)return;
     coachMWInFlight=true;
-    q.value='';q.blur();
-    const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
-    history.push(userMsg);
-    traceCoachStage('tap_received');
-    appendCoachBubble('user',text);
-    traceCoachStage('user_bubble_appended');
+    if(sendButton)sendButton.disabled=true;
     state.textContent='Coach MW is thinking…';
-    const request=()=>{
+    const showRetry=(message)=>{
+      state.textContent=message;
+      const retry=document.createElement('button');
+      retry.type='button';retry.className='back';retry.textContent='Retry Coach MW';
+      retry.setAttribute('aria-label','Retry Coach MW response');
+      retry.onclick=()=>runCoachRequest();
+      state.appendChild(document.createTextNode(' '));
+      state.appendChild(retry);
+    };
+    const request=async()=>{
       const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
       const controller=new AbortController();
       const timeout=setTimeout(()=>controller.abort(),45000);
-      return fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:controller.signal}).finally(()=>clearTimeout(timeout));
+      try{return await fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({messages:history}),signal:controller.signal})}
+      finally{clearTimeout(timeout)}
     };
     request().then(async r=>{
       traceCoachStage('response_headers_received');
@@ -926,18 +930,30 @@ function coachMWPage(){
       appendCoachBubble('assistant',answer);
       if(d.action)appendCoachAction(d.action);
       traceCoachStage('assistant_appended');
+      chat.scrollTop=chat.scrollHeight;
       state.textContent='';
       pendingImage='';pick.value='';
       setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
     }).catch(e=>{
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
-      state.textContent='Coach MW: '+(e?.message||'Please try again.');
+      const timedOut=e?.name==='AbortError';
+      showRetry(timedOut?'Coach MW is taking too long to respond. Check your connection and tap Retry.':'Coach MW could not respond: '+(e?.message||'check your connection and try again.'));
     }).finally(()=>{
       coachMWInFlight=false;
-      // Always clear transient thinking state after this request settles.
-      // iOS WebView can preserve/repaint stale text even after the assistant bubble is appended.
-      if(state)state.textContent='';
+      if(sendButton)sendButton.disabled=false;
     });
+  };
+  const send=()=>{
+    const text=q.value.trim();if(!text)return toast('Type or speak a question first');
+    if(coachMWInFlight)return;
+    q.value='';q.blur();
+    const userMsg={role:'user',content:text};if(pendingImage)userMsg.imageDataUrl=pendingImage;
+    history.push(userMsg);
+    traceCoachStage('tap_received');
+    appendCoachBubble('user',text);
+    traceCoachStage('user_bubble_appended');
+    chat.scrollTop=chat.scrollHeight;
+    runCoachRequest();
   };
   const sendButton=document.getElementById('askmw');
   if(sendButton){
