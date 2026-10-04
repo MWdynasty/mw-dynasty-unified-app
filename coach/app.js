@@ -1232,7 +1232,7 @@ function maybeStartCoachTour(){
 function coachTourEnsureDashboard(){
   if(!document.querySelector('.app'))dashboard();
 }
-function coachTourIsPhone(){return !!document.querySelector('.coach-mobile-nav')||coachTourIsPhone()||Math.min(window.innerWidth||9999,document.documentElement.clientWidth||9999)<=820}
+function coachTourIsPhone(){return !!document.querySelector('.coach-mobile-nav')||window.matchMedia('(max-width:820px)').matches||Math.min(window.innerWidth||9999,document.documentElement.clientWidth||9999)<=820}
 function coachTourResolvedTarget(step){
   const raw=step?.target||'';
   if(!raw)return '';
