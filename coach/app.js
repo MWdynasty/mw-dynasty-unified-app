@@ -1179,9 +1179,39 @@ const COACH_UPGRADE_TOURS={
     {icon:'◷',title:'Pacing Tools',body:'Use live athlete PRs to calculate individualized target times for the prescribed work.',hint:'The complete performance platform is ready.',target:'[data-page="pacing"]',label:'NEW · PACING'}
   ]
 };
+/* Phone-first tour: every spotlight points to a visible Coach mobile button. */
+const COACH_MOBILE_TOURS={
+  core:[
+    {icon:'✦',title:'Welcome to Coach MW',body:'This quick tour shows the five buttons you will use most on your phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'COACH CORE'},
+    {icon:'⌂',title:'Home',body:'Start here to see your coaching command center and what needs attention today.',hint:'Home is your starting point.',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'✉',title:'Messages',body:'Keep athlete communication connected to the training plan.',hint:'Use Messages for follow-up and clarification.',target:'.coach-mobile-nav [data-page="messages"]',label:'MESSAGES'},
+    {icon:'☰',title:'Menu',body:'Find Calendar, Profile, Settings, Attendance, Help and the rest of your tools here.',hint:'Menu is your access point for everything else.',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✓',title:'You’re Ready',body:'That is the Coach mobile map: Home, Team, Train, Messages and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+  ],
+  intelligence:[
+    {icon:'✦',title:'Welcome to Coach Intelligence',body:'This quick tour shows the five buttons that organize your coaching day on the phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'COACH INTELLIGENCE'},
+    {icon:'⌂',title:'Home',body:'Start with the big picture and see what deserves your attention.',hint:'Use Home to orient before acting.',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team',body:'Inspect the athlete behind a signal, flag or recommendation.',hint:'Use Team for athlete-specific context.',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train',body:'Open the training workspace and manage the work your athletes execute.',hint:'This is where the plan becomes action.',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'MW',title:'Coach MW',body:'Ask Coach MW about athletes, workload, planning and the context behind your coaching decisions.',hint:'Coach MW recommends; you decide.',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and the rest of your tools here.',hint:'Menu holds the deeper workspace.',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✓',title:'You’re Ready',body:'That is your Coach Intelligence map: Home, Team, Train, Coach MW and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+  ],
+  performance:[
+    {icon:'✦',title:'Welcome to MW Sprint Performance',body:'This quick tour shows the five buttons that organize the complete MW system on your phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'SPRINT PERFORMANCE'},
+    {icon:'⌂',title:'Home',body:'Start here to see your coaching picture before opening the system.',hint:'Use Home to orient yourself.',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team',body:'Connect the MW system to the athlete, assignments and roster context.',hint:'Use Team for athlete-specific coaching.',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train',body:'Open the synchronized training workspace and execute the plan.',hint:'Track, strength and training tools live behind Train.',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'MW',title:'Coach MW',body:'Ask Coach MW to explain the system, the work and the athlete context.',hint:'Use it to understand and prepare; the coach remains in control.',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and deeper performance tools here.',hint:'Menu is your access point for the rest of MW.',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✓',title:'You’re Ready',body:'That is your MW map: Home, Team, Train, Coach MW and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+  ]
+};
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v29`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v30`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
@@ -1210,7 +1240,8 @@ function coachTourResolvedTarget(step){
   const m=raw.match(/^#sideNav \[data-page="([^"]+)"\]$/);
   if(!m)return raw;
   const page=m[1];
-  if(['dashboard','athletes','programs','coachmw','messages'].includes(page))return `.coach-mobile-nav [data-page="${page}"]`;
+  const mobilePage={dashboard:'dashboard',athletes:'athletes',programs:'train',train:'train',coachmw:'coachmw',messages:'messages'}[page];
+  if(mobilePage)return `.coach-mobile-nav [data-page="${mobilePage}"]`;
   return '.coach-mobile-nav [data-page="more"]';
 }
 function coachTourOpenNavIfNeeded(step){
@@ -1223,7 +1254,8 @@ function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu
 function startCoachTour(opts={}){
   const mode=opts.mode||'full';
   if(opts.force){document.getElementById('coachTour')?.remove();coachTourEnsureDashboard();}
-  const steps=mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_TOURS[experience]):COACH_TOURS[experience];
+  const phone=window.matchMedia('(max-width:820px)').matches;
+  const steps=phone&&mode==='full'?(COACH_MOBILE_TOURS[experience]||COACH_TOURS[experience]):mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_TOURS[experience]):COACH_TOURS[experience];
   if(!steps?.length)return;
   if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
   document.getElementById('coachTour')?.remove();
