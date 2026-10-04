@@ -58,6 +58,12 @@ async function apiSave(db,identity){
     data=identity.seasonPlanId?(await db.query('select * from public.athlete_season_plans where id=$1',[identity.seasonPlanId])).rows:[];
    }else if(path==='workout_completions'){
     data=(await db.query("select * from public.workout_completions where athlete_id=$1 and program_week=$2 and program_day=$3 and workout_key=any($4::text[]) and completion_status='completed'",[identity.athleteId,identity.week,identity.day,Identity.readKeys(identity)])).rows;
+   }else if(path==='coach_practice_timing_results'){
+    data=(await db.query('select * from public.coach_practice_timing_results where session_id=$1 and coach_user_id=$2',[target.searchParams.get('session_id').slice(3),C])).rows;
+    // PostgREST serializes a SQL date as YYYY-MM-DD; PGlite returns a JS Date.
+    data=data.map(row=>({...row,session_date:row.session_date instanceof Date?row.session_date.toISOString().slice(0,10):row.session_date}));
+   }else if(path==='athlete_practice_rep_results'){
+    data=(await db.query('select * from public.athlete_practice_rep_results where coach_session_id=$1 and coach_user_id=$2',[target.searchParams.get('coach_session_id').slice(3),C])).rows;
    }else if(path==='mw_coach_refresh_assigned_athlete_program_position'){
     data={ok:true};
    }else if(path==='mw_coach_commit_practice_session'){
@@ -158,7 +164,8 @@ async function run(){
   const endToEnd=await apiSave(db,Identity.create({athleteId:A,workoutCycleId:cycle2,week:3,day:2}));
   assert.equal(endToEnd.status,200,'real API saves through actual database bridge');
   const repeat=await apiSave(db,Identity.create({athleteId:A,workoutCycleId:cycle2,week:3,day:2}));
-  assert.equal(repeat.status,409,'database-backed API only locks the completed current cycle');
+  assert.equal(repeat.status,200,'database-backed API confirms an identical committed retry');
+  assert.equal(repeat.body.replayed,true,'completed retry reads evidence without rewriting it');
   await role(db,AU);
   rows=(await db.query('select * from public.workout_completions')).rows;
   assert.equal(readCompletion(rows,null,cycle2)['3'].s2,true,'API -> real raw rows/RPC -> athlete reader end-to-end');
@@ -175,4 +182,5 @@ async function run(){
   console.log('PASS: duplicate legacy aliases abort migration atomically and preserve all original evidence.');
  }finally{await duplicate.close()}
 }
-run().catch(e=>{console.error(e);process.exitCode=1});
+module.exports={fixture,role,scalar};
+if(require.main===module)run().catch(e=>{console.error(e);process.exitCode=1});
