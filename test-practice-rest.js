@@ -156,11 +156,16 @@ async function run() {
   assert.equal(c.el('practiceFinishSession').disabled,false,'DNF enables session save');
   c.el('practiceManualTime').click();
   assert.equal(c.el('practiceNextRep').disabled,false,'Final manual result completes the group rep and unlocks Next Rep');
+  c.el('practiceNextRep').click();
+  c.advance(35000);
+  c.el('practiceManualTime').click();
+  c.el('practiceManualTime').click();
   await c.el('practiceFinishSession').click();
-  assert.deepEqual(coachSaves[1].results.map(r=>r.resultStatus),['dnf','manual'],'DNF and manual statuses persist in save payload');
+  assert.deepEqual(coachSaves[1].results.map(r=>r.resultStatus),['dnf','manual','manual','manual'],'DNF and manual statuses persist in save payload');
   assert.equal(coachSaves[1].results[1].timingSource,'manual','manual time keeps manual provenance');
   assert.equal(coachSaves[1].results[1].mwIntent,'technical');
   assert.equal(coachSaves[1].results[1].mwInterpretation,'above_target','manual technical reps retain the same positive interpretation as timed reps');
+  assert.ok(coachSaves[1].results.filter(r=>r.repNumber===2).every(r=>r.actualRestSeconds===35),'manual-only reps capture the recovery interval before the manual result');
   assert.notEqual(coachSaves[0].sessionId,coachSaves[1].sessionId,'each new practice save gets a fresh session identity');
 
   // Background refresh must not attach timed reps to a newly assigned cycle.
