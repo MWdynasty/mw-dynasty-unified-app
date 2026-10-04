@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v6-workout-identity';
+const CACHE='mw-dynasty-shell-v7-shared-signin';
 const CORE=[
   '/',
   '/athlete/',
@@ -12,6 +12,8 @@ const CORE=[
   '/lib/mw-workout-identity.js',
   '/coach/styles.css',
   '/assets/mw-unified-theme.css',
+  '/assets/mw-signin-v3.js',
+  '/assets/mw-signin-v3.css',
   '/assets/mw-dynasty-luxe-v21.css',
   '/assets/mw-responsive-v25.css'
 ];

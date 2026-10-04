@@ -1,7 +1,8 @@
 const fs=require('fs');
 const assert=require('assert');
 
-const html=fs.readFileSync('athlete/index.html','utf8');
+// Auth controls now come from the same component used by Coach.
+const html=fs.readFileSync('athlete/index.html','utf8')+require('./assets/mw-signin-v3.js').render('athlete');
 const buttons=[...html.matchAll(/<button\b([^>]*)>/gi)].map((m,i)=>({i,attrs:m[1],tag:m[0]}));
 
 function attr(tag,name){
@@ -144,4 +145,3 @@ assert(html.includes("const actionLabel=isDone?'✓ DONE':status==='in_progress'
 assert(html.includes("['in_progress','incomplete'].includes(status)?window.mwOpenPracticeFor?.(w,sessionNumber):beginWorkoutCheckin"),'IN PROGRESS and INCOMPLETE workouts must resume Practice Mode instead of entering a new completion flow');
 assert(html.includes("isDone=!!wc['s'+sessionNumber]||status==='completed'"),'Authoritative completed status must take precedence over stale local completion state');
 console.log('PASS: Athlete Train rendering prevents stale duplicate rows and resumes the authoritative in-progress workout.');
-

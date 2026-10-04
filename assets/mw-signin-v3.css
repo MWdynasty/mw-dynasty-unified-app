@@ -1,0 +1,85 @@
+/* Shared geometry, outside the legacy login namespaces. No split panels or absolute form positioning. */
+/* The sign-in owns scrolling only while authentication is pending.
+   Athlete retains its CSS-hidden auth host after login; Coach removes its host. */
+html:has(body.mw-auth-pending #mwAuth.mw-signin),
+html:has(#app [data-mw-signin="coach"]) {
+  overflow: hidden !important;
+}
+.mw-signin,
+#mwAuth.mw-signin {
+  --signin-safe-top: env(safe-area-inset-top, 0px);
+  --signin-safe-bottom: env(safe-area-inset-bottom, 0px);
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: calc(22px + var(--signin-safe-top)) max(18px, env(safe-area-inset-right)) calc(14px + var(--signin-safe-bottom)) max(18px, env(safe-area-inset-left));
+  background: radial-gradient(ellipse at 50% 0%, #122b3c 0%, transparent 58%), #040c14 !important;
+  color: #f5f7fb !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
+}
+#mwAuth.mw-signin { z-index: 9999; }
+#mwAuth.mw-signin::before { display: none; }
+.mw-signin *, .mw-signin *::before, .mw-signin *::after { box-sizing: border-box; }
+.mw-signin .mw-signin-shell { width: 100%; max-width: 420px; margin: 0 auto; min-width: 0; }
+.mw-signin .mw-signin-brand { display: flex; align-items: center; justify-content: center; gap: 13px; margin: 0 0 20px; min-height: 60px; }
+.mw-signin .mw-signin-brand img { flex: 0 0 60px; width: 60px; height: 60px; display: block; object-fit: contain; border-radius: 17px; box-shadow: 0 8px 26px #0008; }
+.mw-signin .mw-signin-brand div { min-width: 0; display: grid; gap: 5px; }
+.mw-signin .mw-signin-brand b { color: #f5f7fb; font-size: 20px; line-height: 1.1; letter-spacing: .04em; font-weight: 800; }
+.mw-signin .mw-signin-brand span { color: #d9b968; font-size: 9px; letter-spacing: .13em; font-weight: 700; }
+.mw-signin .mw-signin-card { position: relative; width: 100%; min-width: 0; max-width: 100%; padding: 24px 22px 14px; border: 1px solid #b9984f80; border-radius: 24px; background: linear-gradient(150deg, #0b1b29, #07121d 70%); box-shadow: 0 22px 64px #0006, inset 0 1px 0 #ffffff08; }
+.mw-signin .mw-signin-heading { margin: 0 0 18px; }
+.mw-signin .mw-signin-role { display: block; color: #e3be68; font-size: 10px; line-height: 1.4; letter-spacing: .16em; font-weight: 800; margin-bottom: 8px; }
+.mw-signin .mw-signin-heading h1 { margin: 0 0 7px; padding: 0; font-size: 27px; line-height: 1.15; letter-spacing: -.025em; font-weight: 750; color: #fff; }
+.mw-signin .mw-signin-heading p { min-height: 40px; margin: 0; color: #b9c9d7; font-size: 14px; line-height: 20px; font-weight: 400; }
+.mw-signin .mw-signin-form { display: grid; gap: 14px; margin: 0; padding: 0; width: 100%; min-width: 0; }
+.mw-signin .mw-signin-field { display: grid; gap: 7px; min-width: 0; width: 100%; margin: 0; color: #e4eaf0; }
+.mw-signin .mw-signin-field > span:first-child,
+.mw-signin .mw-signin-field > label { font-size: 13px; line-height: 18px; font-weight: 600; margin: 0; }
+.mw-signin .mw-signin-field input { display: block; min-width: 0; width: 100%; height: 52px; padding: 0 14px; border: 1px solid #405364; border-radius: 12px; background: #07111b; color: #f5f7fb; font: inherit; font-size: 16px !important; line-height: normal; letter-spacing: normal; text-align: left; box-shadow: inset 0 1px 3px #0003; }
+.mw-signin .mw-signin-field input::placeholder { color: #8597a8; opacity: 1; }
+.mw-signin .mw-signin-password { display: flex; align-items: center; width: 100%; min-width: 0; height: 52px; border: 1px solid #405364; border-radius: 12px; background: #07111b; }
+.mw-signin .mw-signin-password input { flex: 1 1 0; width: 0; border: 0 !important; background: transparent; box-shadow: none !important; height: 50px; padding-right: 4px; }
+.mw-signin button, .mw-signin a { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mw-signin .mw-signin-toggle { flex: 0 0 58px; align-self: stretch; min-height: 44px; width: 58px; margin: 0; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: #d8c285; font-size: 13px; font-weight: 650; }
+.mw-signin .mw-signin-options { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 8px; min-width: 0; margin: -3px 0 -3px; }
+.mw-signin .mw-signin-remember { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0; color: #dbe4ec; font-size: 13px; line-height: 1.3; white-space: nowrap; cursor: pointer; }
+.mw-signin .mw-signin-remember input { flex: 0 0 20px; width: 20px; height: 20px; margin: 0; accent-color: #eac25e; cursor: pointer; }
+.mw-signin .mw-signin-forgot { min-height: 44px; padding: 0; margin: 0; border: 0; background: transparent; color: #e8c573; font-size: 13px; line-height: 1.3; font-weight: 650; white-space: nowrap; }
+.mw-signin .mw-signin-submit { display: flex; justify-content: center; align-items: center; gap: 13px; width: 100%; min-height: 52px; margin: 0; padding: 12px 16px; border: 1px solid #ffe1a0; border-radius: 12px; background: linear-gradient(115deg, #d49f36, #f1ce75 55%, #dfa938); color: #07111b; font-size: 17px; font-weight: 750; line-height: 1.4; box-shadow: 0 8px 24px #d9a8371c, inset 0 1px 0 #fff6; }
+.mw-signin .mw-signin-submit > span:last-child { font-size: 22px; line-height: 1; }
+.mw-signin .mw-signin-switch { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 46px; margin-top: 12px; padding: 10px 12px; border: 1px solid #3b5061; border-radius: 12px; background: #0c1b28; color: #e3edf5; font-size: 14px; line-height: 1.4; font-weight: 600; text-decoration: none; }
+.mw-signin .mw-signin-signup { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; column-gap: 5px; min-height: 46px; margin-top: 7px; color: #a5b7c8; font-size: 12px; }
+.mw-signin .mw-signin-create { display: inline-flex; align-items: center; min-height: 44px; margin: 0; padding: 0 3px; border: 0; background: transparent; color: #e8c573; font-size: 12px; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+.mw-signin .mw-signin-footer { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 44px; margin-top: 9px; color: #6f8294; }
+.mw-signin .mw-signin-footer a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: #9caebe; font-size: 12px; text-decoration: none; }
+.mw-signin [role="status"] { display: block; min-height: 0; margin: 10px 0 0; padding: 10px 12px; border: 1px solid #436176; border-radius: 10px; background: #102535; color: #c5dce9; font-size: 13px; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
+.mw-signin [role="status"]:empty { display: none; }
+.mw-signin [role="status"].error { color: #ffb5bf; border-color: #72414c; }
+.mw-signin .mw-signin-recovery { margin-top: 18px; }
+.mw-signin .mw-signin-recovery.show { display: grid; gap: 14px; }
+.mw-signin :is(input, button, a):focus-visible { outline: 2px solid #f1ce75; outline-offset: 3px; }
+.mw-signin .mw-signin-password:focus-within { border-color: #e1bd65; }
+.mw-signin button:disabled { opacity: .6; cursor: wait; }
+@media (min-width: 600px) { .mw-signin, #mwAuth.mw-signin { padding-top: calc(42px + var(--signin-safe-top)); } }
+@media (max-width: 359px) {
+  .mw-signin, #mwAuth.mw-signin { padding-left: 14px; padding-right: 14px; }
+  .mw-signin .mw-signin-card { padding-left: 18px; padding-right: 18px; }
+  .mw-signin .mw-signin-options { justify-content: flex-start; column-gap: 18px; }
+  .mw-signin .mw-signin-brand b { font-size: 18px; }
+  .mw-signin .mw-signin-brand span { font-size: 8px; }
+}
+@media (max-height: 600px) {
+  .mw-signin, #mwAuth.mw-signin { padding-top: calc(14px + var(--signin-safe-top)); }
+  .mw-signin .mw-signin-brand { margin-bottom: 14px; }
+}

@@ -1292,68 +1292,7 @@ function finishCoachTour(skipped=false){
 }
 
 function renderLogin(message=''){
-  app.innerHTML=`<div class="coach-login-screen">
-    <section class="coach-login-stage" aria-label="MW Coach sign in">
-      <div class="coach-login-bg" aria-hidden="true"></div>
-      <header class="coach-login-header">
-        <div class="coach-login-brand" aria-label="MW Coach">
-          <img class="coach-login-crest" src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty crest">
-          <div class="coach-login-wordmark">
-            <div class="coach-login-coach">DYNASTY</div>
-            <div class="coach-login-tagline">COACH • LEAD • DEVELOP • BUILD</div>
-          </div>
-        </div>
-        <nav class="coach-login-nav" aria-label="MW Coach values">
-          <span>DISCIPLINE</span><i></i><span>DEVELOPMENT</span><i></i><span>DOMINANCE</span><i></i><span>RESOURCES</span>
-        </nav>
-        <div class="coach-login-mission">COACHES TODAY<br>STRONGER ATHLETES<br>BRIGHTER TOMORROW<div></div></div>
-      </header>
-
-      <div class="coach-login-content">
-        <div class="coach-login-person" role="img" aria-label="Coach standing trackside"></div>
-
-        <div class="coach-login-card-wrap">
-          <div class="coach-login-card">
-            <a class="coach-login-role-back" href="https://mwdynasty.com/" aria-label="Open MW Dynasty website">← MW WEBSITE</a>
-            <div class="coach-login-mobile-brand" aria-hidden="true">DYNASTY · COACH</div>
-            <h2>Welcome Back Coach</h2>
-            <p>Sign in to your MW Dynasty Coach experience.</p>
-            <form id="loginForm" class="coach-login-form" novalidate>
-              <label class="coach-field">
-                <span aria-hidden="true">✉</span>
-                <input id="loginEmail" type="email" autocomplete="email" inputmode="email" placeholder="Enter your email" required>
-              </label>
-              <label class="coach-field">
-                <span aria-hidden="true">▣</span>
-                <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required>
-                <button id="togglePassword" type="button" class="coach-password-toggle" aria-label="Show password">◉</button>
-              </label>
-              <div class="coach-login-options">
-                <label class="coach-remember"><input id="rememberMe" type="checkbox" checked><span>Keep me signed in</span></label>
-                <button id="forgotPassword" type="button" class="coach-forgot">Forgot password?</button>
-              </div>
-              <div id="loginMessage" class="login-message ${message?'show':''}" role="status" aria-live="polite">${escapeHtml(message)}</div>
-              <button id="loginSubmit" class="coach-login-submit" type="submit"><span>Sign In</span><span aria-hidden="true">→</span></button>
-              <a class="coach-login-athlete-switch" href="/athlete/">ATHLETE SIGN IN <span aria-hidden="true">→</span></a>
-              <button class="coach-login-signup-tab" type="button" data-coach-signup="1">SIGN UP <span aria-hidden="true">→</span></button>
-            </form>
-            <div class="coach-login-access-note"><b>MW Coach requires an authorized MW Dynasty account.</b> Need account help? <a href="/support.html" target="_blank" rel="noopener">Contact MW Support</a>.</div>
-            <div class="coach-login-access-note"><a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> • <a href="/terms.html" target="_blank" rel="noopener">Terms</a> • <a href="/support.html" target="_blank" rel="noopener">Support</a></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="coach-login-standard" aria-hidden="true"><b>MORE THAN SPORTS</b><span>A HIGHER STANDARD</span></div>
-
-      <div class="coach-login-features" aria-label="MW Coach capabilities">
-        <div><b>♟</b><span>MANAGE<br>ATHLETES</span></div>
-        <div><b>▥</b><span>TRACK<br>PROGRESS</span></div>
-        <div><b>▣</b><span>PLAN<br>SEASONS</span></div>
-        <div><b>◉</b><span>AI<br>COACHING</span></div>
-        <div><b>🏆</b><span>BUILD<br>CHAMPIONS</span></div>
-      </div>
-    </section>
-  </div>`;
+  app.innerHTML=window.MWSignIn.render('coach',{message});
   bindLogin();
   if(new URLSearchParams(location.search).get('apply')==='1')renderCoachApplication();
 }
@@ -1670,7 +1609,7 @@ function hideCoachEntering(){document.getElementById('mwCoachEntering')?.remove(
 async function holdCoachEntering(start,minMs=420){const left=Math.max(0,minMs-(performance.now()-start));if(left)await new Promise(r=>setTimeout(r,left))}
 function bindLogin(){
   const form=document.getElementById('loginForm'),pass=document.getElementById('loginPassword'),toggle=document.getElementById('togglePassword'),forgot=document.getElementById('forgotPassword');
-  toggle.addEventListener('click',()=>{const show=pass.type==='password';pass.type=show?'text':'password';toggle.textContent=show?'Hide':'Show';toggle.setAttribute('aria-label',show?'Hide password':'Show password')});
+  toggle.addEventListener('click',()=>{const show=pass.type==='password';pass.type=show?'text':'password';toggle.textContent=show?'Hide':'Show';toggle.setAttribute('aria-label',show?'Hide password':'Show password');toggle.setAttribute('aria-pressed',String(show))});
   forgot.addEventListener('click',async()=>{
     const email=document.getElementById('loginEmail').value.trim();
     if(!email)return setLoginMessage('Enter your email address first, then tap Forgot password.');

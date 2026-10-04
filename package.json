@@ -12,7 +12,7 @@
     "xlsx": "0.18.5"
   },
   "scripts": {
-    "test": "node test-coach-mw-client.js && node test-tiered-program.js && node test-season-intelligence.js && node test-season-intelligence-authority.js && node test-authoritative-timezone.js && node test-athlete-button-wiring.js && node test-practice-rest.js && node test-distance-pacer.js && node test-pace-ai-today.js && node test-season-registry.js && node test-launch-integrity.js && node test-security-controls.js && node test-workout-identity.js",
+    "test": "node test-signin-component.js && node test-coach-mw-client.js && node test-tiered-program.js && node test-season-intelligence.js && node test-season-intelligence-authority.js && node test-authoritative-timezone.js && node test-athlete-button-wiring.js && node test-practice-rest.js && node test-distance-pacer.js && node test-pace-ai-today.js && node test-season-registry.js && node test-launch-integrity.js && node test-security-controls.js && node test-workout-identity.js",
     "test:workout-identity-db": "node test-workout-identity-db.js && node test-practice-release-db.js"
   }
 }
