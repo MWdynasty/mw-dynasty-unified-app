@@ -769,6 +769,11 @@ function renderCoachSeasonAssessment(existing={}){
   };
 }
 function coachMWPage(){
+  // A failed/aborted login transition must never leave an invisible layer above Coach MW.
+  document.getElementById('mwCoachEntering')?.remove();
+  const staleVeil=document.getElementById('experienceVeil');
+  if(staleVeil){staleVeil.classList.remove('show');staleVeil.remove();}
+  document.getElementById('coachTour')?.remove();
   pageBase('Coach MW','Your coaching assistant. Ask, review, decide.',`
   <section class="coach-mw-athlete-match">
     <div class="coach-mw-athlete-top">
