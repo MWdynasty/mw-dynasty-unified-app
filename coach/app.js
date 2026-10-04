@@ -948,14 +948,27 @@ function coachMWPage(){
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       traceCoachStage('before_assistant_append');
-      if(coachMWPendingBubble){
-        const body=coachMWPendingBubble.querySelector('p');
-        if(body)body.textContent=answer;
-        coachMWPendingBubble.classList.remove('mw-coach-thinking');
-        coachMWPendingBubble.classList.add('mw-coach-answered');
-        coachMWPendingBubble=null;
-      }else appendCoachBubble('assistant',answer);
-      if(d.action)appendCoachAction(d.action);
+      // Render through a guarded direct DOM path; never let a WebView DOM exception leave the request frozen.
+      try{
+        const pending=coachMWPendingBubble;
+        const body=pending?.querySelector?.('p');
+        if(body){
+          body.textContent=answer;
+          pending.classList.remove('mw-coach-thinking');
+          pending.classList.add('mw-coach-answered');
+          coachMWPendingBubble=null;
+        }else{
+          const node=document.createElement('div');
+          node.className='mw-coach-message mw-coach-assistant';
+          node.innerHTML='<b>Coach MW</b><p></p>';
+          node.querySelector('p').textContent=answer;
+          chat.appendChild(node);
+        }
+      }catch(renderError){
+        console.error('MW_COACH_ASSISTANT_RENDER_FAILED',renderError);
+        traceCoachStage('assistant_render_error');
+      }
+      try{if(d.action)appendCoachAction(d.action)}catch(actionError){console.warn('MW_COACH_ACTION_RENDER_FAILED',actionError)}
       traceCoachStage('assistant_appended');
       chat.scrollTop=chat.scrollHeight;
       requestState.textContent='';
