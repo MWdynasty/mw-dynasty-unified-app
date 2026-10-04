@@ -28,6 +28,9 @@ for (const role of ['athlete', 'coach']) {
   assert(html.includes('autocomplete="current-password"'));
   assert(html.includes('inputmode="email"'));
   assert(html.includes('role="status" aria-live="polite"'));
+  for (const label of baseForm(html).matchAll(/<label\b[^>]*>[\s\S]*?<\/label>/g)) {
+    assert(!label[0].includes('<button'), 'Password toggle must not be nested inside a field label');
+  }
   assert(!/class="(?:coach-login-|mwLogin)/.test(html), 'No legacy layout class may leak into the new sign-in');
   for (const id of [...html.matchAll(/<input\b[^>]*id="([^"]+)"[^>]*type="(?:email|password)"/g)].map(m => m[1])) {
     assert(html.includes('for="' + id + '"'), 'Visible label required for #' + id);
@@ -56,6 +59,7 @@ assert(css.includes('max-width: 420px'));
 assert(css.includes('min-width: 0'));
 assert(css.includes('font-size: 16px !important'));
 assert(css.includes('min-height: 44px'));
+assert(/\.mw-signin,\s*#mwAuth\.mw-signin\s*\{[^}]*position: fixed;[^}]*inset: 0;/s.test(css), 'Both roles must scroll in the same viewport-sized container');
 assert(!css.includes('position: absolute'), 'The shared component must never absolutely position form elements');
 const launch = fs.readFileSync('assets/mw-session-launch-live-20261004-r1.js','utf8');
 assert(launch.includes('#app [data-mw-signin]'), 'Returning-session overlay must recognize the new Coach screen');

@@ -3,6 +3,8 @@
 #mwAuth.mw-signin {
   --signin-safe-top: env(safe-area-inset-top, 0px);
   --signin-safe-bottom: env(safe-area-inset-bottom, 0px);
+  position: fixed;
+  inset: 0;
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -20,7 +22,7 @@
   overscroll-behavior-y: contain;
   -webkit-text-size-adjust: 100%;
 }
-#mwAuth.mw-signin { position: fixed; inset: 0; z-index: 9999; }
+#mwAuth.mw-signin { z-index: 9999; }
 #mwAuth.mw-signin::before { display: none; }
 .mw-signin *, .mw-signin *::before, .mw-signin *::after { box-sizing: border-box; }
 .mw-signin .mw-signin-shell { width: 100%; max-width: 420px; margin: 0 auto; min-width: 0; }
