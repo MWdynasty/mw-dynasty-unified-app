@@ -157,10 +157,12 @@ async function run() {
   c.el('practiceManualTime').click();
   assert.equal(c.el('practiceNextRep').disabled,false,'Final manual result completes the group rep and unlocks Next Rep');
   c.el('practiceNextRep').click();
+  c.el('practiceTimerStart').click();
   c.advance(35000);
   c.el('practiceManualTime').click();
   c.el('practiceManualTime').click();
   c.el('practiceNextRep').click();
+  c.el('practiceTimerStart').click();
   c.advance(60000);
   c.el('practiceManualTime').click();
   c.el('practiceManualTime').click();
