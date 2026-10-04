@@ -1211,7 +1211,7 @@ const COACH_MOBILE_TOURS={
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v32`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v33`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
@@ -1256,7 +1256,7 @@ function startCoachTour(opts={}){
   const mode=opts.mode||'full';
   if(opts.force){document.getElementById('coachTour')?.remove();coachTourEnsureDashboard();}
   const phone=coachTourIsPhone();
-  const steps=phone&&mode==='full'?(COACH_MOBILE_TOURS[experience]||COACH_TOURS[experience]):mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_TOURS[experience]):COACH_TOURS[experience];
+  const steps=mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_MOBILE_TOURS[experience]):(COACH_MOBILE_TOURS[experience]||COACH_TOURS[experience]);
   if(!steps?.length)return;
   if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
   document.getElementById('coachTour')?.remove();
