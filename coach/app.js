@@ -1183,35 +1183,35 @@ const COACH_UPGRADE_TOURS={
 const COACH_MOBILE_TOURS={
   core:[
     {icon:'✦',title:'Welcome to Coach MW',body:'This quick tour shows the five buttons you will use most on your phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'COACH CORE'},
-    {icon:'⌂',title:'Home',body:'Start here to see your coaching command center and what needs attention today.',hint:'Home is your starting point.',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
-    {icon:'♟',title:'Team',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
-    {icon:'🏃',title:'Train',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'✉',title:'Messages',body:'Keep athlete communication connected to the training plan.',hint:'Use Messages for follow-up and clarification.',target:'.coach-mobile-nav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'☰',title:'Menu',body:'Find Calendar, Profile, Settings, Attendance, Help and the rest of your tools here.',hint:'Menu is your access point for everything else.',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'⌂',title:'Home',body:'Start here to see your coaching command center and what needs attention today.',hint:'Home is your starting point.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'✉',title:'Messages',body:'Keep athlete communication connected to the training plan.',hint:'Use Messages for follow-up and clarification.',navigate:'messages',target:'.coach-mobile-nav [data-page="messages"]',label:'MESSAGES'},
+    {icon:'☰',title:'Menu',body:'Find Calendar, Profile, Settings, Attendance, Help and the rest of your tools here.',hint:'Menu is your access point for everything else.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
     {icon:'✓',title:'You’re Ready',body:'That is the Coach mobile map: Home, Team, Train, Messages and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ],
   intelligence:[
     {icon:'✦',title:'Welcome to Coach Intelligence',body:'This quick tour shows the five buttons that organize your coaching day on the phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'COACH INTELLIGENCE'},
-    {icon:'⌂',title:'Home',body:'Start with the big picture and see what deserves your attention.',hint:'Use Home to orient before acting.',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
-    {icon:'♟',title:'Team',body:'Inspect the athlete behind a signal, flag or recommendation.',hint:'Use Team for athlete-specific context.',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
-    {icon:'🏃',title:'Train',body:'Open the training workspace and manage the work your athletes execute.',hint:'This is where the plan becomes action.',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'MW',title:'Coach MW',body:'Ask Coach MW about athletes, workload, planning and the context behind your coaching decisions.',hint:'Coach MW recommends; you decide.',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
-    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and the rest of your tools here.',hint:'Menu holds the deeper workspace.',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'⌂',title:'Home',body:'Start with the big picture and see what deserves your attention.',hint:'Use Home to orient before acting.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team',body:'Inspect the athlete behind a signal, flag or recommendation.',hint:'Use Team for athlete-specific context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train',body:'Open the training workspace and manage the work your athletes execute.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'MW',title:'Coach MW',body:'Ask Coach MW about athletes, workload, planning and the context behind your coaching decisions.',hint:'Coach MW recommends; you decide.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and the rest of your tools here.',hint:'Menu holds the deeper workspace.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
     {icon:'✓',title:'You’re Ready',body:'That is your Coach Intelligence map: Home, Team, Train, Coach MW and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ],
   performance:[
     {icon:'✦',title:'Welcome to MW Sprint Performance',body:'This quick tour shows the five buttons that organize the complete MW system on your phone.',hint:'Tap NEXT to follow the real Coach navigation.',target:null,label:'SPRINT PERFORMANCE'},
-    {icon:'⌂',title:'Home',body:'Start here to see your coaching picture before opening the system.',hint:'Use Home to orient yourself.',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
-    {icon:'♟',title:'Team',body:'Connect the MW system to the athlete, assignments and roster context.',hint:'Use Team for athlete-specific coaching.',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
-    {icon:'🏃',title:'Train',body:'Open the synchronized training workspace and execute the plan.',hint:'Track, strength and training tools live behind Train.',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'MW',title:'Coach MW',body:'Ask Coach MW to explain the system, the work and the athlete context.',hint:'Use it to understand and prepare; the coach remains in control.',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
-    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and deeper performance tools here.',hint:'Menu is your access point for the rest of MW.',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'⌂',title:'Home',body:'Start here to see your coaching picture before opening the system.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
+    {icon:'♟',title:'Team',body:'Connect the MW system to the athlete, assignments and roster context.',hint:'Use Team for athlete-specific coaching.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
+    {icon:'🏃',title:'Train',body:'Open the synchronized training workspace and execute the plan.',hint:'Track, strength and training tools live behind Train.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
+    {icon:'MW',title:'Coach MW',body:'Ask Coach MW to explain the system, the work and the athlete context.',hint:'Use it to understand and prepare; the coach remains in control.',navigate:'coachmw',target:'.coach-mobile-nav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'☰',title:'Menu',body:'Find Messages, Calendar, Profile, Settings and deeper performance tools here.',hint:'Menu is your access point for the rest of MW.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
     {icon:'✓',title:'You’re Ready',body:'That is your MW map: Home, Team, Train, Coach MW and Menu.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ]
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v30`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v31`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
@@ -1269,8 +1269,14 @@ function startCoachTour(opts={}){
   window.addEventListener('resize',coachTourReposition,{passive:true});
   renderCoachTourStep();
 }
+function coachTourNavigateToStep(step){
+  if(!window.matchMedia('(max-width:820px)').matches||!step?.navigate)return;
+  const button=document.querySelector(`.coach-mobile-nav [data-page="${step.navigate}"]`);
+  if(button&&!button.classList.contains('active'))button.click();
+}
 function renderCoachTourStep(){
   const st=coachTourState;if(!st)return;const step=st.steps[st.index],root=st.root;
+  coachTourNavigateToStep(step);
   coachTourOpenNavIfNeeded(step);
   root.querySelector('#coachTourStep').textContent=`${st.index+1} OF ${st.steps.length}`;
   const tourIcon=root.querySelector('#coachTourIcon'),navPreview=root.querySelector('#coachTourNavPreview');
@@ -1300,7 +1306,7 @@ function renderCoachTourStep(){
   root.querySelector('#coachTourNext').textContent=st.index===st.steps.length-1?'FINISH':'NEXT';
   root.querySelector('#coachTourDots').innerHTML=st.steps.map((_,i)=>`<i class="${i===st.index?'active':''}"></i>`).join('');
   root.classList.toggle('no-target',!step.target);
-  window.setTimeout(()=>coachTourPosition(step),60);
+  window.setTimeout(()=>coachTourPosition(step),180);
 }
 function coachTourPosition(step){
   const root=coachTourState?.root;if(!root)return;const spot=root.querySelector('#coachTourSpotlight'),tag=root.querySelector('#coachTourTag'),card=root.querySelector('#coachTourCard');
