@@ -33,18 +33,20 @@ async function loadPricingCatalog(){
 }
 let experience='core';
 const nav={
- core:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']],
- intelligence:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']],
- performance:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Profile']]
+ core:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Settings']],
+ intelligence:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Settings']],
+ performance:[['dashboard','⌂','Home'],['athletes','♟','Team'],['train','🏃','Train'],['coachmw','MW','Coach MW'],['calendar','📅','Calendar'],['messages','✉','Messages'],['account','⚙','Settings']]
 };
 function sideNav(){
   const items=[...nav[experience]];
   const artById={dashboard:'mwNavHome',athletes:'mwNavProfile',train:'mwNavTrain',programs:'mwNavTrain',coachmw:'mwNavCoach',messages:'mwNavProgram',account:'mwNavCoach'};
   return items.map(([id,ic,label],idx)=>{
     const divider=(experience!=='core'&&id==='calendar')|| (experience==='core'&&id==='calendar');
-    const icon=id==='calendar'
-      ?'<span class="nav-icon mwCalendarNav" aria-hidden="true">📅</span>'
-      :`<span class="nav-icon mwNavArt ${artById[id]||''}" aria-hidden="true"></span>`;
+    const icon=id==='account'
+      ?'<span class="nav-icon" aria-hidden="true">⚙</span>'
+      :id==='calendar'
+        ?'<span class="nav-icon mwCalendarNav" aria-hidden="true">📅</span>'
+        :`<span class="nav-icon mwNavArt ${artById[id]||''}" aria-hidden="true"></span>`;
     return `${divider?'<span class="side-nav-divider" aria-hidden="true"></span>':''}<button class="nav-btn ${id==='dashboard'?'active':''}" data-page="${id}">${icon}<span>${label}</span></button>`;
   }).join('');
 }
@@ -73,7 +75,7 @@ function mobileCoachNav(activePage){
   </nav>`;
 }
 function shell(content){const p=PLANS[experience],coachName=[accountAccess.firstName,accountAccess.lastName].filter(Boolean).join(' ')||'MW Coach',defaultRole=accountAccess.isFounder?'Founder / Coach':accountAccess.role==='admin'?'MW Administrator':'Coach',coachRole=accountAccess.coachTitle||defaultRole,coachMeta=[coachRole,accountAccess.organization].filter(Boolean).join(' · '),profileNudge=accountAccess.role==='coach'&&(!accountAccess.organization||!accountAccess.coachTitle)?`<div class="tile mw-profile-nudge"><div><div class="eyebrow">COACH PROFILE</div><b>Complete your coaching identity</b><p>Add your school / organization and coaching title so athletes know exactly who is coaching them.</p></div><button class="action" data-page="account">Complete Profile</button></div>`:'';app.innerHTML=`<div class="app ${p.theme}"><div class="top-ribbon"><span>THREE PLATFORMS. ONE ECOSYSTEM.</span><span>${experience==='performance'?'SAME FOUNDATION. DIFFERENT POWER.':'GREATER ATHLETES. BETTER COACHES. A STRONGER FUTURE.'}</span></div><div class="frame"><header class="brand-head"><div class="brand-title">${p.title}</div><div class="brand-tag">${p.tag}</div><div class="brand-sub">${p.sub}</div></header><div class="workspace"><aside class="sidebar"><div class="side-brand-row"><div class="side-logo"><span class="mw-mark">MW</span><span>${p.side.replace('\n','<br>')}</span></div><button class="mobile-menu" id="mobileMenu" type="button" aria-expanded="false" aria-controls="sideNav">Menu</button></div><nav class="side-nav" id="sideNav">${sideNav()}</nav><div class="side-account"><button class="coach-row coach-profile-entry" data-page="account" type="button" aria-label="Open Coach profile"><span class="avatar coach-initials" aria-hidden="true">${escapeHtml(((accountAccess.firstName?.[0]||'M')+(accountAccess.lastName?.[0]||'W')).toUpperCase())}</span><span class="coach-profile-copy"><span class="coach-name">${escapeHtml(coachName)}</span><span class="coach-role">${escapeHtml(coachMeta)}</span></span></button><button class="signout" id="signout">Sign Out</button></div></aside><main class="main">${profileNudge}${content}</main></div><footer class="footer"><div class="footer-brand">MW DYNASTY</div><div class="footer-mid">GREATER ATHLETES. BETTER COACHES. A STRONGER FUTURE.</div><div class="footer-right">${p.footer}</div></footer></div>${mobileCoachNav('dashboard')}</div>`; bindGlobal();hydrateLiveAthleteCount();}
-function topbar(placeholder){return `<div class="topbar"><div class="mw-search-wrap"><label class="search">⌕<input id="dashSearch" autocomplete="off" placeholder="${placeholder}"></label><div id="dashSearchResults" class="mw-search-results" hidden></div></div><button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button></div>`}
+function topbar(placeholder){return `<div class="topbar"><div class="mw-search-wrap"><label class="search">⌕<input id="dashSearch" autocomplete="off" placeholder="${placeholder}"></label><div id="dashSearchResults" class="mw-search-results" hidden></div></div><button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button><button class="icon-btn coach-settings-shortcut" data-page="account" type="button" aria-label="Settings" title="Settings">⚙</button></div>`}
 function stats(items){return `<div class="stats">${items.map(([n,l])=>`<button class="stat" data-stat="${l}"><b>${n}</b><span>${l}</span></button>`).join('')}</div>`}
 function athleteStatusClassify(a){
   const now=Date.now();
@@ -479,7 +481,7 @@ function dashboard(){
   hydrateCoachTrainingYearCard();
   window.setTimeout(()=>{maybeStartCoachSeasonAssessment().then(opened=>{if(!opened)maybeStartCoachTour()}).catch(()=>maybeStartCoachTour())},180);
 }
-function pageBase(title,subtitle,body){const p=PLANS[experience];app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">← Dashboard</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div><button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=dashboard;const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
+function pageBase(title,subtitle,body){const p=PLANS[experience];app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">← Dashboard</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div><button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button><button class="icon-btn coach-settings-shortcut" data-page="account" type="button" aria-label="Settings" title="Settings">⚙</button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=dashboard;const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
 function morePage(){
   const operations=[
     ['messages','✉','Messages','Talk with athletes and send team or group announcements'],
@@ -501,18 +503,17 @@ function morePage(){
     ['pacing','⏱️','Pacing Tools','Individualized training targets']
   ]:[];
   const account=[
-    ['account','⚙️','Settings / Profile','Coach identity, training year, membership and preferences'],
     ['activity','◔','Activity Log','Recent coach and athlete activity'],
     ['support','?','Help & Support','Support, privacy and account help']
   ];
   const founder=accountAccess.isFounder?[['founderpreview','◈','Founder Preview','Preview coach experiences and access']]:[];
-  const group=(title,subtitle,items)=>items.length?`<section class="coach-menu-group"><div class="coach-menu-group-head"><span>${title}</span><small>${subtitle}</small></div><div class="coach-menu-grid">${items.map(([id,ic,label,desc])=>`<button data-page="${id}"><b>${ic}</b><span><strong>${label}</strong><small>${desc}</small></span><em>→</em></button>`).join('')}</div></section>`:'';
-  pageBase('Menu','Everything beyond your five main coaching buttons, organized by job.',`
+  const group=(title,subtitle,items)=>items.length?`<details class="coach-menu-group"><summary class="coach-menu-group-summary"><div class="coach-menu-group-head"><span>${title}</span><small>${subtitle}</small></div><span class="coach-menu-count">${items.length} tools <b aria-hidden="true">⌄</b></span></summary><div class="coach-menu-grid">${items.map(([id,ic,label,desc])=>`<button data-page="${id}"><b>${ic}</b><span><strong>${label}</strong><small>${desc}</small></span><em>→</em></button>`).join('')}</div></details>`:'';
+  pageBase('Menu','Choose a category to open its tools. Use the gear icon for your profile and account settings.',`
     <div class="coach-menu-shell">
       ${group('SCHEDULE & TEAM','Run the day-to-day coaching operation.',operations)}
       ${group('INTELLIGENCE & PLANNING','Review signals, plan the season and approve changes.',intelligence)}
       ${group('MW PERFORMANCE SYSTEM','Open the deeper performance tools included with your membership.',performance)}
-      ${group('ACCOUNT & SUPPORT','Manage your setup without mixing it into daily coaching.',account)}
+      ${group('ACTIVITY & SUPPORT','Review recent activity or contact MW Support.',account)}
       ${group('FOUNDER','Founder-only controls.',founder)}
       <div class="coach-menu-session"><div><b>Coach Session</b><span>Securely sign out of this Coach account on this device.</span></div><button class="back" id="coachMoreSignout">Sign Out</button></div>
     </div>`);
@@ -771,7 +772,7 @@ function renderCoachSeasonAssessment(existing={}){
 function coachMWPage(){
   // Coach MW owns the full mobile surface. Clear any global layer left by a prior
   // page or interrupted transition before rendering the chat controls.
-  ['mwCoachEntering','experienceVeil','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
+  ['mwCoachEntering','experienceVeil','coachTour','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
   pageBase('Coach MW','Your coaching assistant. Ask, review, decide.',`
   <section class="coach-mw-athlete-match">
     <div class="coach-mw-athlete-top">
@@ -1128,39 +1129,39 @@ const COACH_TOUR_RANK={core:1,intelligence:2,performance:3};
 const COACH_TOURS={
   core:[
     {icon:'✦',title:'Welcome to MW Coach Core',body:'This walkthrough is built around how you will actually coach inside MW Dynasty — where to start, where to go next, and why each main button matters.',hint:'The goal is not just to show you buttons. It is to teach you the coaching flow so you can move through the app without guessing.',target:null,label:'COACH CORE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAINING, MESSAGES and MENU are the five anchors of Coach Core on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Almost everything you do starts from one of these buttons.',hint:'Learn these five first. Once they make sense, the rest of the platform becomes much easier to navigate.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
+    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAINING, MESSAGES and MENU are the five anchors of Coach Core on mobile. MENU holds grouped coaching tools. Use the gear icon for your profile, membership and account settings.',hint:'Learn these five first. Once they make sense, the rest of the platform becomes much easier to navigate.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Know What Needs Your Attention',body:'HOME is where a coaching day should begin. It brings you back to your command center so you can see the current picture before jumping into individual tasks.',hint:'Why it matters: good coaching decisions start with context. Use Home to orient yourself before you act.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Know the Athlete Before You Coach the Athlete',body:'TEAM is where you move from the big picture to the people you coach. Open your roster, review athlete information, assignments and the athletes connected to your account.',hint:'Why it matters: training decisions should be athlete-specific. Team is the bridge between your roster and the work you assign.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
     {icon:'',title:'3. Training — Turn the Plan Into Action',body:'TRAINING is where your coaching plan lives. Create, organize and manage the workouts and programs your athletes need to execute.',hint:'Why it matters: this is where coaching intent becomes actual work. Build the plan here, then use Team to make sure the right athletes are connected to it.',target:'#sideNav [data-page="programs"]',label:'TRAINING'},
     {icon:'',title:'4. Messages — Close the Coaching Loop',body:'MESSAGES keeps communication with your athletes inside the same coaching workspace. Use it for clarification, follow-up and the communication that helps the plan get executed correctly.',hint:'Why it matters: a workout on a screen is not enough. Communication is how you correct, reinforce and keep athletes connected to the plan.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile, Meets, Attendance, Activity and Help. Your coaching identity, training-year settings, membership and account controls stay under Settings / Profile.',hint:'Why it matters: MW uses these settings to know who you are, what access you have and how your coaching environment should operate.',target:'#sideNav [data-page="account"]',label:'MENU'},
+    {icon:'',title:'5. Menu & Settings — Tools vs Account',body:'MENU groups Calendar, Meets, Attendance, Activity and Help by job. Use the gear icon for profile, membership and account settings.',hint:'Why it matters: MW uses these settings to know who you are, what access you have and how your coaching environment should operate.',target:'.coach-settings-shortcut',label:'SETTINGS'},
     {icon:'📅',title:'Set the Training Year Before You Build Around It',body:'Your training-year setting gives the rest of the platform a calendar reference. Keep the MW Standard Week 1 or choose a Custom Season Start when your team needs a different starting point.',hint:'Assigned athletes follow your coach calendar and placement. Getting this right early keeps your roster and training weeks aligned.',target:'.coach-training-year-card',label:'TRAINING YEAR'},
-    {icon:'',title:'Your Everyday Coach Core Flow',body:'A simple rhythm is HOME → TEAM → TRAINING → MESSAGES. Use MENU when you need Calendar, Settings or secondary tools, then return HOME to reset your view.',hint:'You do not need to hunt through the app. Let the five main buttons organize how you coach.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
+    {icon:'',title:'Your Everyday Coach Core Flow',body:'A simple rhythm is HOME → TEAM → TRAINING → MESSAGES. Use MENU for grouped coaching tools and the gear icon for profile, training-year, membership and account settings, then return HOME to reset your view.',hint:'You do not need to hunt through the app. Let the five main buttons organize how you coach.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ],
   intelligence:[
     {icon:'✦',title:'Welcome to MW Coach Intelligence',body:'This walkthrough is built around how you will actually use intelligence while coaching — orient yourself, understand the athlete, ask better questions and act on what matters.',hint:'MW Intelligence should make your coaching decisions clearer, not make the app feel more complicated.',target:null,label:'COACH INTELLIGENCE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Coach Intelligence on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Think of them as the permanent map underneath the intelligence tools.',hint:'The intelligence features are powerful, but these five buttons keep you grounded and make the platform easy to move through.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
+    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Coach Intelligence on mobile. MENU holds grouped coaching tools; use the gear icon for profile and account settings. Think of them as the permanent map underneath the intelligence tools.',hint:'The intelligence features are powerful, but these five buttons keep you grounded and make the platform easy to move through.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Start With the Big Picture',body:'HOME is where every coaching day should begin. Use it to see the overall state of your roster and what deserves attention before opening a single athlete.',hint:'Why it matters: intelligence is most useful when you begin with the whole picture instead of reacting to one isolated data point.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Move From Signal to Athlete',body:'TEAM is where you inspect the actual athlete behind a status, flag or recommendation. Open profiles, assignments and the information connected to the people you coach.',hint:'Why it matters: MW can surface a signal, but you still need athlete context before making a coaching decision.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
     {icon:'',title:'3. Coach MW — Turn Information Into a Coaching Question',body:'COACH MW lets you ask about athletes, workload, planning and the signals MW is seeing across your roster.',hint:'Why it matters: use Coach MW to understand and organize information faster. It recommends — you decide what should actually happen.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW'},
     {icon:'',title:'4. Messages — Turn the Decision Into Communication',body:'MESSAGES is where you follow through with the athlete after you review the data and decide what needs to be addressed.',hint:'Why it matters: intelligence only helps if it improves what the athlete understands and executes.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile and the rest of the coaching tools. Settings / Profile keeps your coaching identity, organization, training-year setup, membership and account settings accurate.',hint:'Why it matters: these settings give MW the correct coaching context and keep your platform access organized.',target:'#sideNav [data-page="account"]',label:'MENU'},
+    {icon:'',title:'5. Menu & Settings — Tools vs Account',body:'MENU opens grouped coaching tools; use the gear icon for profile and account settings. The gear icon opens your coaching identity, organization, training-year setup, membership and account settings.',hint:'Why it matters: these settings give MW the correct coaching context and keep your platform access organized.',target:'.coach-settings-shortcut',label:'SETTINGS'},
     {icon:'◉',title:'Use Athlete Status as Your Early-Warning Board',body:'The Athlete Status Board separates the roster into On Track, Watch and Needs Attention so you know where to look first.',hint:'Do not treat a flag as the final answer. Use it as a reason to open Team, inspect the athlete and make the coaching decision yourself.',target:'.athlete-status-section',label:'ATHLETE STATUS'},
     {icon:'☑',title:'Use the Task Board to Prioritize Follow-Up',body:'The AI Task Board turns roster signals into an organized coaching queue so important follow-up does not disappear underneath everything else you are managing.',hint:'A useful rhythm is Status → Athlete → Coach MW if needed → Coach decision → Message or action.',target:'[data-page="taskboard"]',label:'AI TASK BOARD'},
-    {icon:'',title:'Your Everyday Intelligence Flow',body:'A simple rhythm is HOME → TEAM → TRAIN → COACH MW. MENU holds Messages, Calendar, Settings and secondary tools. The intelligence tools support that flow instead of replacing it.',hint:'Start broad, inspect the athlete, ask the right question, make the decision, then communicate it.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
+    {icon:'',title:'Your Everyday Intelligence Flow',body:'A simple rhythm is HOME → TEAM → TRAIN → COACH MW. MENU holds grouped tools; use ⚙ Settings for profile, training-year, membership and account controls. The intelligence tools support that flow instead of replacing it.',hint:'Start broad, inspect the athlete, ask the right question, make the decision, then communicate it.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ],
   performance:[
     {icon:'✦',title:'Welcome to MW Sprint Performance',body:'This walkthrough shows you how to operate the complete MW system without getting lost in all of its power — where to start, how to move, and what each main button is responsible for.',hint:'The 41-week system, strength, pacing and intelligence all become easier when you understand the five navigation anchors first.',target:null,label:'SPRINT PERFORMANCE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Sprint Performance on mobile. MENU holds Calendar, Settings / Profile and the rest of the performance tools. The complete MW system branches out from this navigation.',hint:'When you always know which anchor you are working from, the full performance platform stays organized instead of overwhelming.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
+    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Sprint Performance on mobile. MENU holds grouped performance tools; use ⚙ Settings for profile and account controls. The complete MW system branches out from this navigation.',hint:'When you always know which anchor you are working from, the full performance platform stays organized instead of overwhelming.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Start With Today’s Coaching Picture',body:'HOME is where you orient yourself before touching the program. See what is happening across the coaching environment and what needs your attention first.',hint:'Why it matters: the training system is structured, but your coaching day still starts with understanding what is happening right now.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Connect the System to the Athlete',body:'TEAM is where the MW system becomes personal. Review the athlete, their placement, assignments and the information that should shape how you coach the prescribed work.',hint:'Why it matters: the system provides structure; Team gives you the athlete context needed to coach that structure correctly.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
     {icon:'',title:'3. Coach MW — Understand the System in Context',body:'COACH MW connects the MW methodology, your roster and coaching intelligence so you can ask questions about the work and the athletes doing it.',hint:'Why it matters: use Coach MW to understand, compare and prepare. The final coaching decision still belongs to you.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW'},
     {icon:'',title:'4. Messages — Make Sure the Athlete Understands',body:'MESSAGES gives you the communication layer around the training system. Use it to reinforce cues, clarify expectations and follow up when execution needs attention.',hint:'Why it matters: even the best program fails if the athlete does not understand what the coach wants executed.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile and the rest of your performance tools. Settings / Profile controls your coaching identity, organization, training-year setup, membership and account settings.',hint:'Why it matters: these settings keep the 41-week system, your roster and your access tied to the correct coaching environment.',target:'#sideNav [data-page="account"]',label:'MENU'},
+    {icon:'',title:'5. Menu & Settings — Tools vs Account',body:'MENU opens grouped performance tools; use the gear icon for profile and account settings. The gear icon controls your coaching identity, organization, training-year setup, membership and account settings.',hint:'Why it matters: these settings keep the 41-week system, your roster and your access tied to the correct coaching environment.',target:'.coach-settings-shortcut',label:'SETTINGS'},
     {icon:'🏃',title:'The 41-Week Track System Is the Backbone',body:'The protected MW Track Program gives you the progressive sprint prescription, recovery, cues and circuit order across the season.',hint:'Use the navigation anchors to manage the coaching day; use the MW Track Program when you need the actual system prescription.',target:'[data-page="mwtrack"]',label:'MW TRACK PROGRAM'},
     {icon:'🏋',title:'Strength Supports the Track Work',body:'Strength & Power is synchronized with the sprint progression so the weight room supports the same performance objective as the track.',hint:'Do not treat track and strength as two unrelated programs. They are designed to progress together.',target:'[data-page="strength"]',label:'STRENGTH & POWER'},
     {icon:'◷',title:'Pacing Makes the Prescription Individual',body:'Pacing Tools use athlete PR data to turn the prescribed work into individualized target times.',hint:'The program tells you the training intent. Pacing helps each athlete execute that intent at the right target.',target:'[data-page="pacing"]',label:'PACING TOOLS'},
-    {icon:'',title:'Your Everyday Sprint Performance Flow',body:'A simple rhythm is HOME → TEAM → COACH MW → execute the MW system → MESSAGES. MENU gives you Calendar, Settings and the deeper performance tools. Use those tools when the coaching question requires them.',hint:'The five main buttons keep you oriented; the 41-week system and performance tools give you the depth.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
+    {icon:'',title:'Your Everyday Sprint Performance Flow',body:'A simple rhythm is HOME → TEAM → COACH MW → execute the MW system → MESSAGES. MENU groups the deeper performance tools; use ⚙ Settings for profile, training-year, membership and account controls. Use those tools when the coaching question requires them.',hint:'The five main buttons keep you oriented; the 41-week system and performance tools give you the depth.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ]
 };
 
@@ -1179,14 +1180,16 @@ const COACH_UPGRADE_TOURS={
     {icon:'◷',title:'Pacing Tools',body:'Use live athlete PRs to calculate individualized target times for the prescribed work.',hint:'The complete performance platform is ready.',target:'[data-page="pacing"]',label:'NEW · PACING'}
   ]
 };
+/* Phone-first tour: every spotlight points to a visible Coach mobile button. */
 const COACH_MOBILE_TOURS={
   core:[
-    {icon:'✦',title:'Welcome to Coach Core',body:'This quick tour shows how MW helps you coach without hunting through the app.',hint:'You stay in control of every coaching decision.',target:null,label:'COACH CORE'},
+    {icon:'✦',title:'Welcome to Coach MW',body:'This quick tour shows how MW helps you coach without hunting through the app.',hint:'Coach MW is your assistant. You stay in control.',target:null,label:'COACH CORE'},
     {icon:'⌂',title:'Home — See What Needs Attention',body:'Start here to see your coaching command center, team picture and current priorities.',hint:'Use Home to orient yourself before you act.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
     {icon:'♟',title:'Team — Know Your Athletes',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
     {icon:'🏃',title:'Train — Turn the Plan Into Work',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'☰',title:'Menu — Find the Rest of MW',body:'Calendar, Profile, Settings, Attendance and Help live here.',hint:'Menu is your access point for the rest of Coach Core.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
-    {icon:'✓',title:'You’re Ready',body:'Your flow is simple: review the plan → approve → execute.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
+    {icon:'☰',title:'Menu — Find the Rest of MW',body:'Open the grouped coaching tools from Menu. Use the gear icon for profile, membership and account settings.',hint:'Menu is your access point for everything else.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'✦',title:'Coach MW Is Your Assistant',body:'Open Coach MW from your coach tools to ask questions, plan practices, organize schedules and get help with your coaching workflow.',hint:'Coach MW recommends; you approve what gets changed.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'COACH MW'},
+    {icon:'✓',title:'You’re Ready',body:'Your flow is simple: ask Coach MW → review the recommendation → approve → execute.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ],
   intelligence:[
     {icon:'✦',title:'Welcome to Coach Intelligence',body:'Coach MW is the intelligence layer that helps you organize decisions without taking control away from you.',hint:'You ask. MW organizes and recommends. You approve.',target:null,label:'COACH INTELLIGENCE'},
@@ -1194,7 +1197,7 @@ const COACH_MOBILE_TOURS={
     {icon:'⌂',title:'Home — See What Needs Attention',body:'Start with the big picture before opening an athlete or making a change.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
     {icon:'♟',title:'Team — Move From Signal to Athlete',body:'Inspect the athlete behind a flag, recommendation or coaching question.',hint:'Use Team for athlete-specific context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
     {icon:'🏃',title:'Train — Execute the Plan',body:'Open the training workspace and manage the work your athletes execute.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'☰',title:'Menu — Calendar, Profile & More',body:'Find Messages, Calendar, Profile, Settings and the rest of your tools here.',hint:'Menu holds the deeper workspace.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'☰',title:'Menu — Calendar, Profile & More',body:'Open the grouped coaching tools from Menu. Use the gear icon for profile, membership and account settings.',hint:'Menu holds the deeper workspace.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
     {icon:'✓',title:'You’re Ready',body:'Your flow is: ask Coach MW → review → approve → execute → communicate.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ],
   performance:[
@@ -1203,13 +1206,13 @@ const COACH_MOBILE_TOURS={
     {icon:'⌂',title:'Home — Start With Today’s Picture',body:'Start here to see what needs attention before opening the system.',hint:'Use Home to orient yourself.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
     {icon:'♟',title:'Team — Connect the System to the Athlete',body:'Review athlete placement, assignments and the context that should shape how you coach the prescribed work.',hint:'Use Team for athlete-specific coaching.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
     {icon:'🏃',title:'Train — Execute the MW System',body:'Open the synchronized training workspace for track, strength, pacing and practice execution.',hint:'This is where the plan becomes action.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'☰',title:'Menu — Open the Deeper Tools',body:'Find Messages, Calendar, Profile, Settings and the deeper performance tools here.',hint:'Menu is your access point for the rest of MW.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
+    {icon:'☰',title:'Menu — Open the Deeper Tools',body:'Open the grouped performance tools from Menu. Use the gear icon for profile, membership and account settings.',hint:'Menu is your access point for the rest of MW.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
     {icon:'✓',title:'You’re Ready',body:'Your coaching flow is: ask Coach MW → review the recommendation → approve → execute → communicate.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ]
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v35`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v33`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
@@ -1231,11 +1234,6 @@ function coachTourEnsureDashboard(){
   if(!document.querySelector('.app'))dashboard();
 }
 function coachTourIsPhone(){return !!document.querySelector('.coach-mobile-nav')||window.matchMedia('(max-width:820px)').matches||Math.min(window.innerWidth||9999,document.documentElement.clientWidth||9999)<=820}
-function coachTourNavigateToStep(step){
-  if(!coachTourIsPhone()||!step?.navigate)return;
-  const button=document.querySelector(`.coach-mobile-nav [data-page="${step.navigate}"]`);
-  if(button&&!button.classList.contains('active'))button.click();
-}
 function coachTourResolvedTarget(step){
   const raw=step?.target||'';
   if(!raw)return '';
@@ -1244,7 +1242,8 @@ function coachTourResolvedTarget(step){
   const m=raw.match(/^#sideNav \[data-page="([^"]+)"\]$/);
   if(!m)return raw;
   const page=m[1];
-  if(['dashboard','athletes','programs','coachmw','messages'].includes(page))return `.coach-mobile-nav [data-page="${page}"]`;
+  const mobilePage={dashboard:'dashboard',athletes:'athletes',programs:'train',train:'train',coachmw:'coachmw',messages:'messages'}[page];
+  if(mobilePage)return `.coach-mobile-nav [data-page="${mobilePage}"]`;
   return '.coach-mobile-nav [data-page="more"]';
 }
 function coachTourOpenNavIfNeeded(step){
@@ -1257,6 +1256,7 @@ function coachTourCloseNav(){const navEl=document.getElementById('sideNav'),menu
 function startCoachTour(opts={}){
   const mode=opts.mode||'full';
   if(opts.force){document.getElementById('coachTour')?.remove();coachTourEnsureDashboard();}
+  const phone=coachTourIsPhone();
   const steps=mode==='upgrade'?(COACH_UPGRADE_TOURS[experience]||COACH_MOBILE_TOURS[experience]):(COACH_MOBILE_TOURS[experience]||COACH_TOURS[experience]);
   if(!steps?.length)return;
   if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
@@ -1270,6 +1270,11 @@ function startCoachTour(opts={}){
   root.querySelector('#coachTourNext').onclick=()=>{if(coachTourState.index>=steps.length-1)finishCoachTour(false);else{coachTourState.index++;renderCoachTourStep()}};
   window.addEventListener('resize',coachTourReposition,{passive:true});
   renderCoachTourStep();
+}
+function coachTourNavigateToStep(step){
+  if(!coachTourIsPhone()||!step?.navigate)return;
+  const button=document.querySelector(`.coach-mobile-nav [data-page="${step.navigate}"]`);
+  if(button&&!button.classList.contains('active'))button.click();
 }
 function renderCoachTourStep(){
   const st=coachTourState;if(!st)return;const step=st.steps[st.index],root=st.root;

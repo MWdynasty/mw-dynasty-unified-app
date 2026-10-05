@@ -3247,3 +3247,24 @@ img,svg,video,canvas{max-width:100%}
   .mw-modal{z-index:20000!important}
   .coach-apply-modal{z-index:21000!important}
 }
+
+/* Compact, expandable tool categories keep Coach Menu scannable on phones. */
+.coach-menu-group>summary.coach-menu-group-summary{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;
+  list-style:none!important;cursor:pointer!important;
+}
+.coach-menu-group>summary.coach-menu-group-summary::-webkit-details-marker{display:none!important}
+.coach-menu-group>summary .coach-menu-group-head{
+  flex:1!important;min-width:0!important;padding:2px 4px!important;border-bottom:0!important;
+}
+.coach-menu-group>summary .coach-menu-group-head>small{max-width:42ch!important}
+.coach-menu-count{
+  display:inline-flex!important;align-items:center!important;gap:7px!important;white-space:nowrap!important;
+  color:#9fb0ba!important;font-size:10px!important;font-weight:800!important;
+}
+.coach-menu-count b{color:var(--mwd-gold2,#efc659)!important;font-size:17px!important;transition:transform .15s ease!important}
+.coach-menu-group[open]>summary.coach-menu-group-summary{
+  padding-bottom:10px!important;border-bottom:1px solid rgba(218,171,74,.18)!important;
+}
+.coach-menu-group[open]>.coach-menu-grid{padding-top:10px!important}
+.coach-settings-shortcut{min-width:40px!important;min-height:40px!important}
