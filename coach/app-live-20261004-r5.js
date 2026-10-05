@@ -771,7 +771,7 @@ function renderCoachSeasonAssessment(existing={}){
 function coachMWPage(){
   // Coach MW owns the full mobile surface. Clear any global layer left by a prior
   // page or interrupted transition before rendering the chat controls.
-  ['mwCoachEntering','experienceVeil','coachTour','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
+  ['mwCoachEntering','experienceVeil','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
   pageBase('Coach MW','Your coaching assistant. Ask, review, decide.',`
   <section class="coach-mw-athlete-match">
     <div class="coach-mw-athlete-top">
@@ -1209,7 +1209,7 @@ const COACH_MOBILE_TOURS={
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v34`}
+function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v35`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
