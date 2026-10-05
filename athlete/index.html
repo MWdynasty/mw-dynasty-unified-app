@@ -1451,6 +1451,16 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 .mwRoleMismatchActions button.secondary{background:#07131c;color:#efbd43;border-color:rgba(239,189,67,.42)}
 </style>
 </style>
+<style id="mw-simplified-onboarding">
+.mwOptionalDetails{padding:0!important;overflow:hidden}
+.mwOptionalDetails>summary{list-style:none;cursor:pointer;padding:13px 14px;color:#f0c86a;font-weight:850}
+.mwOptionalDetails>summary::-webkit-details-marker{display:none}
+.mwOptionalDetails>summary:after{content:'＋';float:right;color:#f0c86a}
+.mwOptionalDetails[open]>summary:after{content:'−'}
+.mwOptionalDetails>summary small{display:block;margin-top:4px;color:#9aabb8;font-size:12px;font-weight:500}
+.mwOptionalDetailsBody{padding:0 10px 10px}
+.mwOptionalDetailsBody>.question{margin:8px 0}
+</style>
 <link rel="stylesheet" href="/assets/mw-practice-rest.css?v=20260928"><script src="/assets/mw-practice-rest.js?v=20260928"></script><link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"><link rel="stylesheet" href="/assets/mw-signin-v3.css"><script src="/assets/mw-signin-v3.js"></script></head>
 <body class="mw-auth-pending"><script src="/assets/mw-session-launch-live-20261004-r1.js" data-mw-launch-role="athlete"></script>
 <script>
@@ -1462,7 +1472,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <script>window.MWSignIn.mount(document.getElementById('mwAuth'),'athlete');</script>
 <main class="app">
 <section class="view active" id="home">
-<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MW</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button><button type="button" data-open-settings role="menuitem" class="mwHomeMenuSettings"><span class="mwHomeMenuIcon" aria-hidden="true">⚙</span><span class="mwHomeMenuCopy"><b>SETTINGS</b><small>Manage your MW experience and account controls.</small></span></button></div></div></div></div>
+<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MW</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button></div></div></div></div>
 
 <div class="mwHomeBrand"><img src="/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG" alt="MW Dynasty" onerror="this.style.display='none'"></div>
 
@@ -1554,7 +1564,9 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="question seasonDateGroup" id="entryIndoorDates" hidden><label>Indoor season dates</label><input id="entryIndoorStart" type="date" aria-label="Indoor first practice date"><small>First practice</small><input id="entryIndoorFirstMeet" type="date" aria-label="Indoor first meet date"><small>First meet</small><input id="entryIndoorPeak" type="date" aria-label="Indoor championship or peak date"><small>Primary championship / peak date</small><input id="entryIndoorSecondPeak" type="date" aria-label="Indoor second championship date"><small>Second championship / peak (optional)</small></div>
 <div class="question seasonDateGroup" id="entryOutdoorDates" hidden><label>Outdoor season dates</label><input id="entryOutdoorStart" type="date" aria-label="Outdoor first practice date"><small>First practice</small><input id="entryOutdoorFirstMeet" type="date" aria-label="Outdoor first meet date"><small>First meet</small><input id="entryOutdoorPeak" type="date" aria-label="Outdoor championship or peak date"><small>Primary championship / peak date</small><input id="entryOutdoorSecondPeak" type="date" aria-label="Outdoor second championship date"><small>Second championship / peak (optional)</small></div>
 <div class="question" id="mwSeasonDatesSaveCard" hidden><label>Manual season dates</label><button type="button" class="entryGhost" id="saveSeasonDatesOnly">SAVE / UPDATE SEASON DATES</button><small id="seasonDatesState">Exact dates are optional. MW can build a safe starting calendar and you can update them later.</small></div>
-<div class="question"><label>Which events do you run?</label><div class="checkList"><label><input id="event100" type="checkbox" value="100m"> 100m</label><label><input id="event200" type="checkbox" value="200m"> 200m</label><label><input id="event400" type="checkbox" value="400m"> 400m</label></div><small>Select at least one event.</small></div><div class="question"><label>What are you working toward? (optional)</label><textarea id="entryGoal" maxlength="500" rows="3" placeholder="Tell Coach MW your main performance goal for this training year."></textarea><small>This becomes your Athlete Goal and can be updated later from your profile.</small></div>
+<div class="question"><label>Which events do you run?</label><div class="checkList"><label><input id="event100" type="checkbox" value="100m"> 100m</label><label><input id="event200" type="checkbox" value="200m"> 200m</label><label><input id="event400" type="checkbox" value="400m"> 400m</label></div><small>Select at least one event.</small></div>
+<details class="question mwOptionalDetails"><summary>Optional performance details <small>You can add or update these later in Profile.</small></summary><div class="mwOptionalDetailsBody">
+<div class="question"><label>What are you working toward? (optional)</label><textarea id="entryGoal" maxlength="500" rows="3" placeholder="Tell Coach MW your main performance goal for this training year."></textarea><small>This becomes your Athlete Goal and can be updated later from your profile.</small></div>
 <div class="question"><label>100m PR (optional)</label><input id="entryPr100" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr100Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
 <div class="question"><label>200m PR (optional)</label><input id="entryPr200" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr200Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
 <div class="question"><label>400m PR (optional)</label><input id="entryPr400" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Not established"><select id="entryPr400Timing"><option value="unknown">Timing method: not sure</option><option value="fat">Fully automatic</option><option value="hand">Hand timed</option></select></div>
@@ -1569,7 +1581,8 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="question"><label>How much true high-speed sprinting have you done in the last 14 days?</label><select id="speedExposure"><option value="3">2 or more high-speed sessions</option><option value="2">1 high-speed session</option><option value="0">None</option></select></div>
 <div class="question"><label>Have you competed in a sprint/hurdle race in the last 30 days?</label><select id="recentRace"><option value="1">Yes</option><option value="0">No</option></select></div>
 <div class="question"><label>How consistently are you currently lifting?</label><select id="lifting"><option value="2">2–3+ sessions per week</option><option value="1">About 1 session per week</option><option value="0">Not currently lifting</option></select></div>
-<div class="question"><label>How do you feel right now?</label><select id="health"><option value="clear">Normal training soreness / I feel ready</option><option value="tight">Some mild tightness or unusual soreness</option><option value="pain">Pain, recent injury, or something that changes how I run</option></select></div>
+</div></details>
+<div class="question"><label>How do you feel right now?</label><select id="health"><option value="clear">Normal training soreness / I feel ready</option><option value="tight">Some mild tightness or unusual soreness</option><option value="pain">Pain, recent injury, or something that changes how I run</option></select><small>Tell us if pain or a recent injury should change today’s high-speed work.</small></div>
 <div class="result" id="entryResult" aria-live="polite"></div>
 <button type="button" class="entryAction" id="assess">COMPLETE EVALUATION & BUILD MY SEASON</button><button type="button" class="entryGhost" id="backCoach">← BACK TO COACH AI</button>
 </div>
@@ -2049,7 +2062,7 @@ const TOUR_STEPS=[
   {view:'home',art:'/assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG',title:'Profile',body:'PROFILE keeps your athlete information, PRs, weight-room maxes, Coach MW preference and settings current.',hint:'Accurate profile data helps MW give you the right training targets.',target:'.nav button[data-v="athlete"]',label:'PROFILE',anchor:'icon'}
 ]
 let tourIndex=0,tourFocusEl=null,tourResizeTimer=null;
-function tourStorageKey(){return 'mwOnboardingCompleteV29:'+String(mwOnboardingUserKey||'local')}
+function tourStorageKey(){return 'mwOnboardingCompleteV30:'+String(mwOnboardingUserKey||'local')}
 function clearTourFocus(){
   tourFocusEl=null;
   const s=$('#tourSpotlight'),a=$('#tourArrow'),l=$('#tourTargetLabel');
@@ -2160,26 +2173,14 @@ if($('#replayTour'))$('#replayTour').onclick=()=>startTour(true);
 let QS_STEPS=[];
 function buildQuickStartSteps(){
   const connected=window.mwCoachConnected===true;
-  const calendarBody=connected
-    ? 'CALENDAR shows the schedule your coach controls. Use it to see meets, training dates, and report conflicts without changing the coach’s plan.'
-    : 'CALENDAR is where you manage your availability, meets, school breaks, travel, and conflicts so MW can protect the season you actually have.';
-  const steps=[
-    {art:'/mw-dynasty-app-icon-512.png',eyebrow:'1. SEASON INTELLIGENCE',title:'Your Season Is Built Around You',body:'Your MW Athlete Evaluation gave Season Intelligence the information it needs to place your track and strength work on the same timeline.',previewTitle:'SEASON INTELLIGENCE',previewBody:'Your level, state, competition calendar, readiness, events and performance data work together to set your training placement.'},
-    {art:'/assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG',eyebrow:'2. HOME',title:'Your Command Center',body:'HOME shows what matters today — your current training week, today’s status, progress and quick access to the rest of MW Dynasty.',previewTitle:'HOME',previewBody:'When you are unsure where to start, come back here.'},
-    {art:'/assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG',eyebrow:'3. TRAIN',title:'Today’s Track + Strength',body:'TRAIN opens the work you need to execute. Your track session and Strength & Power work stay synchronized to your MW season.',previewTitle:'TRAIN',previewBody:'Follow today’s prescription, then record what happened.'},
-    {art:'/mw-dynasty-app-icon-512.png',eyebrow:'4. PRACTICE MODE',title:'Run the Session Hands-Free',body:'Practice Mode walks you through the workout with start cues, timing, pace calls and rep logging so you can train without constantly touching your phone.',previewTitle:'PRACTICE MODE',previewBody:'Start the session from Today’s Track Workout. Your saved reps feed your MW progress data.'},
-    {art:'/mw-dynasty-app-icon-512.png',eyebrow:'5. CALENDAR',title:connected?'Your Coach-Connected Calendar':'Your Training Calendar',body:calendarBody,previewTitle:'CALENDAR',previewBody:connected?'Your coach stays in control while you can report scheduling conflicts.':'Keep MW aware of the dates that can affect your training plan.'},
-    {art:'/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG',eyebrow:'6. COACH MW',title:'Your MW Coaching Assistant',body:'Tap the pulsing MW crest whenever you need help understanding training, technique, recovery, race strategy, strength or pacing.',previewTitle:'COACH MW',previewBody:'Ask questions without leaving your MW training experience.'},
-    {art:'/assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG',eyebrow:'7. PROGRESS',title:'See the Work Add Up',body:'PROGRESS shows completed training, Practice Mode results and where you are in your MW season without manually changing your protected training week.',previewTitle:'PROGRESS',previewBody:'Your logs and consistency stay connected to the plan.'},
-    {art:'/assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG',eyebrow:'8. PROFILE',title:'Keep Performance Data Current',body:'PROFILE is where your PRs, weight-room maxes, Athlete Goal and coach connection stay current. Your identity was already created during signup.',previewTitle:'PROFILE',previewBody:'Update performance information here — you do not create a second profile.'}
+  return [
+    {art:'/assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG',eyebrow:'1. START TODAY',title:'Your Workout Starts on Home',body:'Tap START TODAY’S TRAINING on Home. Today and Train use the same season week, so you always open the work scheduled for you.',previewTitle:'HOME → START TRAINING',previewBody:'Your track and strength work stay synchronized to your confirmed or coach-managed season.'},
+    {art:'/assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG',eyebrow:'2. FOLLOW THE SESSION',title:'Use Practice Mode When You Train',body:'Inside today’s workout, start Practice Mode for cues, timing and rep-by-rep guidance. You can also follow the workout normally; Coach MW is not required.',previewTitle:'TRAIN → PRACTICE MODE',previewBody:'The full MW workout remains available if you prefer to move through it at your own pace.'},
+    {art:'/assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG',eyebrow:'3. RECORD YOUR WORK',title:'Save the Session to Track Progress',body:'Finish the workout and record completion, reps and check-in when prompted. Your saved work appears in Progress and helps your coach review the next step.',previewTitle:connected?'TRAIN → SAVE → PROGRESS / COACH':'TRAIN → SAVE → PROGRESS',previewBody:'Your coach controls your season dates.'+(connected?' You can report schedule conflicts without creating a separate calendar.':' Confirm your suggested dates during setup and update them later if your schedule changes.'),ready:true,tagline:'TRAIN. UNDERSTAND. EXECUTE.'}
   ];
-  if(connected)steps.push({art:'/mw-dynasty-app-icon-512.png',eyebrow:'9. MESSAGES',title:'Stay Connected With Your Coach',body:'MESSAGES appears because you are connected to a coach or team. Coach conversations, replies and unread messages stay inside MW Dynasty.',previewTitle:'MESSAGES',previewBody:'If your coach connection ends, this tool leaves the active Athlete experience until you connect again.'});
-  const readyNumber=steps.length+1;
-  steps.push({art:'/mw-dynasty-app-icon-512.png',eyebrow:readyNumber+'. READY',title:'Your MW System Is Ready',body:'Season Intelligence has placed you. You know where to train, how to use Practice Mode, where your calendar lives and how the rest of your Athlete experience works.',previewTitle:'MW DYNASTY',previewBody:'TRAIN • UNDERSTAND • EXECUTE',ready:true,tagline:'LET’S WORK. 🔥'});
-  return steps;
 }
 let qsIndex=0;
-function qsStorageKey(){const stamp=String(window.mwGetRemoteProfile?.().assessmentCompletedAt||'pending');return 'mwOnboardingCompleteV29:'+String(mwOnboardingUserKey||'local')+':'+stamp}
+function qsStorageKey(){const stamp=String(window.mwGetRemoteProfile?.().assessmentCompletedAt||'pending');return 'mwOnboardingCompleteV30:'+String(mwOnboardingUserKey||'local')+':'+stamp}
 function renderQuickStart(){
   const s=QS_STEPS[qsIndex];
   const main=$('#qsMain');
@@ -3212,9 +3213,11 @@ async function assessEntry(){
       }
       if(sd.needsDates){
         mwDeferSeasonDates=true;
-        out.innerHTML='<div class="reason"><b>MW will handle the calendar for now.</b><br>Exact competition dates are not required. MW is using the safest recommended starting calendar and you can update real dates later.</div>';
+        const start=sd.calendar?.startDate?mwCalendarDate(sd.calendar.startDate):'the MW standard start';
+        out.innerHTML='<div class="reason"><b>Review your suggested start.</b><br>MW will use '+mwEscape(start)+' as a safe starting calendar. Your season can begin now; update exact meet and peak dates when you know them. Tap <b>USE MW STANDARD CALENDAR & BUILD MY SEASON</b> to confirm.</div>';
         btn.disabled=false;
-        return assessEntry();
+        btn.textContent='USE MW STANDARD CALENDAR & BUILD MY SEASON';
+        return;
       }
       throw new Error(sd.error||'MW Season Intelligence could not build your season.');
     }
@@ -3322,9 +3325,10 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
         }
         if(sd.needsDates){
           deferDates=true;
-          show('<b>MW will handle your calendar for now.</b><br>Exact dates are not required. MW will use the safest recommended starting calendar and you can update real dates later.',false);
+          const start=sd.calendar?.startDate?esc(sd.calendar.startDate):'the MW standard start';
+          show('<b>Review your suggested start.</b><br>MW will use '+start+' as a safe starting calendar. Your season can begin now; update exact meet and peak dates when you know them. Tap <b>USE MW STANDARD CALENDAR & BUILD MY SEASON</b> to confirm.',false);
           busy=false;btn.disabled=false;
-          return runAssessment();
+          return;
         }
         throw new Error(sd.error||'MW Season Intelligence could not build your season.');
       }
@@ -3364,7 +3368,9 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       show('<b>Season Intelligence could not finish.</b><br>'+esc(err?.message||'Please try again.'),true);
     }finally{
       busy=false;btn.disabled=false;
-      if(!confirmationPending)btn.textContent='COMPLETE EVALUATION & BUILD MY SEASON';
+      if(confirmationPending)btn.textContent='USE MW CALENDAR & BUILD MY SEASON';
+      else if(deferDates)btn.textContent='USE MW STANDARD CALENDAR & BUILD MY SEASON';
+      else btn.textContent='COMPLETE EVALUATION & BUILD MY SEASON';
     }
   }
 

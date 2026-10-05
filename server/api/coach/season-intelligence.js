@@ -92,6 +92,25 @@ module.exports=async function handler(req,res){
         const rows=existingId
           ?await request(`coach_season_contexts?id=eq.${encodeURIComponent(existingId)}`,c.token,{method:'PATCH',body:payload})
           :await request('coach_season_contexts',c.token,{method:'POST',body:payload});
+
+        // coach_season_settings is the canonical calendar consumed by coach
+        // planning and the assigned-athlete calendar RPC. Keep the richer
+        // Season Intelligence context as metadata, but never let it become a
+        // competing date source.
+        const startDate=payload.first_practice_date||(
+          payload.first_meet_date
+            ?new Date(new Date(`${payload.first_meet_date}T00:00:00Z`).getTime()-21*86400000).toISOString().slice(0,10)
+            :new Date(new Date(`${payload.primary_peak_date}T00:00:00Z`).getTime()-84*86400000).toISOString().slice(0,10)
+        );
+        const canonicalLevel=level==='youth_club'?'club':level;
+        const calendarSource=payload.first_practice_date?'coach_edit':'mw_estimate';
+        await request('coach_season_settings?on_conflict=coach_user_id',c.token,{method:'POST',prefer:'resolution=merge-duplicates,return=minimal',body:{
+          coach_user_id:c.user.id,calendar_mode:'custom',season_start_date:startDate,
+          competition_state:state||null,coaching_level:canonicalLevel,
+          season_type:seasonType,season_year:seasonYear,
+          first_meet_date:payload.first_meet_date,primary_peak_date:peak,
+          calendar_source:calendarSource,updated_at:new Date().toISOString()
+        }});
         return res.status(200).json({ok:true,mode,context:summarizeContext(Array.isArray(rows)?rows[0]:rows)});
       }
 
