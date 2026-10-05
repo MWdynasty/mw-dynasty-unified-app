@@ -3094,7 +3094,7 @@ function renderSeasonCalendarSummary(){
     if(c.status==='active')main=`Season Week <strong>${c.week} of ${c.seasonLengthWeeks}</strong> · ${phaseName}`;
     else if(c.status==='preseason')main=`Preseason · your ${seasonName} plan begins ${mwCalendarDate(c.startDate)}`;
     else main=`Season complete · peak window ${mwCalendarDate(c.peakDate)}`;
-    const source=c.source==='state_registry'?'State calendar estimate':c.source==='coach_calendar'?'Coach calendar':'Your confirmed dates';
+    const source=c.source==='state_registry'?'State calendar estimate':c.source==='mw_estimate'?'MW estimated calendar':c.source==='coach_calendar'?'Coach calendar':'Your confirmed dates';
     const foot=`${source} · Peak: ${mwCalendarDate(c.peakDate)}${c.competitionState?` · ${c.competitionState}`:''}`;
     if(box)box.innerHTML=`<b>MW ${seasonName} Season Plan</b><span>${main}</span><small>${foot}</small>`;
     if(home){

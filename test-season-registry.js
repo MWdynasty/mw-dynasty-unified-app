@@ -5,6 +5,7 @@ const outdoorSql=fs.readFileSync('supabase/migrations/20260925_high_school_outdo
 const dcSql=fs.readFileSync('supabase/migrations/20260925_dc_outdoor_registry_fallback.sql','utf8');
 const indoorSql=fs.readFileSync('supabase/migrations/20260925_high_school_indoor_registry.sql','utf8');
 const athleteHtml=fs.readFileSync('athlete/index.html','utf8');
+const {estimatePlanningDates}=require('./server/lib/mw-season-intelligence');
 
 const US_STATES=[
   'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
@@ -33,6 +34,16 @@ for(const sql of [outdoorSql,dcSql,indoorSql]){
   assert(!/source_confidence[^\n]*'official'[^\n]*MW estimate/i.test(sql),'MW estimates must never be labeled official');
   assert(sql.includes('confirm/edit')||sql.includes('Confirm/Edit'),'registry migrations must preserve Confirm/Edit wording');
 }
+
+const indoorEstimate=estimatePlanningDates({group:'high_school',seasonType:'indoor',seasonYear:2027,targetWeeks:13});
+assert.equal(indoorEstimate.startDate,'2026-12-21','missing indoor state records should receive an MW planning estimate');
+assert.equal(indoorEstimate.firstMeetDate,'2027-01-11','MW planning estimates should include a first-meet anchor');
+assert.equal(indoorEstimate.primaryPeakDate,'2027-03-15','indoor fallback should use its generic peak anchor');
+assert.equal(indoorEstimate.sourceConfidence,'estimated','generic MW dates must remain visibly estimated');
+assert.match(indoorEstimate.sourceLabel,/not state-verified/i,'generic MW dates must not be presented as state-verified');
+const outdoorEstimate=estimatePlanningDates({group:'high_school',seasonType:'outdoor',seasonYear:2027,targetWeeks:15});
+assert.equal(outdoorEstimate.startDate,'2027-02-22','missing outdoor state records should receive an MW planning estimate');
+assert.equal(outdoorEstimate.primaryPeakDate,'2027-05-31','outdoor fallback should use its generic peak anchor');
 
 const selectorBlock=athleteHtml.match(/const MW_US_STATES=\[(.*?)\];/s)?.[1]||'';
 for(const code of [...US_STATES,'DC']){

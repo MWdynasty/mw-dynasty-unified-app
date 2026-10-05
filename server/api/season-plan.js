@@ -1,7 +1,7 @@
 const {authenticate,getAthleteContext}=require('../lib/mw-auth');
 const {
   normalizeLevel,normalizeState,normalizeSeasonPreference,normalizeCompetitionPath,levelGroup,
-  loadTemplate,loadStateRegistry,derivePlan,upsertSeasonPlan,listOwnSeasonPlans,reconcileSeasonPlan,rest,rpc,dateOnly
+  loadTemplate,loadStateRegistry,estimatePlanningDates,derivePlan,upsertSeasonPlan,listOwnSeasonPlans,reconcileSeasonPlan,rest,rpc,dateOnly
 }=require('../lib/mw-season-intelligence');
 const {effectiveCalendar}=require('../lib/mw-season-calendar');
 
@@ -90,11 +90,14 @@ module.exports=async function handler(req,res){
       const group=levelGroup(competitionLevel,competitionPath);
       const template=await loadTemplate(token,{group,seasonType,competitionPath});
       const registry=await loadStateRegistry(token,{stateCode:competitionState,group,seasonType,seasonYear,competitionPath});
+      const planningEstimate=!registry&&!hasUserDates?estimatePlanningDates({group,seasonType,seasonYear,targetWeeks:template?.targetWeeks}):null;
       const plan=derivePlan({
         seasonType,competitionLevel,competitionState,competitionPath,seasonYear,
-        startDate:d.startDate,firstMeetDate:d.firstMeetDate,primaryPeakDate:d.primaryPeakDate,secondaryPeakDate:d.secondaryPeakDate,
+        startDate:d.startDate||planningEstimate?.startDate,firstMeetDate:d.firstMeetDate||planningEstimate?.firstMeetDate,
+        primaryPeakDate:d.primaryPeakDate||planningEstimate?.primaryPeakDate,secondaryPeakDate:d.secondaryPeakDate,
         template,registry,continuation:seasonPreference==='both'&&seasonType==='outdoor'
       });
+      if(planningEstimate)plan.calendarSource='mw_estimate';
       if(plan.needsDates){
         estimates.push({
           seasonType,targetWeeks:plan.targetWeeks,minWeeks:plan.minWeeks,maxWeeks:plan.maxWeeks,
@@ -106,16 +109,16 @@ module.exports=async function handler(req,res){
           sourceUrl:registry?.source_url||null,
           sourceConfidence:registry?.source_confidence||'estimated'
         });
-      }else if(!hasUserDates&&plan.calendarSource==='state_registry'&&b.confirmEstimatedDates!==true){
+      }else if(!hasUserDates&&['state_registry','mw_estimate'].includes(plan.calendarSource)&&b.confirmEstimatedDates!==true){
         confirmations.push({
           seasonType,
           estimatedStartDate:plan.seasonStartDate,
           estimatedFirstMeetDate:plan.firstMeetDate,
           estimatedPeakDate:plan.primaryPeakDate,
           estimatedSecondPeakDate:plan.secondaryPeakDate,
-          sourceLabel:registry?.source_label||'Verified state calendar',
+          sourceLabel:registry?.source_label||planningEstimate?.sourceLabel||'Verified state calendar',
           sourceUrl:registry?.source_url||null,
-          sourceConfidence:registry?.source_confidence||'official'
+          sourceConfidence:registry?.source_confidence||planningEstimate?.sourceConfidence||'official'
         });
       }else built.push(plan);
     }
@@ -173,7 +176,7 @@ module.exports=async function handler(req,res){
 
       const planId=row?.id||existing?.id;
       if(planId){
-        const source=plan.calendarSource==='state_registry'?'state_registry':'athlete';
+        const source=plan.calendarSource==='state_registry'?'state_registry':plan.calendarSource==='mw_estimate'?'mw_engine':'athlete';
         const primaryRows=await rest(`athlete_season_targets?season_plan_id=eq.${encodeURIComponent(planId)}&is_primary=eq.true&select=id&limit=1`,token,{method:'GET'});
         const primaryId=Array.isArray(primaryRows)?primaryRows[0]?.id:null;
         const primaryPayload={
