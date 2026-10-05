@@ -72,6 +72,26 @@ function templateKey(group,season,path){return [group,season,path].join('|')}
 function fallbackTemplate(group,season,path){
   return FALLBACK_TEMPLATES[templateKey(group,season,path)]||{minWeeks:8,targetWeeks:12,maxWeeks:16};
 }
+function estimatePlanningDates({group,seasonType,seasonYear,targetWeeks}={}){
+  const year=Math.trunc(Number(seasonYear));
+  if(!year||!['indoor','outdoor'].includes(String(seasonType||'')))return null;
+  const path=group==='youth_club'?'aau':group==='collegiate'?'ncaa':group==='professional'?'professional_open':'school';
+  const fallback=fallbackTemplate(group,seasonType,path);
+  let peakDate;
+  if(seasonType==='indoor')peakDate=`${year}-03-15`;
+  else if(group==='youth_club')peakDate=`${year}-07-25`;
+  else if(group==='collegiate')peakDate=`${year}-06-15`;
+  else if(group==='professional')peakDate=`${year}-08-01`;
+  else peakDate=`${year}-05-31`;
+  const peak=dateOnly(peakDate);
+  const weeks=clamp(Math.trunc(Number(targetWeeks)||fallback.targetWeeks),4,41);
+  const start=addDays(peak,-7*(weeks-1));
+  const firstMeet=addDays(start,Math.min(28,Math.max(14,Math.round(weeks*.22)*7)));
+  return {
+    startDate:iso(start),firstMeetDate:firstMeet<peak?iso(firstMeet):null,primaryPeakDate:iso(peak),
+    seasonLengthWeeks:weeks,sourceConfidence:'estimated',sourceLabel:'MW planning estimate · not state-verified'
+  };
+}
 function exactNormalAllocation(total){
   const m={
     4:[1,1,1,1],5:[1,1,2,1],6:[1,2,2,1],7:[2,2,2,1],8:[2,2,3,1],
@@ -213,5 +233,5 @@ async function listOwnSeasonPlans(token,athleteId){
 module.exports={
   MASTER_PHASE_SPANS,FALLBACK_TEMPLATES,normalizeLevel,normalizeState,normalizeSeasonType,normalizeSeasonPreference,
   normalizeCompetitionPath,levelGroup,phaseAllocation,sourceWeekMap,phaseAtWeek,uiPhaseForCode,positionForPlan,
-  loadTemplate,loadStateRegistry,derivePlan,reconcileSeasonPlan,upsertSeasonPlan,listOwnSeasonPlans,rest,rpc,dateOnly,iso,addDays,weeksBetween
+  loadTemplate,loadStateRegistry,estimatePlanningDates,derivePlan,reconcileSeasonPlan,upsertSeasonPlan,listOwnSeasonPlans,rest,rpc,dateOnly,iso,addDays,weeksBetween
 };
