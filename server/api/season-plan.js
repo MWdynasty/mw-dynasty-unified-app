@@ -124,9 +124,10 @@ module.exports=async function handler(req,res){
     }
 
     if(estimates.length){
+      const calendar=await effectiveCalendar(token);
       return res.status(422).json({
         error:'MW needs a championship/peak date (or a verified state calendar) to build this season safely.',
-        needsDates:true,estimates,confirmations
+        needsDates:true,estimates,confirmations,calendar
       });
     }
     if(confirmations.length){

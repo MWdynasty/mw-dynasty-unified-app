@@ -45,7 +45,8 @@ module.exports=async function handler(req,res){
     if(!privileged&&!c.programState?.onboarding_assessment_completed_at)return res.status(403).json({error:'Complete your Athlete Profile Assessment to receive your MW training assignment.',assessmentRequired:true});
 
     let plan=null,position=null,sourceWeek=week,phaseCode=null;
-    if(c.athlete&&c.token){
+    const coachCalendar=authority.calendar?.calendarOwner==='coach';
+    if(c.athlete&&c.token&&!coachCalendar){
       plan=await reconcileSeasonPlan(c.token);
       if(plan?.id){
         position=positionForPlan(plan);
@@ -72,7 +73,7 @@ module.exports=async function handler(req,res){
     if(track)track={...track,developmentalLoad};
     if(strength)strength={...strength,developmentalLoad};
 
-    if(plan?.id){
+    if(plan?.id&&!coachCalendar){
       track=presentMappedProgram(track,{seasonWeek:week,sourceWeek,phaseCode});
       strength=presentMappedProgram(strength,{seasonWeek:week,sourceWeek,phaseCode});
     }
@@ -95,7 +96,8 @@ module.exports=async function handler(req,res){
       performanceIntelligence,
       seasonPlan:plan?.id?{
         id:plan.id,seasonType:plan.season_type,seasonLengthWeeks:Number(plan.season_length_weeks||0),
-        phaseCode,peakDate:plan.primary_peak_date,sourceProgramWeek:sourceWeek
+        phaseCode,peakDate:coachCalendar?(authority.calendar?.peakDate||null):plan.primary_peak_date,sourceProgramWeek:sourceWeek,
+        calendarOwner:coachCalendar?'coach':'athlete'
       }:null,
       track,strength
     });

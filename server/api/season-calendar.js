@@ -180,6 +180,18 @@ module.exports=async function handler(req,res){
       updated_at:new Date().toISOString()
     };
     await rest('coach_season_settings?on_conflict=coach_user_id',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(payload)});
+    // Season Intelligence may keep goal/qualification metadata in its richer
+    // context row, but the dates must mirror this canonical coach calendar.
+    const contextLevel=level==='club'?'youth_club':level==='private'?'high_school':level;
+    const contextPath=level==='collegiate'?'ncaa':level==='club'?'aau':level==='professional'?'professional_open':'school';
+    try{
+      await rest(`coach_season_contexts?coach_user_id=eq.${encodeURIComponent(user.id)}&group_id=is.null&status=eq.active`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{
+        season_year:year,season_type:type==='both'?'outdoor':type,
+        competition_level_group:contextLevel,competition_state:state,
+        competition_path:contextPath,first_practice_date:startDate,
+        first_meet_date:firstMeetDate,primary_peak_date:peakDate,updated_at:new Date().toISOString()
+      }});
+    }catch{}
     const calendar=decorateCalendar(await effectiveCalendar(token,{timeZone:clientTimeZone}),payload,localNow);
     return res.status(200).json({ok:true,calendar});
   }catch(e){return res.status(e.status||500).json({error:e.message||'Season calendar could not be saved'})}

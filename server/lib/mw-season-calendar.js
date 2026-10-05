@@ -49,6 +49,19 @@ function calendarPosition({mode='standard',customStart=null,now=new Date()}){
   return {mode:'standard',status,week,phase:phaseFromWeek(week),startDate:isoDate(start),nextStartDate:isoDate(nextStart)};
 }
 async function effectiveCalendar(token,{now=new Date(),timeZone=null}={}){
+  // Resolve the assigned coach calendar before an athlete-owned Smart Entry
+  // plan. A coach-managed athlete inherits the team's calendar; only
+  // independent athletes should use their own condensed season plan.
+  let row={calendar_mode:'standard',season_start_date:null,source:'mw_standard',coach_user_id:null};
+  try{
+    const d=await sj('rpc/mw_effective_season_calendar',token,{method:'POST',body:'{}'});
+    if(Array.isArray(d)&&d[0])row=d[0]; else if(d&&typeof d==='object')row=d;
+  }catch(e){}
+  if(row.source==='assigned_coach'){
+    const position=calendarPosition({mode:row.season_start_date?'custom':'standard',customStart:row.season_start_date,now:localCalendarDate(now,timeZone)});
+    return {...position,source:'assigned_coach',coachUserId:row.coach_user_id||null,calendarOwner:'coach'};
+  }
+
   const seasonPlan=await reconcileSeasonPlan(token);
   if(seasonPlan?.id){
     const pos=positionForPlan(seasonPlan,localCalendarDate(now,timeZone));
@@ -75,11 +88,6 @@ async function effectiveCalendar(token,{now=new Date(),timeZone=null}={}){
     };
   }
 
-  let row={calendar_mode:'standard',season_start_date:null,source:'mw_standard',coach_user_id:null};
-  try{
-    const d=await sj('rpc/mw_effective_season_calendar',token,{method:'POST',body:'{}'});
-    if(Array.isArray(d)&&d[0])row=d[0]; else if(d&&typeof d==='object')row=d;
-  }catch(e){}
   const mode=row.calendar_mode==='custom'&&row.season_start_date?'custom':'standard';
   return {...calendarPosition({mode,customStart:row.season_start_date,now:localCalendarDate(now,timeZone)}),source:row.source||'mw_standard',coachUserId:row.coach_user_id||null};
 }
