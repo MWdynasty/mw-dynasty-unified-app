@@ -1185,8 +1185,7 @@ const COACH_MOBILE_TOURS={
     {icon:'⌂',title:'Home — See What Needs Attention',body:'Start here to see your coaching command center, team picture and current priorities.',hint:'Use Home to orient yourself before you act.',navigate:'dashboard',target:'.coach-mobile-nav [data-page="dashboard"]',label:'HOME'},
     {icon:'♟',title:'Team — Know Your Athletes',body:'Open your roster, athlete profiles, assignments and team information.',hint:'Use Team when you need athlete context.',navigate:'athletes',target:'.coach-mobile-nav [data-page="athletes"]',label:'TEAM'},
     {icon:'🏃',title:'Train — Turn the Plan Into Work',body:'Open the training workspace and move from the plan into execution.',hint:'This is where coaching intent becomes work.',navigate:'train',target:'.coach-mobile-nav [data-page="train"]',label:'TRAIN'},
-    {icon:'☰',title:'Menu — Find the Rest of MW',body:'Calendar, Profile, Settings, Attendance, Help and Coach MW tools live here.',hint:'Menu is your access point for everything else.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
-    {icon:'✦',title:'Coach MW Is Your Assistant',body:'Open Coach MW from your coach tools to ask questions, plan practices, organize schedules and get help with your coaching workflow.',hint:'Coach MW recommends; you approve what gets changed.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'COACH MW'},
+    {icon:'☰',title:'Menu — Find the Rest of MW',body:'Calendar, Profile, Settings, Attendance and Help live here.',hint:'Menu is your access point for the rest of Coach Core.',navigate:'more',target:'.coach-mobile-nav [data-page="more"]',label:'MENU'},
     {icon:'✓',title:'You’re Ready',body:'Your flow is simple: ask Coach MW → review the recommendation → approve → execute.',hint:'Tap FINISH to start coaching.',target:null,label:'TOUR COMPLETE'}
   ],
   intelligence:[
