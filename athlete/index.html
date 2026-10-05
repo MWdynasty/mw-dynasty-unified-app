@@ -1451,15 +1451,91 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 .mwRoleMismatchActions button.secondary{background:#07131c;color:#efbd43;border-color:rgba(239,189,67,.42)}
 </style>
 </style>
-<link rel="stylesheet" href="/assets/mw-practice-rest.css?v=20260928"><script src="/assets/mw-practice-rest.js?v=20260928"></script><link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"><link rel="stylesheet" href="/assets/mw-signin-v3.css"><script src="/assets/mw-signin-v3.js"></script></head>
+<link rel="stylesheet" href="/assets/mw-practice-rest.css?v=20260928"><script src="/assets/mw-practice-rest.js?v=20260928"></script><link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"></head>
 <body class="mw-auth-pending"><script src="/assets/mw-session-launch-live-20261004-r1.js" data-mw-launch-role="athlete"></script>
 <script>
 (()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
 </script>
 <div id="mwToolReturnLoader" aria-live="polite"><div class="mwToolReturnInner"><img src="/mw-dynasty-app-icon-512.png" alt=""><b>RETURNING TO PERFORMANCE TOOLS</b><span>MW DYNASTY</span></div></div>
 <div id="mwEnteringLoader" aria-live="polite"><div class="mwEnteringInner"><div class="mwEnteringOrb"><img src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty"></div><div class="mwEnteringCopy"><b>ENTERING MW DYNASTY</b><span>ATHLETE EXPERIENCE</span></div><div class="mwEnteringLine" aria-hidden="true"><i></i></div></div></div>
-<div id="mwAuth" class="mw-signin"></div>
-<script>window.MWSignIn.mount(document.getElementById('mwAuth'),'athlete');</script>
+<div id="mwAuth" class="mwAthleteLoginV26">
+  <div class="mwLoginStage">
+    <div class="mwLoginTopbar">
+      <div class="mwLoginBrand">
+        <img class="mwLoginCrest" src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty crest">
+        <div class="mwLoginBrandWordmark">
+          <div class="mwLoginBrandName">DYNASTY</div>
+          <div class="mwLoginBrandTag">ATHLETE • DISCIPLINE BUILDS FREEDOM</div>
+        </div>
+      </div>
+      <div class="mwLoginDesktopNav" aria-hidden="true">
+        <span>TRAIN</span><span>PROGRESS</span><span>TOOLS</span><span>EDUCATION</span><span>AI COACH</span><span>MORE</span>
+      </div>
+      <div class="mwLoginFuture">ATHLETES TODAY<br>BUILD A BRIGHTER<br>TOMORROW</div>
+    </div>
+
+    <div class="mwLoginMain">
+      <div class="mwLoginStory">
+        <div class="mwLoginStoryCopy">
+          <h1>TRAIN<br>SMARTER<br>RUN FASTER<br><em>BE BETTER</em></h1>
+          <div class="mwLoginAccent"></div>
+          <p>A HIGHER STANDARD<br>FOR A BRIGHTER YOU.</p>
+        </div>
+        <div class="mwLoginRunner" role="img" aria-label="MW athlete sprinting on the track"></div>
+      </div>
+
+      <section class="mwLoginCard" aria-label="MW Athlete sign in">
+        <a class="mwLoginRoleBack" href="https://mwdynasty.com/" aria-label="Open MW Dynasty website">← MW WEBSITE</a>
+        <div class="mwLoginCardHead">
+          <h2>Welcome Back Athlete</h2>
+          <p>Sign in to your MW Dynasty Athlete experience.</p>
+        </div>
+
+        <div class="mwLoginField">
+          <span aria-hidden="true">✉</span>
+          <input id="mwAuthEmail" type="email" autocomplete="email" placeholder="Enter your email" aria-label="Email address">
+        </div>
+
+        <div class="mwLoginField">
+          <span aria-hidden="true">▣</span>
+          <input id="mwAuthPassword" type="password" autocomplete="current-password" placeholder="Enter your password" aria-label="Password">
+          <button id="mwTogglePassword" class="mwAuthEye" type="button" aria-label="Show password">◉</button>
+        </div>
+
+        <div class="mwLoginRow">
+          <label class="mwLoginRemember"><input type="checkbox" id="mwRememberMe" checked><span>Keep me signed in</span></label>
+          <button id="mwForgotPassword" class="mwLoginLink" type="button">Forgot password?</button>
+        </div>
+
+        <div class="mwLoginActions">
+          <button id="mwAuthLogin" class="mwLoginButton" type="button">Sign In <span>→</span></button>
+          <a class="mwLoginRoleSwitch" href="/coach/">COACH SIGN IN <span>→</span></a>
+          <a id="mwAthleteSignupOpen" class="mwLoginSignupTab" href="/athlete/signup.html?plan=mw_athlete">SIGN UP <span>→</span></a>
+        </div>
+
+        <div id="mwAuthReset" class="mwAuthReset mwLoginReset">
+          <div class="mwLoginField"><span aria-hidden="true">◆</span><input id="mwNewPassword" type="password" autocomplete="new-password" placeholder="Create a new password"></div>
+          <div class="mwLoginField"><span aria-hidden="true">◆</span><input id="mwConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm new password"></div>
+          <button id="mwSavePassword" class="mwLoginButton" type="button">Save New Password</button>
+        </div>
+
+        <div id="mwAuthStatus" class="mwAuthStatus"></div>
+        <div id="mwRoleMismatch" class="mwRoleMismatch" hidden></div>
+        <div class="mwLoginAccessNote"><b>MW Athlete requires an authorized MW Dynasty account.</b> Need account help? <a href="/support.html" target="_blank" rel="noopener">Contact MW Support</a>.</div>
+        <div class="mwLoginAccessNote"><a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> • <a href="/terms.html" target="_blank" rel="noopener">Terms</a> • <a href="/support.html" target="_blank" rel="noopener">Support</a></div>
+      </section>
+    </div>
+
+    <div class="mwLoginFeatureBar" aria-label="MW Athlete platform features">
+      <div><b>🏃</b><span>TRAINING<br>PROGRAMS</span></div>
+      <div><b>▥</b><span>PACE<br>CALCULATOR</span></div>
+      <div><b>⌖</b><span>DISTANCE<br>PACER</span></div>
+      <div><b>🧠</b><span>COACH MW<br>AI</span></div>
+      <div><b>▤</b><span>SPRINT<br>SCHOOL</span></div>
+      <div><b>🏆</b><span>TRACK YOUR<br>PROGRESS</span></div>
+    </div>
+  </div>
+</div>
 <main class="app">
 <section class="view active" id="home">
 <div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MW</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button><button type="button" data-open-settings role="menuitem" class="mwHomeMenuSettings"><span class="mwHomeMenuIcon" aria-hidden="true">⚙</span><span class="mwHomeMenuCopy"><b>SETTINGS</b><small>Manage your MW experience and account controls.</small></span></button></div></div></div></div>
@@ -2803,43 +2879,14 @@ async function speak(t,btn){if(!t)return;if(mwVoiceButton===btn&&btn?.classList.
 function mwEscape(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function mwMessageHtml(t){let s=mwEscape(t);s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n\n+/g,'<br><br>').replace(/\n/g,'<br>');return s}
 function add(t,c){let d=document.createElement('div');d.className='msg '+c;if(c==='coach')d.innerHTML=mwMessageHtml(t);else d.textContent=t;if(c==='coach'){let b=document.createElement('button');b.className='speak';b.textContent='🔊 READ ALOUD';b.onclick=()=>speak(t,b);d.appendChild(b);let v=document.createElement('span');v.className='voiceLabel';v.textContent='MW NATURAL VOICE';d.appendChild(v)}$('#chat').appendChild(d);$('#chat').scrollTop=$('#chat').scrollHeight}
-const MW_CONVERSATION_PREFIX='mwConversationV3:';
-function mwConversationSession(){
-  try{
-    const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
-    return raw?JSON.parse(raw):null;
-  }catch{return null}
-}
-function mwConversationKey(session){
-  const userId=String(session?.user?.id||session?.user?.sub||session?.user_id||'').trim();
-  return MW_CONVERSATION_PREFIX+(userId||'anonymous');
-}
-function readConversation(key){
-  try{
-    const parsed=JSON.parse(localStorage.getItem(key)||'[]');
-    return Array.isArray(parsed)?parsed.filter(m=>m&&typeof m.content==='string'&&['user','assistant'].includes(m.role)).slice(-30):[];
-  }catch{return []}
-}
-let MW_CONVERSATION_KEY=mwConversationKey(mwConversationSession());
-let conversation=readConversation(MW_CONVERSATION_KEY);
+const MW_CONVERSATION_KEY='mwConversationV2';
+const conversation=JSON.parse(localStorage.getItem(MW_CONVERSATION_KEY)||'[]');
 function saveConversation(){localStorage.setItem(MW_CONVERSATION_KEY,JSON.stringify(conversation.slice(-30)))}
 function renderSavedConversation(){
-  const chat=$('#chat');if(!chat)return;
-  chat.innerHTML='';
-  if(!conversation.length){
-    chat.innerHTML='<div class="msg coach">I’m Coach MW. What can I help you with today?</div>';
-    return;
-  }
+  if(!conversation.length)return;
+  $('#chat').innerHTML='';
   for(const m of conversation)add(m.content,m.role==='assistant'?'coach':'me');
 }
-function switchConversationIdentity(session){
-  const nextKey=mwConversationKey(session);
-  if(nextKey===MW_CONVERSATION_KEY)return;
-  MW_CONVERSATION_KEY=nextKey;
-  conversation=readConversation(MW_CONVERSATION_KEY);
-  renderSavedConversation();
-}
-window.mwSetConversationIdentity=switchConversationIdentity;
 async function refreshPremiumStatus(){
   const p=getProfile(), ep=p.entryAssessment||{};
   if($('#ctxAthlete')) $('#ctxAthlete').textContent=p.name||'Athlete';
@@ -3094,7 +3141,7 @@ function renderSeasonCalendarSummary(){
     if(c.status==='active')main=`Season Week <strong>${c.week} of ${c.seasonLengthWeeks}</strong> · ${phaseName}`;
     else if(c.status==='preseason')main=`Preseason · your ${seasonName} plan begins ${mwCalendarDate(c.startDate)}`;
     else main=`Season complete · peak window ${mwCalendarDate(c.peakDate)}`;
-    const source=c.source==='state_registry'?'State calendar estimate':c.source==='coach_calendar'?'Coach calendar':'Your confirmed dates';
+    const source=c.source==='state_registry'?'State calendar estimate':c.source==='mw_estimate'?'MW estimated calendar':c.source==='coach_calendar'?'Coach calendar':'Your confirmed dates';
     const foot=`${source} · Peak: ${mwCalendarDate(c.peakDate)}${c.competitionState?` · ${c.competitionState}`:''}`;
     if(box)box.innerHTML=`<b>MW ${seasonName} Season Plan</b><span>${main}</span><small>${foot}</small>`;
     if(home){
@@ -3420,8 +3467,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     box.querySelector('[data-mw-target="coach"]')?.addEventListener('click',()=>handoffMWSession('/coach/','mwCoachSupabaseSession'));
     return true;
   }
-  function saveSession(s,persist=null){mwSession=s;window.mwSetConversationIdentity?.(s);const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
-  function clearSession(){mwSession=null;window.mwSetConversationIdentity?.(null);localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
+  function saveSession(s,persist=null){mwSession=s;const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
+  function clearSession(){mwSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();try{h['X-MW-Time-Zone']=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status,d);return d}
   function prsToProfile(prs=[]){const out={p60:'',p100:'',p200:'',p300:'',p400:''};for(const x of prs){const ev=String(x.event||'').toLowerCase().replace(/\s/g,'');if(ev==='60m'||ev==='60')out.p60=String(x.time_seconds??'');if(ev==='100m'||ev==='100')out.p100=String(x.time_seconds??'');if(ev==='200m'||ev==='200')out.p200=String(x.time_seconds??'');if(ev==='300m'||ev==='300')out.p300=String(x.time_seconds??'');if(ev==='400m'||ev==='400')out.p400=String(x.time_seconds??'')}return out}
@@ -3860,7 +3907,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     location.assign(d.url);
   }
   function renderAthleteMembership(session){
-    const card=document.querySelector('[data-mw-signin-card]');if(!card)return;
+    const card=document.querySelector('.mwLoginCard');if(!card)return;
     const isNative=document.documentElement.classList.contains('mw-native-app');
     card.innerHTML=`<a class="mwLoginBack" href="https://mwdynasty.com/" aria-label="Open MW Dynasty website">← MW WEBSITE</a>
       <div class="mwLoginCardHead"><div class="mwAthleteOnboardProgress">PROFILE ✓ &nbsp;•&nbsp; <b>MEMBERSHIP</b> &nbsp;•&nbsp; EVALUATION &nbsp;•&nbsp; TUTORIAL</div><h2>One membership. Everything you need.</h2><p>Your MW Athlete profile is already created. Complete membership, then Season Intelligence will evaluate your training needs and build your starting point.</p></div>
@@ -4007,7 +4054,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       clearSession();
       history.replaceState({},document.title,location.pathname);
       document.querySelector('#mwAuthReset').classList.remove('show');
-      document.querySelector('#mwAuthLogin').style.display='';
+      document.querySelector('#mwAuthLogin').style.display='block';
       document.querySelector('#mwForgotPassword').style.display='inline-block';
       document.querySelector('#mwAuthPassword').value='';
       document.querySelector('#mwNewPassword').value='';
@@ -4140,9 +4187,10 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   if(accessReason==='membership'){authStatus('This account does not currently have active MW Dynasty access.',true)}
 
   const pwToggle=document.querySelector('#mwTogglePassword');
-  if(pwToggle) pwToggle.onclick=()=>{const f=document.querySelector('#mwAuthPassword');const show=f.type==='password';f.type=show?'text':'password';pwToggle.textContent=show?'Hide':'Show';pwToggle.setAttribute('aria-label',show?'Hide password':'Show password');pwToggle.setAttribute('aria-pressed',String(show))};
-  document.querySelector('#mwAthleteLoginForm').onsubmit=e=>{e.preventDefault();login()};
-  document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='';authStatus('');
+  if(pwToggle) pwToggle.onclick=()=>{const f=document.querySelector('#mwAuthPassword');const show=f.type==='password';f.type=show?'text':'password';pwToggle.textContent=show?'◌':'◉';pwToggle.setAttribute('aria-label',show?'Hide password':'Show password')};
+  document.querySelector('#mwAuthLogin').onclick=login;
+  document.querySelector('#mwAuthPassword').onkeydown=e=>{if(e.key==='Enter')login()};
+  document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='block';authStatus('');
   document.querySelector('#mwSavePassword').onclick=saveRecoveredPassword;
   const out=document.querySelector('#mwSignOut');if(out)out.onclick=async()=>{out.disabled=true;out.textContent='SIGNING OUT…';try{const t=token();if(t)await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+t}})}catch(e){console.warn('MW remote sign-out unavailable',e)}finally{clearSession();location.replace('/athlete/')}};
   window.addEventListener('mw:session-refreshed',e=>{if(e?.detail?.key===SESSION_KEY&&e.detail.session)mwSession=e.detail.session});
@@ -4734,20 +4782,4 @@ document.addEventListener('click',e=>{
   setTimeout(paint,900);
 })();
 </script>
-<link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"><style id="mw-flat-athlete-nav-v1">
-.nav.mwDepthNav.mwImageNav{gap:0!important;padding:7px 8px calc(7px + env(safe-area-inset-bottom))!important;background:rgba(2,6,11,.96)!important;border-top:1px solid rgba(245,185,46,.28)!important;box-shadow:0 -16px 40px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.045)!important}
-.nav.mwDepthNav.mwImageNav button,.nav.mwDepthNav.mwImageNav button.active,.nav.mwDepthNav.mwImageNav button.mwCoachOrb,.nav.mwDepthNav.mwImageNav button.mwCoachOrb.active{min-width:0!important;min-height:68px!important;margin:0!important;padding:7px 2px 6px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;color:#97a4af!important;-webkit-tap-highlight-color:transparent}
-.nav.mwDepthNav.mwImageNav button:before{display:none!important}
-.nav.mwDepthNav.mwImageNav button span{position:relative;z-index:2;display:block;min-height:18px;font-size:8px!important;line-height:12px!important;font-weight:900!important;letter-spacing:.045em;white-space:nowrap}
-.nav.mwDepthNav.mwImageNav button.active span{color:#f4c75b!important;text-shadow:0 0 12px rgba(245,185,46,.52)}
-.nav.mwDepthNav.mwImageNav button b.mwNavArt,.nav.mwDepthNav.mwImageNav button b.mwNavArt:before{border:0!important;box-shadow:none!important}
-.nav.mwDepthNav.mwImageNav button b.mwNavArt{position:relative;z-index:2;display:block!important;width:46px!important;height:46px!important;margin:0 auto 2px!important;border-radius:14px!important;background-color:transparent!important;filter:none}
-.nav.mwDepthNav.mwImageNav button.active b.mwNavArt{filter:drop-shadow(0 0 10px rgba(245,185,46,.42)) brightness(1.08)!important}
-.nav.mwDepthNav.mwImageNav .mwCoachOrb b.mwNavCoach{animation:mwFinalCoachPulse 1.45s ease-in-out infinite!important;border:0!important;background-color:transparent!important}
-.nav.mwDepthNav.mwImageNav .mwCoachOrb.active b.mwNavCoach{filter:drop-shadow(0 0 13px rgba(245,185,46,.55))!important}
-.nav.mwDepthNav.mwImageNav button:active{transform:scale(.96)!important}
-@media(max-width:380px){.nav.mwDepthNav.mwImageNav button b.mwNavArt{width:42px!important;height:42px!important}.nav.mwDepthNav.mwImageNav .mwCoachOrb b.mwNavCoach{width:47px!important;height:47px!important}}
-.mwAthleteNotificationBtn,#home .mwHomeMenuButton,.topActions .gearBtn{position:relative!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;color:#f5c95e!important;font-size:21px!important;padding:0!important;display:grid!important;place-items:center!important;-webkit-tap-highlight-color:transparent}
-.mwAthleteNotificationBtn:active,#home .mwHomeMenuButton:active,#home .mwHomeMenuButton[aria-expanded="true"],.topActions .gearBtn:active{transform:scale(.92)!important;border:0!important;background:transparent!important;box-shadow:none!important}
-#mwAthleteNotificationBadge{border:2px solid #050a0f!important}
-</style></body></html>
+<link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"></body></html>
