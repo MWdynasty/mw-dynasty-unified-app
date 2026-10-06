@@ -52,6 +52,12 @@ jobs:
           PY
           node --check /tmp/mw-founder-inline.js
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Exercise account deletion handler with disposable transports
+        run: node test-account-deletion-handler.js
+
   ios-build-14-compile:
     runs-on: macos-latest
     timeout-minutes: 45
