@@ -30,7 +30,7 @@
     const max=heat=>Math.max(0,...heat.athleteIds.map(limit));
     const eligible=id=>{const heat=h();return !d.coachPracticeWorkoutComplete(roster.find(a=>a.id===id))&&!plans[id]?.error&&limit(id)>0&&heat.rep<=limit(id)&&!model.owner(id,heat.key)};
     const pace=(seconds,id)=>{
-      const t=Number(targets[id]?.target)||null,intent=plans[id]?.intent||'pace';if(!t)return {targetSeconds:null,paceStatus:null,paceLabel:'',mwIntent:intent};
+      const t=Number(targets[id])||null,intent=plans[id]?.intent||'pace';if(!t)return {targetSeconds:null,paceStatus:null,paceLabel:'',mwIntent:intent};
       const fast=t*.99,slow=t*1.01,above=seconds<fast,below=seconds>slow,quality=['speed','technical'].includes(intent);
       return {targetSeconds:t,targetMinSeconds:fast,targetMaxSeconds:slow,mwIntent:intent,paceStatus:above&&!quality?'fast':below?'slow':'on_pace',mwInterpretation:above?(quality?'above_target':'pace_violation'):below?'below_target':'on_target',paceLabel:above?(quality?'ABOVE TARGET · QUALITY SPEED':'ABOVE PRESCRIBED PACE'):below?(intent==='technical'?'BELOW TARGET · TECHNICAL SPEED':'BELOW TARGET'):'ON TARGET'};
     };
@@ -84,7 +84,7 @@
       find('heatRestReset').disabled=saving||running||!heat;
       find('heatRestToggle').textContent=heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
-        const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&d.coachPracticeWorkoutComplete(a),p=plans[id],t=targets[id]?.target;
+        const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&d.coachPracticeWorkoutComplete(a),p=plans[id],t=targets[id];
         const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':'TAP FINISH';
         return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!running||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'Target '+Number(t).toFixed(2)+' s':''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
       }).join(''):'<p>No athletes in this group. Add or edit a group to choose athletes.</p>';

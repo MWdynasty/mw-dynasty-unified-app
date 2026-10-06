@@ -14,7 +14,7 @@ const std=(a)=>{if(a.length<2)return 0;const m=avg(a);return Math.sqrt(a.reduce(
 const round=(n,d=1)=>Number.isFinite(n)?Number(n.toFixed(d)):null;
 
 function sprintSession(group,completion){
-  const reps=group.rows.filter(r=>Number(r.actual_seconds)>0).sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
+  const reps=group.rows.filter(r=>Number(r.actual_seconds)>0&&r.result_status!=='dnf').sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
   const targeted=reps.filter(r=>Number(r.target_seconds)>0);
   const ratios=targeted.map(r=>Number(r.actual_seconds)/Number(r.target_seconds));
   const deviations=targeted.map(r=>Math.abs(Number(r.actual_seconds)-Number(r.target_seconds))/Number(r.target_seconds)*100);
@@ -24,9 +24,15 @@ function sprintSession(group,completion){
   const explicitHits=explicitPace.filter(r=>String(r.pace_status)==='on_pace').length;
   const explicitExecution=explicitPace.length?clamp(explicitHits/explicitPace.length*100):null;
   const execution=explicitExecution==null?paceAccuracy:explicitExecution;
-  const ratioMean=avg(ratios);
-  const consistency=ratios.length&&ratioMean?clamp(100-(std(ratios)/ratioMean*100)):null;
-  const dropoff=ratios.length>1?((ratios[ratios.length-1]/ratios[0])-1)*100:null;
+  // Without targets, compare actual times only for reps of one known distance.
+  // Never infer target execution or compare unlike distances from raw times.
+  const sameDistance=reps.length>1&&Number(reps[0].distance_m)>0&&reps.every(r=>Number(r.distance_m)===Number(reps[0].distance_m));
+  const fullTargets=reps.length>1&&targeted.length===reps.length;
+  const comparable=fullTargets?ratios:sameDistance?reps.map(r=>Number(r.actual_seconds)):[];
+  const comparisonMean=avg(comparable);
+  const consistency=comparable.length>1&&comparisonMean?clamp(100-(std(comparable)/comparisonMean*100)):null;
+  const dropoff=comparable.length>1?((comparable[comparable.length-1]/comparable[0])-1)*100:null;
+  const comparisonBasis=fullTargets?'target_ratios':sameDistance?'actual_times':null;
   const rpe=completion?.session_rpe==null?null:Number(completion.session_rpe);
   let flag='recorded',reason='Performance recorded';
   if(explicitExecution!=null){
@@ -60,6 +66,7 @@ function sprintSession(group,completion){
     execution_score_pct:round(execution,1),
     consistency_score:round(consistency,1),
     first_to_last_dropoff_pct:round(dropoff,1),
+    comparison_basis:comparisonBasis,
     session_rpe:rpe,
     flag,reason,
     reps:reps.map(r=>({rep_number:Number(r.rep_number),distance_m:r.distance_m==null?null:Number(r.distance_m),target_seconds:r.target_seconds==null?null:Number(r.target_seconds),actual_seconds:Number(r.actual_seconds),pace_status:r.pace_status||null,entry_source:r.entry_source||'athlete',timing_source:r.timing_source||r.entry_source||'athlete',result_status:r.result_status||'finished'}))
@@ -174,7 +181,7 @@ function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengt
   for(const r of practiceRows.filter(x=>x.athlete_id===athleteId)){const key=r.session_id||`${r.session_date}|${r.group_name||''}`;if(!practiceGroups.has(key))practiceGroups.set(key,[]);practiceGroups.get(key).push(r)}
   const coachPracticeSessions=[...practiceGroups.values()].map(coachPracticeSession).filter(Boolean).sort((a,b)=>String(b.session_date||'').localeCompare(String(a.session_date||'')));
   const latest=sprintSessions[0]||null;
-  const latestSprintExecution=Number(latest?.execution_score_pct);
+  const latestSprintExecution=latest?.execution_score_pct==null?null:Number(latest.execution_score_pct);
   let combinedStrengthSprintSignal='insufficient_shared_data';
   if(completedStrength.length>=2&&Number.isFinite(latestSprintExecution)){
     if(strengthResponseTrend==='review'&&latestSprintExecution<70)combinedStrengthSprintSignal='coach_review';
