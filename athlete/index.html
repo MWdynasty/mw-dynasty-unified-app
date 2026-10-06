@@ -2273,6 +2273,7 @@ async function setWorkoutStatus(w,d,status){
   return out;
 }
 let mwPracticeProgressCache=[];
+let mwPracticeHistoryCache=[];
 async function mwPracticeNormalizeProgressTargets(rows){
   const list=Array.isArray(rows)?rows.map(row=>({...row})):[];
   const plans=new Map();
@@ -2305,23 +2306,25 @@ async function mwPracticeNormalizeProgressTargets(rows){
 async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
   box.innerHTML='<div class="muted">Loading Practice Mode results…</div>';
-  const planId=activeSeasonPlanId(),cycleId=activeWorkoutCycleId(),scope=planId?'&season_plan_id=eq.'+encodeURIComponent(planId):'&season_plan_id=is.null'+(cycleId?'&workout_cycle_id=eq.'+encodeURIComponent(cycleId):'&workout_cycle_id=is.null');
-  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+scope+'&select=workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,mw_intent,mw_interpretation,recorded_at,season_plan_id,workout_cycle_id,source_program_week,entry_source,timing_source,result_status,coach_session_id&order=recorded_at.desc&limit=24',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
+  const r=await fetch(MW_SB_URL+'/rest/v1/athlete_practice_rep_results?athlete_id=eq.'+encodeURIComponent(aid)+'&select=athlete_id,workout_key,program_week,program_day,rep_number,distance_m,time_seconds,target_seconds,pace_status,mw_intent,mw_interpretation,recorded_at,season_plan_id,workout_cycle_id,source_program_week,entry_source,timing_source,result_status,coach_session_id&order=recorded_at.desc&limit=200',{headers:completionHeaders({'Accept':'application/json'}),cache:'no-store'});
   const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load Practice Mode results.');
-  mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(rows);
+  const list=Array.isArray(rows)?rows:[],current=list.filter(row=>MWWorkoutIdentity.matches(row,workoutIdentity(Number(row.program_week),Number(row.program_day))));
+  mwPracticeHistoryCache=list.filter(row=>!current.includes(row));
+  mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(current);
   renderPracticeProgress();
   try{renderWeightRoomProgressUI()}catch{}
 }
 function renderPracticeProgress(){
   const box=document.getElementById('mwPracticeProgressResults');if(!box)return;
-  const rows=mwPracticeProgressCache||[];if(!rows.length){box.innerHTML='<div class="muted">Your timed Practice Mode reps will appear here after they are logged.</div>';return}
+  const rows=[...(mwPracticeProgressCache||[]),...(mwPracticeHistoryCache||[])];if(!rows.length){box.innerHTML='<div class="muted">Your timed Practice Mode reps will appear here after they are logged.</div>';return}
   const groups=new Map();
   for(const r of rows){const k=String(r.workout_key||('w'+r.program_week+'d'+r.program_day));if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)}
-  box.innerHTML=[...groups.values()].slice(0,4).map(g=>{
+  box.innerHTML=[...groups.values()].slice(0,5).map(g=>{
     g.sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
     const first=g[0],hit=g.filter(x=>x.pace_status==='on_pace').length,targets=g.some(x=>Number(x.target_seconds)>0),source=g.some(x=>x.entry_source==='coach')?'COACH TIMED':'ATHLETE TIMED';
     const chips=g.map(x=>'<span class="'+(x.pace_status==='on_pace'?'on':x.pace_status==='outside_target'?'off':'')+'">REP '+x.rep_number+' · '+(x.result_status==='dnf'?'DNF':Number(x.time_seconds).toFixed(2)+'s')+(Number(x.target_seconds)>0&&x.result_status!=='dnf'?' / '+Number(x.target_seconds).toFixed(2)+'s':'')+'</span>').join('');
-    return '<div class="mwPracticeProgressSession"><div><b>WEEK '+first.program_week+' · DAY '+first.program_day+'</b><small>'+source+' · '+g.length+' REP'+(g.length===1?'':'S')+(targets?' · '+hit+'/'+g.length+' ON PACE':'')+'</small></div><div class="mwPracticeProgressChips">'+chips+'</div></div>'
+    const historical=(mwPracticeHistoryCache||[]).includes(first);
+    return '<div class="mwPracticeProgressSession"><div><b>'+(historical?'PREVIOUS TRAINING · ':'')+'WEEK '+first.program_week+' · DAY '+first.program_day+'</b><small>'+source+' · '+g.length+' REP'+(g.length===1?'':'S')+(targets?' · '+hit+'/'+g.length+' ON PACE':'')+(historical?' · SAVED HISTORY; DOES NOT COMPLETE THIS SEASON':'')+'</small></div><div class="mwPracticeProgressChips">'+chips+'</div></div>'
   }).join('');
 }
 function rowsToCompletion(rows){
