@@ -29,6 +29,7 @@
     const limit=id=>Math.max(0,Number(plans[id]?.reps)||0);
     const max=heat=>Math.max(0,...heat.athleteIds.map(limit));
     const eligible=id=>{const heat=h();return !d.coachPracticeWorkoutComplete(roster.find(a=>a.id===id))&&!plans[id]?.error&&limit(id)>0&&heat.rep<=limit(id)&&!model.owner(id,heat.key)};
+    const workoutsSaved=heat=>!!heat&&(heat.saved||(heat.athleteIds.length>0&&heat.athleteIds.every(id=>d.coachPracticeWorkoutComplete(roster.find(a=>a.id===id)))));
     const pace=(seconds,id)=>{
       const t=Number(targets[id]?.target)||null,intent=plans[id]?.intent||'pace';if(!t)return {targetSeconds:null,paceStatus:null,paceLabel:'',mwIntent:intent};
       const fast=t*.99,slow=t*1.01,above=seconds<fast,below=seconds>slow,quality=['speed','technical'].includes(intent);
@@ -67,9 +68,9 @@
       for(const id of ['heatGroup','heatPicker','heatAdd'])find(id).disabled=busy();
       const selected=groups.find(g=>g.id===(heat?.groupId||selectedGroupId));
       find('heatEdit').disabled=busy()||!selected||selected.temporary||heats.some(x=>x.groupId===selected.id&&root.MWPracticeHeats.pending(x));
-      find('heatReset').disabled=saving||!heat||heat.saved;
+      find('heatReset').disabled=saving||!heat||workoutsSaved(heat);
       find('heatRep').textContent=heat?`REP ${Math.min(heat.rep,max(heat)||heat.rep)}${max(heat)?' / '+max(heat):''}`:'NO HEAT';
-      find('heatClockState').textContent=!heat?'Add a group to start':heat.interrupted?'Interrupted rep · Reset to retime':heat.saved?'Heat saved':running?'Tap athletes as they cross':heat.repResults.length?'Rep finished · Recover':heat.detached?'Recovered draft · Save or review':'Ready for Rep '+heat.rep;
+      find('heatClockState').textContent=!heat?'Add a group to start':workoutsSaved(heat)?'Workouts already saved':heat.interrupted?'Interrupted rep · Reset to retime':running?'Tap athletes as they cross':heat.repResults.length?'Rep finished · Recover':heat.detached?'Recovered draft · Save or review':'Ready for Rep '+heat.rep;
       find('heatStart').disabled=saving||!heat||running||heat.saved||heat.interrupted||heat.detached||heat.repResults.length>0||!heat.athleteIds.some(eligible);
       find('heatNext').disabled=saving||!heat||running||!heat.repResults.length||heat.rep>=max(heat);
       find('heatNext').textContent=heat&&heat.rep>=max(heat)?'REPS COMPLETE':'NEXT REP';
@@ -140,7 +141,7 @@
     };
     try{
       const data=await d.fetchCoachRoster();roster=data.athletes||[];await loadPlans();await loadGroups();render();
-      notice(Object.values(model.heats).some(x=>x.interrupted)?'Recovered earlier reps. The interrupted rep needs Reset before retiming.':Object.values(model.heats).some(root.MWPracticeHeats.pending)?'Unfinished practice restored. Each heat kept its results and rest.':roster.length?'Choose a group and start a rep.':'Connect athletes before creating practice groups.');
+      notice(Object.values(model.heats).some(x=>x.interrupted)?'Recovered earlier reps. The interrupted rep needs Reset before retiming.':Object.values(model.heats).some(root.MWPracticeHeats.pending)?'Unfinished practice restored. Each heat kept its results and rest.':workoutsSaved(h())?'Today’s workouts are already saved for this heat. Existing results are protected; choose an incomplete heat or return to athlete results.':roster.length?'Choose a group and start a rep.':'Connect athletes before creating practice groups.');
     }catch(err){notice('Practice could not load: '+err.message);find('heatStart').disabled=true;find('heatAdd').disabled=true;}
     const tick=setInterval(()=>{if(!panel.isConnected){clearInterval(tick);return}paint()},80);
     const unloading=event=>{persist();if(Object.values(model.heats).some(root.MWPracticeHeats.pending)){event.preventDefault();event.returnValue=''}};

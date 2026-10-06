@@ -36,7 +36,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
     const recognizedProvider=['stripe','apple'].includes(String(billing?.provider||''));
     const billingMatches=recognizedProvider&&String(billing?.billing_type||'')==='individual'&&String(billing?.plan_code||'')===String(expectedPlan||'');
     if(!entitlement||(!internalTest&&(!billing||!paidStatus||!paidPeriod||!billingMatches))){
-      throw Object.assign(new Error('An active paid MW Coach membership is required for Coach access.'),{status:403});
+      throw Object.assign(new Error('An active paid MW Coach membership is required for Coach access.'),{status:403,code:'COACH_MEMBERSHIP_REQUIRED'});
     }
   }
   const athlete=await one(`athletes?select=id,user_id,primary_event,secondary_event,experience_level,program_start_date&user_id=eq.${encodeURIComponent(user.id)}&limit=1`,token);

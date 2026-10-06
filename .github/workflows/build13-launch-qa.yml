@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: '20'
       - name: Run MW Dynasty launch tests
-        run: npm test
+        run: npm test && npm run test:coach-access
       - name: Check production JavaScript syntax
         run: |
           node --check server/api/billing.js
