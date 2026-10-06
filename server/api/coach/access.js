@@ -7,7 +7,7 @@ module.exports=async(req,res)=>{
   if(!['GET','PATCH'].includes(req.method))return res.status(405).json({error:'GET or PATCH only'});
   try{
     const c=await getAccountContext(req),role=String(c.profile.role||'');
-    if(!['coach','founder_owner','admin'].includes(role))return res.status(403).json({error:'Coach access required'});
+    if(!['coach','founder_owner','admin'].includes(role))return res.status(403).json({error:'This is an Athlete account. Use Athlete sign in, or sign in with your approved Coach account.',code:'COACH_ROLE_REQUIRED'});
     if(req.method==='PATCH'){
       const b=req.body||{},firstName=clean(b.firstName,80),lastName=clean(b.lastName,80),organization=clean(b.organization,160),coachTitle=clean(b.coachTitle,120);
       if(!firstName||!lastName)return res.status(400).json({error:'First and last name are required.'});
@@ -21,5 +21,5 @@ module.exports=async(req,res)=>{
       organization:c.profile.coach_organization||'',coachTitle:c.profile.coach_title||'',email:c.user.email||'',
       features:coachSeasonCapabilities(tier,role)
     });
-  }catch(e){return res.status(e.status||500).json({error:e.message})}
+  }catch(e){return res.status(e.status||500).json({error:e.message,...(e.code?{code:e.code}:{})})}
 };

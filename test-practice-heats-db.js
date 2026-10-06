@@ -77,6 +77,7 @@ async function run(){
   await role(db,C);for(const body of payloads){const replay=await apiSave(body);assert.equal(replay.status,200,JSON.stringify(replay));assert.equal(replay.data.replayed,true)}
   assert.equal((await scalar(db,'select count(*)::int as n from coach_practice_timing_results')).n,32,'response-loss retries do not duplicate logs');
   controller=await win.MWCoachPractice.mount(d);assert.equal(controller.model.toSave().length,0);assert.equal(q('heatSave').disabled,true);assert.equal(q('heatGroup').options.length,5,'group names/members loaded from DB on fresh session');
+  assert.equal(q('heatClockState').textContent,'Workouts already saved');assert.equal(q('heatReset').disabled,true);assert.match(q('heatStatus').textContent,/already saved.*protected/,'completed workouts explain why timing is disabled instead of saying ready');
   await role(db,OTHER);assert.equal((await scalar(db,'select count(*)::int as n from coach_groups')).n,0);await assert.rejects(groupRpc({p_group_id:groups[0],p_name:'Intrusion',p_athlete_ids:[roster[0].id]}),/assigned/);
   await role(db,C);const original=(await db.query('select athlete_id from coach_group_members where group_id=$1 order by athlete_id',[groups[0]])).rows;
   await assert.rejects(groupRpc({p_group_id:groups[0],p_name:'Invalid edit',p_athlete_ids:[OTHER]}),/assigned/);assert.deepEqual((await db.query('select athlete_id from coach_group_members where group_id=$1 order by athlete_id',[groups[0]])).rows,original,'invalid edit is atomic');

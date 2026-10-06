@@ -1480,7 +1480,7 @@ async function verifyCoachAccess(session){
   const d=await r.json().catch(()=>({}));
   if(!r.ok){
     if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError(d.error||'Coach access is temporarily unavailable.',r.status);
-    throw coachAccessError(r.status===403?'This login is not an approved, active MW Coach account.':(d.error||'Coach access could not be verified.'),r.status)
+    const err=coachAccessError(d.error||'Coach access could not be verified.',r.status);err.code=d.code||'';throw err
   }
   accountAccess={role:d.role||null,tier:d.tier||null,isFounder:!!d.isFounder,firstName:d.firstName||'',lastName:d.lastName||'',organization:d.organization||'',coachTitle:d.coachTitle||'',email:d.email||'',features:d.features||{}};
   window.MWDiag?.snapshot({audience:'coach',role:String(d.role||''),tier:String(d.tier||''),founder:!!d.isFounder,native:document.documentElement.classList.contains('mw-native-app')});
@@ -1643,6 +1643,11 @@ function showCoachEntering(){
   return performance.now();
 }
 function hideCoachEntering(){document.getElementById('mwCoachEntering')?.remove()}
+function handleCoachAccessFailure(session,error){
+  if(error?.code==='COACH_MEMBERSHIP_REQUIRED'){renderCoachMembershipSelection(session);return}
+  clearSession();
+  renderLogin(error?.message||'Coach access could not be verified. Sign in with your approved Coach account.');
+}
 async function holdCoachEntering(start,minMs=420){const left=Math.max(0,minMs-(performance.now()-start));if(left)await new Promise(r=>setTimeout(r,left))}
 function bindLogin(){
   const form=document.getElementById('loginForm'),pass=document.getElementById('loginPassword'),toggle=document.getElementById('togglePassword'),forgot=document.getElementById('forgotPassword');
@@ -1671,7 +1676,7 @@ function bindLogin(){
       catch(accessErr){
         hideCoachEntering();
         if(coachTransient(accessErr)){setLoginMessage('Signed in, but MW is having a temporary connection issue. Your Coach session is safe and will reconnect automatically.','neutral');return}
-        renderCoachMembershipSelection(session)
+        handleCoachAccessFailure(session,accessErr)
       }
     }catch(err){
       hideCoachEntering();
@@ -1726,7 +1731,7 @@ async function initAuth(){
         try{await verifyCoachAccess(active);resumeCoachActivePage();return}
         catch(accessErr){
           if(coachTransient(accessErr))throw accessErr;
-          renderCoachMembershipSelection(active);return
+          handleCoachAccessFailure(active,accessErr);return
         }
       }
     }catch(err){
