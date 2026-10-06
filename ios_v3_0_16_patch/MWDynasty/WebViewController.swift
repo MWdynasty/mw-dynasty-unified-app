@@ -13,10 +13,6 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     private var permissionType: String?
     private var transactionUpdatesTask: Task<Void, Never>?
 
-    deinit {
-        transactionUpdatesTask?.cancel()
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 5/255, green: 9/255, blue: 13/255, alpha: 1)
@@ -471,6 +467,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     }
 
     deinit {
+        transactionUpdatesTask?.cancel()
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPermissions")
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPurchase")
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwRestorePurchase")
