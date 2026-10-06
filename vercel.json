@@ -81,6 +81,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/ai-sharing",
+      "destination": "/api/mw?route=ai-sharing"
+    },
+    {
       "source": "/api/build-info",
       "destination": "/api/mw?route=build-info"
     },
@@ -275,10 +279,7 @@
     {
       "source": "/coach/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        },
+        { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" },
         {
           "key": "Pragma",
           "value": "no-cache"

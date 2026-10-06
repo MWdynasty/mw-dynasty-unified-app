@@ -1,3 +1,4 @@
+const {requireConsent}=require('../lib/mw-ai-consent');
 const {authenticate}=require('../lib/mw-auth');
 const {founderAuth}=require('../lib/founder-auth');
 module.exports=async function handler(req,res){
@@ -7,7 +8,7 @@ module.exports=async function handler(req,res){
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const coachType=String(body.coachType||'neutral').toLowerCase();
     const isFounderContext=coachType==='founder'||coachType==='employee';
-    if(isFounderContext)await founderAuth(req);else await authenticate(req);
+    if(isFounderContext)await founderAuth(req);else {const c=await authenticate(req);await requireConsent(c.token,c.user.id)}
     const input=String(body.text||'').trim().slice(0,7000);if(!input)return res.status(400).json({error:'Missing text'});
     const isFounder=coachType==='founder';
     const isEmployee=coachType==='employee';

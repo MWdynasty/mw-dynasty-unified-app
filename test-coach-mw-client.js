@@ -132,7 +132,7 @@ function fixture(saved = []) {
       document.getElementById('fixtureNav').onclick=()=>{navigation++;};
     },
     escapeHtml:s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),
-    toast:()=>{},mwSessionToken:()=> 'synthetic-session',
+    toast:()=>{},mwSessionToken:()=> 'synthetic-session',MWAISharing:{ensure:async()=>true},
     coachMWPrefs:()=>({voiceMode:'standard',coachType:'male',voiceSpeed:1}),
     authSession:null,
     fetch:async(url,options)=>{

@@ -1,3 +1,4 @@
+const {permissions}=require('../../lib/mw-ai-consent');
 const path=require('path');
 const {getAccountContext}=require('../../lib/mw-coach-auth');
 
@@ -32,12 +33,13 @@ module.exports=async(req,res)=>{
     if(!extracted)return res.status(422).json({error:'No readable workout text was found in that file.'});
     extracted=extracted.slice(0,120000);
     let programText=extracted,suggestedType='track',warning=null;
-    if(process.env.OPENAI_API_KEY){
+    const sharing=await permissions(c.token,c.user.id);
+    if(process.env.OPENAI_API_KEY&&sharing.ownAI){
       try{
         const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:process.env.OPENAI_MODEL||'gpt-5.6-sol',instructions:'You convert a coach-owned training document into a clean, editable MW Dynasty program draft. Preserve the coach\'s actual prescription. Do not invent workouts, sets, reps, distances, percentages, recovery, or exercises. Organize content by Week, Day, Session when those labels exist. Keep uncertain text clearly marked as unclear instead of guessing. Return plain text only.',input:[{role:'user',content:[{type:'input_text',text:`Filename: ${fileName}\n\nDOCUMENT:\n${extracted}`}]}],reasoning:{effort:'low'},max_output_tokens:5000})});
         const d=await r.json();if(r.ok){const out=outputText(d);if(out)programText=out}else warning=d?.error?.message||'AI formatting unavailable';
       }catch(e){warning='AI formatting unavailable; raw extracted text was loaded instead.'}
-    }else warning='OpenAI key is unavailable; raw extracted text was loaded instead.';
+    }else warning='AI formatting is off. Raw document text was loaded without sending it to OpenAI.';
     const lower=programText.toLowerCase();if(/squat|clean|deadlift|bench|strength|lift/.test(lower)&&!/sprint|meter|metre|accel|tempo|velocity/.test(lower))suggestedType='strength';else if(/squat|clean|deadlift/.test(lower)&&/sprint|meter|metre|accel|tempo|velocity/.test(lower))suggestedType='combined';
     const suggestedName=path.basename(fileName,path.extname(fileName)).replace(/[_-]+/g,' ').trim()||'Imported Program';
     return res.status(200).json({ok:true,suggestedName,suggestedType,programText,warning});

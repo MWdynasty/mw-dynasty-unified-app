@@ -49,6 +49,7 @@
 
     try {
       const prefs = window.coachMWPrefs?.() || {};
+      if (!await window.MWAISharing.ensure(token)) throw new Error('Coach MW voice sharing is off.');
       const response = await fetch('/api/speak', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
