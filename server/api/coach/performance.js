@@ -14,7 +14,10 @@ const std=(a)=>{if(a.length<2)return 0;const m=avg(a);return Math.sqrt(a.reduce(
 const round=(n,d=1)=>Number.isFinite(n)?Number(n.toFixed(d)):null;
 
 function sprintSession(group,completion){
-  const reps=group.rows.filter(r=>Number(r.actual_seconds)>0).sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
+  const reps=group.rows.filter(r=>Number(r.actual_seconds)>0&&r.result_status!=='dnf').sort((a,b)=>Number(a.rep_number)-Number(b.rep_number));
+  const distances=new Set(reps.map(r=>Number(r.distance_m)));
+  const comparable=reps.length>1&&distances.size===1&&[...distances][0]>0;
+  const actuals=reps.map(r=>Number(r.actual_seconds));
   const targeted=reps.filter(r=>Number(r.target_seconds)>0);
   const ratios=targeted.map(r=>Number(r.actual_seconds)/Number(r.target_seconds));
   const deviations=targeted.map(r=>Math.abs(Number(r.actual_seconds)-Number(r.target_seconds))/Number(r.target_seconds)*100);
@@ -28,7 +31,7 @@ function sprintSession(group,completion){
   const consistency=ratios.length&&ratioMean?clamp(100-(std(ratios)/ratioMean*100)):null;
   const dropoff=ratios.length>1?((ratios[ratios.length-1]/ratios[0])-1)*100:null;
   const rpe=completion?.session_rpe==null?null:Number(completion.session_rpe);
-  let flag='recorded',reason='Performance recorded';
+  let flag='recorded',reason=targeted.length?'Performance recorded':`${reps.length} timed reps recorded; no pace target recorded`;
   if(explicitExecution!=null){
     if(explicitHits===explicitPace.length){flag='ontrack';reason='All prescribed reps were on target pace'}
     else if(explicitExecution<50){flag='review';reason=`Only ${explicitHits}/${explicitPace.length} reps were on target pace`}
@@ -53,7 +56,11 @@ function sprintSession(group,completion){
     target_rep_count:targeted.length,
     pace_reps_hit:explicitExecution==null?null:explicitHits,
     pace_reps_total:explicitExecution==null?null:explicitPace.length,
-    average_actual_seconds:round(avg(reps.map(r=>Number(r.actual_seconds))),2),
+    average_actual_seconds:round(avg(actuals),2),
+    best_actual_seconds:actuals.length?round(Math.min(...actuals),2):null,
+    comparable_reps:comparable,
+    time_variation_pct:comparable?round(std(actuals)/avg(actuals)*100,1):null,
+    raw_first_to_last_change_pct:comparable?round((actuals[actuals.length-1]/actuals[0]-1)*100,1):null,
     average_target_seconds:round(avg(targeted.map(r=>Number(r.target_seconds))),2),
     mean_target_deviation_pct:round(meanDeviation,1),
     target_accuracy_pct:round(paceAccuracy,1),
@@ -174,7 +181,7 @@ function summarizeAthlete(athleteId,paceRows,completionRows,strengthRows,strengt
   for(const r of practiceRows.filter(x=>x.athlete_id===athleteId)){const key=r.session_id||`${r.session_date}|${r.group_name||''}`;if(!practiceGroups.has(key))practiceGroups.set(key,[]);practiceGroups.get(key).push(r)}
   const coachPracticeSessions=[...practiceGroups.values()].map(coachPracticeSession).filter(Boolean).sort((a,b)=>String(b.session_date||'').localeCompare(String(a.session_date||'')));
   const latest=sprintSessions[0]||null;
-  const latestSprintExecution=Number(latest?.execution_score_pct);
+  const latestSprintExecution=latest?.execution_score_pct==null?NaN:Number(latest.execution_score_pct);
   let combinedStrengthSprintSignal='insufficient_shared_data';
   if(completedStrength.length>=2&&Number.isFinite(latestSprintExecution)){
     if(strengthResponseTrend==='review'&&latestSprintExecution<70)combinedStrengthSprintSignal='coach_review';

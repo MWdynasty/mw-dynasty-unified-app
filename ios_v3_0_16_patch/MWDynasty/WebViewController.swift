@@ -8,6 +8,7 @@ import StoreKit
 
 final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, CLLocationManagerDelegate {
     private var webView: WKWebView!
+    private let launchIcon = UIImageView()
     private let locationManager = CLLocationManager()
     private var permissionType: String?
 
@@ -42,6 +43,27 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
+        launchIcon.image = UIImage(named: "MWLaunch")
+        launchIcon.contentMode = .scaleAspectFit
+        launchIcon.translatesAutoresizingMaskIntoConstraints = false
+        launchIcon.isAccessibilityElement = true
+        launchIcon.accessibilityLabel = "MW Dynasty loading"
+        view.addSubview(launchIcon)
+        NSLayoutConstraint.activate([
+            launchIcon.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            launchIcon.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            launchIcon.widthAnchor.constraint(equalToConstant: 96),
+            launchIcon.heightAnchor.constraint(equalToConstant: 96)
+        ])
+        if !UIAccessibility.isReduceMotionEnabled {
+            let pulse = CABasicAnimation(keyPath: "opacity")
+            pulse.fromValue = 1
+            pulse.toValue = 0.35
+            pulse.duration = 0.8
+            pulse.autoreverses = true
+            pulse.repeatCount = .infinity
+            launchIcon.layer.add(pulse, forKey: "mwPulse")
+        }
         loadMWDynasty()
     }
 
@@ -49,7 +71,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         guard let raw = Bundle.main.object(forInfoDictionaryKey: "MWProductionURL") as? String,
               !raw.contains("REPLACE-WITH"),
               let url = URL(string: raw),
-              url.scheme == "https" else {
+              url.scheme == "https", url.host == "app.mwdynasty.com" else {
             showConfigurationMessage()
             return
         }
@@ -66,7 +88,10 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: Any] else { return }
+        guard message.frameInfo.isMainFrame,
+              let origin = message.frameInfo.request.url,
+              origin.scheme == "https", origin.host == "app.mwdynasty.com",
+              let body = message.body as? [String: Any] else { return }
         if message.name == "mwManageSubscriptions" {
             Task { @MainActor [weak self] in
                 await self?.openAppStoreSubscriptionManagement()
@@ -192,6 +217,22 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         webView.evaluateJavaScript("window.mwNativePermissionResult && window.mwNativePermissionResult(\(json));")
     }
 
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        launchIcon.isHidden = true
+        launchIcon.layer.removeAnimation(forKey: "mwPulse")
+    }
+
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        guard let url = navigationAction.request.url else { decisionHandler(.cancel); return }
+        if url.scheme == "about" || (url.scheme == "https" && url.host == "app.mwdynasty.com") {
+            decisionHandler(.allow)
+        } else {
+            decisionHandler(.cancel)
+            if url.scheme == "https" || url.scheme == "mailto" { UIApplication.shared.open(url) }
+        }
+    }
+
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         showConnectionError(error.localizedDescription)
     }
@@ -201,6 +242,8 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     }
 
     private func showConnectionError(_ detail: String) {
+        launchIcon.isHidden = true
+        launchIcon.layer.removeAnimation(forKey: "mwPulse")
         let escaped = detail.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
         let rawURL = (Bundle.main.object(forInfoDictionaryKey: "MWProductionURL") as? String) ?? "https://app.mwdynasty.com/"
         let retryURL = rawURL

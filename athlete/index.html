@@ -2275,33 +2275,8 @@ async function setWorkoutStatus(w,d,status){
 let mwPracticeProgressCache=[];
 let mwPracticeHistoryCache=[];
 async function mwPracticeNormalizeProgressTargets(rows){
-  const list=Array.isArray(rows)?rows.map(row=>({...row})):[];
-  const plans=new Map();
-  for(const row of list){
-    const w=Number(row.program_week||0),d=Number(row.program_day||0),key=w+':'+d;
-    let entry=plans.get(key);
-    if(entry===undefined){
-      try{
-        const data=await loadMWProgramWeek(w),session=data?.track?.sessions?.find(x=>Number(x.day)===d);
-        entry={p:session?parsePrescription(session):null,session:session||null};
-      }catch{entry={p:null,session:null}}
-      plans.set(key,entry);
-    }
-    const p=entry?.p,session=entry?.session;
-    if(p?.target){
-      const target=Number(p.target),actual=Number(row.time_seconds);
-      const intentText=[session?.title,session?.focus,session?.prescribedWork,session?.work,session?.structure,session?.intensity,...(Array.isArray(session?.cues)?session.cues:[])].filter(Boolean).join(' ').toLowerCase();
-      const intent=row.mw_intent||(/tempo|extensive|recovery|regeneration|easy/.test(intentText)?(/recovery|regeneration|easy/.test(intentText)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(intentText)?(/technical|technique|progressive|fly|flying|wicket/.test(intentText)?'technical':'speed'):'pace');
-      const aboveTarget=Number.isFinite(actual)&&actual<target*.99&&['technical','speed'].includes(intent);
-      row.target_seconds=target;
-      row.mw_intent=intent;
-      if(Number.isFinite(actual)){
-        row.pace_status=(aboveTarget||actual>=target*.99&&actual<=target*1.01)?'on_pace':'outside_target';
-        row.mw_interpretation=aboveTarget?'above_target':row.pace_status==='on_pace'?'on_target':actual<target?'pace_violation':'below_target';
-      }
-    }
-  }
-  return list;
+  // Historical results must use their saved prescription, not today's PR or plan.
+  return Array.isArray(rows)?rows.map(row=>({...row})):[];
 }
 async function loadPracticeProgress(){
   const aid=completionAthleteId(),box=document.getElementById('mwPracticeProgressResults');if(!aid||!box)return;
@@ -2324,7 +2299,9 @@ function renderPracticeProgress(){
     const first=g[0],hit=g.filter(x=>x.pace_status==='on_pace').length,targets=g.some(x=>Number(x.target_seconds)>0),source=g.some(x=>x.entry_source==='coach')?'COACH TIMED':'ATHLETE TIMED';
     const chips=g.map(x=>'<span class="'+(x.pace_status==='on_pace'?'on':x.pace_status==='outside_target'?'off':'')+'">REP '+x.rep_number+' · '+(x.result_status==='dnf'?'DNF':Number(x.time_seconds).toFixed(2)+'s')+(Number(x.target_seconds)>0&&x.result_status!=='dnf'?' / '+Number(x.target_seconds).toFixed(2)+'s':'')+'</span>').join('');
     const historical=(mwPracticeHistoryCache||[]).includes(first);
-    return '<div class="mwPracticeProgressSession"><div><b>'+(historical?'PREVIOUS TRAINING · ':'')+'WEEK '+first.program_week+' · DAY '+first.program_day+'</b><small>'+source+' · '+g.length+' REP'+(g.length===1?'':'S')+(targets?' · '+hit+'/'+g.length+' ON PACE':'')+(historical?' · SAVED HISTORY; DOES NOT COMPLETE THIS SEASON':'')+'</small></div><div class="mwPracticeProgressChips">'+chips+'</div></div>'
+    const actuals=g.filter(x=>x.result_status!=='dnf'&&Number(x.time_seconds)>0).map(x=>Number(x.time_seconds));
+    const recorded=actuals.length?' · BEST '+Math.min(...actuals).toFixed(2)+'s · AVG '+(actuals.reduce((a,b)=>a+b,0)/actuals.length).toFixed(2)+'s':'';
+    return '<div class="mwPracticeProgressSession"><div><b>'+(historical?'PREVIOUS TRAINING · ':'')+'WEEK '+first.program_week+' · DAY '+first.program_day+'</b><small>'+source+' · '+g.length+' REP'+(g.length===1?'':'S')+(targets?' · '+hit+'/'+g.filter(x=>Number(x.target_seconds)>0).length+' ON PACE':' · NO PACE TARGET RECORDED')+recorded+(historical?' · SAVED HISTORY; DOES NOT COMPLETE THIS SEASON':'')+'</small></div><div class="mwPracticeProgressChips">'+chips+'</div></div>'
   }).join('');
 }
 function rowsToCompletion(rows){

@@ -20,6 +20,8 @@ on:
       - 'supabase/**'
       - 'SECURITY_CONTROL_FRAMEWORK.md'
       - '.github/workflows/build13-launch-qa.yml'
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -65,6 +67,16 @@ jobs:
           install -m 0644 ios_v3_0_16_patch/Config/Release.xcconfig ios_build/Config/Release.xcconfig
           install -m 0644 ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj ios_build/MWDynasty.xcodeproj/project.pbxproj
           install -m 0644 ios_v3_0_16_patch/MWDynasty/WebViewController.swift ios_build/MWDynasty/WebViewController.swift
+
+          install -m 0644 ios_v3_0_16_patch/MWDynasty/Info.plist ios_build/MWDynasty/Info.plist
+          install -m 0644 ios_v3_0_16_patch/MWDynasty/MWLaunch.png ios_build/MWDynasty/MWLaunch.png
+
+      - name: Validate current Apple SDK requirement
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          sdk_version="$(xcrun --sdk iphoneos --show-sdk-version)"
+          test "${sdk_version%%.*}" -ge 26
 
       - name: Validate App Store contract
         run: |
