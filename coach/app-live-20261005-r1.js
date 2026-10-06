@@ -154,7 +154,7 @@ function simpleCoachHome(primaryPage,primaryLabel,showIntel=false){
 
 function coachTrainingDayFromCalendar(calendar){
   const c=calendar||{};
-  if(c.status==='preseason')return 1;
+  if(c.status==='preseason'){const dow=new Date().getDay();return dow===0?7:dow}
   if(!c.startDate){
     const dow=new Date().getDay();
     return dow===0?7:dow;
@@ -1791,7 +1791,7 @@ async function hydrateLiveAthleteCount(){
   const stat=document.querySelector('[data-stat="Athletes"] b');if(!stat)return;
   try{const d=await fetchCoachRoster();stat.textContent=String(d.count??d.athletes?.length??0)}catch{}
 }
-function fmtDate(v){if(!v)return '—';try{return new Date(v).toLocaleDateString()}catch{return '—'}}
+function fmtDate(v){if(!v)return '—';try{const dateOnly=String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);return (dateOnly?new Date(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3])):new Date(v)).toLocaleDateString()}catch{return '—'}}
 async function athleteDetail(athleteId){
   const modal=mwModal('Athlete Profile',`<div id="athleteDetailState" class="tile">Loading live athlete record…</div>`);
   const state=modal.querySelector('#athleteDetailState');
