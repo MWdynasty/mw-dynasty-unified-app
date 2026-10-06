@@ -4,11 +4,11 @@ Status: NOT READY FOR SUBMISSION. No signed-device release or TestFlight distrib
 
 ## Evidence and preserved accounts
 
-Production inspected at main f41f00b6f5c14f2f3c165065d76049befdf1bb14, Vercel dpl_2bon6JavsrvvZy4S3CnbgEXeEtYS. Coach signed-in browser: tutorial Finish persists after refresh; returning session opens Train; actual Practice recognizes the completed athlete workout and prevents re-timing it. November 2, 2026 season start remains unchanged. October 6 preseason preview is Week 1 Tuesday, technical accelerations plus strength.
+Production baseline inspected at main d50cb53669880f84d0ab7fc91154d5113e24b912, Vercel dpl_7ELH6ZCgMgSR9zdXGiuvPYSWgTT5 (PR #131). Coach signed-in browser: tutorial Finish persists after refresh; returning session opens Train; actual Practice recognizes the completed athlete workout and prevents re-timing it. November 2, 2026 season start remains unchanged. October 6 preseason preview is Week 1 Tuesday, technical accelerations plus strength.
 
 The identified production athlete remains connected to its existing coach. Preserve all historical completions and recorded results. Do not use production accounts for cancellation, deletion or forced progression tests.
 
-A paid athlete membership was verified against a live-mode Stripe checkout reference and active billing/entitlement records. A separate internal-test entitlement also exists, so successful access alone does not prove the paid gate. Secure athlete sign-in, tutorial completion, returning-session refresh, sign-out and secure re-login passed in the production browser. First-login Settings retained a stale signed-out membership error; the Settings refresh regression fix passed automated checks and awaits its production deployment check. Use isolated sandbox accounts for subscription lifecycle tests. Private account identifiers and payment details are intentionally omitted from this release document.
+A paid athlete membership was verified against a live-mode Stripe checkout reference and active billing/entitlement records. A separate internal-test entitlement also exists, so successful access alone does not prove the paid gate. Secure athlete sign-in, tutorial completion, returning-session refresh, sign-out and secure re-login passed in the production browser. First-login Settings retained a stale signed-out membership error; the Settings refresh regression fix is deployed and the live authenticated Settings screen shows Active through November 4, 2026. Use isolated sandbox accounts for subscription lifecycle tests. Private account identifiers and payment details are intentionally omitted from this release document.
 
 Isolated model/DOM/PostgreSQL checks: sixteen athletes (eight boys/eight girls), four groups plus fifth, memberships/rename persistence, independent timing/rest, reset, refresh draft recovery, 32 correct athlete/coach results, immutable completion and idempotent replay. These are automated checks, not actual iPhone or tester observations.
 
@@ -34,7 +34,7 @@ Verify actual in-app deletion for a disposable athlete and coach. Existing coach
 
 Document account/contact identifiers, age/eligibility, training and fitness results, measurements, messages, images/audio when provided, purchases, diagnostics and actual analytics behavior. Distinguish data linked to the user from tracking; do not submit guessed privacy answers. Location is optional Distance Marker; microphone/speech optional Coach MW; camera/photos optional uploads; notifications optional. Explain connected-coach visibility and disconnection/history treatment.
 
-Before AI submission, clearly name the third-party AI provider and obtain explicit permission for personal data sent to it. Verify athlete permission before a coach includes that athlete's private data. Current policy wording alone is not evidence of an adequate consent flow. Audit user-generated messages/content reporting, blocking and support.
+Before AI submission, clearly name the third-party AI provider and obtain explicit permission for personal data sent to it. Verify athlete permission before a coach includes that athlete's private data. This candidate adds explicit, versioned OpenAI permissions, default off, editable in Athlete Settings and Coach Profile. Server chat/voice/import gates and every automatic coach athlete-context collection enforce the choices. Actual handlers, browser-dialog code and PostgreSQL RLS tests passed; production dialog verification follows deployment. No existing account is opted in by the migration. Audit user-generated messages/content reporting, blocking and support.
 
 ## Actual device and TestFlight acceptance
 
@@ -66,3 +66,22 @@ Official references checked October 6, 2026:
 - https://developer.apple.com/news/upcoming-requirements/ (Xcode/iOS SDK requirements)
 - https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating
 - https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions
+
+## October 6 continuation evidence ledger
+
+| Item | Status | Evidence / remaining gate |
+| --- | --- | --- |
+| Existing paid athlete membership / sessions | Verified in production web | Live Stripe reference, active through November 4; tutorial, refresh and secure re-login passed; PR #131 membership screen fix deployed. Account also has internal-test entitlement, so it is not the payment-only QA account. |
+| Payment-only gate / cancellation / expiry rules | Verified database state replay | Exact production private access function copied into isolated staging. Synthetic adult with no entitlement denied; Stripe-only active entitlement returned individual_full; cancelled before period end retained access; expiry denied. Entire transaction rolled back; zero fixture payment rows remain. This is not a checkout, receipt, webhook, or real logout/login test. |
+| Actual provider purchases and lifecycle | Unfinished / access blocked | Athlete and all coach Apple sandbox purchases, restore, renewal, pending approval, expiry, refund and server notifications need configured products, agreements and authenticated Apple access. Stripe sandbox checkout also remains unverified. |
+| AI sharing | Implemented and automated checks passed | Owner-only changes, unrelated coach denial, independent athlete coach sharing, immediate withdrawal on next request, default-off dialog, no provider transmission before permission. Live deployment verification pending. |
+| Sixteen-athlete practice | Verified automated integration | Real client controls + save API + PostgreSQL migrations/RLS: 16 athletes, 5 groups, 32 persisted results, correct coach/athlete views, replay without duplicates. Actual on-track tapping and iPhone ergonomics remain unfinished. |
+| Targetless performance cards | Verified production web | Five timed reps, best/average, completion and honest No Target; no invented pace score. |
+| Signed IPA / TestFlight / actual iPhone | Blocked | Native source compiles. No signed IPA, uploaded TestFlight candidate, installed physical iPhone or tester feedback verified. |
+| Apple authentication | Blocked | Password sign-in advanced to two-factor verification; Apple rejected the submitted code. Secure/manual completion required; membership, role, existing builds and products cannot yet be confirmed. |
+| Account deletion | Unfinished | Athlete Auth-admin deletion and coach authenticated-request code exist. Disposable account end-to-end deletion, coach request completion, processing timeframe and confirmation not verified. No production account deleted. |
+| Listing | Draft prepared | Description, links, native icon/source and review instructions recorded. Actual-build screenshots, exact privacy/rating answers and working demo accounts require remaining checks. |
+
+Native lifecycle audit found no Transaction.updates listener in the previous wrapper. This candidate adds verified transaction updates and unfinished-purchase delivery through the existing authenticated server verification, restricts delivery to the signed-in matching appAccountToken, and finishes only after active access is confirmed. Successful initial purchase and manual restore remain. Compile checks are required; actual pending approval/interruption and renewal behavior still need Apple sandbox verification before release. Native sponsor-seat wording/links require storefront review; do not enable non-US external digital checkout on the assumption that web Stripe is sufficient.
+
+Apple access required: active Developer Program membership, membership type (Individual or Organization), and App Store Connect App Manager access to MW Dynasty. Organization signing additionally requires Certificates, Identifiers & Profiles access or an owner-configured protected signing integration. Individual membership App Store Connect invitations do not grant Developer signing access. Owner handles Apple legal agreements and tax/banking. Never put passwords, OTPs, .p8 keys, private certificates or API secrets in this repository or chat.

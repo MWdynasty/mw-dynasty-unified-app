@@ -36,7 +36,7 @@ const directIds=[
   'openEntry','encourageMe','faithTalk','mwEditSeasonDates','saveSeasonDatesOnly','assess','backCoach','mwPracticeLaunch',
   'askStrength','saveStrengthPerformance','finishStrengthAsPrescribed','finishStrengthModified',
   'save','coachInviteReview','coachInviteAccept','saveLiftMaxes','profileEntry','mwContinueSelfPay',
-  'helpCenterBtn','reportIssueBtn','privacyBtn','termsBtn','deleteAccountBtn','mwDiagnosticsSend',
+  'mwAISharingSettings','helpCenterBtn','reportIssueBtn','privacyBtn','termsBtn','deleteAccountBtn','mwDiagnosticsSend',
   'saveSettings','replayTour','mwSignOut','tourSkip','tourBack','tourNext','qsSkip','qsBack','qsNext',
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
   'mwPracticeNext','mwPracticeSave','mwPracticeReset','mwPracticeRetry','mwDobVerifySave','mwScSave',

@@ -1,0 +1,24 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+(async()=>{
+ const {Window}=await import(process.env.MW_PRACTICE_DOM_PATH||'happy-dom');
+ const window=new Window({url:'https://fixture.invalid'}),document=window.document;
+ window.HTMLDialogElement.prototype.showModal=function(){this.open=true};
+ window.HTMLDialogElement.prototype.close=function(){this.open=false};
+ let saved={ownAI:false,coachAI:false,role:'athlete',policyVersion:'2026-10-06'},writes=0;
+ const fetch=async(url,opts={})=>{assert.equal(url,'/api/ai-sharing');if(opts.method==='POST'){writes++;saved={...saved,...JSON.parse(opts.body)}}return {ok:true,json:async()=>({...saved})}};
+ vm.runInNewContext(fs.readFileSync('assets/mw-ai-sharing.js','utf8'),{window,document,fetch});
+ const settle=async()=>{for(let i=0;i<50;i++)await Promise.resolve()};
+ const first=window.MWAISharing.open('fixture'),second=window.MWAISharing.open('fixture');await settle();
+ assert.equal(document.querySelectorAll('dialog').length,1,'concurrent requests share one dialog');
+ assert.ok(document.querySelector('dialog').textContent.includes('OpenAI'));
+ assert.equal(document.querySelector('#mwOwnAI').checked,false);assert.equal(document.querySelector('#mwCoachAI').checked,false);
+ document.querySelector('#mwSharingCancel').click();assert.equal(await first,false);assert.equal(await second,false);assert.equal(writes,0);
+ const grant=window.MWAISharing.ensure('fixture');await settle();document.querySelector('#mwOwnAI').checked=true;document.querySelector('#mwCoachAI').checked=true;
+ document.querySelector('#mwSharingSave').click();assert.equal(await grant,true);assert.equal(writes,1);assert.equal(saved.coachAI,true);
+ assert.equal(await window.MWAISharing.ensure('fixture'),true);assert.equal(document.querySelectorAll('dialog').length,0);
+ const revoke=window.MWAISharing.open('fixture');await settle();assert.equal(document.querySelector('#mwOwnAI').checked,true);
+ document.querySelector('#mwOwnAI').checked=false;document.querySelector('#mwCoachAI').checked=false;document.querySelector('#mwSharingSave').click();assert.equal(await revoke,false);assert.equal(saved.coachAI,false);
+ const next=window.MWAISharing.ensure('fixture');await settle();assert.equal(document.querySelector('#mwOwnAI').checked,false);document.querySelector('#mwSharingCancel').click();assert.equal(await next,false);
+ await window.happyDOM.abort();console.log('PASS: actual sharing dialog defaults off, names OpenAI, closes without writes, persists independent grants, enforces revocation, and deduplicates concurrent opens.');
+})().catch(e=>{console.error(e);process.exitCode=1});

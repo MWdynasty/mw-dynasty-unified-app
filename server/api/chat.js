@@ -1,3 +1,4 @@
+const {requireConsent}=require('../lib/mw-ai-consent');
 const {getAthleteContext,SUPABASE_URL,SUPABASE_KEY,rpc}=require('../lib/mw-auth');
 const {PROGRAM,compactTrack,compactStrength,normalizeTier,normalizeEventGroup,PROGRAM_VERSION}=require('../lib/mw-program-service');
 const SUPPORTING_KNOWLEDGE=require('../knowledge/coach-mw-book-knowledge.json');
@@ -58,6 +59,7 @@ module.exports=async function handler(req,res){
   if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'Coach MW is temporarily unavailable. Please try again shortly.'});
   try{
     const c=await getAthleteContext(req);
+    await requireConsent(c.token,c.user.id);
     const access=c.features?.access||{};
     // Every active Athlete entitlement includes at least basic Coach MW.
     // Fail closed only when the underlying Athlete access itself is inactive.

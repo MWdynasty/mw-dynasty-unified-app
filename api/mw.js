@@ -8,6 +8,7 @@ const handlers = {
   'pace-chat': require('../server/api/pace-chat'),
   'pricing': require('../server/api/pricing'),
   'billing': require('../server/api/billing'),
+  'ai-sharing': require('../server/api/ai-sharing'),
   'diagnostics': require('../server/api/diagnostics'),
   'founder': require('../server/api/founder'),
   'founder/ai': require('../server/api/founder-ai'),
