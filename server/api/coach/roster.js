@@ -80,7 +80,9 @@ module.exports=async(req,res)=>{
     for(const p of prs){if(!prMap.has(p.athlete_id))prMap.set(p.athlete_id,[]);prMap.get(p.athlete_id).push(p)}
     const aMap=new Map(assignments.map(a=>[a.athlete_id,a]));
     const latestCompletionMap=new Map();
+    const latestHistoryMap=new Map();
     for(const row of (completedWorkouts||[])){
+      if(!latestHistoryMap.has(row.athlete_id))latestHistoryMap.set(row.athlete_id,row);
       const resolved=WorkoutIdentity.fromRow(row),state=sMap.get(row.athlete_id);
       if(!resolved||!state||resolved.seasonPlanId!==(state.season_plan_id||null)||resolved.workoutCycleId!==(state.season_plan_id?null:(state.workout_cycle_id||null)))continue;
       if(!latestCompletionMap.has(row.athlete_id))latestCompletionMap.set(row.athlete_id,row);
@@ -129,7 +131,7 @@ module.exports=async(req,res)=>{
         starting_week:st.starting_week||1,
         program_version:st.program_version||null,
         status:st.program_status||'On Track',
-        last_completed_workout_at:latestCompletion?.completed_at||st.last_completed_workout_at||null,
+        last_completed_workout_at:latestHistoryMap.get(a.id)?.completed_at||st.last_completed_workout_at||null,
         latest_workout:latestCompletion?{
           program_week:Number(latestCompletion.program_week)||null,
           program_day:Number(latestCompletion.program_day)||null,

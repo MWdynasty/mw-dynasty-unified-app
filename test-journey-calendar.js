@@ -19,7 +19,7 @@ function handler(file){
       authenticate:async()=>({token:'fixture',user:{id:userId}}),
       getAccountContext:async()=>context(),getAthleteContext:async()=>context()
     };
-    if(name.endsWith('/mw-season-calendar'))return {effectiveCalendar:(token,options={})=>effectiveCalendar(token,{...options,now})};
+    if(name.endsWith('/mw-season-calendar'))return {...require('./server/lib/mw-season-calendar'),effectiveCalendar:(token,options={})=>effectiveCalendar(token,{...options,now})};
     if(name.endsWith('/mw-season-intelligence'))return {...realSeasonIntelligence,reconcileSeasonPlan:async()=>null,listOwnSeasonPlans:async()=>[]};
     return require(require('node:path').resolve(require('node:path').dirname(file),name));
   }};
@@ -120,7 +120,39 @@ async function main(){
   await checkClients('coach/app.js');
   const live=fs.readFileSync('coach/index.html','utf8').match(/src="\/(coach\/app-live-[^"?]+)(?:\?[^" ]*)?"/);
   assert(live,'production coach page references a live bundle');await checkClients(live[1]);
+  await checkHistoricalRoster();
+  for(const file of ['coach/app.js',live[1]])checkCoachDateLabels(file);
   checkTutorials();
   console.log('PASS: coach/athlete local week rollover, protected preseason, assessment placement, both live coach request paths, and tutorial Finish/reopen/replay callbacks.');
+}
+async function checkHistoricalRoster(){
+  const originalFetch=global.fetch;
+  global.fetch=async(url)=>{
+    const path=String(url);let data=[];
+    if(path.includes('/coach_assignments?'))data=[{athlete_id:athleteId,status:'active'}];
+    else if(path.includes('/athletes?'))data=[{id:athleteId,user_id:userId,primary_event:'100m'}];
+    else if(path.includes('/membership_entitlements?'))data=[{user_id:userId,status:'active'}];
+    else if(path.includes('/athlete_program_state?'))data=[{athlete_id:athleteId,current_week:1,current_day:2,workout_cycle_id:'33333333-3333-3333-3333-333333333333'}];
+    else if(path.includes('/workout_completions?'))data=[{athlete_id:athleteId,program_week:1,program_day:5,workout_key:`mw-workout-v1:${athleteId}:mw-41:w1:d5:track`,completion_status:'completed',completed_at:'2026-10-04T02:19:43.968Z',workout_cycle_id:null,season_plan_id:null}];
+    return {ok:true,json:async()=>data};
+  };
+  try{
+    audience='coach';const result=await request(handler('server/api/coach/roster.js'));
+    assert.equal(result.status,200);assert.equal(result.body.athletes[0].last_completed_workout_at,'2026-10-04T02:19:43.968Z','historical activity remains visible after a new cycle starts');
+    assert.equal(result.body.athletes[0].latest_workout,null,'historical completion cannot lock or complete the current-cycle workout');
+  }finally{global.fetch=originalFetch}
+}
+function checkCoachDateLabels(file){
+  const source=fs.readFileSync(file,'utf8'),priorTZ=process.env.TZ;
+  process.env.TZ='America/Chicago';
+  try{
+    class TuesdayDate extends Date{constructor(...args){super(...(args.length?args:['2026-10-06T12:00:00Z']))}}
+    const scope={Date:TuesdayDate};vm.createContext(scope);
+    vm.runInContext(source.slice(source.indexOf('function coachTrainingDayFromCalendar('),source.indexOf('function coachSessionDayNumber(')),scope);
+    vm.runInContext(source.slice(source.indexOf('function fmtDate('),source.indexOf('async function athleteDetail(')),scope);
+    assert.equal(scope.coachTrainingDayFromCalendar({status:'preseason',startDate:'2026-11-02'}),2,'preseason Today banner matches Tuesday athlete prescription');
+    assert.equal(scope.fmtDate('2026-11-02'),'11/2/2026','date-only season start must not shift back one day in Chicago');
+    assert.equal(scope.fmtDate('2026-10-04T02:19:43.968Z'),'10/3/2026','saved timestamps still display in local time');
+  }finally{if(priorTZ===undefined)delete process.env.TZ;else process.env.TZ=priorTZ}
 }
 main().catch(error=>{console.error(error);process.exitCode=1});
