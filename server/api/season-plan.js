@@ -41,13 +41,14 @@ module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store, private');
   try{
     const {token}=await authenticate(req);
+    const timeZone=String(req.headers['x-mw-time-zone']||'').slice(0,80)||null;
     const c=await getAthleteContext(req);
     if(c.features?.access?.smart_entry!==true)return res.status(403).json({error:'MW Season Intelligence requires MW Smart Entry access.'});
 
     if(req.method==='GET'){
       await reconcileSeasonPlan(token);
       const plans=await listOwnSeasonPlans(token,c.athlete.id);
-      const calendar=await effectiveCalendar(token);
+      const calendar=await effectiveCalendar(token,{timeZone});
       return res.status(200).json({ok:true,plans:plans.map(planSummary),calendar});
     }
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
@@ -70,7 +71,7 @@ module.exports=async function handler(req,res){
         p_season_preference:seasonPreference,
         p_competition_paths:[competitionPath]
       });
-      const calendar=await effectiveCalendar(token);
+      const calendar=await effectiveCalendar(token,{timeZone});
       return res.status(200).json({
         ok:true,deferred:true,calendar,
         message:'Season dates were deferred. MW will use the standard/current training calendar until the athlete confirms a competition calendar.'
@@ -124,7 +125,7 @@ module.exports=async function handler(req,res){
     }
 
     if(estimates.length){
-      const calendar=await effectiveCalendar(token);
+      const calendar=await effectiveCalendar(token,{timeZone});
       return res.status(422).json({
         error:'MW needs a championship/peak date (or a verified state calendar) to build this season safely.',
         needsDates:true,estimates,confirmations,calendar
@@ -210,7 +211,7 @@ module.exports=async function handler(req,res){
     });
 
     await reconcileSeasonPlan(token);
-    const calendar=await effectiveCalendar(token);
+    const calendar=await effectiveCalendar(token,{timeZone});
     return res.status(200).json({ok:true,plans:saved.map(planSummary),calendar});
   }catch(e){
     return res.status(e.status||500).json({error:e.message||'MW Season Intelligence could not build the season plan.'});

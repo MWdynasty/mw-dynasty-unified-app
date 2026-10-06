@@ -185,7 +185,7 @@ function coachStrengthDayCode(day){
 async function coachSeasonCalendarRequest(){return coachCurrentCalendar()}
 async function coachCurrentCalendar(){
   const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const r=await fetch('/api/season-calendar',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+  const r=await fetch('/api/season-calendar',{headers:{Authorization:'Bearer '+token,'X-MW-Time-Zone':mwClientTimeZone()},cache:'no-store'});
   const d=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(d.error||'Training calendar unavailable');
   return d.calendar||{};
@@ -193,7 +193,7 @@ async function coachCurrentCalendar(){
 async function coachProgramData(week,eventGroup='100_200',trackTier='performance',strengthTier=trackTier){
   const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
   const qs=new URLSearchParams({week:String(week||1),trackTier:String(trackTier||'performance'),strengthTier:String(strengthTier||trackTier||'performance'),eventGroup:String(eventGroup||'100_200')});
-  const r=await fetch('/api/coach/program?'+qs.toString(),{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+  const r=await fetch('/api/coach/program?'+qs.toString(),{headers:{Authorization:'Bearer '+token,'X-MW-Time-Zone':mwClientTimeZone()},cache:'no-store'});
   const d=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(d.error||'Today’s MW training could not be loaded');
   return d;
@@ -2722,7 +2722,7 @@ async function mwProgramWeek(week,kind='track',eventGroup='100_200'){
   try{
     const token=mwSessionToken();
     const qs=new URLSearchParams({week:String(week),trackTier:'performance',strengthTier:'performance',eventGroup:String(eventGroup||'100_200')});
-    const r=await fetch('/api/coach/program?'+qs.toString(),{headers:{Authorization:`Bearer ${token}`}});
+    const r=await fetch('/api/coach/program?'+qs.toString(),{headers:{Authorization:`Bearer ${token}`,'X-MW-Time-Zone':mwClientTimeZone()}});
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'Program unavailable');
     const x=kind==='strength'?d.strength:d.track;

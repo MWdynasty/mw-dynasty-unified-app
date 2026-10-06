@@ -35,7 +35,8 @@ module.exports=async function handler(req,res){
       ...(competitionDivision?[sj(`athletes?id=eq.${encodeURIComponent(c.athlete.id)}`,token,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({competition_division:competitionDivision,updated_at:new Date().toISOString()})})]:[])
     ]);
     for(const pr of prRows)await sj('athlete_prs?on_conflict=athlete_id,event',token,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({athlete_id:c.athlete.id,...pr,verified:false})});
-    const calendar=await effectiveCalendar(token);
+    const timeZone=String(req.headers['x-mw-time-zone']||'').slice(0,80)||null;
+    const calendar=await effectiveCalendar(token,{timeZone});
     const rawTrainingAge=Math.max(0,Number(b.trainingAge)||0);
     const phaseCode=calendar.mode==='season_plan'
       ? String(calendar.phaseCode||'foundation')
