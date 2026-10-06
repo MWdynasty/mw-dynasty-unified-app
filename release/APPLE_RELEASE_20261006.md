@@ -8,9 +8,11 @@ Production inspected at main f41f00b6f5c14f2f3c165065d76049befdf1bb14, Vercel dp
 
 The identified production athlete remains connected to its existing coach. Preserve all historical completions and recorded results. Do not use production accounts for cancellation, deletion or forced progression tests.
 
-A paid athlete membership was verified against a live-mode Stripe checkout reference and active billing/entitlement records. A separate internal-test entitlement also exists, so successful access alone does not prove the paid gate. Secure athlete sign-in was offered and declined; sign-out/re-login access remains unverified. Use isolated sandbox accounts for subscription lifecycle tests. Private account identifiers and payment details are intentionally omitted from this release document.
+A paid athlete membership was verified against a live-mode Stripe checkout reference and active billing/entitlement records. A separate internal-test entitlement also exists, so successful access alone does not prove the paid gate. Secure athlete sign-in, tutorial completion, returning-session refresh, sign-out and secure re-login passed in the production browser. First-login Settings retained a stale signed-out membership error; the Settings refresh regression fix passed automated checks and awaits its production deployment check. Use isolated sandbox accounts for subscription lifecycle tests. Private account identifiers and payment details are intentionally omitted from this release document.
 
 Isolated model/DOM/PostgreSQL checks: sixteen athletes (eight boys/eight girls), four groups plus fifth, memberships/rename persistence, independent timing/rest, reset, refresh draft recovery, 32 correct athlete/coach results, immutable completion and idempotent replay. These are automated checks, not actual iPhone or tester observations.
+
+October 6 production result-card verification after PR #130: the targetless session displays five timed reps, best 3.38s, average 3.75s, completion, equal-distance variation 7.3%, and No Target. The coach dashboard recognizes recorded results rather than stale 0/5. No account history or season dates were reset. GitHub macOS CI compiled the actual native source successfully with Xcode 26.6 / iPhoneSimulator SDK 26.5; this is not signed iPhone installation or device testing.
 
 ## Candidate changes
 
