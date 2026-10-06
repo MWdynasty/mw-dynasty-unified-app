@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const api=fs.readFileSync('server/api/coach/performance.js','utf8'),ctx={require:()=>({}),module:{exports:{}},console};vm.createContext(ctx);vm.runInContext(api,ctx);
+const rows=[3.38,3.61,4.06].map((actual_seconds,i)=>({actual_seconds,rep_number:i+1,distance_m:30,target_seconds:null,result_status:'finished'}));
+let s=ctx.sprintSession({workout_key:'fixture',rows},{completed_at:'2026-10-06'});
+assert.equal(s.execution_score_pct,null);assert.equal(s.target_rep_count,0);assert.equal(s.flag,'recorded');assert.equal(s.best_actual_seconds,3.38);assert.equal(s.average_actual_seconds,3.68);assert.ok(s.time_variation_pct>0);assert.equal(s.completed_at,'2026-10-06');
+rows[1].distance_m=60;s=ctx.sprintSession({rows},null);assert.equal(s.time_variation_pct,null,'mixed distances do not generate a consistency score');
+rows[1].distance_m=30;rows[2].result_status='dnf';s=ctx.sprintSession({rows},null);assert.equal(s.rep_count,2);assert.equal(s.best_actual_seconds,3.38);
+const coach=fs.readFileSync('coach/app.js','utf8'),c={};vm.createContext(c);vm.runInContext(coach.slice(coach.indexOf('function athleteStatusClassify('),coach.indexOf('function athleteStatusLabel(')),c);
+const a={last_completed_workout_at:new Date().toISOString(),prs:[{}],performance:{sprint:{latest:s},flags:[]},latest_workout:{pace_reps_total:5,pace_reps_hit:0}};
+assert.equal(c.athleteStatusClassify(a).level,'ontrack','targetless timed results must not fall back to a stale 0/5 completion score');
+a.performance.flags=[{level:'attention',message:'Independent attention signal'}];assert.equal(c.athleteStatusClassify(a).level,'attention');
+const html=fs.readFileSync('athlete/index.html','utf8'),h={};vm.createContext(h);vm.runInContext(html.slice(html.indexOf('async function mwPracticeNormalizeProgressTargets('),html.indexOf('async function loadPracticeProgress(')),h);
+h.mwPracticeNormalizeProgressTargets([{time_seconds:3.6,target_seconds:null}]).then(r=>{assert.equal(r[0].target_seconds,null,'refresh does not invent historical targets');console.log('PASS: no-target metrics, honest null scores, comparable distances, DNF exclusion, roster classification, and preserved saved targets.');});

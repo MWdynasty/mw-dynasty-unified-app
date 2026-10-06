@@ -11,6 +11,7 @@
 		A10000000000000000000002 /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* WebViewController.swift */; };
 		A10000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* Assets.xcassets */; };
 		A10000000000000000000004 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* LaunchScreen.storyboard */; };
+		A10000000000000000000005 /* MWLaunch.png in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		B10000000000000000000006 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		B10000000000000000000007 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		B10000000000000000000008 /* MWDynasty.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MWDynasty.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000009 /* MWLaunch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MWLaunch.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 		D10000000000000000000002 /* MWDynasty */ = {
 			isa = PBXGroup;
 			children = (
+				B10000000000000000000009 /* MWLaunch.png */,
 				B10000000000000000000001 /* AppDelegate.swift */,
 				B10000000000000000000002 /* WebViewController.swift */,
 				B10000000000000000000003 /* Info.plist */,
@@ -131,6 +134,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000005 /* MWLaunch.png in Resources */,
 				A10000000000000000000003 /* Assets.xcassets in Resources */,
 				A10000000000000000000004 /* LaunchScreen.storyboard in Resources */,
 			);
