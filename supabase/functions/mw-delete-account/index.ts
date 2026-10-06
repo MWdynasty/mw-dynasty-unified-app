@@ -23,7 +23,7 @@ Deno.serve(async(req:Request)=>{
     const pr=await fetch(`${url}/rest/v1/profiles?user_id=eq.${encodeURIComponent(user.id)}&select=role&limit=1`,{headers:base});
     if(!pr.ok)return json({ok:false,error:"Your account type could not be verified. Try again shortly."},503);
     const rows=await pr.json().catch(()=>null);
-    if(!Array.isArray(rows)||(rows.length>0&&typeof rows[0]?.role!=="string"))return json({ok:false,error:"Your account type could not be verified. Try again shortly."},503);
+    if(!Array.isArray(rows)||(rows.length>0&&(typeof rows[0]?.role!=="string"||!rows[0].role.trim())))return json({ok:false,error:"Your account type could not be verified. Try again shortly."},503);
     const role=rows[0]?.role;
     if(role==="founder_owner"||role==="admin")return json({ok:false,error:"Founder and administrator accounts must be transferred or removed through MW administration."},403);
 
