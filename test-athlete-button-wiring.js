@@ -98,6 +98,23 @@ assert(
 console.log('PASS: audited '+buttons.length+' athlete button definitions across navigation, Coach MW, Smart Entry, track, strength, profile, settings, notifications, schedule and support.');
 
 
+// Render real saved strength data in the same scope as Progress, not the auth IIFE.
+const vm=require('node:vm');
+const mainScript=html.slice(html.indexOf('<script>\nconst $='));
+const progressScript=mainScript.slice(0,mainScript.indexOf('</script>'));
+const helper=progressScript.match(/function escapeHtmlLocal\(v\)\{[^\n]+/);
+assert(helper,'Progress HTML helper must be available in the main athlete script');
+const renderer=html.slice(html.indexOf('function renderWeightRoomProgressUI(){'),html.indexOf('function renderProgressUI(){'));
+const elements=new Map();
+const scope={document:{getElementById(id){if(!elements.has(id))elements.set(id,{textContent:'',innerHTML:'',value:'',classList:{remove(){},add(){}}});return elements.get(id)}},window:{},mwStrengthQuickCache:{one:{lifecycle_status:'completed',status:'as_prescribed',program_week:1,strength_day:1,day_label:'Lift <A>',session_feel:'normal'}},mwStrengthPerformanceRows:[{exercise_name:'Squat <test>',reps_completed:8,actual_load:100,recorded_at:'2026-10-01',weight_unit:'lb'},{exercise_name:'Squat <test>',reps_completed:8,actual_load:110,recorded_at:'2026-10-02',weight_unit:'lb'}],mwPracticeProgressCache:[],activeMWWeek:()=>1,MW_STRENGTH:{},PHASES:{1:{name:'Foundation'}},phaseFromWeek:()=>1};
+vm.createContext(scope);vm.runInContext(helper[0]+'\n'+renderer+'\nrenderWeightRoomProgressUI();',scope);
+assert.equal(elements.get('progressStrengthSessions').textContent,'1');
+assert.match(elements.get('progressStrengthRecent').innerHTML,/Lift &lt;A&gt;/);
+assert.match(elements.get('progressStrengthRecent').innerHTML,/Squat &lt;test&gt;/);
+assert.match(elements.get('progressStrengthRecent').innerHTML,/\+10 lb/);
+console.log('PASS: completed strength sessions and load trends render safely in Progress.');
+
+
 assert(html.includes('id="mwHomeMenuButton"'),'Athlete Home menu button must exist');
 assert(html.includes('id="mwHomeMenu"'),'Athlete Home dropdown must exist');
 for(const id of ['coach','messages','schedule','pacer']){
