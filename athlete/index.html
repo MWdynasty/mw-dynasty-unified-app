@@ -2453,6 +2453,7 @@ async function renderCompletion(){
   if($('#unlockNote'))$('#unlockNote').textContent=isDone?'✓ Today’s track workout is complete.':status==='incomplete'?'Your saved reps are waiting. Finish logging when you are ready.':status==='in_progress'?'Practice started. Continue the same saved workout from Practice Mode.':'Today’s session is scheduled and ready.';
 }
 let mwStrengthPerformanceRows=[];
+function escapeHtmlLocal(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
 function renderWeightRoomProgressUI(){
   const checkins=Object.values(mwStrengthQuickCache||{}),rows=Array.isArray(mwStrengthPerformanceRows)?mwStrengthPerformanceRows:[];
   const completed=checkins.filter(x=>String(x?.lifecycle_status||'')==='completed').sort((a,b)=>String(b.completed_at||b.recorded_at||'').localeCompare(String(a.completed_at||a.recorded_at||'')));
@@ -3749,7 +3750,6 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     if(box)box.innerHTML=mwStrengthPerformanceRows.slice(0,12).map(x=>`<div class="strengthLogItem"><b>Week ${Number(x.program_week||1)} · Day ${Number(x.program_day||1)} · ${escapeHtmlLocal(x.exercise_name)}</b><br>Set ${Number(x.set_number||1)} · ${x.reps_completed??'—'} reps @ ${x.actual_load??'—'} ${escapeHtmlLocal(x.weight_unit||'lb')}${x.target_load!=null?` · Target ${x.target_load}`:''}${x.set_rpe!=null?` · RPE ${x.set_rpe}/10`:''}</div>`).join('');
     restoreStrengthLogger();
   }
-  function escapeHtmlLocal(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
   async function saveStrengthPerformance(){
     const aid=mwRemoteProfile.athleteId,btn=document.getElementById('saveStrengthPerformance'),st=document.getElementById('strengthPerformanceStatus');if(!aid)throw new Error('Athlete profile not found.');
     const week=strengthLoggingWeek(),day=Number(document.getElementById('strengthLogDay')?.value||mwTodayStrengthInfo().day),meta=strengthSessionMeta(week,day),exercise=(document.getElementById('strengthLogExercise')?.value||'').trim(),actual=Number(document.getElementById('strengthLogActual')?.value),reps=Number(document.getElementById('strengthLogReps')?.value),setNo=Number(document.getElementById('strengthLogSet')?.value),targetRaw=(document.getElementById('strengthLogTarget')?.value||'').trim(),rpeRaw=(document.getElementById('strengthLogRpe')?.value||'').trim();
