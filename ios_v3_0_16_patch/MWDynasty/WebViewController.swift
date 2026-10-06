@@ -11,6 +11,11 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     private let launchIcon = UIImageView()
     private let locationManager = CLLocationManager()
     private var permissionType: String?
+    private var transactionUpdatesTask: Task<Void, Never>?
+
+    deinit {
+        transactionUpdatesTask?.cancel()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,6 +68,13 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             pulse.autoreverses = true
             pulse.repeatCount = .infinity
             launchIcon.layer.add(pulse, forKey: "mwPulse")
+        }
+        transactionUpdatesTask = Task { @MainActor [weak self] in
+            for await result in Transaction.updates {
+                guard !Task.isCancelled else { break }
+                guard case .verified(let transaction) = result else { continue }
+                await self?.deliverPendingTransaction(transaction)
+            }
         }
         loadMWDynasty()
     }
@@ -220,6 +232,43 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         launchIcon.isHidden = true
         launchIcon.layer.removeAnimation(forKey: "mwPulse")
+        Task { @MainActor [weak self] in
+            for await result in Transaction.unfinished {
+                guard case .verified(let transaction) = result else { continue }
+                await self?.deliverPendingTransaction(transaction)
+            }
+        }
+    }
+
+    // Pending approvals and interrupted purchases must reach the same server
+    // verification as direct purchases. Never finish another MW account's purchase.
+    @MainActor
+    private func deliverPendingTransaction(_ transaction: Transaction) async {
+        let plans = [
+            "com.mwdynasty.app.athlete.monthly": "mw_athlete",
+            "com.mwdynasty.app.coach.core.monthly": "coach_core",
+            "com.mwdynasty.app.coach.intelligence.monthly": "coach_intelligence",
+            "com.mwdynasty.app.coach.sprintperformance.monthly": "mw_sprint_performance"
+        ]
+        guard let planCode = plans[transaction.productID],
+              let url = webView.url,
+              url.scheme == "https", url.host == "app.mwdynasty.com" else { return }
+        let sessionScript = """
+        (() => {
+          const current = window.mwGetSessionToken?.();
+          if (current) return current;
+          try { return JSON.parse(localStorage.getItem('mwSupabaseSession') || sessionStorage.getItem('mwSupabaseSession') || 'null')?.access_token || ''; }
+          catch { return ''; }
+        })()
+        """
+        guard let token = try? await webView.evaluateJavaScript(sessionScript) as? String,
+              !token.isEmpty,
+              let accountToken = userIDFromJWT(token),
+              transaction.appAccountToken == accountToken else { return }
+        let verified = await verifyPurchaseWithMWServer(transactionID: String(transaction.id), planCode: planCode, accessToken: token, reportFailure: false)
+        guard verified else { return }
+        await transaction.finish()
+        sendPurchaseResult(["ok": true, "restored": true, "planCode": planCode, "transactionId": String(transaction.id)])
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
@@ -378,9 +427,9 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         return UUID(uuidString: sub)
     }
 
-    private func verifyPurchaseWithMWServer(transactionID: String, planCode: String, accessToken: String) async -> Bool {
+    private func verifyPurchaseWithMWServer(transactionID: String, planCode: String, accessToken: String, reportFailure: Bool = true) async -> Bool {
         guard let url = URL(string: "https://keqgunlfwhjgcsurynef.supabase.co/functions/v1/mw-apple-purchase-verify") else {
-            sendPurchaseResult(["ok": false, "error": "MW purchase verification URL is unavailable."])
+            if reportFailure { sendPurchaseResult(["ok": false, "error": "MW purchase verification URL is unavailable."]) }
             return false
         }
         var request = URLRequest(url: url)
@@ -401,10 +450,10 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
                 return true
             }
             let message = payload["error"] as? String ?? "MW could not confirm the App Store subscription."
-            sendPurchaseResult(["ok": false, "error": message])
+            if reportFailure { sendPurchaseResult(["ok": false, "error": message]) }
             return false
         } catch {
-            sendPurchaseResult(["ok": false, "error": "The purchase completed, but MW could not confirm access yet. Reopen the app and restore your purchase."])
+            if reportFailure { sendPurchaseResult(["ok": false, "error": "The purchase completed, but MW could not confirm access yet. Reopen the app and restore your purchase."]) }
             return false
         }
     }
