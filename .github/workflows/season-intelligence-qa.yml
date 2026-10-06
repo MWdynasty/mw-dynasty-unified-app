@@ -16,6 +16,9 @@ on:
       - 'test-practice-rest.js'
       - 'test-launch-integrity.js'
       - 'lib/mw-workout-identity.js'
+      - 'lib/mw-practice-heats.js'
+      - 'test-practice-heats*.js'
+      - 'test-fixtures/practice-groups.sql'
       - 'test-workout-identity*.js'
       - 'test-fixtures/workout-identity.sql'
       - 'package.json'
@@ -38,8 +41,8 @@ jobs:
 
       - name: Test canonical workout identity in disposable PostgreSQL
         run: |
-          npm install --prefix "$RUNNER_TEMP/mw-identity-tests" --no-audit --no-fund @electric-sql/pglite@0.4.1
-          MW_IDENTITY_PGLITE_PATH="$RUNNER_TEMP/mw-identity-tests/node_modules/@electric-sql/pglite" npm run test:workout-identity-db
+          npm install --prefix "$RUNNER_TEMP/mw-identity-tests" --no-audit --no-fund @electric-sql/pglite@0.4.1 happy-dom@20.0.2
+          MW_IDENTITY_PGLITE_PATH="$RUNNER_TEMP/mw-identity-tests/node_modules/@electric-sql/pglite" MW_PRACTICE_DOM_PATH="$RUNNER_TEMP/mw-identity-tests/node_modules/happy-dom/lib/index.js" npm run test:workout-identity-db
 
       - name: Check Season Intelligence server syntax
         run: |
@@ -64,6 +67,8 @@ jobs:
           node --check server/api/coach/season-intelligence.js
           node --check server/api/coach/coach-mw.js
           node --check coach/app.js
+          node --check coach/practice-heats.js
+          node --check lib/mw-practice-heats.js
           node --check api/mw.js
 
       - name: Check athlete inline JavaScript syntax

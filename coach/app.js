@@ -314,6 +314,7 @@ function coachPracticeCompletionLabel(a){
   return total>0?`WORKOUT COMPLETE · ${hit}/${total} ON PACE`:'WORKOUT COMPLETE';
 }
 async function practiceModePage(){
+  if(window.MWCoachPractice)return window.MWCoachPractice.mount({escapeHtml,pageBase,hydrateCoachTodayPractice,mwCurrentUser,project:SUPABASE_URL,mwLocalIsoDate,coachPracticeWorkoutComplete,coachPracticeTier,coachPracticeStrengthTier,coachPracticeEventGroup,coachProgramData,coachSessionDayNumber,mwCoachPracticePrescription,mwCoachPracticeRecommendedTarget,coachPracticeIdentity,sbRest,mwModal,mwClientTimeZone,mwSessionToken,fetchCoachRoster,openPage});
   pageBase('Practice Mode','See today’s practice first, then run groups, capture finish times, and save the session without leaving the track.',`
     <section id="practiceTodayPlan" class="coach-today-practice practice-inline"><div class="tile">Loading today’s practice…</div></section>
     <section class="practice-live-cockpit" aria-label="Live practice timing">
