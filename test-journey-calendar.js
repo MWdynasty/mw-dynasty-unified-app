@@ -121,6 +121,7 @@ async function main(){
   const live=fs.readFileSync('coach/index.html','utf8').match(/src="\/(coach\/app-live-[^"?]+)(?:\?[^" ]*)?"/);
   assert(live,'production coach page references a live bundle');await checkClients(live[1]);
   await checkHistoricalRoster();
+  await checkAthleteHistory();
   for(const file of ['coach/app.js',live[1]])checkCoachDateLabels(file);
   checkTutorials();
   console.log('PASS: coach/athlete local week rollover, protected preseason, assessment placement, both live coach request paths, and tutorial Finish/reopen/replay callbacks.');
@@ -141,6 +142,22 @@ async function checkHistoricalRoster(){
     assert.equal(result.status,200);assert.equal(result.body.athletes[0].last_completed_workout_at,'2026-10-04T02:19:43.968Z','historical activity remains visible after a new cycle starts');
     assert.equal(result.body.athletes[0].latest_workout,null,'historical completion cannot lock or complete the current-cycle workout');
   }finally{global.fetch=originalFetch}
+}
+async function checkAthleteHistory(){
+  const Identity=require('./lib/mw-workout-identity'),cycle='33333333-3333-3333-3333-333333333333';
+  const old=Identity.create({athleteId,week:1,day:2}),current=Identity.create({athleteId,workoutCycleId:cycle,week:1,day:2});
+  const row=(identity,source,target)=>({athlete_id:athleteId,workout_key:identity.workoutKey,workout_cycle_id:identity.workoutCycleId,season_plan_id:null,program_week:1,program_day:2,rep_number:1,time_seconds:3,target_seconds:target,entry_source:source,pace_status:'on_pace'});
+  const oldRow=row(old,'coach',3.62),newRow=row(current,'athlete',4),box={innerHTML:''},calls=[];
+  const scope={MWWorkoutIdentity:Identity,workoutIdentity:(week,day)=>Identity.create({athleteId,workoutCycleId:cycle,week,day}),completionAthleteId:()=>athleteId,document:{getElementById:()=>box},MW_SB_URL:'https://fixture.invalid',completionHeaders:()=>({}),fetch:async url=>{calls.push(url);return {ok:true,json:async()=>[oldRow,newRow]}},loadMWProgramWeek:async()=>({track:{sessions:[{day:2,title:'TECH',focus:'technical'}]}}),parsePrescription:()=>({target:4}),renderWeightRoomProgressUI(){}};
+  const source=fs.readFileSync('athlete/index.html','utf8');vm.createContext(scope);
+  vm.runInContext(source.slice(source.indexOf('let mwPracticeProgressCache=[];'),source.indexOf('function rowsToCompletion(')),scope);
+  await scope.loadPracticeProgress();
+  assert(calls[0].includes('athlete_id=eq.'+athleteId),'history remains scoped to the signed-in athlete');
+  assert(calls[0].includes('select=athlete_id,'),'canonical identity retains the athlete id');
+  assert.match(box.innerHTML,/PREVIOUS TRAINING/);assert.match(box.innerHTML,/COACH TIMED/);assert.match(box.innerHTML,/ATHLETE TIMED/);assert.match(box.innerHTML,/3\.62s/,'previous target remains unchanged');
+  assert.equal(vm.runInContext('mwPracticeProgressCache.length',scope),1,'only current-cycle reps feed active performance signals');
+  assert.equal(vm.runInContext('mwPracticeHistoryCache.length',scope),1);
+  assert.equal(oldRow.target_seconds,3.62,'history is never rewritten by a current prescription');
 }
 function checkCoachDateLabels(file){
   const source=fs.readFileSync(file,'utf8'),priorTZ=process.env.TZ;
