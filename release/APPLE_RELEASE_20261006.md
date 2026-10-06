@@ -6,9 +6,9 @@ Status: NOT READY FOR SUBMISSION. No signed-device release or TestFlight distrib
 
 Production inspected at main f41f00b6f5c14f2f3c165065d76049befdf1bb14, Vercel dpl_2bon6JavsrvvZy4S3CnbgEXeEtYS. Coach signed-in browser: tutorial Finish persists after refresh; returning session opens Train; actual Practice recognizes the completed athlete workout and prevents re-timing it. November 2, 2026 season start remains unchanged. October 6 preseason preview is Week 1 Tuesday, technical accelerations plus strength.
 
-Identified athlete mustaqeem.w@yahoo.com remains connected to coach mustaqeem_williams@yahoo.com. Preserve its historical completions and all recorded results. Do not use it for cancellation, deletion or forced progression tests.
+The identified production athlete remains connected to its existing coach. Preserve all historical completions and recorded results. Do not use production accounts for cancellation, deletion or forced progression tests.
 
-Paid athlete account is mustaqeemkidsinfo@yahoo.com. Its saved Stripe checkout has a cs_live_ reference; billing subscription and Stripe entitlement are active October 4–November 4, 2026, renewal enabled. Another internal-test entitlement also exists, so successful access alone does not prove the paid gate. Secure athlete sign-in was offered and declined; sign-out/re-login access remains unverified. Do not cancel this real subscription to test cancellation.
+A paid athlete membership was verified against a live-mode Stripe checkout reference and active billing/entitlement records. A separate internal-test entitlement also exists, so successful access alone does not prove the paid gate. Secure athlete sign-in was offered and declined; sign-out/re-login access remains unverified. Use isolated sandbox accounts for subscription lifecycle tests. Private account identifiers and payment details are intentionally omitted from this release document.
 
 Isolated model/DOM/PostgreSQL checks: sixteen athletes (eight boys/eight girls), four groups plus fifth, memberships/rename persistence, independent timing/rest, reset, refresh draft recovery, 32 correct athlete/coach results, immutable completion and idempotent replay. These are automated checks, not actual iPhone or tester observations.
 
