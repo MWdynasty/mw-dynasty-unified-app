@@ -143,7 +143,7 @@ ${JSON.stringify(context).slice(0,90000)}`;
 
       const communityAgent=(aiCompany.agents||[]).find(a=>a.code==='community_manager')||null;
       const skoolInstructions=guard+`
-You are coordinating the MW Dynasty Skool content team led by Community Manager AI with support from Content/SEO, Creative, Lifecycle Marketing, Sprint School Education, UX Research, and Website & Growth.
+You are coordinating the MW Dynasty Skool content team led by Community Manager AI with support from Content/SEO, Creative, Lifecycle Marketing, Training Guidance, UX Research, and Website & Growth.
 Create high-quality community content drafts only. Do NOT claim the posts were published or sent.
 Skool posting remains a human action. These drafts will be reviewed in Founder OS, copied, and posted manually.
 Return JSON only with this exact shape:
@@ -151,7 +151,7 @@ Return JSON only with this exact shape:
 Rules:
 - Return exactly one post for every date listed in OPEN DATES and no other dates.
 - Keep MW Dynasty's voice premium, encouraging, useful, and specific rather than hype-heavy.
-- Vary the week: training education, Sprint School learning, engagement/community, accountability, coach or parent value, challenge/poll, and a recap or motivation angle.
+- Vary the week: training education, training guidance, engagement/community, accountability, coach or parent value, challenge/poll, and a recap or motivation angle.
 - Do not invent athlete results, testimonials, customer quotes, guarantees, medical claims, pricing, or product features not supported by the secured MW context.
 - Never diagnose injuries or give medical treatment advice.
 - Do not alter or invent official MW training methodology. Educational references must stay consistent with Founder-approved methodology.

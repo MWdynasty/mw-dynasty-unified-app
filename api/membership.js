@@ -158,7 +158,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
           <h2>MW VELOCITY <span>— ATHLETE</span></h2>
           <p class="flagship-sub">More than workouts. A connected environment that tells the athlete what to do, teaches them why, tracks what happened, and keeps the season moving with purpose.</p>
           <div class="price-row"><div class="price">$19</div><div class="price-meta">/ month<br>complete athlete membership</div></div>
-          <div class="value-pills"><span>41-WEEK SPRINT SYSTEM</span><span>STRENGTH & POWER</span><span>SPRINT SCHOOL</span><span>COACH MW</span><span>PACE + DISTANCE TOOLS</span><span>PROGRESS TRACKING</span></div>
+          <div class="value-pills"><span>41-WEEK SPRINT SYSTEM</span><span>STRENGTH & POWER</span><span>COACH MW</span><span>PACE + DISTANCE TOOLS</span><span>PROGRESS TRACKING</span></div>
           <div class="hero-cta">
             <a class="btn gold" href="https://app.mwdynasty.com/athlete/start.html">START ATHLETE MEMBERSHIP →</a>
             <a class="btn dark" href="#athlete-system">SEE THE COMPLETE SYSTEM</a>
@@ -171,19 +171,19 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
         <div class="value-head">
           <div class="label">Your complete MW Velocity training system</div>
           <h3>Everything works together.</h3>
-          <p>The value is not a list of disconnected features. Track training, strength work, education, pacing, scheduling, accountability, and guidance are designed to operate as one athlete-development environment.</p>
+          <p>The value is not a list of disconnected features. Track training, strength work, pacing, scheduling, accountability, and guidance are designed to operate as one athlete-development environment.</p>
         </div>
         <div class="value-grid">
           <div class="value-item"><div class="value-icon">01</div><div><b>Start at the right place</b><span>Smart Entry evaluates the athlete and places them at the appropriate point in the system.</span></div></div>
           <div class="value-item"><div class="value-icon">02</div><div><b>Complete 41-week sprint progression</b><span>Structured development for the 100m, 200m and 400m across the full training year.</span></div></div>
           <div class="value-item"><div class="value-icon">03</div><div><b>Strength & Power integration</b><span>Weight-room development supports the demands of the athlete's current sprint phase.</span></div></div>
           <div class="value-item"><div class="value-icon">04</div><div><b>Warm-ups, drills & recovery</b><span>Structured preparation and recovery with instruction on how and why each piece is performed.</span></div></div>
-          <div class="value-item"><div class="value-icon">05</div><div><b>MW Sprint School</b><span>Mechanics, acceleration, blocks, max velocity and race execution—not just workouts.</span></div></div>
-          <div class="value-item"><div class="value-icon">06</div><div><b>Know exactly what to do today</b><span>Daily training, lifting and training history live together in one place.</span></div></div>
-          <div class="value-item"><div class="value-icon">07</div><div><b>Train at the right intensity</b><span>MW Pace Calculator and Distance Pacer help turn prescriptions into executable targets.</span></div></div>
-          <div class="value-item"><div class="value-icon">08</div><div><b>Track the work that gets completed</b><span>Attendance, reps and pace execution provide accountability beyond simply opening a workout.</span></div></div>
-          <div class="value-item"><div class="value-icon">09</div><div><b>Follow development over time</b><span>PRs, strength numbers, goals and athlete progress stay connected to the training journey.</span></div></div>
-          <div class="value-item"><div class="value-icon">10</div><div><b>Coach MW guidance</b><span>Built-in guidance helps athletes understand terminology, purpose and the work in front of them.</span></div></div>
+
+          <div class="value-item"><div class="value-icon">05</div><div><b>Know exactly what to do today</b><span>Daily training, lifting and training history live together in one place.</span></div></div>
+          <div class="value-item"><div class="value-icon">06</div><div><b>Train at the right intensity</b><span>MW Pace Calculator and Distance Pacer help turn prescriptions into executable targets.</span></div></div>
+          <div class="value-item"><div class="value-icon">07</div><div><b>Track the work that gets completed</b><span>Attendance, reps and pace execution provide accountability beyond simply opening a workout.</span></div></div>
+          <div class="value-item"><div class="value-icon">08</div><div><b>Follow development over time</b><span>PRs, strength numbers, goals and athlete progress stay connected to the training journey.</span></div></div>
+          <div class="value-item"><div class="value-icon">09</div><div><b>Coach MW guidance</b><span>Built-in guidance helps athletes understand terminology, purpose and the work in front of them.</span></div></div>
         </div>
         <div class="system-line">
           <div><strong><span>You’re not buying a workout plan.</span> You’re entering MW Velocity.</strong><p>MW Dynasty is designed to guide the athlete from today's session to long-term development with structure, precision and purpose.</p></div>
@@ -265,7 +265,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
               <li>Everything in Intelligence</li>
               <li>41-week MW sprint progression</li>
               <li>Synchronized Strength & Power system</li>
-              <li>MW Sprint School ecosystem</li>
+
               <li>Pacing + performance tools</li>
               <li>Smart athlete placement</li>
               <li>41-week schedule intelligence</li>

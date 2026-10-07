@@ -65,7 +65,7 @@ function enhancementScript() {
       ['41-week sprint progression for 100m, 200m + 400m', 'A complete 41-week sprint progression built for the 100m, 200m and 400m.'],
       ['MW Strength & Power sessions', 'Strength & Power training integrated with sprint work so the weight room supports what happens on the track.'],
       ['Big Warm-Up, sprint drills + cool-down teaching', 'Structured warm-ups, sprint drills and recovery with instruction on how and why each piece is performed.'],
-      ['Sprint School: mechanics, blocks, acceleration + race execution', 'MW Sprint School teaches mechanics, acceleration, block starts and race execution—not just workouts.'],
+
       [\`Today’s workout + complete training history\`, \`Know exactly what to do today with daily training, lifting and a complete training history in one place.\`],
       ['Pace Calculator + Distance Pacer', 'Train at the right intensity using the MW Pace Calculator and Distance Pacer.'],
       ['Attendance, pace compliance + reps-completed tracking', 'Track the work that actually gets completed including attendance, reps and pace execution.'],
@@ -104,7 +104,7 @@ function enhancementScript() {
       if (!document.getElementById('mw-membership-copy-style')) {
         const style = document.createElement('style');
         style.id = 'mw-membership-copy-style';
-        style.textContent = `
+        style.textContent = \`
           .mw-membership-value-line{
             margin:18px 0 4px;
             padding:16px 18px;
@@ -114,7 +114,7 @@ function enhancementScript() {
             line-height:1.55
           }
           .mw-membership-value-line strong{color:#f0bd45}
-        `;
+        \`;
         document.head.appendChild(style);
       }
       const line = document.createElement('div');
@@ -137,7 +137,7 @@ function enhancementScript() {
     if (!document.getElementById('mw-coach-tier-promise-style')) {
       const style = document.createElement('style');
       style.id = 'mw-coach-tier-promise-style';
-      style.textContent = `
+      style.textContent = \`
         .mw-coach-tier-promise{
           margin:12px 0 14px;
           padding:11px 12px;
@@ -149,7 +149,7 @@ function enhancementScript() {
           font-weight:800;
           line-height:1.45
         }
-      `;
+      \`;
       document.head.appendChild(style);
     }
 
@@ -237,7 +237,7 @@ function enhancementScript() {
         <div class="mw-detail-grid">
           <div class="mw-detail-card"><small>01 · TRAIN</small><b>41-week sprint progression</b><span>Structured development for the 100m, 200m, and 400m across acceleration, max velocity, speed endurance, race execution, recovery, and competition preparation.</span></div>
           <div class="mw-detail-card"><small>02 · STRENGTHEN</small><b>Track-synchronized Strength & Power</b><span>The weight room follows the mission of the track phase so strength work supports speed development instead of competing with it.</span></div>
-          <div class="mw-detail-card"><small>03 · LEARN</small><b>Sprint School + Coach MW</b><span>Athletes learn mechanics, starts, acceleration, race strategy, warm-ups, drills, and the reason behind the work—with guidance available when questions happen.</span></div>
+          <div class="mw-detail-card"><small>03 · LEARN</small><b>Coach MW</b><span>Coach MW helps athletes understand the purpose of their assigned training, terminology, and safe execution.</span></div>
           <div class="mw-detail-card"><small>04 · MEASURE</small><b>Pacing, distance, PRs + accountability</b><span>Performance targets, distance tools, workout completion, pace compliance, PR information, and athlete progress live in one connected environment.</span></div>
           <div class="mw-detail-card"><small>05 · ENTER SMARTER</small><b>Smart Entry assessment</b><span>Athletes who join mid-season can be placed into the system based on their events, PRs, strength background, experience, goals, and current training state.</span></div>
           <div class="mw-detail-card"><small>06 · PLAN REAL LIFE</small><b>Schedule awareness without losing the program</b><span>Independent athletes can add school, exams, work, travel, and unavailable dates. Coach-managed athletes report conflicts while the coach remains the authority over the official schedule.</span></div>
