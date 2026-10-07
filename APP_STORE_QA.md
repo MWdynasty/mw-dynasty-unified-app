@@ -96,7 +96,7 @@ The notification bell is now live for in-app coach notifications. Native APNs pu
 - Verify Coach Core invite can choose Coach Sponsored vs Athlete Self-Pay.
 - Verify pending invitation shows the correct billing responsibility.
 - Verify sponsored invite acceptance creates coach-sponsored athlete access with live tier seat pricing.
-- Verify athlete membership screen clearly shows coach-sponsored vs individual billing.
+- Verify MW Velocity — Athlete screen clearly shows coach-sponsored vs individual billing.
 - Verify self-pay continuation can be prepared without ending sponsorship early.
 - Verify checkout does not launch before sponsorship ends.
 - Verify transition grace protects access for 72 hours after handoff while payment completes.
@@ -173,7 +173,7 @@ The notification bell is now live for in-app coach notifications. Native APNs pu
 - Direct URLs fail closed for full-MW-only capabilities.
 
 ### Coach Velocity sponsored athlete
-- Full MW athlete ecosystem is available.
+- The complete MW Velocity athlete experience is available.
 - Smart Entry, 41-week track, synchronized Strength & Power, Sprint School and advanced tools load normally.
 - Coach-assigned training remains compatible where assigned.
 
