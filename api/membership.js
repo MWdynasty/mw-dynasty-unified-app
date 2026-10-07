@@ -6,7 +6,7 @@ const HTML = String.raw`<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MW Dynasty — Memberships</title>
-<meta name="description" content="Choose the MW Dynasty athlete or coach membership experience. One complete sprint-performance system for athletes, and three levels of coaching partnership for coaches and programs.">
+<meta name="description" content="Choose the MW Dynasty athlete or coach membership experience. MW Velocity — Athlete for individual athletes, plus Coach Core, Coach Intelligence, and Coach Velocity for coaches and programs.">
 <style>
 :root{
   --bg:#02060a;--bg2:#07111b;--panel:#081521;--panel2:#0c1d2c;
@@ -185,7 +185,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
           <div class="value-item"><div class="value-icon">10</div><div><b>Coach MW guidance</b><span>Built-in guidance helps athletes understand terminology, purpose and the work in front of them.</span></div></div>
         </div>
         <div class="system-line">
-          <div><strong><span>You’re not buying a workout plan.</span> You’re entering a connected sprint-performance system.</strong><p>MW Dynasty is designed to guide the athlete from today's session to long-term development with structure, precision and purpose.</p></div>
+          <div><strong><span>You’re not buying a workout plan.</span> You’re entering MW Velocity.</strong><p>MW Dynasty is designed to guide the athlete from today's session to long-term development with structure, precision and purpose.</p></div>
           <a class="btn gold" href="https://app.mwdynasty.com/athlete/start.html">BUILD YOUR DYNASTY →</a>
         </div>
       </section>
@@ -273,9 +273,9 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
       </div>
 
       <div class="coach-path">
-        <div class="path"><small>CORE</small><b>INFRASTRUCTURE</b><span>Bring your own methodology. Use MW to operate the program around it.</span></div>
-        <div class="path"><small>INTELLIGENCE</small><b>INFRASTRUCTURE + INSIGHT</b><span>Keep your methodology while MW adds intelligence around the decisions.</span></div>
-        <div class="path"><small>COACH VELOCITY</small><b>COMPLETE MW VELOCITY</b><span>Coach Velocity includes the complete MW Velocity training system to drive the program.</span></div>
+        <div class="path"><small>COACH CORE</small><b>RUN THE PROGRAM</b><span>Coach Core helps you run the program.</span></div>
+        <div class="path"><small>COACH INTELLIGENCE</small><b>UNDERSTAND THE PROGRAM</b><span>Coach Intelligence helps you understand the program.</span></div>
+        <div class="path"><small>COACH VELOCITY</small><b>DRIVE THE PROGRAM</b><span>Coach Velocity includes the complete MW Velocity training system to drive the program.</span></div>
       </div>
       <div class="sponsor-note"><b>Sponsored athlete pricing:</b> Coach Core +$5/athlete, Coach Intelligence +$6/athlete, Coach Velocity +$7/athlete each month. A sponsored athlete does not also pay the separate $19 MW Velocity — Athlete membership while covered by that coach sponsorship.</div>
     </div>
