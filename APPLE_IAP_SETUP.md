@@ -4,7 +4,7 @@
 
 Create two auto-renewable subscription groups:
 
-**Athlete Membership**
+**MW Velocity — Athlete**
 - Product ID: `com.mwdynasty.app.athlete.monthly`
 - MW plan: `mw_athlete`
 - Monthly price target: $19

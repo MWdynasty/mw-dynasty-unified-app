@@ -71,13 +71,13 @@ Subscriptions are available for individual athletes and coaches. Features availa
 ## Auto-Renewable Subscriptions
 
 ### Athlete subscription group
-**Group Reference Name:** Athlete Membership  
+**Group Reference Name:** MW Velocity — Athlete  
 **Suggested Group Display Name:** Athlete Performance Membership
 
 **Product**
 - Reference Name: MW Velocity — Athlete Monthly
 - Product ID: `com.mwdynasty.app.athlete.monthly`
-- Display Name: Athlete Membership
+- Display Name: MW Velocity — Athlete
 - Duration: 1 month
 - U.S. launch price: $19/month
 - IAP Description: Complete MW sprint-performance training.
@@ -140,7 +140,7 @@ MW Dynasty has two authenticated experiences: Athlete and Coach.
 
 Athlete:
 1. Sign in with the Athlete review account.
-2. Athlete membership can be purchased with Apple's In-App Purchase.
+2. MW Velocity — Athlete can be purchased with Apple's In-App Purchase.
 3. The Athlete app includes training, strength, pacing, progress, Coach MW, messages, account settings, and in-app account deletion.
 
 Coach:
