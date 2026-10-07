@@ -41,7 +41,7 @@ MW Dynasty is a sprint-performance ecosystem built for athletes and coaches.
 
 Athletes can follow structured sprint and strength training, understand the purpose behind the work, track progress, use individualized pacing tools, measure training distances, and ask Coach MW for help understanding technique, recovery, race strategy, strength, and training execution.
 
-Coaches can organize athletes, manage teams and programs, track attendance and athlete activity, communicate with athletes, review performance signals, and use Coach MW to support coaching decisions. Higher Coach tiers add roster intelligence and the complete MW Sprint Performance System.
+Coaches can organize athletes, manage teams and programs, track attendance and athlete activity, communicate with athletes, review performance signals, and use Coach MW to support coaching decisions. Higher Coach tiers add roster intelligence and the complete MW Velocity training system through Coach Velocity.
 
 ATHLETE EXPERIENCE
 • Progressive sprint-performance training
@@ -62,7 +62,7 @@ COACH EXPERIENCE
 • Athlete-status monitoring
 • Coach MW coaching intelligence
 • AI-supported prioritization on eligible plans
-• Full 41-week MW sprint system on Sprint Performance
+• Full 41-week MW Velocity training system on Coach Velocity
 
 MW Dynasty is designed for athletes age 13 and older. Training guidance is educational sports-performance information and is not medical diagnosis or treatment.
 
@@ -75,7 +75,7 @@ Subscriptions are available for individual athletes and coaches. Features availa
 **Suggested Group Display Name:** Athlete Performance Membership
 
 **Product**
-- Reference Name: MW Athlete Monthly
+- Reference Name: MW Velocity — Athlete Monthly
 - Product ID: `com.mwdynasty.app.athlete.monthly`
 - Display Name: Athlete Membership
 - Duration: 1 month
@@ -89,9 +89,9 @@ Subscriptions are available for individual athletes and coaches. Features availa
 Rank from highest service level to lowest:
 
 **Level 1**
-- Reference Name: MW Sprint Performance Monthly
+- Reference Name: Coach Velocity Monthly
 - Product ID: `com.mwdynasty.app.coach.sprintperformance.monthly`
-- Display Name: Sprint Performance
+- Display Name: Coach Velocity
 - Duration: 1 month
 - U.S. launch price: $109/month
 - IAP Description: Complete MW sprint, strength, and coaching.
