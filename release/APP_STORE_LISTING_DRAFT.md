@@ -10,13 +10,13 @@ Promotional text: Keep track workouts, strength training and practice results co
 
 Description:
 
-MW Dynasty brings athletes and coaches together around their training.
+MW Dynasty brings athletes and coaches together around their training. MW Velocity is the proprietary sprint training methodology inside the MW Dynasty ecosystem.
 
-Follow track and strength workouts, view the season schedule, and record practice results. Coaches can create named groups, choose athletes, navigate heats, and keep rep timing and recovery separate for each heat. Saved results connect the athlete's profile and coach's dashboard.
+Athletes can use MW Velocity — Athlete to follow track and strength workouts, view the season schedule, and record practice results. Coaches can create named groups, choose athletes, navigate heats, and keep rep timing and recovery separate for each heat. Saved results connect the athlete's profile and coach's dashboard.
 
 Review completed workouts and available performance measures, including timed results when a workout has no pace target. Optional Coach MW helps with training questions and planning. You control whether your content and training context are shared with OpenAI; athletes separately control inclusion of their records in their coach's AI requests.
 
-MW Dynasty is intended for eligible users age 13 and older. Some features require a membership. Training information supports coaching decisions and is not medical diagnosis or treatment.
+MW Dynasty is intended for eligible users age 13 and older. Some features require MW Velocity — Athlete, Coach Core, Coach Intelligence, or Coach Velocity membership. Training information supports coaching decisions and is not medical diagnosis or treatment.
 
 Support: https://app.mwdynasty.com/support.html
 
