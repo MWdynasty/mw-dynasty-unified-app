@@ -127,6 +127,60 @@ function enhancementScript() {
     return changed;
   }
 
+  function enhanceCoachMembershipDisplay() {
+    const plans = [
+      { name: 'COACH CORE', copy: 'Coach Core helps you run the program.' },
+      { name: 'COACH INTELLIGENCE', copy: 'Coach Intelligence helps you understand the program.' },
+      { name: 'COACH VELOCITY', copy: 'Coach Velocity includes the complete MW Velocity training system to drive the program.' }
+    ];
+
+    if (!document.getElementById('mw-coach-tier-promise-style')) {
+      const style = document.createElement('style');
+      style.id = 'mw-coach-tier-promise-style';
+      style.textContent = `
+        .mw-coach-tier-promise{
+          margin:12px 0 14px;
+          padding:11px 12px;
+          border-left:2px solid #e8b94c;
+          border-radius:0 10px 10px 0;
+          background:rgba(232,185,76,.06);
+          color:#eef2f4;
+          font-size:13px;
+          font-weight:800;
+          line-height:1.45
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    let changed = 0;
+    const candidates = [...document.querySelectorAll('article,section,div')];
+    for (const plan of plans) {
+      const card = candidates
+        .filter(el => {
+          const t = (el.innerText || '').replace(/\\s+/g,' ').trim().toUpperCase();
+          return t.includes(plan.name) && !el.querySelector('.mw-coach-tier-promise');
+        })
+        .sort((a,b) => (a.innerText || '').length - (b.innerText || '').length)[0];
+
+      if (!card) continue;
+
+      const promise = document.createElement('div');
+      promise.className = 'mw-coach-tier-promise';
+      promise.textContent = plan.copy;
+
+      const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')];
+      const heading = headings.find(h => (h.textContent || '').replace(/\\s+/g,' ').trim().toUpperCase().includes(plan.name));
+      const priceNode = [...card.querySelectorAll('*')].find(el => /^\\$?(49|79|109)(\\s*\\/\\s*month|\\s*monthly)?$/i.test((el.textContent || '').replace(/\\s+/g,' ').trim()));
+
+      if (priceNode && priceNode.parentElement) priceNode.parentElement.insertAdjacentElement('afterend', promise);
+      else if (heading) heading.insertAdjacentElement('afterend', promise);
+      else card.prepend(promise);
+      changed += 1;
+    }
+    return changed;
+  }
+
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
@@ -206,11 +260,13 @@ function enhancementScript() {
 
   wireMembershipLinks();
   rewriteAthleteMembershipCopy();
+  enhanceCoachMembershipDisplay();
 
   if (!enhance()) {
     const observer = new MutationObserver(() => {
       wireMembershipLinks();
       rewriteAthleteMembershipCopy();
+      enhanceCoachMembershipDisplay();
       if (enhance()) observer.disconnect();
     });
     observer.observe(document.documentElement,{subtree:true,childList:true});
@@ -229,6 +285,9 @@ function enhancementScript() {
     setTimeout(rewriteAthleteMembershipCopy, 40);
     setTimeout(rewriteAthleteMembershipCopy, 180);
     setTimeout(rewriteAthleteMembershipCopy, 500);
+    setTimeout(enhanceCoachMembershipDisplay, 40);
+    setTimeout(enhanceCoachMembershipDisplay, 180);
+    setTimeout(enhanceCoachMembershipDisplay, 500);
     const a = e.target.closest?.('a');
     if (!a) return;
     const label = (a.textContent || '').toLowerCase();
