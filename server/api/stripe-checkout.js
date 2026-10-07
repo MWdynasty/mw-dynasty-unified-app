@@ -1,6 +1,8 @@
 const { authenticate, SUPABASE_URL, SUPABASE_KEY } = require('../lib/mw-coach-auth');
 
-// These are legacy Stripe catalog lookup names, not customer-facing MW product labels.\n// Keep them until the existing Stripe products are renamed in place so checkout keeps the same product/price IDs.\nconst PLAN_PRODUCTS = {
+// These are legacy Stripe catalog lookup names, not customer-facing MW product labels.
+// Keep them until the existing Stripe products are renamed in place so checkout keeps the same product/price IDs.
+const PLAN_PRODUCTS = {
   mw_athlete: { audience: 'athlete', productName: 'Athlete Membership' },
   coach_core: { audience: 'coach', productName: 'Coach Core', sponsorProductName: 'Coach Core Sponsored Athlete' },
   coach_intelligence: { audience: 'coach', productName: 'Coach Intelligence', sponsorProductName: 'Coach Intelligence Sponsored Athlete' },
