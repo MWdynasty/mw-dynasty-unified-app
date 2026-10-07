@@ -4,7 +4,7 @@ const PLAN_PRODUCTS = {
   mw_athlete: { audience: 'athlete', productName: 'Athlete Membership' },
   coach_core: { audience: 'coach', productName: 'Coach Core', sponsorProductName: 'Coach Core Sponsored Athlete' },
   coach_intelligence: { audience: 'coach', productName: 'Coach Intelligence', sponsorProductName: 'Coach Intelligence Sponsored Athlete' },
-  mw_sprint_performance: { audience: 'coach', productName: 'MW Sprint Performance System', sponsorProductName: 'MW Sprint Performance Sponsored Athlete' },
+  mw_sprint_performance: { audience: 'coach', productName: 'Coach Velocity', sponsorProductName: 'Coach Velocity Sponsored Athlete' },
 };
 
 async function loadCatalogPlan(planCode, token) {

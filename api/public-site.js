@@ -60,7 +60,7 @@ function enhancementScript() {
 
   function rewriteAthleteMembershipCopy() {
     const replacements = new Map([
-      ['WHAT YOU GET', 'YOUR COMPLETE SPRINT PERFORMANCE SYSTEM'],
+      ['WHAT YOU GET', 'YOUR COMPLETE MW VELOCITY TRAINING SYSTEM'],
       ['Smart Entry Assessment + personalized starting week', 'Start at the right place — MW evaluates the athlete and places them at the appropriate point in the training system.'],
       ['41-week sprint progression for 100m, 200m + 400m', 'A complete 41-week sprint progression built for the 100m, 200m and 400m.'],
       ['MW Strength & Power sessions', 'Strength & Power training integrated with sprint work so the weight room supports what happens on the track.'],
@@ -95,7 +95,7 @@ function enhancementScript() {
     const all = [...document.querySelectorAll('div,section,article')];
     const membershipCard = all.find(el => {
       const t = (el.innerText || '').replace(/\\s+/g, ' ').trim();
-      return t.includes('YOUR COMPLETE SPRINT PERFORMANCE SYSTEM') &&
+      return t.includes('YOUR COMPLETE MW VELOCITY TRAINING SYSTEM') &&
              t.includes('A complete 41-week sprint progression') &&
              t.includes('Coach MW is built into the system');
     });
@@ -161,7 +161,7 @@ function enhancementScript() {
     return nodes.find(el => {
       const t = (el.innerText || '').replace(/\\s+/g,' ').trim();
       return t.includes('EVERYTHING YOU NEED. ALL IN ONE PLACE.') &&
-             t.includes('SPRINT PERFORMANCE') &&
+             t.includes('MW VELOCITY') &&
              t.includes('STRENGTH & POWER');
     });
   }

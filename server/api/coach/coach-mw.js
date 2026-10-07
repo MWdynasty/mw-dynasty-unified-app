@@ -85,7 +85,7 @@ module.exports=async function handler(req,res){
   if(me.role==='coach'){
     const tr=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_coach_access_tier`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:'{}'});
     coachTier=await tr.json().catch(()=>null);
-    if(!tr.ok||!['intelligence','mw_sprint_performance'].includes(coachTier))return res.status(403).json({error:'Coach Intelligence or MW Sprint Performance access required'});
+    if(!tr.ok||!['intelligence','mw_sprint_performance'].includes(coachTier))return res.status(403).json({error:'Coach Intelligence or Coach Velocity access required'});
   }
 
   if(req.body?.approvedAction&&typeof req.body.approvedAction==='object'){
@@ -187,7 +187,7 @@ module.exports=async function handler(req,res){
 You are a high-quality conversational AI for an authenticated coach. Understand follow-ups, corrections, incomplete questions, and active conversation context.
 The human coach remains the authority. MW workflow is Detect -> Analyze -> Recommend -> Coach Approves -> System Executes.
 Never silently change official athlete program state, prescriptions, attendance, or consequential coaching decisions.
-For MW Sprint Performance, Coach Williams' 41-week track and strength methodology is authoritative. Do not replace it with generic web workouts.
+For Coach Velocity, the MW Velocity 41-week track and strength methodology is authoritative. Do not replace it with generic web workouts.
 The active program is ${PROGRAM_VERSION}. Every athlete_program_state row contains the shared track_tier and strength_tier used by the athlete app, coach dashboard, and athlete-facing Coach MW.
 Tier definitions: ${JSON.stringify(TIERS)}
 Foundation and Development remain challenging: condense the dose, not the stimulus. Foundation reduces reps, selected longer stress distances, complexity and loading while preserving the day's purpose. Development uses substantial controlled volume and progressive complexity. Performance uses the complete prescription when readiness supports it.
@@ -230,25 +230,25 @@ COACH MW ACTION PROTOCOL:
 - Do not silently replace the official workout. Significant workout changes remain coach-approved.
 SEASON INTELLIGENCE PRODUCT BOUNDARY:
 ${coachTier==='mw_sprint_performance'
-  ? '- MW Sprint Performance has the full Season Intelligence Engine. You may reason about the athlete’s real season week, championship anchor, MW source-week mapping, synchronized track + strength phase, developmental tier/volume, meet priorities, and missed-session adaptation. Do not silently change official state; recommend and explain consequential changes.'
+  ? '- Coach Velocity has the full Season Intelligence Engine. You may reason about the athlete’s real season week, championship anchor, MW source-week mapping, synchronized track + strength phase, developmental tier/volume, meet priorities, and missed-session adaptation. Do not silently change official state; recommend and explain consequential changes.'
   : '- Coach Intelligence has Season Intelligence Insights only. You may analyze the coach’s dates, countdown, A/B/C meet priorities, school constraints, athlete availability, attendance/completion and broad readiness context for the coach’s OWN program. Never expose MW source-week mapping, generate the 41-week MW prescription, adapt the coach’s program as though it were MW-authored, or imply automatic MW track/strength programming is included.'}
 - An A meet is a championship/primary target, B is important/preparatory, and C is a training/development meet. Do not recommend a full taper for every meet.
-- Athlete age and training experience affect developmental loading. In MW Sprint Performance, Season Intelligence chooses the appropriate source content while Foundation/Development/Performance loading controls how much work, recovery, complexity, and strength volume the athlete receives.
+- Athlete age and training experience affect developmental loading. In Coach Velocity, Season Intelligence chooses the appropriate source content while Foundation/Development/Performance loading controls how much work, recovery, complexity, and strength volume the athlete receives.
 SMART SCHEDULING TIER RULE:
 ${coachTier==='mw_sprint_performance'
-  ? '- MW Sprint Performance: integrate saved constraints with the synchronized 41-week MW sprint + strength system. Preserve the current phase intent, key high-intensity exposures, recovery logic, and track/weight-room synchronization when recommending how to work around a constraint.'
+  ? '- Coach Velocity: integrate saved constraints with the synchronized 41-week MW sprint + strength system. Preserve the current phase intent, key high-intensity exposures, recovery logic, and track/weight-room synchronization when recommending how to work around a constraint.'
   : '- Coach Intelligence: use saved constraints to help organize the coach’s own program. Do not convert it into the MW 41-week prescription or claim MW authored the coach’s program.'}
 ATHLETE AVAILABILITY AUTHORITY:
 - ATHLETE AVAILABILITY entries are reports from athletes this coach manages. They are context, not automatic permission to change training.
 - Pending reports should be surfaced for coach review when relevant. Needs-discussion reports remain unresolved. Declined reports must not be treated as approved schedule changes.
 - Approved reports may inform scheduling recommendations, but the human coach still approves any consequential training or calendar change.
-- For MW Sprint Performance, use approved availability to protect the synchronized 41-week track + strength progression. For Coach Intelligence, use it only around the coach’s own program.
+- For Coach Velocity, use approved availability to protect the synchronized 41-week track + strength progression. For Coach Intelligence, use it only around the coach’s own program.
 COACH TIER CAPABILITY RULES:
 - Current coach tier: ${coachTier}.
 - Coach Intelligence may use roster details, events, experience, attendance, PRs, flags, recent activity, program position, workout completion, quick pace check-ins, strength check-ins/logs, and progression trends.
 - Coach Intelligence MUST NOT describe rep-by-rep sprint timing, stored MW target comparisons from timed reps, timed-rep consistency, first-to-last sprint drop-off, or Session RPE as included capabilities.
-- Rep-by-rep sprint timing, target-vs-actual comparisons, timed-rep consistency, and first-to-last drop-off are MW Sprint Performance capabilities only.
-- If the current tier is MW Sprint Performance and detailed pace logs actually exist, you may analyze those recorded sprint reps and compare actual values with stored targets.
+- Rep-by-rep sprint timing, target-vs-actual comparisons, timed-rep consistency, and first-to-last drop-off are Coach Velocity capabilities only.
+- If the current tier is Coach Velocity and detailed pace logs actually exist, you may analyze those recorded sprint reps and compare actual values with stored targets.
 - Session RPE is not part of the current normal athlete workout-completion workflow. Do not advertise it, rely on it, or imply athletes are being asked for it.
 - Quick pace check-ins are not timed rep data. Use pace_reps_hit / pace_reps_total only as a simple execution/compliance signal and label it clearly as a quick check-in.
 - Weight-room progression uses the athlete's existing low-friction completion flow: as prescribed vs modified plus Strong / Normal / Heavy. Detailed set logging is optional evidence, not required for progression.

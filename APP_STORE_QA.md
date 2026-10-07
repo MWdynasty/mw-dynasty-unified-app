@@ -8,7 +8,7 @@
 - Athlete App Store product: `com.mwdynasty.app.athlete.monthly`
 - Coach Core product: `com.mwdynasty.app.coach.core.monthly`
 - Coach Intelligence product: `com.mwdynasty.app.coach.intelligence.monthly`
-- Sprint Performance product: `com.mwdynasty.app.coach.sprintperformance.monthly`
+- Coach Velocity product: `com.mwdynasty.app.coach.sprintperformance.monthly`
 - Signed Codemagic workflow now runs App Store privacy/product preflight and submits the signed IPA to TestFlight.
 - Apple-paid Coach plan changes are App Store-managed; MW updates access only after Apple verification/server notification.
 - App Store Server Notifications must use Version 2 for both sandbox and production.
@@ -111,7 +111,7 @@ The notification bell is now live for in-app coach notifications. Native APNs pu
 - [ ] Coach MW avatar/voice preference is in Account Settings, not duplicated on chat page.
 - [ ] Coach MW assistant responses show Read Aloud and use authenticated /api/speak.
 - [ ] Coach MW microphone captures speech where browser SpeechRecognition is supported.
-- [ ] Rep tracking appears only as an MW Sprint Performance upgrade teaser in Coach Intelligence.
+- [ ] Rep tracking appears only as an Coach Velocity upgrade teaser in Coach Intelligence.
 - [ ] Athlete Home shows Messages with unread badge.
 - [ ] Athlete inbox loads coach messages and marks unread messages read when opened.
 - [ ] Athlete can reply to coach from the message thread.
@@ -139,12 +139,12 @@ The notification bell is now live for in-app coach notifications. Native APNs pu
 - Coach Intelligence no longer receives rep-by-rep sprint timing context.
 - Coach Intelligence can use quick pace check-ins, workout completion, attendance, PRs, flags, program position, and strength check-ins/logs.
 - Coach MW is explicitly prohibited from advertising Session RPE as a current workflow capability.
-- Detailed timed-rep target comparisons, consistency, and first-to-last drop-off remain MW Sprint Performance only.
+- Detailed timed-rep target comparisons, consistency, and first-to-last drop-off remain Coach Velocity only.
 - Coach MW page wording now says "pace check-ins" instead of generic "pacing" for clearer tier accuracy.
 
 
 ## V3.0.13 Coach Account navigation fix
-- Fixed Account on Coach Core, Coach Intelligence, and MW Sprint Performance.
+- Fixed Account on Coach Core, Coach Intelligence, and Coach Velocity.
 - Restored the missing training-year settings renderer/binder that was throwing before Account could render.
 - Account now opens with plan/billing, training-year settings, tutorial, privacy/support, and deletion controls.
 - Training-year setting supports MW Standard vs Custom Week 1 and reads/saves through the authenticated season-calendar API.
@@ -172,14 +172,14 @@ The notification bell is now live for in-app coach notifications. Native APNs pu
 - Full MW 41-week program, Strength & Power, Sprint School, Smart Entry and advanced tools remain locked.
 - Direct URLs fail closed for full-MW-only capabilities.
 
-### MW Sprint Performance sponsored athlete
+### Coach Velocity sponsored athlete
 - Full MW athlete ecosystem is available.
 - Smart Entry, 41-week track, synchronized Strength & Power, Sprint School and advanced tools load normally.
 - Coach-assigned training remains compatible where assigned.
 
 ### Upgrade/downgrade behavior
 - Core → Intelligence unlocks intelligence without new athlete account.
-- Intelligence → Sprint Performance unlocks full MW features without losing athlete history/messages/check-ins.
+- Coach Intelligence → Coach Velocity unlocks the complete MW Velocity features without losing athlete history/messages/check-ins.
 - Downgrade removes higher-tier feature access at entitlement effective date but preserves historical records.
 - Sponsorship ending does not silently create a duplicate $19 charge.
 
