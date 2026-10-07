@@ -94,7 +94,8 @@ button{font:inherit}
 .plan h3{font-size:27px;line-height:1.02;letter-spacing:-.04em;margin:10px 0 5px}
 .meaning{font-size:11px;color:#f1ca69;font-weight:900;letter-spacing:.05em;margin-bottom:16px}
 .amount{font-size:48px;font-weight:1000;letter-spacing:-.06em;line-height:.95}.amount small{font-size:14px;color:#8797a4;letter-spacing:0}
-.sponsor{color:#8ea0ad;font-size:11px;margin:7px 0 15px}
+.sponsor{color:#8ea0ad;font-size:11px;margin:7px 0 10px}
+.tier-promise{margin:0 0 15px;padding:11px 12px;border-left:2px solid #e7b64d;background:rgba(231,182,77,.055);border-radius:0 10px 10px 0;color:#e8eef2;font-size:13px;font-weight:850;line-height:1.45}
 .plan-copy{color:#9faeb9;font-size:13px;line-height:1.55;min-height:80px}
 .plan ul{list-style:none;padding:0;margin:17px 0 24px;display:grid;gap:9px}
 .plan li{font-size:12px;color:#c3ccd3;line-height:1.42}.plan li:before{content:"✓";color:var(--gold);font-weight:1000;margin-right:8px}
@@ -211,6 +212,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
             <div class="meaning">RUN YOUR PROGRAM ON MW.</div>
             <div class="amount">$49<small>/month</small></div>
             <div class="sponsor">Sponsored athletes: +$5 each / month</div>
+            <div class="tier-promise">Coach Core helps you run the program.</div>
             <p class="plan-copy">For coaches who already have their methodology and want a professional operating environment around it.</p>
             <ul>
               <li>Roster + athlete organization</li>
@@ -233,6 +235,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
             <div class="meaning">RUN YOUR PROGRAM WITH MW BESIDE YOU.</div>
             <div class="amount">$79<small>/month</small></div>
             <div class="sponsor">Sponsored athletes: +$6 each / month</div>
+            <div class="tier-promise">Coach Intelligence helps you understand the program.</div>
             <p class="plan-copy">Keep your methodology while MW adds connected context around scheduling, athlete availability and season decisions.</p>
             <ul>
               <li>Everything in Core</li>
@@ -256,6 +259,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
             <div class="meaning">RUN THE COMPLETE MW SYSTEM.</div>
             <div class="amount">$109<small>/month</small></div>
             <div class="sponsor">Sponsored athletes: +$7 each / month</div>
+            <div class="tier-promise">Coach Velocity includes the complete MW Velocity training system to drive the program.</div>
             <p class="plan-copy">For coaches and programs that want the full MW Dynasty sprint-development methodology operating through the platform.</p>
             <ul>
               <li>Everything in Intelligence</li>
