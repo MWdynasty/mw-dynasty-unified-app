@@ -137,7 +137,7 @@ function enhancementScript() {
     if (!document.getElementById('mw-coach-tier-promise-style')) {
       const style = document.createElement('style');
       style.id = 'mw-coach-tier-promise-style';
-      style.textContent = `
+      style.textContent = \`
         .mw-coach-tier-promise{
           margin:12px 0 14px;
           padding:11px 12px;
@@ -149,7 +149,7 @@ function enhancementScript() {
           font-weight:800;
           line-height:1.45
         }
-      `;
+      \`;
       document.head.appendChild(style);
     }
 
