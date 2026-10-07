@@ -115,7 +115,7 @@ html.mw-native-app .nativeIapDisclosure{display:block}
               <div class="sponsorRates">
                 <div><span>Coach Core</span><b>+$5 / athlete / month</b></div>
                 <div><span>Coach Intelligence</span><b>+$6 / athlete / month</b></div>
-                <div><span>Sprint Performance</span><b>+$7 / athlete / month</b></div>
+                <div><span>Coach Velocity</span><b>+$7 / athlete / month</b></div>
               </div>
               <div id="sponsorPlanActions" class="actions"></div>
             </div>
@@ -172,7 +172,7 @@ async function rpc(name,args={}){
   const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||d?.hint||d?.details||'MW account request failed.');return d;
 }
 function nice(v){return String(v||'—').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}
-function plan(v){return ({mw_athlete:'Athlete Membership',coach_core:'Coach Core',coach_intelligence:'Coach Intelligence',mw_sprint_performance:'MW Sprint Performance'})[v]||v||'Membership'}
+function plan(v){return ({mw_athlete:'MW Velocity — Athlete',coach_core:'Coach Core',coach_intelligence:'Coach Intelligence',mw_sprint_performance:'Coach Velocity'})[v]||v||'Membership'}
 function dateText(v){if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}
 function coachRole(v){return ['coach','admin','founder_owner'].includes(String(v||''))}
 function goBackInsideMW(){
@@ -214,7 +214,7 @@ function renderCoachPlanChange(b){
   const plans=[
     ['coach_core','core','Coach Core',49],
     ['coach_intelligence','intelligence','Coach Intelligence',79],
-    ['mw_sprint_performance','mw_sprint_performance','Sprint Performance',109]
+    ['mw_sprint_performance','mw_sprint_performance','Coach Velocity',109]
   ];
   const box=el('coachPlanChangeActions'),copy=el('coachPlanChangeCopy');box.innerHTML='';
   if(pending&&pending.type==='plan_change'){
@@ -351,7 +351,7 @@ function renderPlanActions(role,options={}){
     el('coachMembershipPanel').style.display='none';
     el('sponsorshipPanel').style.display='block';
     const current=String(options.currentPlanCode||'');
-    const plans=[['coach_core','Coach Core',49,5],['coach_intelligence','Coach Intelligence',79,6],['mw_sprint_performance','Sprint Performance',109,7]];
+    const plans=[['coach_core','Coach Core',49,5],['coach_intelligence','Coach Intelligence',79,6],['mw_sprint_performance','Coach Velocity',109,7]];
     const chosen=plans.find(p=>p[0]===current);
     renderSponsorPlans(chosen?[chosen]:[]);
     return;
@@ -374,7 +374,7 @@ function renderPlanActions(role,options={}){
   const plans=[
     ['coach_core','Coach Core',49,5],
     ['coach_intelligence','Coach Intelligence',79,6],
-    ['mw_sprint_performance','Sprint Performance',109,7]
+    ['mw_sprint_performance','Coach Velocity',109,7]
   ];
   plans.forEach(([code,name,base])=>{
     const button=document.createElement('button');
@@ -388,7 +388,7 @@ function renderSponsorPlans(plans){
   const allPlans=[
     ['coach_core','Coach Core',49,5],
     ['coach_intelligence','Coach Intelligence',79,6],
-    ['mw_sprint_performance','Sprint Performance',109,7]
+    ['mw_sprint_performance','Coach Velocity',109,7]
   ];
   const provider=String(account?.billing?.provider||'').toLowerCase();
   const addOnCoach=['apple','stripe'].includes(provider)&&coachRole(account?.user?.role);
