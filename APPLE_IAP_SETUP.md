@@ -10,11 +10,11 @@ Create two auto-renewable subscription groups:
 - Monthly price target: $19
 
 **Coach Membership**
-- Level 1 — Sprint Performance: `com.mwdynasty.app.coach.sprintperformance.monthly` — $109/month
+- Level 1 — Coach Velocity: `com.mwdynasty.app.coach.sprintperformance.monthly` — $109/month
 - Level 2 — Coach Intelligence: `com.mwdynasty.app.coach.intelligence.monthly` — $79/month
 - Level 3 — Coach Core: `com.mwdynasty.app.coach.core.monthly` — $49/month
 
-Use App Store-managed upgrade/downgrade behavior for the Coach group. Sprint Performance is the highest service level and Coach Core is the lowest.
+Use App Store-managed upgrade/downgrade behavior for the Coach group. Coach Velocity is the highest service level and Coach Core is the lowest.
 
 ### App Store Server Notifications V2
 Configure both Production and Sandbox Server URL as:
@@ -69,7 +69,7 @@ App Store prices must be configured to match the active MW membership catalog. T
 ## Subscription groups and Coach plan changes
 - Put `mw_athlete` in its own Athlete auto-renewable subscription group.
 - Put all three Coach products in one Coach auto-renewable subscription group so Apple owns upgrade/downgrade timing and prevents simultaneous Coach subscriptions.
-- Configure the Coach service levels in this order from highest to lowest: Sprint Performance, Coach Intelligence, Coach Core.
+- Configure the Coach service levels in this order from highest to lowest: Coach Velocity, Coach Intelligence, Coach Core.
 - Existing Apple-paid Coaches change tiers through Apple's subscription-management UI. MW does not create a second StoreKit purchase flow for a tier change.
 - MW changes the Coach tier only after an App Store Server notification / verified transaction shows the new Apple product as effective.
 - Sponsored-athlete Stripe add-on pricing is then aligned to the newly verified Coach tier.
