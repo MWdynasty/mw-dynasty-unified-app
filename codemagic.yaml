@@ -1,6 +1,6 @@
 workflows:
   ios-compile-check:
-    name: MW Dynasty iOS V3.0.16 Compile Check
+    name: MW Dynasty iOS V3.0.17 Compile Check
     instance_type: mac_mini_m2
     max_build_duration: 60
 
@@ -15,7 +15,7 @@ workflows:
           mkdir -p "$CM_BUILD_DIR/ios_build"
           unzip -q "$CM_BUILD_DIR/MW_Dynasty_iOS_V3_0_13_Codemagic_Source.zip" -d "$CM_BUILD_DIR/ios_build"
 
-      - name: Apply MW Dynasty V3.0.16 native patches
+      - name: Apply MW Dynasty V3.0.17 native patches
         script: |
           set -e
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Debug.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Debug.xcconfig"
@@ -24,8 +24,8 @@ workflows:
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/WebViewController.swift" "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/Info.plist" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/MWLaunch.png" "$CM_BUILD_DIR/ios_build/MWDynasty/MWLaunch.png"
-          grep -q 'MARKETING_VERSION = 3.0.16' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          grep -q 'CURRENT_PROJECT_VERSION = 14' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'MARKETING_VERSION = 3.0.17' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 15' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
 
       - name: Show Xcode version
         script: xcodebuild -version
@@ -47,7 +47,7 @@ workflows:
 
 
   ios-signed-build:
-    name: MW Dynasty iOS V3.0.16 Signed IPA
+    name: MW Dynasty iOS V3.0.17 Signed IPA
     instance_type: mac_mini_m2
     max_build_duration: 60
 
@@ -76,7 +76,7 @@ workflows:
           mkdir -p "$CM_BUILD_DIR/ios_build"
           unzip -q "$CM_BUILD_DIR/MW_Dynasty_iOS_V3_0_13_Codemagic_Source.zip" -d "$CM_BUILD_DIR/ios_build"
 
-      - name: Apply MW Dynasty V3.0.16 native patches
+      - name: Apply MW Dynasty V3.0.17 native patches
         script: |
           set -e
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/Config/Debug.xcconfig" "$CM_BUILD_DIR/ios_build/Config/Debug.xcconfig"
@@ -101,8 +101,8 @@ workflows:
           fi
           /usr/libexec/PlistBuddy -c "Print :ITSAppUsesNonExemptEncryption" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist" | grep -qi false
 
-          grep -q 'MARKETING_VERSION = 3.0.16' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          grep -q 'CURRENT_PROJECT_VERSION = 14' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'MARKETING_VERSION = 3.0.17' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 15' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
 
           # Build 14 native purchase contract
           grep -q 'com.mwdynasty.app.athlete.monthly' "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"
