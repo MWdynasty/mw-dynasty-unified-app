@@ -438,7 +438,7 @@ function metricPercent(n,d){return d>0?Math.round((n/d)*100):0}
 async function renderHeadquartersPremium(){
   const [d,f,h,r,aiData,supportData]=await Promise.all([api("overview"),api("finance"),api("customer_health"),api("risk"),api("ai_company"),api("support_triage")]);
   const m=d.metrics||{},attention=d.needs_attention||[],ath=h.athletes||[],co=h.coaches||[],risks=r.items||[];
-  const agents=aiData.agents||[],tasks=aiData.tasks||[],approvals=aiData.approvals||[],runs=aiData.recent_runs||[],supportItems=supportData.items||[];
+  const agents=(aiData.agents||[]).filter(x=>x.code!=="education_specialist"),tasks=aiData.tasks||[],approvals=aiData.approvals||[],runs=aiData.recent_runs||[],supportItems=supportData.items||[];
   const highRisks=risks.filter(x=>["high","critical"].includes(x.severity)&&!["resolved","closed"].includes(x.status));
   const supportEscalations=supportItems.filter(x=>["high","urgent"].includes(x.priority)&&!["resolved","closed"].includes(x.status));
   const customerAttention=ath.filter(x=>x.health!=="healthy").length+co.filter(x=>x.health!=="healthy").length;
@@ -913,7 +913,7 @@ function isAIInternalSafeTask(t){
   return t.source==="system_signal"||(safeStart.test(title)&&!execution.test(title));
 }
 async function renderAI(){
-  const d=await api("ai_company",true),agents=d.agents||[],tasks=d.tasks||[],approvals=d.approvals||[],runs=d.recent_runs||[],departmentBriefs=d.department_briefs||[],operatingQueue=d.operating_queue||{},autonomy=d.autonomy||{},controlledExecution=d.controlled_execution||{};
+  const d=await api("ai_company",true),agents=(d.agents||[]).filter(x=>x.code!=="education_specialist"),tasks=d.tasks||[],approvals=d.approvals||[],runs=d.recent_runs||[],departmentBriefs=d.department_briefs||[],operatingQueue=d.operating_queue||{},autonomy=d.autonomy||{},controlledExecution=d.controlled_execution||{};
   const systemTasks=operatingQueue.items||[],autonomyCycles=Array.isArray(autonomy.last_cycles)?autonomy.last_cycles:[],lastAutonomyCycle=autonomyCycles[0]||null,executionJobs=Array.isArray(controlledExecution.jobs)?controlledExecution.jobs:[];
   const oversightLabel=mode=>mode==="ai_autonomous"?"AI AUTONOMOUS":mode==="human_specialist_required"?"AI + HUMAN SPECIALIST":"AI + FOUNDER APPROVAL";
   const oversightType=mode=>mode==="ai_autonomous"?"good":mode==="human_specialist_required"?"warn":"blue";
@@ -1289,7 +1289,7 @@ function openEmployeeConversation(agent){
 }
 
 async function renderPrograms(){
-  const d=await api("programs"),releases=d.releases||[],versions=d.athlete_version_distribution||[],weeks=d.week_distribution||[],tiers=d.tier_distribution||{};
+  const d=await api("programs"),releases=(d.releases||[]).filter(x=>x.program_code!=="mw_sprint_school"),versions=d.athlete_version_distribution||[],weeks=d.week_distribution||[],tiers=d.tier_distribution||{};
   $("content").innerHTML='<section class="hero"><div class="brand">OFFICIAL MW PROGRAM CONTROL</div><h2>One Founder-controlled source of truth.</h2><p>Track, Strength & Power, and Coach MW knowledge stay versioned and governed. AI can analyze and prepare changes, but official methodology is published only after Founder approval.</p></section>'+
     '<div class="stats">'+stat("Published Components",releases.filter(x=>x.status==="published").length)+stat("Program Versions in Use",versions.length)+stat("Athletes in Program State",versions.reduce((n,x)=>n+(Number(x.athletes)||0),0))+stat("Current MW Version","mw-41-tiered-v2.9")+'</div>'+
     sectionHead("Official Program Registry","Founder-owned releases and their authoritative source references.")+
