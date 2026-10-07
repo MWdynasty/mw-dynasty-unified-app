@@ -125,7 +125,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
   <div class="wrap nav-inner">
     <a class="brand" href="https://mwdynasty.com">
       <img src="/coach/mw-mark.png" alt="MW Dynasty crest">
-      <span class="brand-copy"><b>MW DYNASTY</b><small>SPRINT PERFORMANCE SYSTEM</small></span>
+      <span class="brand-copy"><b>MW DYNASTY</b><small>MW VELOCITY</small></span>
     </a>
     <div class="nav-actions">
       <a class="btn dark" href="https://mwdynasty.com">BACK TO SITE</a>
@@ -138,7 +138,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
   <div class="wrap">
     <div class="eyebrow">Choose your path</div>
     <h1>ONE DYNASTY. <span>TWO EXPERIENCES.</span></h1>
-    <p>Athletes get one complete MW Sprint Performance membership. Coaches choose the level of MW partnership that fits the way they lead their program.</p>
+    <p>Athletes get one complete MW Velocity — Athlete membership. Coaches choose the level of MW partnership that fits the way they lead their program.</p>
     <div class="role-switch" role="tablist" aria-label="Membership type">
       <button class="role-tab active" type="button" data-role="athlete" role="tab" aria-selected="true">ATHLETE<small>One complete performance system</small></button>
       <button class="role-tab" type="button" data-role="coach" role="tab" aria-selected="false">COACH<small>Three levels of coaching partnership</small></button>
@@ -154,7 +154,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
         <div class="flagship-bg"></div><div class="flagship-glow"></div>
         <div class="flagship-content">
           <div class="label">Athlete Membership · One flagship system</div>
-          <h2>MW SPRINT <span>PERFORMANCE SYSTEM</span></h2>
+          <h2>MW VELOCITY <span>— ATHLETE</span></h2>
           <p class="flagship-sub">More than workouts. A connected environment that tells the athlete what to do, teaches them why, tracks what happened, and keeps the season moving with purpose.</p>
           <div class="price-row"><div class="price">$19</div><div class="price-meta">/ month<br>complete athlete membership</div></div>
           <div class="value-pills"><span>41-WEEK SPRINT SYSTEM</span><span>STRENGTH & POWER</span><span>SPRINT SCHOOL</span><span>COACH MW</span><span>PACE + DISTANCE TOOLS</span><span>PROGRESS TRACKING</span></div>
@@ -168,7 +168,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
 
       <section class="value-section" id="athlete-system">
         <div class="value-head">
-          <div class="label">Your complete sprint performance system</div>
+          <div class="label">Your complete MW Velocity training system</div>
           <h3>Everything works together.</h3>
           <p>The value is not a list of disconnected features. Track training, strength work, education, pacing, scheduling, accountability, and guidance are designed to operate as one athlete-development environment.</p>
         </div>
@@ -207,7 +207,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
           <div class="plan-visual"></div>
           <div class="plan-body">
             <div class="tier">Level 01 · Infrastructure</div>
-            <h3>MW COACH CORE</h3>
+            <h3>COACH CORE</h3>
             <div class="meaning">RUN YOUR PROGRAM ON MW.</div>
             <div class="amount">$49<small>/month</small></div>
             <div class="sponsor">Sponsored athletes: +$5 each / month</div>
@@ -229,7 +229,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
           <div class="plan-visual"></div>
           <div class="plan-body">
             <div class="tier">Level 02 · Infrastructure + Insight</div>
-            <h3>MW COACH INTELLIGENCE</h3>
+            <h3>COACH INTELLIGENCE</h3>
             <div class="meaning">RUN YOUR PROGRAM WITH MW BESIDE YOU.</div>
             <div class="amount">$79<small>/month</small></div>
             <div class="sponsor">Sponsored athletes: +$6 each / month</div>
@@ -252,7 +252,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
           <div class="plan-visual"></div>
           <div class="plan-body">
             <div class="tier">Level 03 · Complete System</div>
-            <h3>MW SPRINT PERFORMANCE</h3>
+            <h3>COACH VELOCITY</h3>
             <div class="meaning">RUN THE COMPLETE MW SYSTEM.</div>
             <div class="amount">$109<small>/month</small></div>
             <div class="sponsor">Sponsored athletes: +$7 each / month</div>
@@ -267,7 +267,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
               <li>41-week schedule intelligence</li>
               <li>Methodology-aligned season planning</li>
             </ul>
-            <a class="btn dark" href="https://app.mwdynasty.com/coach/start.html">CHOOSE SPRINT PERFORMANCE →</a>
+            <a class="btn dark" href="https://app.mwdynasty.com/coach/start.html">CHOOSE COACH VELOCITY →</a>
           </div>
         </article>
       </div>
@@ -275,9 +275,9 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
       <div class="coach-path">
         <div class="path"><small>CORE</small><b>INFRASTRUCTURE</b><span>Bring your own methodology. Use MW to operate the program around it.</span></div>
         <div class="path"><small>INTELLIGENCE</small><b>INFRASTRUCTURE + INSIGHT</b><span>Keep your methodology while MW adds intelligence around the decisions.</span></div>
-        <div class="path"><small>SPRINT PERFORMANCE</small><b>COMPLETE METHODOLOGY</b><span>Use the full MW sprint, strength, education and intelligence ecosystem.</span></div>
+        <div class="path"><small>COACH VELOCITY</small><b>COMPLETE MW VELOCITY</b><span>Coach Velocity includes the complete MW Velocity training system to drive the program.</span></div>
       </div>
-      <div class="sponsor-note"><b>Sponsored athlete pricing:</b> Core +$5/athlete, Intelligence +$6/athlete, Sprint Performance +$7/athlete each month. A sponsored athlete does not also pay the separate $19 individual Athlete membership while covered by that coach sponsorship.</div>
+      <div class="sponsor-note"><b>Sponsored athlete pricing:</b> Coach Core +$5/athlete, Coach Intelligence +$6/athlete, Coach Velocity +$7/athlete each month. A sponsored athlete does not also pay the separate $19 MW Velocity — Athlete membership while covered by that coach sponsorship.</div>
     </div>
   </div>
 </section>
@@ -295,7 +295,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;color:#71818d;font-size:1
 </section>
 </main>
 
-<footer><div class="wrap foot"><span>MW DYNASTY · SPRINT PERFORMANCE SYSTEM</span><span>Faster Athletes · Stronger People · Brighter Futures</span></div></footer>
+<footer><div class="wrap foot"><span>MW DYNASTY · MW VELOCITY</span><span>Faster Athletes · Stronger People · Brighter Futures</span></div></footer>
 
 <script>
 (function(){
