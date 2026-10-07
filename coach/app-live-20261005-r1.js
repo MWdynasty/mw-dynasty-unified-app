@@ -11,9 +11,9 @@ function coachTransient(error,status=0){return !navigator.onLine||error?.mwTrans
 function coachAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
 
 const PLANS={
- core:{name:'Coach Core',theme:'',title:'COACH CORE',tag:'MANAGE. ORGANIZE. COACH.',sub:'Bring Your Own Program — Built for Coaches.',side:'COACH\nCORE',footer:'BUILD\nDEVELOP\nCOMPETE',planCode:'coach_core',monthly:49,sponsor:5},
- intelligence:{name:'Coach Intelligence',theme:'blue',title:'COACH INTELLIGENCE',tag:'YOUR PROGRAM. AMPLIFIED.',sub:'Bring Your Own Program + Full AI Intelligence.',side:'COACH\nINTELLIGENCE',footer:'DATA\nINTELLIGENCE\nRESULTS',planCode:'coach_intelligence',monthly:79,sponsor:6},
- performance:{name:'Coach Velocity',theme:'gold',title:'COACH VELOCITY',tag:'PROVEN SPEED. A STRONGER FUTURE.',sub:'Complete MW Velocity training system + Full AI Intelligence.',side:'COACH\nVELOCITY',footer:'SPEED\nINTELLIGENCE\nLEGACY',planCode:'mw_sprint_performance',monthly:109,sponsor:7}
+ core:{name:'Coach Core',theme:'',title:'COACH CORE',tag:'MANAGE. ORGANIZE. COACH.',sub:'Coach Core helps you run the program.',side:'COACH\nCORE',footer:'BUILD\nDEVELOP\nCOMPETE',planCode:'coach_core',monthly:49,sponsor:5},
+ intelligence:{name:'Coach Intelligence',theme:'blue',title:'COACH INTELLIGENCE',tag:'YOUR PROGRAM. AMPLIFIED.',sub:'Coach Intelligence helps you understand the program.',side:'COACH\nINTELLIGENCE',footer:'DATA\nINTELLIGENCE\nRESULTS',planCode:'coach_intelligence',monthly:79,sponsor:6},
+ performance:{name:'Coach Velocity',theme:'gold',title:'COACH VELOCITY',tag:'PROVEN SPEED. A STRONGER FUTURE.',sub:'Coach Velocity includes the complete MW Velocity training system to drive the program.',side:'COACH\nVELOCITY',footer:'SPEED\nINTELLIGENCE\nLEGACY',planCode:'mw_sprint_performance',monthly:109,sponsor:7}
 };
 let pricingCatalogLoaded=false;
 function centsToDollars(cents,fallback){const n=Number(cents);return Number.isFinite(n)?n/100:fallback}
