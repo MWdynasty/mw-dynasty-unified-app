@@ -1638,7 +1638,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 
 <div class="mwProfileIdentity">
   <div class="mwProfileMonogram" id="mwProfileMonogram">MW</div>
-  <div><small>MW ATHLETE</small><h2 id="mwProfileDisplayName">Athlete</h2><span id="mwProfileEventLine">SPRINT PERFORMANCE</span></div>
+  <div><small>MW VELOCITY — ATHLETE</small><h2 id="mwProfileDisplayName">Athlete</h2><span id="mwProfileEventLine">SPRINT PERFORMANCE</span></div>
 </div>
 
 <details class="mwProfileSection" open>
@@ -1992,7 +1992,7 @@ async function mwRenderAthleteSchedule(){
       <section class="mwScheduleSection"><div class="mwScheduleSectionHead"><div><span>PERSONAL AVAILABILITY</span><br><b>MY REPORTS</b></div><button class="mwScheduleGhost" onclick="mwOpenScheduleEditor()">+ REPORT</button></div><div class="mwScheduleList">${constraints.length?constraints.map(x=>mwScheduleConstraintCard(x,mode)).join(''):'<div class="mwScheduleEmpty">No personal conflicts reported yet. If something affects practice or competition availability, send it here instead of changing the coach’s schedule yourself.</div>'}</div></section>`;
     }else if(mode==='independent_full'){
       root.innerHTML=`<section class="mwScheduleHero"><span class="mwScheduleKicker">INDEPENDENT MW VELOCITY — ATHLETE</span><h2>My Schedule</h2><p>Add school, exams, work, travel, holidays, or unavailable dates. MW will protect the 41-week sprint + strength sequence and give you a recommendation to approve instead of silently skipping ahead.</p><span class="mwScheduleAuthority">YOU OWN THIS CALENDAR</span><button class="save" onclick="mwOpenScheduleEditor()">+ ADD AVAILABILITY</button></section>
-      <section class="mwScheduleSection"><div class="mwScheduleSectionHead"><div><span>MW 41-WEEK INTEGRATION</span><br><b>MY AVAILABILITY</b></div><button class="mwScheduleGhost" onclick="mwOpenScheduleEditor()">+ ADD</button></div><div class="mwScheduleList">${constraints.length?constraints.map(x=>mwScheduleConstraintCard(x,mode)).join(''):'<div class="mwScheduleEmpty">No schedule constraints yet. Your normal MW Sprint Performance calendar remains active.</div>'}</div></section>`;
+      <section class="mwScheduleSection"><div class="mwScheduleSectionHead"><div><span>MW 41-WEEK INTEGRATION</span><br><b>MY AVAILABILITY</b></div><button class="mwScheduleGhost" onclick="mwOpenScheduleEditor()">+ ADD</button></div><div class="mwScheduleList">${constraints.length?constraints.map(x=>mwScheduleConstraintCard(x,mode)).join(''):'<div class="mwScheduleEmpty">No schedule constraints yet. Your normal MW Velocity calendar remains active.</div>'}</div></section>`;
     }else{
       root.innerHTML='<div class="mwScheduleLocked"><h2>Schedule tools unavailable</h2><p class="muted">Personal schedule management is available to independent MW Velocity — Athlete members. Athletes with an active coach use Report a Conflict so the coach remains in control.</p></div>';
     }
