@@ -30,7 +30,7 @@ module.exports=async function handler(req,res){
     if(!firstName) return res.status(400).json({error:'First name is required.'});
 
     const prs={};
-    for(const event of ['60m','100m','200m','300m','400m']){
+    for(const event of ['60m','100m','150m','200m','300m','400m','500m']){
       const raw=String(body?.prs?.[event]??'').trim();
       if(!raw) continue;
       const time=Number(raw);

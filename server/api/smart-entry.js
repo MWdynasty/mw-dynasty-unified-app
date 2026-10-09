@@ -25,7 +25,7 @@ module.exports=async function handler(req,res){
     const trainingGoal=String(b.trainingGoal||'').trim().slice(0,500);
     const competitionDivision=['boys','girls','open'].includes(String(b.competitionDivision||''))?String(b.competitionDivision):null;
     const timing=b.prTiming||{},prs=b.prs||{},maxes=b.maxes||{};
-    const prRows=events.map(event=>({event,time_seconds:cleanNumber(prs[event],`${event} PR`),timing_method:['fat','hand','unknown'].includes(timing[event])?timing[event]:'unknown'})).filter(x=>x.time_seconds!=null);
+    const prRows=['100m','150m','200m','300m','400m','500m'].map(event=>({event,time_seconds:cleanNumber(prs[event],`${event} PR`),timing_method:['fat','hand','unknown'].includes(timing[event])?timing[event]:'unknown'})).filter(x=>x.time_seconds!=null);
     const weightUnit=['lb','kg'].includes(b.weightUnit)?b.weightUnit:'lb';
     const maxRow={power_clean_max:cleanNumber(maxes.powerClean,'Power Clean maximum'),front_squat_max:cleanNumber(maxes.frontSquat,'Front Squat maximum'),back_squat_max:cleanNumber(maxes.backSquat,'Back Squat maximum'),deadlift_max:cleanNumber(maxes.deadlift,'Deadlift maximum'),deadlift_type:maxes.deadliftType==='trap_bar'?'trap_bar':'conventional',weight_unit:weightUnit};
     await Promise.all([
