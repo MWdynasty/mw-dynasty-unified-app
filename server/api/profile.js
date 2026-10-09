@@ -1,3 +1,4 @@
+const {parseResults}=require('../lib/mw-trial-results');
 const {SUPABASE_URL,SUPABASE_KEY,authenticate}=require('../lib/mw-auth');
 
 async function rpc(token,fn,body){
@@ -29,14 +30,7 @@ module.exports=async function handler(req,res){
     const trainingGoal=String(body.training_goal||'').trim().slice(0,500);
     if(!firstName) return res.status(400).json({error:'First name is required.'});
 
-    const prs={};
-    for(const event of ['60m','100m','150m','200m','300m','400m','500m']){
-      const raw=String(body?.prs?.[event]??'').trim();
-      if(!raw) continue;
-      const time=Number(raw);
-      if(!Number.isFinite(time)||time<=0) return res.status(400).json({error:`Enter a valid ${event.toUpperCase()} PR.`});
-      prs[event]=String(time);
-    }
+    const prs=Object.fromEntries(parseResults(body.prs||{},body.prTiming||{},body.prDetails||{}).map(({event,...result})=>[event,result]));
 
     const goalResponse=await fetch(`${SUPABASE_URL}/rest/v1/athletes?user_id=eq.${encodeURIComponent(user.id)}`,{
       method:'PATCH',

@@ -56,6 +56,7 @@ async function run() {
   panel.isConnected=false;f.advance(1000);assert.equal(f.jobs.size,0,'leaving coach page cleans up timer');
 
   const a=fixture(), saved=[];
+  a.ctx.MWPace=require('./lib/mw-pace-model');
   Object.assign(a.ctx,{
     getProfile:()=>({trainingTier:'performance',p100:10.50,p200:21.40,p400:48.00}), completionAthleteId:()=> 'test-athlete',
     MWWorkoutIdentity:require('./lib/mw-workout-identity'),workoutIdentity:()=>require('./lib/mw-workout-identity').create({athleteId:'11111111-1111-1111-1111-111111111111',week:1,day:1}),

@@ -14,6 +14,7 @@ for(const distance of [150,300,500]){
 }
 async function request(file,body){
  const calls=[];const context={module:{exports:{}},require(name){
+   if(name.endsWith('mw-trial-results'))return require('./server/lib/mw-trial-results');
    if(name.endsWith('mw-auth'))return {SUPABASE_URL:'https://example.test',SUPABASE_KEY:'test',authenticate:async()=>({token:'test',user:{id:'u'}}),getAthleteContext:async()=>({athlete:{id:'a'},features:{access:{smart_entry:true}},user:{id:'u'}})};
    if(name.endsWith('mw-season-calendar'))return {effectiveCalendar:async()=>({week:1,phase:1})};
    if(name.endsWith('mw-developmental-load'))return {ageOn:()=>20};
@@ -36,7 +37,7 @@ async function request(file,body){
  const profile=await request('server/api/profile.js',{first_name:'Test',prs});
  assert.equal(profile.res.code,200);
  const rpc=profile.calls.find(x=>x.url.includes('mw_update_athlete_profile'));
- assert.deepEqual(rpc.body.p_prs,prs);
+ assert.deepEqual(Object.fromEntries(Object.entries(rpc.body.p_prs).map(([k,v])=>[k,String(v.time_seconds)])),prs);
  const empty=await request('server/api/profile.js',{first_name:'Test',prs:{'150m':'','300m':'','500m':''}});
  assert.equal(empty.res.code,200);assert.deepEqual(empty.calls.at(-1).body.p_prs,{});
  console.log('PASS: supplemental PRs persist independently of race selection, retain timing methods, hydrate after reload, remain optional, and reject invalid times.');

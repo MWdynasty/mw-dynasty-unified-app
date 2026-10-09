@@ -32,7 +32,7 @@ module.exports=async(req,res)=>{
       const [profiles,states,prs,notes,strengthMaxes,assignedCheckins,sponsorship,completedWorkouts]=await Promise.all([
         rows(`profiles?select=user_id,first_name,last_name&user_id=eq.${encodeURIComponent(athlete.user_id)}&limit=1`,c.token),
         rows(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,last_completed_workout_at,starting_week,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at&athlete_id=eq.${encodeURIComponent(athleteId)}&limit=1`,c.token),
-        rows(`athlete_prs?select=id,event,time_seconds,date_recorded,verified,timing_method&athlete_id=eq.${encodeURIComponent(athleteId)}&order=event.asc`,c.token),
+        rows(`athlete_prs?select=id,event,time_seconds,date_recorded,verified,timing_method,mark_type&athlete_id=eq.${encodeURIComponent(athleteId)}&order=event.asc`,c.token),
         rows(`coach_notes?select=id,note,visibility,created_at,updated_at,coach_user_id&athlete_id=eq.${encodeURIComponent(athleteId)}&order=created_at.desc&limit=20`,c.token)
         ,rows(`athlete_strength_maxes?select=power_clean_max,front_squat_max,back_squat_max,deadlift_max,deadlift_type,weight_unit,updated_at&athlete_id=eq.${encodeURIComponent(athleteId)}&limit=1`,c.token)
         ,request('rpc/mw_coach_assigned_training_checkins',c.token,{method:'POST',body:JSON.stringify({p_athlete_id:athleteId})}).catch(()=>[])

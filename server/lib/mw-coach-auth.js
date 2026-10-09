@@ -57,7 +57,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   }
 
   const programState=await one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,last_completed_workout_at&athlete_id=eq.${encodeURIComponent(athlete.id)}&limit=1`,token);
-  const prs=await sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified&athlete_id=eq.${encodeURIComponent(athlete.id)}&order=event.asc`,token);
+  const prs=await sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified,timing_method,mark_type&athlete_id=eq.${encodeURIComponent(athlete.id)}&order=event.asc`,token);
   return {token,user:{id:user.id,email:user.email},profile,athlete,programState,prs:Array.isArray(prs)?prs:[],mode:'athlete'};
 }
 async function getAthleteContext(req){return getAccountContext(req,{requireAthlete:true})}
