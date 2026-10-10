@@ -290,7 +290,7 @@ async function coachTrainPage(){
     <section class="coach-train-tools">
       <div class="coach-train-tools-head"><span class="status-kicker">PRACTICE TOOLS</span><h2>Run practice from here.</h2><p>You should not have to hunt through the Coach app while athletes are standing on the track.</p></div>
       <div class="coach-train-tool-grid">
-        <button class="coach-train-tool" data-page="pacing"><b>⚡ PACING TOOLS</b><span>Group targets, individual targets, stopwatch and whistle.</span><em>OPEN →</em></button>
+        <button class="coach-train-tool" data-page="pacing"><b>⚡ PACING TOOLS</b><span>Group targets, individual targets and stopwatch.</span><em>OPEN →</em></button>
         <button class="coach-train-tool" id="coachTrainDistance"><b>◎ DISTANCE PACER</b><span>Measure the exact rep distance on a track, football field or open surface.</span><em>OPEN →</em></button>
       </div>
     </section>`);
@@ -2508,18 +2508,13 @@ function mwCoachClusterByPr(rows,tolerancePct=3,maxSize=6){
   return groups;
 }
 async function pacingPage(){
-  pageBase('Pacing Tools','Pace targets, distance measurement, stopwatch and whistle.',`
+  pageBase('Pacing Tools','Pace targets, distance measurement and stopwatch.',`
   <div class="mwPaceTabs" role="tablist" aria-label="Pacing tools"><button class="back" id="paceGroupTab" role="tab" aria-selected="true" aria-controls="coachGroupPaceAI">GROUPS</button><button class="back" id="paceIndividualTab" role="tab" aria-selected="false" aria-controls="coachSprintPace" tabindex="-1">INDIVIDUAL</button><button class="back" id="paceToolsTab" role="tab" aria-selected="false" aria-controls="paceToolsPanel" tabindex="-1">TOOLS</button></div>
   <div id="paceToolsPanel" role="tabpanel" aria-labelledby="paceToolsTab" hidden>
   <div class="coach-pacer-hub">
     <article class="coach-pacer-card">
       <div><span class="eyebrow">◎ DISTANCE PACER</span><h3>Measure the Rep Anywhere</h3><p>Track, football field or open field — measure the exact distance your group needs to run.</p></div>
       <button class="action" id="openCoachDistancePacer">OPEN DISTANCE PACER</button>
-    </article>
-    <article class="coach-pacer-card">
-      <div><span class="eyebrow">♬ WHISTLE</span><h3>Signal Your Group</h3><p>Tap to blow the whistle. Set your device volume for the practice space.</p></div>
-      <button class="action" id="coachPacingWhistle">BLOW WHISTLE</button>
-      <small id="coachWhistleStatus" role="status"></small>
     </article>
   </div>
 
@@ -2574,7 +2569,6 @@ async function pacingPage(){
   paceTabIds.forEach((id,index)=>{const tab=document.getElementById(id);tab.onclick=()=>selectPaceTab(index);tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3;selectPaceTab(next);document.getElementById(paceTabIds[next]).focus();};});
   document.getElementById('openCoachDistancePacer')?.addEventListener('click',()=>{location.href='/distance-pacer/?coach=1'});
   window.MWCoachTimingTools.mountStopwatch(document.getElementById('coachStopwatch'));
-  document.getElementById('coachPacingWhistle').onclick=async()=>{const status=document.getElementById('coachWhistleStatus'),played=await window.MWCoachTimingTools.audio.whistle();if(status.isConnected)status.textContent=played?'Whistle played.':'Whistle audio is unavailable. Check device sound and volume.';};
 
   const paceout=document.getElementById('paceout'),divisionWrap=document.getElementById('paceDivisionRoster'),results=document.getElementById('groupPaceResults');
   let athletes=[],generatedGroups=[],savingGroups=false;

@@ -3286,7 +3286,6 @@ img,svg,video,canvas{max-width:100%}
 .mwHeatStartRow{grid-template-columns:1fr 1fr}
 #heatReset{min-height:48px}
 #heatStop{min-width:95px}
-.mwHeatWhistle{width:100%;min-height:48px;font-weight:750;border-color:#8b733c}
 .mwHeatRestComplete{border-color:#50cd91!important;background:#0d2b21!important}
 .mwHeatRestComplete strong,.mwHeatRestComplete small{color:#a9f4ca}
 .mwHeatClocks>div>div{flex-wrap:wrap;width:100%;justify-content:center}

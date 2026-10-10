@@ -9,7 +9,6 @@
         <p id="heatModeGroup"></p>
         <div><label for="heatNarratorMode"><b>Narrator mode</b></label><select id="heatNarratorMode"><option value="off">Off — coach controls timing</option><option value="workout">Workout Guidance — reps & recovery</option><option value="meet">Meet Start — block-start practice</option></select><p id="heatNarratorDescription">No voice. Start the stopwatch manually.</p><p>Meet Start: “On your marks,” “Set,” then a starting-gun sound. The stopwatch starts with the gun. Device voice and volume apply.</p></div>
         <div><b>Rest countdown for this heat</b><p>Uses prescribed rep rest when available. Adjust your group’s recovery time here.</p><div class="mwHeatRestSetting"><label>Minutes<input id="heatRestMinutes" type="number" inputmode="numeric" min="0" max="60" value="1"></label><label>Seconds<input id="heatRestSeconds" type="number" inputmode="numeric" min="0" max="59" value="30"></label><button class="action" id="heatRestApply">SET REST</button></div><p id="heatRestSettingStatus" role="status">Rest starts after the last athlete finishes. An alert sounds at zero.</p></div>
-        <button class="back mwHeatWhistle" id="heatModeWhistle" type="button">♬ BLOW WHISTLE</button>
       </section>
       <div id="heatPracticePanel" role="tabpanel" aria-labelledby="heatPracticeTab">
       <div class="mwHeatGroupRow"><label>Practice group<select id="heatGroup" aria-label="Practice group"></select></label></div>
@@ -21,7 +20,7 @@
       <div class="mwHeatStartRow"><button class="action" id="heatStart" disabled>START REP</button><button class="back" id="heatStop" disabled>STOP CLOCK</button></div>
       <div id="heatLanes" class="mwHeatLanes"></div>
       <div class="mwHeatPrimary"><button class="action" id="heatNext" disabled>NEXT REP</button><button class="action" id="heatSave" disabled>FINISH & SAVE</button></div>
-      <details class="mwHeatMore"><summary>Whistle & corrections</summary><div><button class="back mwHeatWhistle" id="heatWhistle" type="button">♬ WHISTLE</button><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button></div></details>
+      <details class="mwHeatMore"><summary>Corrections</summary><div><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button></div></details>
       </section>
       <details class="mwHeatPlan"><summary>Today’s workout</summary><div id="practiceTodayPlan"></div></details>
       </div>
@@ -170,8 +169,6 @@
       if(!Number.isInteger(minutes)||!Number.isInteger(seconds)||minutes<0||seconds<0||seconds>59){find('heatRestSettingStatus').textContent='Enter whole minutes and seconds from 0 to 59.';return;}
       try{model.setRestSeconds(minutes*60+seconds);persist();render();find('heatRestSettingStatus').textContent='Rest countdown set for this heat.';}catch(err){find('heatRestSettingStatus').textContent=err.message;}
     };
-    const whistle=async()=>{if(!await audio.whistle())notice('Whistle audio is unavailable. Check device sound and volume.');};
-    find('heatWhistle').onclick=whistle;find('heatModeWhistle').onclick=whistle;
     find('heatDNF').onclick=()=>{const id=h()?.repAthleteIds?.find(id=>!h().repResults.some(r=>r.athleteId===id));if(!id)return; if(confirm('Mark '+name(id)+' as did not finish this rep?'))finish(id,{resultStatus:'dnf',paceStatus:null,paceLabel:'DID NOT FINISH',mwInterpretation:null})};
     find('heatManual').onclick=()=>{
       const ids=h()?.repAthleteIds?.filter(id=>!h().repResults.some(r=>r.athleteId===id))||[];if(!ids.length)return;
