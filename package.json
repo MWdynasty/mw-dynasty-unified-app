@@ -12,8 +12,9 @@
     "xlsx": "0.18.5"
   },
   "scripts": {
-    "test": "node test-signin-component.js && node test-coach-mw-client.js && node test-tiered-program.js && node test-season-intelligence.js && node test-season-intelligence-authority.js && node test-authoritative-timezone.js && node test-shared-season-flow.js && node test-journey-calendar.js && node test-athlete-button-wiring.js && node test-practice-rest.js && node test-distance-pacer.js && node test-pace-ai-today.js && node test-season-registry.js && node test-launch-integrity.js && node test-security-controls.js && node test-workout-identity.js && node test-practice-heats.js && node test-performance-without-targets.js && node test-athlete-membership-session.js && node test-ai-sharing.js && node test-supplemental-prs.js && node test-trial-pacing.js",
+    "test": "node test-signin-component.js && node test-coach-mw-client.js && node test-tiered-program.js && node test-season-intelligence.js && node test-season-intelligence-authority.js && node test-authoritative-timezone.js && node test-shared-season-flow.js && node test-journey-calendar.js && node test-athlete-button-wiring.js && node test-practice-rest.js && node test-distance-pacer.js && node test-pace-ai-today.js && node test-season-registry.js && node test-launch-integrity.js && node test-security-controls.js && node test-workout-identity.js && node test-practice-heats.js && node test-coach-timing-tools.js && node test-performance-without-targets.js && node test-athlete-membership-session.js && node test-ai-sharing.js && node test-supplemental-prs.js && node test-trial-pacing.js",
     "test:workout-identity-db": "node test-workout-identity-db.js && node test-practice-release-db.js && node test-practice-heats-db.js && node test-ai-sharing-db.js && node test-ai-sharing-client.js",
-    "test:coach-access": "node test-coach-access-routing.js"
+    "test:coach-access": "node test-coach-access-routing.js",
+    "test:coach-timing": "node test-coach-timing-tools.js"
   }
 }
