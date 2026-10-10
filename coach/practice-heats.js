@@ -7,7 +7,7 @@
       <div class="mwHeatTabs" role="tablist" aria-label="Practice controls"><button class="back" id="heatPracticeTab" role="tab" aria-selected="true" aria-controls="heatPracticePanel">PRACTICE</button><button class="back" id="heatModeTab" role="tab" aria-selected="false" aria-controls="heatModePanel" tabindex="-1">MODE</button></div>
       <section id="heatModePanel" class="mwHeatMode" role="tabpanel" aria-labelledby="heatModeTab" hidden>
         <p id="heatModeGroup"></p>
-        <div class="mwHeatModeRow"><div><b>Block-start narrator</b><p>On your marks → Set → Go. The stopwatch starts on Go.</p></div><button class="back" id="heatNarratorToggle" type="button" role="switch" aria-checked="false" aria-label="Block-start narrator">OFF</button></div>
+        <div><label for="heatNarratorMode"><b>Narrator mode</b></label><select id="heatNarratorMode"><option value="off">Off — coach controls timing</option><option value="workout">Workout Guidance — reps & recovery</option><option value="meet">Meet Start — block-start practice</option></select><p id="heatNarratorDescription">No voice. Start the stopwatch manually.</p><p>Meet Start: “On your marks,” “Set,” then a starting-gun sound. The stopwatch starts with the gun. Device voice and volume apply.</p></div>
         <div><b>Rest countdown for this heat</b><p>Uses prescribed rep rest when available. Adjust your group’s recovery time here.</p><div class="mwHeatRestSetting"><label>Minutes<input id="heatRestMinutes" type="number" inputmode="numeric" min="0" max="60" value="1"></label><label>Seconds<input id="heatRestSeconds" type="number" inputmode="numeric" min="0" max="59" value="30"></label><button class="action" id="heatRestApply">SET REST</button></div><p id="heatRestSettingStatus" role="status">Rest starts after the last athlete finishes. An alert sounds at zero.</p></div>
         <button class="back mwHeatWhistle" id="heatModeWhistle" type="button">♬ BLOW WHISTLE</button>
       </section>
@@ -34,12 +34,13 @@
     if(!panel.isConnected)return;
     const settingsKey='mw-practice-mode-v1:'+d.project+':'+uid;
     const narrator=root.MWCoachTimingTools.createNarrator(),audio=root.MWCoachTimingTools.audio;
-    let roster=[],groups=[],plans={},targets={},heats=[],selectedGroupId=null,model,saving=false,persistError=false,counting=false,countingCue='',narration=false;
-    try{narration=JSON.parse(localStorage.getItem(settingsKey)||'null')?.narration===true;}catch{}
+    let roster=[],groups=[],plans={},targets={},heats=[],selectedGroupId=null,model,saving=false,persistError=false,counting=false,countingCue='',narratorMode='off';
+    try{const saved=JSON.parse(localStorage.getItem(settingsKey)||'null');narratorMode=['off','workout','meet'].includes(saved?.narratorMode)?saved.narratorMode:saved?.narration===true?'meet':'off';}catch{}
     let restored;
     try{restored=JSON.parse(localStorage.getItem(storageKey)||'null')}catch{}
     model=new root.MWPracticeHeats.Session({coachId:uid,date:today,draft:restored});
     const notice=text=>{if(panel.isConnected)find('heatStatus').textContent=text;};
+    const guide=text=>{if(narratorMode==='workout'&&document.visibilityState!=='hidden'&&!narrator.speak(text))notice('Workout voice is unavailable on this device. Timing controls still work.');};
     const persist=()=>{try{localStorage.setItem(storageKey,JSON.stringify(model.snapshot()));persistError=false}catch{persistError=true;notice('Device storage is unavailable. Keep this page open until you save.')}};
     const h=()=>model.heats[model.active];
     const busy=()=>saving||counting||Object.values(model.heats).some(root.MWPracticeHeats.active);
@@ -86,7 +87,7 @@
       find('heatRestToggle').textContent=complete?'REST COMPLETE':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
       find('heatRestToggle').disabled=complete||saving||counting||root.MWPracticeHeats.active(heat)||!heat;
       for(const x of Object.values(model.heats))if(!x.saved&&model.restComplete(x)&&!x.restAlerted&&document.visibilityState!=='hidden'){
-        x.restAlerted=true;persist();audio.alert();notice(x.groupName+' · Heat '+x.heatNumber+' — rest complete.');
+        x.restAlerted=true;persist();audio.alert();notice(x.groupName+' · Heat '+x.heatNumber+' — rest complete.');guide(x.groupName+'. Rest complete. Ready for the next rep.');
       }
     }
     function render(){
@@ -118,8 +119,9 @@
       find('heatRestReset').disabled=saving||counting||repActive||!heat;
       find('heatRestToggle').textContent=model.restComplete(heat)?'REST COMPLETE':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
       if(model.restComplete(heat))find('heatRestToggle').disabled=true;
-      find('heatNarratorToggle').disabled=busy();find('heatNarratorToggle').textContent=narration?'ON':'OFF';find('heatNarratorToggle').setAttribute('aria-checked',String(narration));
-      find('heatModeGroup').textContent=heat?heat.groupName+' · Heat '+heat.heatNumber:'Choose or add a practice group first.';
+      find('heatNarratorMode').disabled=busy();find('heatNarratorMode').value=narratorMode;
+      find('heatNarratorDescription').textContent=narratorMode==='meet'?'Meet-style block commands and gun. Cancel Start stops the sequence.':narratorMode==='workout'?'Announces rep distance, intensity, recovery and rest completion. You start the clock manually.':'No voice. Start the stopwatch manually.';
+      find('heatModeGroup').textContent=heat?heat.groupName+' · Heat '+heat.heatNumber:'Choose a group created in Teams first.';
       for(const id of ['heatRestMinutes','heatRestSeconds','heatRestApply'])find(id).disabled=busy()||!heat;
       const duration=Math.round((heat?.restDurationMs||90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
       const firstPlan=plans[heat?.athleteIds[0]];
@@ -138,22 +140,23 @@
     function details(id){return {...plans[id],division:roster.find(a=>a.id===id)?.competition_division||null,resultStatus:'finished',...pace(model.elapsed()/1000,id)}}
     function finish(id,override){
       change(()=>{model.finish(id,{...details(id),...override});});
+      if(h()&&!root.MWPracticeHeats.active(h())&&h().repResults.length)guide('Rep complete. Recover for '+Math.round(h().restDurationMs/1000)+' seconds.');
     }
     find('heatGroup').onchange=()=>change(()=>{selectedGroupId=find('heatGroup').value;const first=heats.find(x=>x.groupId===selectedGroupId);if(first)model.select(first.key);else{model.active=null;notice('No assigned athletes in this group. Choose its athletes in Teams.')}});
     find('heatPicker').onchange=()=>change(()=>model.select(find('heatPicker').value));
     function cancelStart(){narrator.cancel();counting=false;countingCue='';}
-    const beginRep=()=>change(()=>{model.start(h().athleteIds.filter(eligible));notice('Rep running · Tap athletes at the finish line.');});
+    const beginRep=()=>change(()=>{model.start(h().athleteIds.filter(eligible));notice('Rep running · Tap athletes at the finish line.');const p=plans[h().athleteIds[0]];guide('Rep '+h().rep+' started.'+(p?.distance?' '+p.distance+' meters.':'')+(p?.intensityPct?' '+p.intensityPct+' percent intensity.':'')+' Coach, tap each athlete at the finish.');});
     find('heatStart').onclick=()=>{
       if(saving)return;audio.unlock();
       if(counting){cancelStart();render();notice('Block start cancelled. Ready when you are.');return;}
       if(h()?.runningAt!=null){change(()=>model.pause());return;}
-      if(h()?.paused||!narration){beginRep();return;}
+      if(h()?.paused||narratorMode!=='meet'){beginRep();return;}
       if(!h()||find('heatStart').disabled)return;
       counting=true;countingCue='Preparing block start…';render();
       narrator.start({onCue:cue=>{countingCue=cue.toUpperCase();if(panel.isConnected)render();},onGo:()=>{if(!panel.isConnected||document.visibilityState==='hidden'){cancelStart();return;}counting=false;beginRep();},onError:err=>{counting=false;if(panel.isConnected){render();notice(err.message);}}});
     };
-    find('heatStop').onclick=()=>change(()=>{model.stop();notice('Stopwatch stopped. Tap remaining finishes at this time, enter their times, or reset the current rep.');});
-    find('heatNext').onclick=()=>change(()=>model.next(max(h())));
+    find('heatStop').onclick=()=>change(()=>{narrator.cancel();model.stop();notice('Stopwatch stopped. Tap remaining finishes at this time, enter their times, or reset the current rep.');});
+    find('heatNext').onclick=()=>change(()=>{model.next(max(h()));guide('Ready for rep '+h().rep+'. Start when your group is ready.');});
     find('heatReset').onclick=()=>change(()=>{if(h()?.repResults.length&&!confirm('Discard only the current rep’s unsaved times? Earlier reps and saved training history stay unchanged.'))return;cancelStart();model.reset();notice('Current rep reset. Earlier reps remain.');});
     find('heatUndo').onclick=()=>change(()=>model.undo());
     find('heatRestToggle').onclick=()=>change(()=>{audio.unlock();model.toggleRest();});
@@ -161,7 +164,7 @@
     function setTab(mode){for(const [id,selected] of [['heatPracticeTab',!mode],['heatModeTab',mode]]){find(id).setAttribute('aria-selected',String(selected));find(id).tabIndex=selected?0:-1;}find('heatPracticePanel').hidden=mode;find('heatModePanel').hidden=!mode;}
     find('heatPracticeTab').onclick=()=>setTab(false);find('heatModeTab').onclick=()=>setTab(true);
     for(const id of ['heatPracticeTab','heatModeTab'])find(id).onkeydown=event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const mode=event.key==='End'||(event.key!=='Home'&&id==='heatPracticeTab');setTab(mode);find(mode?'heatModeTab':'heatPracticeTab').focus();}};
-    find('heatNarratorToggle').onclick=()=>{if(busy())return;narration=!narration;try{localStorage.setItem(settingsKey,JSON.stringify({narration}));}catch{}render();};
+    find('heatNarratorMode').onchange=()=>{if(busy())return;const value=find('heatNarratorMode').value;if(!['off','workout','meet'].includes(value))return;narrator.cancel();narratorMode=value;try{localStorage.setItem(settingsKey,JSON.stringify({narratorMode}));}catch{notice('Narrator selection could not be saved on this device.');}render();guide('Workout guidance on. Choose your group and start a rep when ready.');};
     find('heatRestApply').onclick=()=>{
       const minutes=Number(find('heatRestMinutes').value),seconds=Number(find('heatRestSeconds').value);
       if(!Number.isInteger(minutes)||!Number.isInteger(seconds)||minutes<0||seconds<0||seconds>59){find('heatRestSettingStatus').textContent='Enter whole minutes and seconds from 0 to 59.';return;}
@@ -195,7 +198,7 @@
     }catch(err){if(!panel.isConnected)return;notice('Practice could not load: '+err.message);find('heatStart').disabled=true;}
     const tick=setInterval(()=>{if(!panel.isConnected){dispose();return}paint()},80);
     const unloading=event=>{cancelStart();persist();if(Object.values(model.heats).some(root.MWPracticeHeats.pending)){event.preventDefault();event.returnValue=''}};
-    const visibility=()=>{if(document.visibilityState==='hidden'&&counting){cancelStart();render();notice('Block start cancelled while the app was in the background.');}};
+    const visibility=()=>{if(document.visibilityState==='hidden'){const wasCounting=counting;cancelStart();if(wasCounting){render();notice('Block start cancelled while the app was in the background.');}}};
     function dispose(){cancelStart();clearInterval(tick);window.removeEventListener('beforeunload',unloading);document.removeEventListener('visibilitychange',visibility);if(root.__mwCoachPracticeDispose===dispose)root.__mwCoachPracticeDispose=null;}
     window.addEventListener('beforeunload',unloading);
     document.addEventListener('visibilitychange',visibility);root.__mwCoachPracticeDispose=dispose;

@@ -33,20 +33,44 @@ assert.equal(watch.milliseconds(),1234);watch.start();now+=1000;watch.lap();watc
 assert.equal(watch.milliseconds(),2234);assert.deepEqual(watch.laps.map(l=>l.split),[1234,1000]);
 assert.equal(format(62345),'01:02.34');watch.reset();assert.equal(watch.milliseconds(),0);assert.equal(watch.laps.length,0);
 
-// Speech timing is driven by actual utterance starts, with cancellation and failure guards.
+// Meet timing waits for the gun, never a spoken Go, with cancellation and failure guards.
 let timerId=0;const timers=new Map(),spoken=[];
 const schedule=(fn,delay)=>{const id=++timerId;timers.set(id,{fn,delay});return id;},unschedule=id=>timers.delete(id);
 class Utterance{constructor(text){this.text=text;}}
 const speech={speak:u=>spoken.push(u),cancel(){},getVoices:()=>[]};
-const voice=createNarrator({speech,Utterance,schedule,unschedule});let starts=0,errors=0;
+let gunShots=0;
+const voice=createNarrator({speech,Utterance,schedule,unschedule,gun:({canFire,onFire})=>{if(!canFire())return false;gunShots++;onFire();return true;}});let starts=0,errors=0;
 const runGap=()=>{const entry=[...timers.entries()].find(([,x])=>x.delay<2000);assert.ok(entry);timers.delete(entry[0]);entry[1].fn();};
 voice.start({onGo:()=>starts++,onError:()=>errors++});assert.equal(starts,0);
 spoken.at(-1).onstart();spoken.at(-1).onend();runGap();assert.equal(spoken.at(-1).text,'Set');
-spoken.at(-1).onstart();spoken.at(-1).onend();runGap();assert.equal(spoken.at(-1).text,'Go');assert.equal(starts,0);
-spoken.at(-1).onstart();spoken.at(-1).onstart();assert.equal(starts,1);spoken.at(-1).onend();assert.equal(voice.isActive(),false);
+spoken.at(-1).onstart();assert.equal(starts,0);spoken.at(-1).onend();assert.equal(starts,0);runGap();assert.equal(gunShots,1);assert.equal(starts,1);assert.equal(voice.isActive(),false);assert.ok(!spoken.some(u=>u.text==='Go'));
 voice.start({onGo:()=>starts++});const cancelled=spoken.at(-1).onend;voice.cancel();cancelled();assert.equal(timers.size,0);assert.equal(starts,1);
 voice.start({onGo:()=>starts++,onError:()=>errors++});[...timers.values()][0].fn();assert.equal(errors,1);assert.equal(starts,1);
 createNarrator({speech:null,Utterance:null,schedule,unschedule}).start({onError:()=>errors++});assert.equal(errors,2);
+voice.start({onGo:()=>starts++});spoken.at(-1).onstart();spoken.at(-1).onend();runGap();spoken.at(-1).onstart();spoken.at(-1).onend();voice.cancel();assert.equal(timers.size,0);assert.equal(gunShots,1,'cancel after Set suppresses the gun');
+
+// Exercise the real Web Audio graph, not just UI wiring: lower whistle, breath/trill, bounded gun transient.
+async function audioChecks(){
+  const nodes=[],buffers=[];
+  const parameter=()=>({value:0,events:[],setValueAtTime(v,t){this.events.push({v,t});},linearRampToValueAtTime(v,t){this.events.push({v,t});}});
+  const node=kind=>{const n={kind,gain:parameter(),frequency:parameter(),Q:parameter(),connect(){},disconnect(){this.disconnected=true;},start(t){this.startedAt=t;},stop(t){this.stoppedAt=t;}};nodes.push(n);return n;};
+  let resume;
+  class AudioContext{
+    constructor(){this.state='running';this.currentTime=10;this.sampleRate=8000;this.destination={};}
+    resume(){return new Promise(resolve=>{resume=()=>{this.state='running';resolve();};});}
+    createGain(){return node('gain');}createOscillator(){return node('oscillator');}createBiquadFilter(){return node('filter');}createBufferSource(){return node('source');}
+    createBuffer(channels,length){const data=new Float32Array(length);buffers.push(data);return {getChannelData:()=>data};}
+  }
+  const sandbox={AudioContext,Math,setInterval,clearInterval};sandbox.globalThis=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync('coach/timing-tools.js','utf8'),sandbox);
+  const audio=sandbox.MWCoachTimingTools.audio;
+  assert.equal(await audio.whistle(),true);const body=nodes.find(n=>n.type==='triangle');assert.ok(body.frequency.events.every(x=>x.v>=1600&&x.v<=1900));assert.ok(nodes.some(n=>n.kind==='oscillator'&&n.frequency.value===32));assert.ok(buffers[0].some(x=>x!==0),'whistle has breath noise');
+  let fires=0;assert.equal(await audio.gun({onFire:()=>fires++}),true);assert.equal(fires,1);const gunBuffer=buffers.at(-1);assert.ok(gunBuffer.some(x=>x!==0));assert.ok(gunBuffer.every(x=>Math.abs(x)<=.81));assert.ok(Math.abs(gunBuffer.at(-1))<.002,'gun decays, not a sustained piercing tone');
+  const before=nodes.length;assert.equal(await audio.gun({canFire:()=>false,onFire:()=>fires++}),false);assert.equal(fires,1);assert.equal(nodes.length,before);
+  // If sound unlocking resumes late, a cancelled start must not emit a gun or start a clock.
+  class Suspended extends AudioContext{constructor(){super();this.state='suspended';}}
+  sandbox.AudioContext=Suspended;const lateAudio=sandbox.MWCoachTimingTools.createAudio();let allowed=true;const pending=lateAudio.gun({canFire:()=>allowed,onFire:()=>fires++});allowed=false;resume();assert.equal(await pending,false);assert.equal(fires,1);
+  const unavailable={globalThis:null};unavailable.globalThis=unavailable;vm.createContext(unavailable);vm.runInContext(fs.readFileSync('coach/timing-tools.js','utf8'),unavailable);assert.equal(await unavailable.MWCoachTimingTools.audio.gun(),false);
+}
 
 // Exercise the served practice UI against disposable roster/storage/transports.
 class Element{
@@ -62,24 +86,25 @@ class Element{
 }
 async function runUi(){
   now=1000;const elements=new Map(),storage=new Map(),intervals=new Map(),timeouts=new Map(),spoken=[],requests=[];
-  let id=0,alerts=0,whistles=0;
+  let id=0,alerts=0,whistles=0,shots=0;
   const document={visibilityState:'visible',getElementById:key=>elements.get(key),addEventListener(){},removeEventListener(){}};
   const context={console,document,Date:class extends Date{static now(){return now;}},crypto:{randomUUID:()=> 'session-'+(++id)},localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},setInterval:fn=>{const key=++id;intervals.set(key,fn);return key;},clearInterval:key=>intervals.delete(key),setTimeout:(fn,delay)=>{const key=++id;timeouts.set(key,{fn,delay});return key;},clearTimeout:key=>timeouts.delete(key),addEventListener(){},removeEventListener(){},confirm:()=>true,SpeechSynthesisUtterance:Utterance,speechSynthesis:{speak:u=>spoken.push(u),cancel(){},getVoices:()=>[]},fetch:async(url,options)=>{requests.push(JSON.parse(options.body));return {ok:true,json:async()=>({ok:true,count:JSON.parse(options.body).results.length})};}};
   context.window=context;vm.createContext(context);
   for(const file of ['lib/mw-practice-heats.js','coach/timing-tools.js','coach/practice-heats.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
-  context.MWCoachTimingTools.audio={unlock:async()=>true,alert:async()=>{alerts++;return true;},whistle:async()=>{whistles++;return true;}};
+  context.MWCoachTimingTools.audio.unlock=async()=>true;context.MWCoachTimingTools.audio.alert=async()=>{alerts++;return true;};context.MWCoachTimingTools.audio.whistle=async()=>{whistles++;return true;};context.MWCoachTimingTools.audio.gun=({canFire,onFire})=>{if(!canFire())return false;shots++;onFire();return true;};
   const roster=Array.from({length:16},(_,i)=>({id:'athlete-'+i,name:'Athlete '+i,current_week:1,current_day:1,competition_division:i<8?'boys':'girls'}));
   const savedGroups=Array.from({length:4},(_,i)=>({id:'group-'+i,name:'Group '+i,coach_group_members:roster.slice(i*4,i*4+4).map(a=>({athlete_id:a.id}))}));
   const dependencies={escapeHtml:s=>String(s??''),pageBase:(title,subtitle,html)=>{elements.clear();for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));},hydrateCoachTodayPractice(){},mwLocalIsoDate:()=> '2026-10-10',mwCurrentUser:async()=>({id:'coach'}),project:'fixture',coachPracticeWorkoutComplete:()=>false,coachPracticeTier:()=>1,coachPracticeStrengthTier:()=>1,coachPracticeEventGroup:()=> 'sprint',coachProgramData:async()=>({track:{sessions:[{day:1,title:'Acceleration',prescribedWork:'2 x 30m'}]}}),coachSessionDayNumber:day=>day,mwCoachPracticePrescription:()=>({reps:2,distance:30,raw:'2 x 30m'}),mwCoachPracticeRecommendedTarget:()=>null,coachPracticeIdentity:a=>({workoutKey:a.id+':w1:d1'}),sbRest:async()=>savedGroups,mwModal(){},mwClientTimeZone:()=> 'America/Chicago',mwSessionToken:()=> 'disposable',fetchCoachRoster:async()=>({athletes:roster}),openPage(){}};
   const {model}=await context.MWCoachPractice.mount(dependencies),find=id=>elements.get(id),paint=()=>{for(const fn of [...intervals.values()])fn();};
-  assert.equal(find('heatNarratorToggle').textContent,'OFF');find('heatModeTab').onclick();assert.equal(find('heatModePanel').hidden,false);
+  assert.equal(find('heatNarratorMode').value,'off');find('heatModeTab').onclick();assert.equal(find('heatModePanel').hidden,false);
   find('heatRestMinutes').value='0';find('heatRestSeconds').value='3';find('heatRestApply').onclick();assert.equal(model.restRemaining(),3000);
-  find('heatNarratorToggle').onclick();assert.equal(find('heatNarratorToggle').textContent,'ON');find('heatPracticeTab').onclick();find('heatStart').onclick();
+  find('heatNarratorMode').value='meet';find('heatNarratorMode').onchange();assert.equal(JSON.parse(storage.get('mw-practice-mode-v1:fixture:coach')).narratorMode,'meet');find('heatPracticeTab').onclick();find('heatStart').onclick();
   assert.equal(model.heats[model.active].runningAt,null);assert.equal(find('heatStart').textContent,'CANCEL START');
   find('heatStart').onclick();assert.equal(timeouts.size,0);assert.equal(model.heats[model.active].runningAt,null);
   find('heatStart').onclick();
-  for(let i=0;i<2;i++){spoken.at(-1).onstart();spoken.at(-1).onend();const next=[...timeouts.entries()].find(([,x])=>x.delay<2000);timeouts.delete(next[0]);next[1].fn();}
-  now+=2000;spoken.at(-1).onstart();spoken.at(-1).onend();assert.equal(model.heats[model.active].runningAt,now);
+  spoken.at(-1).onstart();spoken.at(-1).onend();let next=[...timeouts.entries()].find(([,x])=>x.delay<2000);timeouts.delete(next[0]);next[1].fn();
+  assert.equal(spoken.at(-1).text,'Set');spoken.at(-1).onstart();spoken.at(-1).onend();assert.equal(model.heats[model.active].runningAt,null);
+  now+=2000;next=[...timeouts.entries()].find(([,x])=>x.delay<2000);timeouts.delete(next[0]);next[1].fn();assert.equal(model.heats[model.active].runningAt,now);assert.equal(shots,1);
   now+=1500;find('heatStart').onclick();assert.equal(find('heatStart').textContent,'RESUME REP');now+=9000;assert.equal(model.elapsed(),1500);
   find('heatStart').onclick();assert.equal(model.heats[model.active].runningAt,now);now+=500;find('heatStop').onclick();assert.equal(model.elapsed(),2000);
   for(const button of [...find('heatLanes').children])button.onclick();assert.equal(model.heats[model.active].repResults.length,4);
@@ -90,6 +115,11 @@ async function runUi(){
   await find('heatSave').onclick();assert.equal(requests.length,1);assert.equal(requests[0].results.length,4);assert.deepEqual(requests[0].results.map(x=>x.athleteId).sort(),roster.slice(0,4).map(a=>a.id));assert.ok(requests[0].results.every(x=>x.timeSeconds===2));
   await find('heatWhistle').onclick();assert.equal(whistles,1);
   const draft=JSON.parse([...storage.entries()].find(([key])=>key.includes('heats'))[1]);assert.equal(draft.heats['group-0:0'].saved,true);
+  find('heatGroup').value='group-1';find('heatGroup').onchange();find('heatNarratorMode').value='workout';find('heatNarratorMode').onchange();assert.match(spoken.at(-1).text,/Workout guidance on/);
+  find('heatStart').onclick();assert.equal(model.heats[model.active].runningAt,now,'workout guidance never delays coach start');assert.match(spoken.at(-1).text,/Rep 1 started.*30 meters/);assert.equal(shots,1);
+  for(const button of [...find('heatLanes').children])button.onclick();assert.match(spoken.at(-1).text,/Recover for 90 seconds/);
+  find('heatNext').onclick();assert.match(spoken.at(-1).text,/Ready for rep 2/);
+  find('heatNarratorMode').value='off';find('heatNarratorMode').onchange();const count=spoken.length;find('heatStart').onclick();assert.equal(spoken.length,count,'Off never speaks');assert.equal(shots,1,'Off never fires gun');find('heatReset').onclick();
   // The standalone stopwatch controls are operational without athlete PRs or API responses.
   const selectors=['clock','status','start','stop','lap','reset','laps'],nodes=new Map(selectors.map(s=>['[data-stopwatch-'+s+']',new Element(s)]));
   const watchPanel={isConnected:true,querySelector:selector=>nodes.get(selector)};
@@ -98,6 +128,8 @@ async function runUi(){
   assert.equal(ui.stopwatch.milliseconds(),1250);assert.equal(nodes.get('[data-stopwatch-start]').textContent,'RESUME');
   nodes.get('[data-stopwatch-start]').onclick();now+=250;nodes.get('[data-stopwatch-stop]').onclick();assert.equal(nodes.get('[data-stopwatch-clock]').textContent,'00:01.50');
   nodes.get('[data-stopwatch-reset]').onclick();assert.equal(nodes.get('[data-stopwatch-clock]').textContent,'00:00.00');ui.destroy();
+  find('heatNarratorMode').value='workout';find('heatNarratorMode').onchange();await context.MWCoachPractice.mount(dependencies);assert.equal(find('heatNarratorMode').value,'workout','mode persists after remount');
+  storage.set('mw-practice-mode-v1:fixture:coach',JSON.stringify({narration:true}));await context.MWCoachPractice.mount(dependencies);assert.equal(find('heatNarratorMode').value,'meet','legacy On migrates safely to Meet Start');
   context.__mwCoachPracticeDispose();assert.equal(intervals.size,0);assert.equal(timeouts.size,0);
 }
-runUi().then(()=>console.log('PASS: coach voice timing/cancellation, pause/resume/stop, independent countdowns and alerts, 16-athlete UI fixture, correct save payloads, whistle wiring, and standalone stopwatch controls.')).catch(err=>{console.error(err);process.exitCode=1;});
+Promise.all([runUi(),audioChecks()]).then(()=>console.log('PASS: three narrator modes, gun-synchronized timing/cancellation, lower whistle audio graph, pause/resume/stop, independent countdowns, 16-athlete fixture, correct saves, and standalone stopwatch.')).catch(err=>{console.error(err);process.exitCode=1;});
