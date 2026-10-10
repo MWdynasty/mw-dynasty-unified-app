@@ -344,3 +344,32 @@ body.mw-hybrid-coach #app #mwHeatRun .mwHeatPrimary { bottom: calc(94px + env(sa
     animation: none !important; will-change: auto; transform: none !important; box-shadow: 0 0 12px #e7b84a66 !important;
   }
 }
+
+/* Menu is available from the bottom navigation on phones and desktops. */
+body.mw-hybrid-coach #app .coach-menu-shell { display: grid !important; gap: 20px !important; min-width: 0; }
+body.mw-hybrid-coach #app .coach-menu-group { min-width: 0; padding: 18px !important; border: 1px solid var(--mw-hybrid-line) !important; border-radius: 18px !important; background: var(--mw-hybrid-bg) !important; }
+body.mw-hybrid-coach #app .coach-menu-group-head { padding: 0 0 14px !important; border-bottom: 1px solid var(--mw-hybrid-line) !important; }
+body.mw-hybrid-coach #app .coach-menu-group-head > span { display: block !important; color: var(--mw-hybrid-gold-light) !important; font-size: 12px !important; font-weight: 700 !important; line-height: 1.5 !important; letter-spacing: .08em !important; }
+body.mw-hybrid-coach #app .coach-menu-group-head > small { display: block !important; margin-top: 5px !important; color: var(--mw-hybrid-muted) !important; font-size: 12px !important; line-height: 1.5 !important; }
+body.mw-hybrid-coach #app .coach-menu-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; padding-top: 14px !important; }
+body.mw-hybrid-coach #app .coach-menu-grid > button { box-sizing: border-box; width: 100% !important; min-width: 0 !important; min-height: 82px !important; display: grid !important; grid-template-columns: 36px minmax(0, 1fr) 18px !important; align-items: center !important; gap: 12px !important; padding: 14px !important; text-align: left !important; white-space: normal !important; border: 1px solid var(--mw-hybrid-line) !important; border-radius: 13px !important; background: var(--mw-hybrid-surface) !important; color: var(--mw-hybrid-text) !important; box-shadow: none !important; cursor: pointer; }
+body.mw-hybrid-coach #app .coach-menu-grid > button:hover { border-color: var(--mw-hybrid-gold) !important; background: var(--mw-hybrid-raised) !important; }
+body.mw-hybrid-coach #app .coach-menu-grid > button:focus-visible,
+body.mw-hybrid-coach #app .coach-menu-session button:focus-visible { outline: 2px solid var(--mw-hybrid-gold-light) !important; outline-offset: 3px; }
+body.mw-hybrid-coach #app .coach-menu-grid > button > b { font-size: 24px !important; text-align: center !important; }
+body.mw-hybrid-coach #app .coach-menu-grid > button > span { display: block !important; min-width: 0 !important; overflow-wrap: anywhere; }
+body.mw-hybrid-coach #app .coach-menu-grid > button strong { display: block !important; font-size: 15px !important; font-weight: 650 !important; line-height: 1.4 !important; color: var(--mw-hybrid-text) !important; }
+body.mw-hybrid-coach #app .coach-menu-grid > button small { display: block !important; margin-top: 4px !important; font-size: 12px !important; line-height: 1.5 !important; color: var(--mw-hybrid-muted) !important; }
+body.mw-hybrid-coach #app .coach-menu-grid > button em { font-style: normal !important; font-size: 20px !important; color: var(--mw-hybrid-gold-light) !important; }
+body.mw-hybrid-coach #app .coach-menu-session { display: flex !important; flex-wrap: wrap; align-items: center !important; justify-content: space-between !important; gap: 14px !important; padding: 18px !important; border: 1px solid var(--mw-hybrid-line) !important; border-radius: 18px !important; background: var(--mw-hybrid-surface) !important; }
+body.mw-hybrid-coach #app .coach-menu-session > div { display: grid !important; flex: 1 1 190px; gap: 5px !important; min-width: 0; }
+body.mw-hybrid-coach #app .coach-menu-session b { font-size: 14px !important; line-height: 1.4; }
+body.mw-hybrid-coach #app .coach-menu-session span { font-size: 12px !important; line-height: 1.5; color: var(--mw-hybrid-muted) !important; }
+body.mw-hybrid-coach #app .coach-menu-session button { min-height: 44px !important; margin: 0 !important; padding: 10px 16px !important; white-space: nowrap !important; font-size: 13px !important; }
+@media (max-width: 700px) {
+  body.mw-hybrid-coach #app .coach-menu-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  body.mw-hybrid-coach #app .coach-menu-group { padding: 14px !important; }
+  body.mw-hybrid-coach #app .coach-menu-grid > button { gap: 9px !important; padding: 12px !important; }
+}
+
+body.mw-hybrid-coach #app .coach-menu-grid > button[data-page="calendar"] > b { font-size: 0 !important; width: 36px !important; height: 36px !important; }
