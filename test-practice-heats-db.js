@@ -43,7 +43,7 @@ async function run(){
   const {Window}=await import(process.env.MW_PRACTICE_DOM_PATH||'happy-dom');
   win=new Window({url:'https://fixture.invalid/coach/'});win.confirm=()=>true;
   let now=1000;win.Date.now=()=>now;
-  win.eval(fs.readFileSync('lib/mw-practice-heats.js','utf8'));win.eval(fs.readFileSync('coach/practice-heats.js','utf8'));
+  win.eval(fs.readFileSync('lib/mw-practice-heats.js','utf8'));win.eval(fs.readFileSync('coach/timing-tools.js','utf8'));win.eval(fs.readFileSync('coach/practice-heats.js','utf8'));
   win.fetch=async(url,options)=>{const body=JSON.parse(options.body);payloads.push(body);const r=await apiSave(body);return {ok:r.status===200,json:async()=>r.data}};
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const d={escapeHtml:esc,project:'fixture',mwCurrentUser:async()=>({id:C}),mwLocalIsoDate:()=>today,mwClientTimeZone:()=> 'UTC',mwSessionToken:()=> 'fixture',hydrateCoachTodayPractice(){},pageBase:(title,sub,html)=>{win.document.body.innerHTML='<main class="page"><div class="panel">'+html+'</div></main>'},mwModal:(title,html)=>{win.document.getElementById('mwModal')?.remove();const el=win.document.createElement('section');el.id='mwModal';el.innerHTML=html;win.document.body.append(el)},openPage(){},coachPracticeTier:()=> 'foundation',coachPracticeStrengthTier:()=> 'foundation',coachPracticeEventGroup:()=> '100_200',coachProgramData:async()=>({track:{sessions:[{day,title:'Technical speed',prescribedWork:'2 x 30m'}]}}),coachSessionDayNumber:n=>n,mwCoachPracticePrescription:()=>({reps:2,distance:30,raw:'2 x 30m'}),mwCoachPracticeRecommendedTarget:()=>({target:3}),coachPracticeIdentity:(a,w=1,d=day)=>Identity.create({athleteId:a.id,workoutCycleId:a.workout_cycle_id,week:w,day:d}),coachPracticeWorkoutComplete:a=>!!a?.latest_workout,fetchCoachRoster:async()=>({athletes:await Promise.all(roster.map(async a=>({...a,latest_workout:(await db.query("select * from workout_completions where athlete_id=$1 and completion_status='completed'",[a.id])).rows[0]})))}),sbRest:async(path,options={})=>{
@@ -65,7 +65,10 @@ async function run(){
   controller=await win.MWCoachPractice.mount(d);assert.equal(controller.model.toSave().reduce((n,b)=>n+b.results.length,0),16);
   q('heatGroup').value=groups[0];q('heatGroup').onchange();const first=controller.model.heats[controller.model.active];
   q('heatRestToggle').click();const paused=controller.model.rest();now+=6000;assert.equal(controller.model.rest(),paused);q('heatRestToggle').click();now+=1000;assert.equal(controller.model.rest(),paused+1000);
-  q('heatStart').click();now+=500;q('heatLanes').querySelector('button').click();q('heatReset').click();assert.equal(first.results.length,4);assert.equal(first.repResults.length,0);
+  q('heatStart').click();now+=500;q('heatLanes').querySelector('button').click();
+  q('heatStart').click();assert.equal(q('heatStart').textContent,'RESUME REP');now+=3000;assert.equal(controller.model.elapsed(),500,'paused stopwatch excludes pause time');
+  q('heatStart').click();now+=500;q('heatStop').click();assert.equal(controller.model.elapsed(),1000);assert.equal(q('heatGroup').disabled,true,'stopped unfinished heat cannot be mixed with another group');
+  q('heatReset').click();assert.equal(first.results.length,4);assert.equal(first.repResults.length,0);
   for(let i=0;i<4;i++){
    q('heatGroup').value=groups[i];q('heatGroup').onchange();q('heatStart').click();for(const b of [...q('heatLanes').querySelectorAll('button')]){now+=500;win.document.querySelector('[data-heat-athlete="'+b.dataset.heatAthlete+'"]').click()}
   }

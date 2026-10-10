@@ -2554,7 +2554,7 @@ async function pacingPage(){
   document.getElementById('openCoachDistancePacer')?.addEventListener('click',()=>{location.href='/distance-pacer/?coach=1'});
   window.MWCoachTimingTools.mountStopwatch(document.getElementById('coachStopwatch'));
   document.getElementById('openCoachStopwatch').onclick=()=>document.getElementById('coachStopwatch').scrollIntoView({behavior:'smooth',block:'start'});
-  document.getElementById('coachPacingWhistle').onclick=async()=>{const played=await window.MWCoachTimingTools.audio.whistle();document.getElementById('coachWhistleStatus').textContent=played?'Whistle played.':'Whistle audio is unavailable. Check device sound and volume.';};
+  document.getElementById('coachPacingWhistle').onclick=async()=>{const status=document.getElementById('coachWhistleStatus'),played=await window.MWCoachTimingTools.audio.whistle();if(status.isConnected)status.textContent=played?'Whistle played.':'Whistle audio is unavailable. Check device sound and volume.';};
 
   const paceout=document.getElementById('paceout'),divisionWrap=document.getElementById('paceDivisionRoster'),results=document.getElementById('groupPaceResults');
   let athletes=[];
