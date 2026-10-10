@@ -3307,7 +3307,7 @@ img,svg,video,canvas{max-width:100%}
 #mwHeatRun label{font-size:12px!important;margin:0!important;display:grid;gap:4px;color:#bacbd5}
 #mwHeatRun select{width:100%;min-height:44px!important;height:44px!important;padding:8px 10px!important;border-radius:10px!important;font-size:15px!important;line-height:1.2!important;margin:0!important}
 #mwHeatRun #heatPracticePanel{gap:10px}
-#mwHeatRun .mwHeatGroupRow{grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}
+#mwHeatRun .mwHeatGroupRow{grid-template-columns:minmax(0,1fr);align-items:end;gap:8px}
 #mwHeatRun .mwHeatGroupMenu{position:relative;margin:0;padding:0;border:0;background:none;overflow:visible}
 #mwHeatRun summary{min-height:44px!important;padding:12px!important;font-size:12px!important;line-height:1.3!important;border-radius:10px;cursor:pointer}
 #mwHeatRun .mwHeatGroupMenu summary{border:1px solid #786332;color:#f5d380;list-style:none}

@@ -52,12 +52,12 @@ async function run(){
   }};
   let controller=await win.MWCoachPractice.mount(d),q=id=>win.document.getElementById(id);
   assert.equal(q('heatAttendance'),null,'Attendance remains in Menu, not Practice');
-  q('heatAdd').click();q('heatGroupName').value='Cancelled draft';q('heatGroupCancel').click();assert.equal(q('mwModal'),null);assert.equal((await d.sbRest('coach_groups')).length,0,'Cancel creates no group');
-  async function createGroup(name,indices){q('heatAdd').click();q('heatGroupName').value=name;for(const i of indices)win.document.querySelector('[data-heat-member="'+roster[i].id+'"]').checked=true;await q('heatGroupConfirm').onclick();assert.equal(q('mwModal'),null)}
+  assert.equal(q('heatAdd'),null);assert.equal(q('heatEdit'),null);assert.equal(q('heatAutoGroups'),null);assert.equal(win.document.querySelector('.mwHeatGroupMenu'),null,'Practice has no group-management controls');
+  assert.equal(q('heatStart').disabled,true,'Practice waits for a saved Team group');
+  async function createGroup(name,indices){const saved=await groupRpc({p_group_id:null,p_name:name,p_athlete_ids:indices.map(i=>roster[i].id)});controller=await win.MWCoachPractice.mount(d);q('heatGroup').value=saved.id;q('heatGroup').onchange();}
   for(let i=0;i<4;i++)await createGroup((i<2?'Boys':'Girls')+' '+(i%2+1),Array.from({length:4},(_,j)=>i*4+j));
   let groups=(await d.sbRest('coach_groups')).map(g=>g.id);assert.equal(groups.length,4);
-  q('heatGroup').value=groups[0];q('heatGroup').onchange();q('heatEdit').click();q('heatGroupName').value='Cancelled rename';q('heatGroupCancel').click();assert.equal((await scalar(db,'select name from coach_groups where id=$1',[groups[0]])).name,'Boys 1','Cancel preserves saved group name');
-  q('heatGroup').value=groups[0];q('heatGroup').onchange();q('heatEdit').click();q('heatGroupName').value='Acceleration boys';await q('heatGroupConfirm').onclick();
+  await groupRpc({p_group_id:groups[0],p_name:'Acceleration boys',p_athlete_ids:roster.slice(0,4).map(a=>a.id)});controller=await win.MWCoachPractice.mount(d);q('heatGroup').value=groups[0];q('heatGroup').onchange();
   assert.equal((await scalar(db,'select name from coach_groups where id=$1',[groups[0]])).name,'Acceleration boys');
   for(let i=0;i<4;i++){
    q('heatGroup').value=groups[i];q('heatGroup').onchange();assert.equal(q('heatLanes').children.length,4);

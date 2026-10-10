@@ -12,7 +12,7 @@
         <button class="back mwHeatWhistle" id="heatModeWhistle" type="button">♬ BLOW WHISTLE</button>
       </section>
       <div id="heatPracticePanel" role="tabpanel" aria-labelledby="heatPracticeTab">
-      <div class="mwHeatGroupRow"><label>Practice group<select id="heatGroup" aria-label="Practice group"></select></label><details class="mwHeatGroupMenu"><summary>Manage groups</summary><div><button class="back" id="heatAdd">+ Add group</button><button class="back" id="heatEdit">Edit group</button><button class="back" id="heatAutoGroups">Group Pace AI →</button></div></details></div>
+      <div class="mwHeatGroupRow"><label>Practice group<select id="heatGroup" aria-label="Practice group"></select></label></div>
       <div class="mwHeatPickerRow"><label>Timed heat<select id="heatPicker" aria-label="Timed heat"></select></label><b id="heatRep">REP 1</b></div>
       <p id="heatContext" class="mwHeatContext"></p>
       <section id="heatTimingStage" class="mwHeatTimingStage" aria-label="Active group timing controls">
@@ -29,7 +29,6 @@
     </section>`);
     d.hydrateCoachTodayPractice('practiceTodayPlan',{practiceMode:true});
     const panel=document.getElementById('mwHeatRun'),find=id=>document.getElementById(id);
-    find('heatAutoGroups').onclick=()=>d.openPage('pacing');
     const today=d.mwLocalIsoDate();
     const uid=(await d.mwCurrentUser()).id,storageKey='mw-practice-heats-v1:'+d.project+':'+uid+':'+today;
     if(!panel.isConnected)return;
@@ -69,7 +68,6 @@
     async function loadGroups(){
       const rows=await d.sbRest('coach_groups?select=id,name,coach_group_members(athlete_id)&archived=eq.false&order=created_at.asc');
       groups=(rows||[]).map(g=>({id:g.id,name:g.name,athleteIds:(g.coach_group_members||[]).map(m=>m.athlete_id)}));
-      if(!groups.length&&roster.length)groups=[{id:'unassigned',name:'Assigned athletes',athleteIds:roster.map(a=>a.id),temporary:true}];
       heats=model.reconcile(groups,roster,plans);persist();
       const handoff=root.__mwCoachPaceGroupHandoff;
       if(handoff?.coachId===uid&&handoff.project===d.project){
@@ -94,14 +92,13 @@
     function render(){
       if(!panel.isConnected)return;const heat=h(),running=heat?.runningAt!=null,repActive=root.MWPracticeHeats.active(heat),finishable=running||heat?.stopped;
       const groupOptions=groups.slice();for(const x of heats)if(!groupOptions.some(g=>g.id===x.groupId))groupOptions.push({id:x.groupId,name:x.groupName+' · recovered draft'});
-      find('heatGroup').innerHTML=groupOptions.map(g=>`<option value="${e(g.id)}">${e(g.name)}</option>`).join('');
+      find('heatGroup').innerHTML=groupOptions.length?groupOptions.map(g=>`<option value="${e(g.id)}">${e(g.name)}</option>`).join(''):'<option value="">Create a group in Teams first</option>';
       if(heat)selectedGroupId=heat.groupId;else selectedGroupId=selectedGroupId||groups[0]?.id;
       find('heatGroup').value=selectedGroupId||'';
       find('heatPicker').innerHTML=heats.filter(x=>x.groupId===heat?.groupId).map(x=>`<option value="${e(x.key)}">Heat ${x.heatNumber} · ${x.athleteIds.length} athletes${x.saved?' · Saved':''}</option>`).join('');
       if(heat)find('heatPicker').value=heat.key;
-      for(const id of ['heatGroup','heatPicker','heatAdd','heatAutoGroups'])find(id).disabled=busy();
-      const selected=groups.find(g=>g.id===(heat?.groupId||selectedGroupId));
-      find('heatEdit').disabled=busy()||!selected||selected.temporary||heats.some(x=>x.groupId===selected.id&&root.MWPracticeHeats.pending(x));
+      find('heatGroup').disabled=busy()||!groupOptions.length;
+      find('heatPicker').disabled=busy()||!heat;
       find('heatReset').disabled=saving||!heat||workoutsSaved(heat);
       find('heatRep').textContent=heat?`REP ${Math.min(heat.rep,max(heat)||heat.rep)}${max(heat)?' / '+max(heat):''}`:'NO HEAT';
       find('heatTimingGroup').textContent=heat?`${heat.groupName} · Heat ${heat.heatNumber} · Rep ${Math.min(heat.rep,max(heat)||heat.rep)}`:'Choose a group';
@@ -126,12 +123,12 @@
       for(const id of ['heatRestMinutes','heatRestSeconds','heatRestApply'])find(id).disabled=busy()||!heat;
       const duration=Math.round((heat?.restDurationMs||90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
       const firstPlan=plans[heat?.athleteIds[0]];
-      find('heatContext').textContent=heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Choose athletes in Manage groups, or build groups with Group Pace AI.';
+      find('heatContext').textContent=heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Create your group and choose its athletes in Teams, then return here to time practice.';
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
         const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&d.coachPracticeWorkoutComplete(a),p=plans[id],t=targets[id]?.target;
         const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':finishable?'TAP FINISH':'READY';
         return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!finishable||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'Target '+Number(t).toFixed(2)+' s'+(targets[id]?.paceBasis?.estimated?' · ESTIMATE':''):''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
-      }).join(''):'<p>No athletes in this group. Add or edit a group to choose athletes.</p>';
+      }).join(''):'<p>No athletes available in this group. Manage its roster in Teams.</p>';
       find('heatLanes').querySelectorAll('[data-heat-athlete]').forEach(button=>button.onclick=()=>finish(button.dataset.heatAthlete));
       panel.closest('.page')?.classList.toggle('mw-heat-running',Boolean(repActive||counting));
       panel.classList.toggle('mwHeatTimingFocus',Boolean(repActive||counting));
@@ -142,29 +139,7 @@
     function finish(id,override){
       change(()=>{model.finish(id,{...details(id),...override});});
     }
-    function groupModal(group){
-      if(busy())return;const selected=new Set(group?.athleteIds||[]);
-      d.mwModal(group?'Edit practice group':'Add practice group',`<div class="mwHeatGroupEditor"><label>Group name<input id="heatGroupName" maxlength="80" value="${e(group?.name||'')}" placeholder="Name your group"></label><fieldset><legend>Choose assigned athletes</legend>${roster.map(a=>`<label class="mwHeatMember"><input type="checkbox" data-heat-member="${e(a.id)}" ${selected.has(a.id)?'checked':''}><span>${e(a.name)}<small>${e(a.competition_division||a.event||'')}</small></span></label>`).join('')}</fieldset><p id="heatGroupError" role="alert"></p><div class="mwGroupDialogActions"><button class="action" id="heatGroupConfirm">SAVE GROUP</button><button class="back" id="heatGroupCancel" type="button" data-close-modal>CANCEL</button></div>${group?'<button class="back" id="heatGroupArchive" type="button">ARCHIVE GROUP</button>':''}</div>`);
-      const modal=document.getElementById('mwModal');let writing=false;
-      const close=()=>{if(!writing)modal?.remove();};
-      find('heatGroupCancel').onclick=close;
-      modal?.querySelectorAll?.('[data-close-modal]').forEach(button=>button.onclick=close);
-      const setWriting=value=>{writing=value;for(const id of ['heatGroupConfirm','heatGroupCancel','heatGroupArchive'])if(find(id))find(id).disabled=value;};
-      if(group)find('heatGroupArchive').onclick=async()=>{
-        if(writing)return;setWriting(true);
-        try{if(await d.archiveCoachGroup(group.id,group.name)){await loadGroups();modal?.remove();render();notice('Group archived. Past results remain unchanged.');}}catch(err){if(find('heatGroupError'))find('heatGroupError').textContent=err.message;}finally{setWriting(false);}
-      };
-      find('heatGroupConfirm').onclick=async()=>{
-        if(writing)return;
-        const name=find('heatGroupName').value.trim(),ids=[...document.querySelectorAll('[data-heat-member]:checked')].map(x=>x.dataset.heatMember);
-        if(!name||!ids.length){find('heatGroupError').textContent='Name the group and select at least one athlete.';return}
-        const button=find('heatGroupConfirm');setWriting(true);button.textContent='SAVING…';
-        try{const result=await d.sbRest('rpc/mw_coach_save_training_group',{method:'POST',body:{p_group_id:group?.id||null,p_name:name,p_athlete_ids:ids}});await loadGroups();const savedId=result?.id||result?.[0]?.id;const first=heats.find(x=>x.groupId===savedId);if(first)model.select(first.key);persist();modal?.remove();render();notice('Group saved. Names and athletes will remain after signing back in.')}catch(err){if(find('heatGroupError'))find('heatGroupError').textContent=err.message;button.textContent='RETRY SAVE';}finally{setWriting(false);}
-      };
-    }
-    find('heatAdd').onclick=()=>groupModal(null);
-    find('heatEdit').onclick=()=>groupModal(groups.find(g=>g.id===(h()?.groupId||selectedGroupId)));
-    find('heatGroup').onchange=()=>change(()=>{selectedGroupId=find('heatGroup').value;const first=heats.find(x=>x.groupId===selectedGroupId);if(first)model.select(first.key);else{model.active=null;notice('No assigned athletes in this group. Edit the group to select athletes.')}});
+    find('heatGroup').onchange=()=>change(()=>{selectedGroupId=find('heatGroup').value;const first=heats.find(x=>x.groupId===selectedGroupId);if(first)model.select(first.key);else{model.active=null;notice('No assigned athletes in this group. Choose its athletes in Teams.')}});
     find('heatPicker').onchange=()=>change(()=>model.select(find('heatPicker').value));
     function cancelStart(){narrator.cancel();counting=false;countingCue='';}
     const beginRep=()=>change(()=>{model.start(h().athleteIds.filter(eligible));notice('Rep running · Tap athletes at the finish line.');});
@@ -217,7 +192,7 @@
     try{
       const data=await d.fetchCoachRoster();if(!panel.isConnected)return;roster=data.athletes||[];await loadPlans();if(!panel.isConnected)return;await loadGroups();if(!panel.isConnected)return;render();
       notice(Object.values(model.heats).some(x=>x.interrupted)?'Recovered earlier reps. The interrupted rep needs Reset before retiming.':Object.values(model.heats).some(root.MWPracticeHeats.pending)?'Unfinished practice restored. Each heat kept its results and rest.':workoutsSaved(h())?'Today’s workouts are already saved for this heat. Existing results are protected; choose an incomplete heat or return to athlete results.':roster.length?'Choose a group and start a rep.':'Connect athletes before creating practice groups.');
-    }catch(err){if(!panel.isConnected)return;notice('Practice could not load: '+err.message);find('heatStart').disabled=true;find('heatAdd').disabled=true;}
+    }catch(err){if(!panel.isConnected)return;notice('Practice could not load: '+err.message);find('heatStart').disabled=true;}
     const tick=setInterval(()=>{if(!panel.isConnected){dispose();return}paint()},80);
     const unloading=event=>{cancelStart();persist();if(Object.values(model.heats).some(root.MWPracticeHeats.pending)){event.preventDefault();event.returnValue=''}};
     const visibility=()=>{if(document.visibilityState==='hidden'&&counting){cancelStart();render();notice('Block start cancelled while the app was in the background.');}};
