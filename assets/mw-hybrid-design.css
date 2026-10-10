@@ -149,6 +149,13 @@ body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav {
   box-shadow: none !important;
   overflow: visible !important;
 }
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav {
+  display: grid !important; position: fixed !important; left: 50% !important; right: auto !important;
+  top: auto !important; bottom: 0 !important; width: 100% !important; max-width: 1120px !important;
+  transform: translateX(-50%) !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  align-items: stretch !important; z-index: 1100 !important; pointer-events: auto !important;
+  border-radius: 18px 18px 0 0;
+}
 body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button,
 body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button.active,
 body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button,
@@ -207,27 +214,29 @@ body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button b.coachMobil
   50% { transform: translateY(-6px) scale(1.1); filter: brightness(1.22); box-shadow: 0 0 18px #ffd75399, 0 0 28px #2591ff66; }
 }
 
-/* Coach Home uses the same hierarchy, with a roomy desktop sidebar. */
+/* Coach navigation stays at the bottom on every screen size. */
+body.mw-hybrid-coach #app > .app { padding: 18px 18px 0 !important; }
 body.mw-hybrid-coach #app .top-ribbon,
 body.mw-hybrid-coach #app .footer { display: none !important; }
-body.mw-hybrid-coach #app .frame { max-width: 1360px !important; border: 1px solid var(--mw-hybrid-line) !important; border-radius: 20px !important; background: var(--mw-hybrid-bg) !important; box-shadow: none !important; }
+body.mw-hybrid-coach #app .frame { max-width: 1120px !important; border: 1px solid var(--mw-hybrid-line) !important; border-radius: 20px !important; background: var(--mw-hybrid-bg) !important; box-shadow: none !important; }
 body.mw-hybrid-coach #app .brand-head { display: flex !important; align-items: center; gap: 12px; padding: 18px 24px !important; text-align: left !important; border-bottom: 1px solid var(--mw-hybrid-line); background: var(--mw-hybrid-bg) !important; }
 body.mw-hybrid-coach #app .mwHybridBrandCrest { width: 42px; height: 42px; object-fit: contain; flex-shrink: 0; }
 body.mw-hybrid-coach #app .brand-title { font-size: 15px !important; line-height: 1.4; letter-spacing: .7px; font-weight: 700; color: var(--mw-hybrid-gold-light); }
 body.mw-hybrid-coach #app .brand-tag { margin: 2px 0 0 !important; font-size: 11px !important; line-height: 1.5; letter-spacing: .8px; font-weight: 500; color: var(--mw-hybrid-muted); }
 body.mw-hybrid-coach #app .brand-sub { display: none !important; }
-body.mw-hybrid-coach #app .workspace { grid-template-columns: 224px minmax(0, 1fr) !important; }
-body.mw-hybrid-coach #app .sidebar { border-color: var(--mw-hybrid-line); }
+body.mw-hybrid-coach #app .workspace { display: block !important; grid-template-columns: minmax(0, 1fr) !important; }
+body.mw-hybrid-coach #app .sidebar { display: none !important; }
 body.mw-hybrid-coach #app .side-logo { font-size: 16px !important; line-height: 1.2; }
 body.mw-hybrid-coach #app .side-nav .nav-btn { background: transparent !important; box-shadow: none !important; border: 0 !important; min-height: 52px; font-size: 14px !important; color: var(--mw-hybrid-muted) !important; }
 body.mw-hybrid-coach #app .side-nav .nav-btn.active { background: var(--mw-hybrid-raised) !important; color: var(--mw-hybrid-gold-light) !important; }
 body.mw-hybrid-coach #app .side-nav .mwNavArt { width: 32px !important; height: 32px !important; background-size: contain !important; border: 0 !important; box-shadow: none !important; }
-body.mw-hybrid-coach #app .main { padding: 24px !important; }
+body.mw-hybrid-coach #app .main { padding: 24px 24px calc(112px + env(safe-area-inset-bottom)) !important; }
+body.mw-hybrid-coach #app > .page { padding-bottom: calc(112px + env(safe-area-inset-bottom)) !important; }
 body.mw-hybrid-coach #app .mw-profile-nudge { margin-bottom: 16px; }
 body.mw-hybrid-coach #app .mwHybridCoachHome { display: grid; gap: 16px; }
-body.mw-hybrid-coach #app .mwHybridCoachHome .topbar { margin: 0; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .topbar { margin: 0 !important; }
 body.mw-hybrid-coach #app .mwHybridCoachHome .search { background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line); box-shadow: none !important; font-size: 14px; }
-body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head { display: block; margin: 0; padding: 0; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head { display: block; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
 body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head h1 { margin: 7px 0; font-size: 30px !important; line-height: 1.15; letter-spacing: -.6px; font-weight: 650; }
 body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--mw-hybrid-muted); }
 body.mw-hybrid-coach #app .mwHybridHomeGrid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -236,9 +245,15 @@ body.mw-hybrid-coach #app .mwHybridPracticeCard h2 { margin: 10px 0 5px; font-si
 body.mw-hybrid-coach #app .mwHybridPracticeCard p { margin: 0; color: var(--mw-hybrid-muted); font-size: 13px; line-height: 1.5; }
 body.mw-hybrid-coach #app .mwHybridPracticeCard > .action { margin-top: 16px; width: 100%; }
 body.mw-hybrid-coach #app .mwHybridPracticeCard .stats { display: block; margin: 14px 0 0; }
-body.mw-hybrid-coach #app .mwHybridPracticeCard .stat { display: flex; align-items: baseline; gap: 7px; width: auto; min-height: 44px; padding: 0; border: 0 !important; box-shadow: none !important; background: transparent !important; }
-body.mw-hybrid-coach #app .mwHybridPracticeCard .stat b { font-size: 19px !important; color: var(--mw-hybrid-gold-light); }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat { display: flex !important; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0; text-align: left; overflow: visible; border: 0 !important; box-shadow: none !important; background: transparent !important; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat::before { display: none; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat b { font-size: 28px !important; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--mw-hybrid-gold-light) !important; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat[data-count-state="loading"] b,
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat[data-count-state="error"] b { font-size: 14px !important; }
 body.mw-hybrid-coach #app .mwHybridPracticeCard .stat span { margin: 0; font-size: 13px !important; color: var(--mw-hybrid-muted); }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .mwHybridRosterStatus { margin: 6px 0; font-size: 12px; line-height: 1.5; color: var(--mw-hybrid-muted); }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .mwHybridRosterRetry { margin-top: 6px; min-height: 44px; font-size: 13px; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard [hidden] { display: none !important; }
 body.mw-hybrid-coach #app .mwHybridHomeSecondary { display: grid; gap: 14px; }
 body.mw-hybrid-coach #app .mwHybridHomeSecondary .mwHybridAttention { padding: 16px; border: 1px solid var(--mw-hybrid-line); border-radius: 18px; background: var(--mw-hybrid-surface); }
 .mwHybridAttention h2 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
@@ -262,6 +277,7 @@ body.mw-hybrid-coach #app #mwHeatRun .mwHeatClocks > div { background: var(--mw-
 body.mw-hybrid-coach #app #mwHeatRun #heatClock { color: var(--mw-hybrid-text); font-variant-numeric: tabular-nums; }
 body.mw-hybrid-coach #app #mwHeatRun .mwHeatLane { min-height: 112px !important; background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line); border-radius: 14px; box-shadow: none !important; }
 body.mw-hybrid-coach #app #mwHeatRun .mwHeatLane.finished { border-color: #5b9277; }
+body.mw-hybrid-coach #app #mwHeatRun .mwHeatPrimary { bottom: calc(94px + env(safe-area-inset-bottom)) !important; }
 
 @media (max-width: 820px) {
   body.mw-hybrid-coach #app > .app { padding: 0 !important; }
@@ -276,6 +292,7 @@ body.mw-hybrid-coach #app #mwHeatRun .mwHeatLane.finished { border-color: #5b927
   body.mw-hybrid-coach #app .mwHybridPracticeCard { padding: 18px; }
   body.mw-hybrid-coach #app #mwHeatRun .mwHeatPrimary { bottom: calc(94px + env(safe-area-inset-bottom)) !important; }
   body.mw-hybrid-coach #app #mwHeatRun .mwHeatTimingStage { top: 8px !important; }
+  body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav { border-radius: 0; }
 }
 @media (max-width: 599px) {
   body.mw-hybrid-athlete.mw-auth-ready main.app { max-width: 100% !important; padding: calc(12px + env(safe-area-inset-top)) 20px calc(104px + env(safe-area-inset-bottom)) !important; }

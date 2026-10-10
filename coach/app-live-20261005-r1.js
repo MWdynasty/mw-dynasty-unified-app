@@ -139,7 +139,7 @@ function simpleCoachHome(primaryPage,primaryLabel,showIntel=false){
   shell(`<div class="mwHybridCoachHome">${topbar('Search your team...')}
   <section class="coach-command-head"><span class="status-kicker">TODAY · ${escapeHtml(today.toUpperCase())}</span><h1>${greeting}, Coach.</h1><p>Keep your team moving in the right direction.</p></section>
   <div class="mwHybridHomeGrid">
-    <section class="mwHybridPracticeCard"><span class="status-kicker">YOUR NEXT PRACTICE</span><h2>Run your next practice.</h2><p>Open today’s session, time your groups, and record results.</p><div class="stats"><button type="button" class="stat" data-stat="Athletes"><b>—</b><span>Athletes connected</span></button></div><button type="button" class="action" data-page="practice">Open practice</button></section>
+    <section class="mwHybridPracticeCard"><span class="status-kicker">YOUR NEXT PRACTICE</span><h2>Run your next practice.</h2><p>Open today’s session, time your groups, and record results.</p><div class="stats"><button type="button" class="stat" data-stat="Athletes" data-count-state="loading" aria-busy="true"><b aria-live="polite" aria-atomic="true">Loading…</b><span data-coach-count-label>Athletes connected</span></button></div><p class="mwHybridRosterStatus" data-coach-count-status role="status" hidden></p><button type="button" class="back mwHybridRosterRetry" data-coach-count-retry hidden>Retry athlete count</button><button type="button" class="action" data-page="practice">Open practice</button></section>
     <div class="mwHybridHomeSecondary"><section class="mwHybridAttention"><h2>Team check-in</h2><button type="button" data-page="athletes"><span>Review your athletes</span><em aria-hidden="true">›</em></button><button type="button" data-page="messages"><span>Open messages</span><em aria-hidden="true">›</em></button><button type="button" data-page="${primaryPage}"><span>Open ${escapeHtml(primaryLabel.toLowerCase())}</span><em aria-hidden="true">›</em></button></section>${coachMW}</div>
   </div>
   ${attention}
@@ -1779,7 +1779,7 @@ function mwLocalIsoDate(date=new Date()){
 }
 async function fetchCoachRoster(){
   const token=mwSessionToken();if(!token)throw new Error('Coach session expired. Sign in again.');
-  const r=await fetch('/api/coach/roster',{headers:{Authorization:`Bearer ${token}`,'X-MW-Time-Zone':mwClientTimeZone()}});
+  const r=await fetch('/api/coach/roster',{headers:{Authorization:`Bearer ${token}`,'X-MW-Time-Zone':mwClientTimeZone()},cache:'no-store'});
   const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Roster could not be loaded.');return d;
 }
 async function fetchCoachPerformance(athleteId=''){
@@ -1807,7 +1807,24 @@ async function hydratePerformanceInsightPreview(){
 }
 async function hydrateLiveAthleteCount(){
   const stat=document.querySelector('[data-stat="Athletes"] b');if(!stat)return;
-  try{const d=await fetchCoachRoster();stat.textContent=String(d.count??d.athletes?.length??0)}catch{}
+  const button=stat.closest('[data-stat="Athletes"]'),label=button.querySelector('[data-coach-count-label]'),status=document.querySelector('[data-coach-count-status]'),retry=document.querySelector('[data-coach-count-retry]');
+  button.dataset.countState='loading';button.setAttribute('aria-busy','true');stat.textContent='Loading…';
+  if(label)label.textContent='Athletes connected';
+  if(status){status.hidden=true;status.textContent='';}
+  if(retry){retry.hidden=true;retry.onclick=()=>hydrateLiveAthleteCount();}
+  try{
+    const d=await fetchCoachRoster(),raw=d.count;
+    const count=raw!==null&&raw!==undefined&&raw!==''&&Number.isSafeInteger(Number(raw))&&Number(raw)>=0?Number(raw):Array.isArray(d.athletes)?d.athletes.length:null;
+    if(count===null)throw new Error('The roster did not return an athlete count. Try again.');
+    if(!stat.isConnected)return;
+    stat.textContent=String(count);button.dataset.countState='ready';
+    if(label)label.textContent=count===1?'Athlete connected':'Athletes connected';
+  }catch(e){
+    if(!stat.isConnected)return;
+    stat.textContent='Unavailable';button.dataset.countState='error';
+    if(status){status.textContent=e.message||'The athlete count could not be loaded. Try again.';status.hidden=false;}
+    if(retry)retry.hidden=false;
+  }finally{if(button.isConnected)button.setAttribute('aria-busy','false');}
 }
 function fmtDate(v){if(!v)return '—';try{const dateOnly=String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);return (dateOnly?new Date(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3])):new Date(v)).toLocaleDateString()}catch{return '—'}}
 async function athleteDetail(athleteId){
