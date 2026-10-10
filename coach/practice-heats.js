@@ -12,19 +12,21 @@
         <button class="back mwHeatWhistle" id="heatModeWhistle" type="button">♬ BLOW WHISTLE</button>
       </section>
       <div id="heatPracticePanel" role="tabpanel" aria-labelledby="heatPracticeTab">
-      <details class="mwHeatPlan"><summary>Today’s workout</summary><div id="practiceTodayPlan"></div></details>
-      <div class="mwHeatGroupRow"><label>Practice group<select id="heatGroup" aria-label="Practice group"></select></label><button class="back" id="heatAdd">+ Add group</button><button class="back" id="heatEdit">Edit group</button></div>
+      <div class="mwHeatGroupRow"><label>Practice group<select id="heatGroup" aria-label="Practice group"></select></label><details class="mwHeatGroupMenu"><summary>Manage groups</summary><div><button class="back" id="heatAdd">+ Add group</button><button class="back" id="heatEdit">Edit group</button><button class="back" id="heatAutoGroups">Group Pace AI →</button></div></details></div>
       <div class="mwHeatPickerRow"><label>Timed heat<select id="heatPicker" aria-label="Timed heat"></select></label><b id="heatRep">REP 1</b></div>
+      <p id="heatContext" class="mwHeatContext"></p>
       <div class="mwHeatClocks"><div><span>REP STOPWATCH</span><strong id="heatClock">00.00</strong><small id="heatClockState">Loading athletes…</small></div><div id="heatRestPanel"><span>REST COUNTDOWN</span><strong id="heatRestClock">01:30</strong><small id="heatRestState" role="status">READY BETWEEN REPS</small><div><button class="back" id="heatRestToggle">START REST</button><button class="back" id="heatRestReset">RESET REST</button></div></div></div>
-      <div class="mwHeatStartRow"><button class="action" id="heatStart" disabled>START REP</button><button class="back" id="heatStop" disabled>STOP</button><button class="back" id="heatReset">RESET REP</button><button class="back mwHeatWhistle" id="heatWhistle" type="button">♬ BLOW WHISTLE</button></div>
+      <div class="mwHeatStartRow"><button class="action" id="heatStart" disabled>START REP</button><button class="back" id="heatStop" disabled>STOP</button><button class="back mwHeatWhistle" id="heatWhistle" type="button">♬ WHISTLE</button></div>
       <div id="heatLanes" class="mwHeatLanes"></div>
       <div class="mwHeatPrimary"><button class="action" id="heatNext" disabled>NEXT REP</button><button class="action" id="heatSave" disabled>FINISH & SAVE</button></div>
-      <details class="mwHeatMore"><summary>Corrections & attendance</summary><div><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button><button class="back" id="heatAttendance">ATTENDANCE</button></div></details>
+      <details class="mwHeatPlan"><summary>Today’s workout</summary><div id="practiceTodayPlan"></div></details>
+      <details class="mwHeatMore"><summary>Corrections & attendance</summary><div><button class="back" id="heatReset">RESET REP</button><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button><button class="back" id="heatAttendance">ATTENDANCE</button></div></details>
       </div>
       <p id="heatStatus" class="mwHeatStatus" role="status" aria-live="polite">Loading saved groups…</p>
     </section>`);
     d.hydrateCoachTodayPractice('practiceTodayPlan',{practiceMode:true});
     const panel=document.getElementById('mwHeatRun'),find=id=>document.getElementById(id);
+    find('heatAutoGroups').onclick=()=>d.openPage('pacing');
     const today=d.mwLocalIsoDate();
     const uid=(await d.mwCurrentUser()).id,storageKey='mw-practice-heats-v1:'+d.project+':'+uid+':'+today;
     if(!panel.isConnected)return;
@@ -66,6 +68,12 @@
       groups=(rows||[]).map(g=>({id:g.id,name:g.name,athleteIds:(g.coach_group_members||[]).map(m=>m.athlete_id)}));
       if(!groups.length&&roster.length)groups=[{id:'unassigned',name:'Assigned athletes',athleteIds:roster.map(a=>a.id),temporary:true}];
       heats=model.reconcile(groups,roster,plans);persist();
+      const handoff=root.__mwCoachPaceGroupHandoff;
+      if(handoff?.coachId===uid&&handoff.project===d.project){
+        const first=heats.find(x=>x.groupId===handoff.groupId);
+        if(first&&!Object.values(model.heats).some(root.MWPracticeHeats.pending)){model.select(first.key);persist();}
+        root.__mwCoachPaceGroupHandoff=null;
+      }
     }
     function paint(){
       if(!panel.isConnected)return;
@@ -88,12 +96,12 @@
       find('heatGroup').value=selectedGroupId||'';
       find('heatPicker').innerHTML=heats.filter(x=>x.groupId===heat?.groupId).map(x=>`<option value="${e(x.key)}">Heat ${x.heatNumber} · ${x.athleteIds.length} athletes${x.saved?' · Saved':''}</option>`).join('');
       if(heat)find('heatPicker').value=heat.key;
-      for(const id of ['heatGroup','heatPicker','heatAdd'])find(id).disabled=busy();
+      for(const id of ['heatGroup','heatPicker','heatAdd','heatAutoGroups'])find(id).disabled=busy();
       const selected=groups.find(g=>g.id===(heat?.groupId||selectedGroupId));
       find('heatEdit').disabled=busy()||!selected||selected.temporary||heats.some(x=>x.groupId===selected.id&&root.MWPracticeHeats.pending(x));
       find('heatReset').disabled=saving||!heat||workoutsSaved(heat);
       find('heatRep').textContent=heat?`REP ${Math.min(heat.rep,max(heat)||heat.rep)}${max(heat)?' / '+max(heat):''}`:'NO HEAT';
-      find('heatClockState').textContent=counting?countingCue||'Preparing block start…':!heat?'Add a group to start':workoutsSaved(heat)?'Workouts already saved':heat.interrupted?'Interrupted rep · Reset to retime':running?'Tap athletes as they cross':heat.paused?'STOPWATCH PAUSED':heat.stopped?'Stopped · Tap finishes or enter times':heat.repResults.length?'Rep finished · Recover':heat.detached?'Recovered draft · Save or review':'Ready for Rep '+heat.rep;
+      find('heatClockState').textContent=counting?countingCue||'Preparing block start…':!heat?'Choose athletes to start':workoutsSaved(heat)?'Workouts already saved':heat.interrupted?'Interrupted rep · Reset to retime':running?'Tap athletes as they cross':heat.paused?'STOPWATCH PAUSED':heat.stopped?'Stopped · Tap finishes or enter times':heat.repResults.length?'Rep finished · Recover':heat.detached?'Recovered draft · Save or review':'Ready for Rep '+heat.rep;
       find('heatStart').textContent=counting?'CANCEL START':running?'PAUSE':heat?.paused?'RESUME REP':heat?.stopped?'STOPPED':'START REP';
       find('heatStart').disabled=saving||!heat||heat.saved||heat.interrupted||heat.detached||heat.stopped||(!running&&!heat.paused&&!counting&&(heat.repResults.length>0||!heat.athleteIds.some(eligible)));
       find('heatStop').disabled=saving||counting||!heat||(!running&&!heat.paused);
@@ -114,9 +122,11 @@
       find('heatModeGroup').textContent=heat?heat.groupName+' · Heat '+heat.heatNumber:'Choose or add a practice group first.';
       for(const id of ['heatRestMinutes','heatRestSeconds','heatRestApply'])find(id).disabled=busy()||!heat;
       const duration=Math.round((heat?.restDurationMs||90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
+      const firstPlan=plans[heat?.athleteIds[0]];
+      find('heatContext').textContent=heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Choose athletes in Manage groups, or build groups with Group Pace AI.';
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
         const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&d.coachPracticeWorkoutComplete(a),p=plans[id],t=targets[id]?.target;
-        const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':'TAP FINISH';
+        const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':finishable?'TAP FINISH':'READY';
         return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!finishable||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'Target '+Number(t).toFixed(2)+' s'+(targets[id]?.paceBasis?.estimated?' · ESTIMATE':''):''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
       }).join(''):'<p>No athletes in this group. Add or edit a group to choose athletes.</p>';
       find('heatLanes').querySelectorAll('[data-heat-athlete]').forEach(button=>button.onclick=()=>finish(button.dataset.heatAthlete));
