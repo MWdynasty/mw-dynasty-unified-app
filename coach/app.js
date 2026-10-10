@@ -507,7 +507,7 @@ function morePage(){
     <div class="coach-menu-shell">
       ${group('SCHEDULE & TEAM','Run the day-to-day coaching operation.',operations)}
       ${group('INTELLIGENCE & PLANNING','Review signals, plan the season and approve changes.',intelligence)}
-      ${group('MW PERFORMANCE SYSTEM','Open the deeper performance tools included with your membership.',performance)}
+      ${group('MW VELOCITY','Open the deeper performance tools included with your membership.',performance)}
       ${group('ACCOUNT & SUPPORT','Manage your setup without mixing it into daily coaching.',account)}
       ${group('FOUNDER','Founder-only controls.',founder)}
       <div class="coach-menu-session"><div><b>Coach Session</b><span>Securely sign out of this Coach account on this device.</span></div><button class="back" id="coachMoreSignout">Sign Out</button></div>
