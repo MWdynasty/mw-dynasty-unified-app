@@ -83,20 +83,9 @@
         context=context||new Audio();if(context.state==='suspended')await context.resume();return context.state==='running';
       }catch{return false;}
     }
-    async function play(kind='whistle'){
+    async function alert(){
       if(!await unlock())return false;
       try{
-        if(kind==='whistle'){
-          // A lower whistle body, breath noise and rapid amplitude trill instead of two piercing sine tones.
-          const start=context.currentTime+.015,duration=.8,output=context.createGain();
-          output.gain.setValueAtTime(0,start);output.gain.linearRampToValueAtTime(.22,start+.035);output.gain.setValueAtTime(.22,start+.65);output.gain.linearRampToValueAtTime(0,start+duration);output.connect(context.destination);
-          const trill=context.createOscillator(),depth=context.createGain();trill.frequency.value=32;depth.gain.value=.055;trill.connect(depth);depth.connect(output.gain);
-          const body=context.createOscillator();body.type='triangle';body.frequency.setValueAtTime(1650,start);body.frequency.linearRampToValueAtTime(1850,start+.07);body.frequency.linearRampToValueAtTime(1700,start+duration);body.connect(output);
-          const buffer=context.createBuffer(1,Math.ceil(context.sampleRate*duration),context.sampleRate),samples=buffer.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*.28;
-          const breath=context.createBufferSource(),filter=context.createBiquadFilter();breath.buffer=buffer;filter.type='bandpass';filter.frequency.value=1750;filter.Q.value=1.2;breath.connect(filter);filter.connect(output);
-          breath.onended=()=>{for(const node of [breath,filter,body,trill,depth,output])node.disconnect();};
-          body.start(start);trill.start(start);breath.start(start);body.stop(start+duration);trill.stop(start+duration);return true;
-        }
         const start=context.currentTime+.015,duration=.55;
         const gain=context.createGain();gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(.08,start+.025);gain.gain.setValueAtTime(.08,start+duration-.08);gain.gain.linearRampToValueAtTime(0,start+duration);gain.connect(context.destination);
         const frequencies=[880,1100];
@@ -116,7 +105,7 @@
         source.start(context.currentTime);onFire();return true;
       }catch{return false;}
     }
-    return {unlock,whistle:()=>play('whistle'),alert:()=>play('alert'),gun};
+    return {unlock,alert,gun};
   }
   const audio=createAudio(),stopwatch=new Stopwatch();
   function mountStopwatch(panel){

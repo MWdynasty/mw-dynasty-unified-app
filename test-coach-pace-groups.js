@@ -22,10 +22,11 @@ async function run(){
   win.fetchCoachRoster=async()=>({athletes});win.escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   win.toast=()=>{};win.openPage=id=>opened.push(id);win.confirm=()=>true;
   win.mwCurrentUser=async()=>({id:'coach-fixture'});win.SUPABASE_URL='https://fixture.invalid';
-  win.MWCoachTimingTools={mountStopwatch(){},audio:{whistle:async()=>true}};
+  win.MWCoachTimingTools={mountStopwatch(){}};
   win.sbRest=async(path,options)=>{if(!options)return saved.map(g=>({id:g.id,name:g.name,coach_group_members:g.ids.map(athlete_id=>({athlete_id}))}));if(failAt&&saved.length===failAt){failAt=0;throw Error('Fixture network failure');}const p=options.body;assert.equal(path,'rpc/mw_coach_save_training_group');const existing=saved.find(g=>g.id===p.p_group_id);if(existing){existing.ids=p.p_athlete_ids;}else saved.push({id:'group-'+saved.length,name:p.p_name,ids:p.p_athlete_ids});return {id:saved.at(-1).id};};
   win.eval('function mwCoachPracticeRecommendedTarget(a,d,i){return window.MWPace.calculate(a.prs,d,i/100)?.target||null;}\n'+clusterSource+source.slice(source.indexOf('async function pacingPage()'),source.indexOf('const MW_FIELD_CIRCUIT_REFERENCE')));
   await win.pacingPage();const q=id=>win.document.getElementById(id);
+  assert.equal(q('coachPacingWhistle'),null,'whistle is removed from Pacing Tools');assert.equal(q('coachWhistleStatus'),null);
   assert.equal(win.document.querySelectorAll('.coach-pace-group-card').length,4,'groups are ready without Build click');
   assert.match(q('groupPaceResults').textContent,/Boys 1/);assert.match(q('groupPaceResults').textContent,/Girls 2/);
   assert.match(q('groupPaceResults').textContent,/Division Needed/);assert.match(q('groupPaceResults').textContent,/Trial Needed/);

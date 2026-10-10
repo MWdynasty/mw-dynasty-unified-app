@@ -49,7 +49,7 @@ voice.start({onGo:()=>starts++,onError:()=>errors++});[...timers.values()][0].fn
 createNarrator({speech:null,Utterance:null,schedule,unschedule}).start({onError:()=>errors++});assert.equal(errors,2);
 voice.start({onGo:()=>starts++});spoken.at(-1).onstart();spoken.at(-1).onend();runGap();spoken.at(-1).onstart();spoken.at(-1).onend();voice.cancel();assert.equal(timers.size,0);assert.equal(gunShots,1,'cancel after Set suppresses the gun');
 
-// Exercise the real Web Audio graph, not just UI wiring: lower whistle, breath/trill, bounded gun transient.
+// Exercise the retained Web Audio graph: rest alert and bounded starting-gun transient.
 async function audioChecks(){
   const nodes=[],buffers=[];
   const parameter=()=>({value:0,events:[],setValueAtTime(v,t){this.events.push({v,t});},linearRampToValueAtTime(v,t){this.events.push({v,t});}});
@@ -63,7 +63,7 @@ async function audioChecks(){
   }
   const sandbox={AudioContext,Math,setInterval,clearInterval};sandbox.globalThis=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync('coach/timing-tools.js','utf8'),sandbox);
   const audio=sandbox.MWCoachTimingTools.audio;
-  assert.equal(await audio.whistle(),true);const body=nodes.find(n=>n.type==='triangle');assert.ok(body.frequency.events.every(x=>x.v>=1600&&x.v<=1900));assert.ok(nodes.some(n=>n.kind==='oscillator'&&n.frequency.value===32));assert.ok(buffers[0].some(x=>x!==0),'whistle has breath noise');
+  assert.equal(audio.whistle,undefined,'whistle tool is removed');assert.equal(await audio.alert(),true);assert.deepEqual(nodes.filter(n=>n.kind==='oscillator').map(n=>n.frequency.events[0].v),[880,1100],'rest alert is preserved');
   let fires=0;assert.equal(await audio.gun({onFire:()=>fires++}),true);assert.equal(fires,1);const gunBuffer=buffers.at(-1);assert.ok(gunBuffer.some(x=>x!==0));assert.ok(gunBuffer.every(x=>Math.abs(x)<=.81));assert.ok(Math.abs(gunBuffer.at(-1))<.002,'gun decays, not a sustained piercing tone');
   const before=nodes.length;assert.equal(await audio.gun({canFire:()=>false,onFire:()=>fires++}),false);assert.equal(fires,1);assert.equal(nodes.length,before);
   // If sound unlocking resumes late, a cancelled start must not emit a gun or start a clock.
@@ -86,12 +86,12 @@ class Element{
 }
 async function runUi(){
   now=1000;const elements=new Map(),storage=new Map(),intervals=new Map(),timeouts=new Map(),spoken=[],requests=[];
-  let id=0,alerts=0,whistles=0,shots=0;
+  let id=0,alerts=0,shots=0;
   const document={visibilityState:'visible',getElementById:key=>elements.get(key),addEventListener(){},removeEventListener(){}};
   const context={console,document,Date:class extends Date{static now(){return now;}},crypto:{randomUUID:()=> 'session-'+(++id)},localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},setInterval:fn=>{const key=++id;intervals.set(key,fn);return key;},clearInterval:key=>intervals.delete(key),setTimeout:(fn,delay)=>{const key=++id;timeouts.set(key,{fn,delay});return key;},clearTimeout:key=>timeouts.delete(key),addEventListener(){},removeEventListener(){},confirm:()=>true,SpeechSynthesisUtterance:Utterance,speechSynthesis:{speak:u=>spoken.push(u),cancel(){},getVoices:()=>[]},fetch:async(url,options)=>{requests.push(JSON.parse(options.body));return {ok:true,json:async()=>({ok:true,count:JSON.parse(options.body).results.length})};}};
   context.window=context;vm.createContext(context);
   for(const file of ['lib/mw-practice-heats.js','coach/timing-tools.js','coach/practice-heats.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context);
-  context.MWCoachTimingTools.audio.unlock=async()=>true;context.MWCoachTimingTools.audio.alert=async()=>{alerts++;return true;};context.MWCoachTimingTools.audio.whistle=async()=>{whistles++;return true;};context.MWCoachTimingTools.audio.gun=({canFire,onFire})=>{if(!canFire())return false;shots++;onFire();return true;};
+  context.MWCoachTimingTools.audio.unlock=async()=>true;context.MWCoachTimingTools.audio.alert=async()=>{alerts++;return true;};context.MWCoachTimingTools.audio.gun=({canFire,onFire})=>{if(!canFire())return false;shots++;onFire();return true;};
   const roster=Array.from({length:16},(_,i)=>({id:'athlete-'+i,name:'Athlete '+i,current_week:1,current_day:1,competition_division:i<8?'boys':'girls'}));
   const savedGroups=Array.from({length:4},(_,i)=>({id:'group-'+i,name:'Group '+i,coach_group_members:roster.slice(i*4,i*4+4).map(a=>({athlete_id:a.id}))}));
   const dependencies={escapeHtml:s=>String(s??''),pageBase:(title,subtitle,html)=>{elements.clear();for(const m of html.matchAll(/id="([^"]+)"/g))elements.set(m[1],new Element(m[1]));},hydrateCoachTodayPractice(){},mwLocalIsoDate:()=> '2026-10-10',mwCurrentUser:async()=>({id:'coach'}),project:'fixture',coachPracticeWorkoutComplete:()=>false,coachPracticeTier:()=>1,coachPracticeStrengthTier:()=>1,coachPracticeEventGroup:()=> 'sprint',coachProgramData:async()=>({track:{sessions:[{day:1,title:'Acceleration',prescribedWork:'2 x 30m'}]}}),coachSessionDayNumber:day=>day,mwCoachPracticePrescription:()=>({reps:2,distance:30,raw:'2 x 30m'}),mwCoachPracticeRecommendedTarget:()=>null,coachPracticeIdentity:a=>({workoutKey:a.id+':w1:d1'}),sbRest:async()=>savedGroups,mwModal(){},mwClientTimeZone:()=> 'America/Chicago',mwSessionToken:()=> 'disposable',fetchCoachRoster:async()=>({athletes:roster}),openPage(){}};
@@ -113,7 +113,7 @@ async function runUi(){
   find('heatGroup').value='group-1';find('heatGroup').onchange();assert.equal(find('heatRestClock').textContent,'01:30','each group keeps its own countdown');
   find('heatGroup').value='group-0';find('heatGroup').onchange();assert.equal(find('heatRestClock').textContent,'00:00');
   await find('heatSave').onclick();assert.equal(requests.length,1);assert.equal(requests[0].results.length,4);assert.deepEqual(requests[0].results.map(x=>x.athleteId).sort(),roster.slice(0,4).map(a=>a.id));assert.ok(requests[0].results.every(x=>x.timeSeconds===2));
-  await find('heatWhistle').onclick();assert.equal(whistles,1);
+  assert.equal(find('heatWhistle'),undefined);assert.equal(find('heatModeWhistle'),undefined);
   const draft=JSON.parse([...storage.entries()].find(([key])=>key.includes('heats'))[1]);assert.equal(draft.heats['group-0:0'].saved,true);
   find('heatGroup').value='group-1';find('heatGroup').onchange();find('heatNarratorMode').value='workout';find('heatNarratorMode').onchange();assert.match(spoken.at(-1).text,/Workout guidance on/);
   find('heatStart').onclick();assert.equal(model.heats[model.active].runningAt,now,'workout guidance never delays coach start');assert.match(spoken.at(-1).text,/Rep 1 started.*30 meters/);assert.equal(shots,1);
@@ -132,4 +132,4 @@ async function runUi(){
   storage.set('mw-practice-mode-v1:fixture:coach',JSON.stringify({narration:true}));await context.MWCoachPractice.mount(dependencies);assert.equal(find('heatNarratorMode').value,'meet','legacy On migrates safely to Meet Start');
   context.__mwCoachPracticeDispose();assert.equal(intervals.size,0);assert.equal(timeouts.size,0);
 }
-Promise.all([runUi(),audioChecks()]).then(()=>console.log('PASS: three narrator modes, gun-synchronized timing/cancellation, lower whistle audio graph, pause/resume/stop, independent countdowns, 16-athlete fixture, correct saves, and standalone stopwatch.')).catch(err=>{console.error(err);process.exitCode=1;});
+Promise.all([runUi(),audioChecks()]).then(()=>console.log('PASS: whistle removed; three narrator modes, starting gun, rest alerts, timing controls, 16-athlete fixture, correct saves, and standalone stopwatch preserved.')).catch(err=>{console.error(err);process.exitCode=1;});
