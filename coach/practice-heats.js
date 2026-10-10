@@ -15,12 +15,15 @@
       <div class="mwHeatGroupRow"><label>Practice group<select id="heatGroup" aria-label="Practice group"></select></label><details class="mwHeatGroupMenu"><summary>Manage groups</summary><div><button class="back" id="heatAdd">+ Add group</button><button class="back" id="heatEdit">Edit group</button><button class="back" id="heatAutoGroups">Group Pace AI →</button></div></details></div>
       <div class="mwHeatPickerRow"><label>Timed heat<select id="heatPicker" aria-label="Timed heat"></select></label><b id="heatRep">REP 1</b></div>
       <p id="heatContext" class="mwHeatContext"></p>
+      <section id="heatTimingStage" class="mwHeatTimingStage" aria-label="Active group timing controls">
+      <div class="mwHeatTimingHeading"><b id="heatTimingGroup">Active heat</b><button class="back" id="heatReset">RESET REP</button></div>
       <div class="mwHeatClocks"><div><span>REP STOPWATCH</span><strong id="heatClock">00.00</strong><small id="heatClockState">Loading athletes…</small></div><div id="heatRestPanel"><span>REST COUNTDOWN</span><strong id="heatRestClock">01:30</strong><small id="heatRestState" role="status">READY BETWEEN REPS</small><div><button class="back" id="heatRestToggle">START REST</button><button class="back" id="heatRestReset">RESET REST</button></div></div></div>
-      <div class="mwHeatStartRow"><button class="action" id="heatStart" disabled>START REP</button><button class="back" id="heatStop" disabled>STOP</button><button class="back mwHeatWhistle" id="heatWhistle" type="button">♬ WHISTLE</button></div>
+      <div class="mwHeatStartRow"><button class="action" id="heatStart" disabled>START REP</button><button class="back" id="heatStop" disabled>STOP CLOCK</button></div>
       <div id="heatLanes" class="mwHeatLanes"></div>
       <div class="mwHeatPrimary"><button class="action" id="heatNext" disabled>NEXT REP</button><button class="action" id="heatSave" disabled>FINISH & SAVE</button></div>
+      <details class="mwHeatMore"><summary>Whistle & corrections</summary><div><button class="back mwHeatWhistle" id="heatWhistle" type="button">♬ WHISTLE</button><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button><button class="back" id="heatAttendance">ATTENDANCE</button></div></details>
+      </section>
       <details class="mwHeatPlan"><summary>Today’s workout</summary><div id="practiceTodayPlan"></div></details>
-      <details class="mwHeatMore"><summary>Corrections & attendance</summary><div><button class="back" id="heatReset">RESET REP</button><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button><button class="back" id="heatAttendance">ATTENDANCE</button></div></details>
       </div>
       <p id="heatStatus" class="mwHeatStatus" role="status" aria-live="polite">Loading saved groups…</p>
     </section>`);
@@ -101,6 +104,7 @@
       find('heatEdit').disabled=busy()||!selected||selected.temporary||heats.some(x=>x.groupId===selected.id&&root.MWPracticeHeats.pending(x));
       find('heatReset').disabled=saving||!heat||workoutsSaved(heat);
       find('heatRep').textContent=heat?`REP ${Math.min(heat.rep,max(heat)||heat.rep)}${max(heat)?' / '+max(heat):''}`:'NO HEAT';
+      find('heatTimingGroup').textContent=heat?`${heat.groupName} · Heat ${heat.heatNumber} · Rep ${Math.min(heat.rep,max(heat)||heat.rep)}`:'Choose a group';
       find('heatClockState').textContent=counting?countingCue||'Preparing block start…':!heat?'Choose athletes to start':workoutsSaved(heat)?'Workouts already saved':heat.interrupted?'Interrupted rep · Reset to retime':running?'Tap athletes as they cross':heat.paused?'STOPWATCH PAUSED':heat.stopped?'Stopped · Tap finishes or enter times':heat.repResults.length?'Rep finished · Recover':heat.detached?'Recovered draft · Save or review':'Ready for Rep '+heat.rep;
       find('heatStart').textContent=counting?'CANCEL START':running?'PAUSE':heat?.paused?'RESUME REP':heat?.stopped?'STOPPED':'START REP';
       find('heatStart').disabled=saving||!heat||heat.saved||heat.interrupted||heat.detached||heat.stopped||(!running&&!heat.paused&&!counting&&(heat.repResults.length>0||!heat.athleteIds.some(eligible)));
@@ -131,6 +135,7 @@
       }).join(''):'<p>No athletes in this group. Add or edit a group to choose athletes.</p>';
       find('heatLanes').querySelectorAll('[data-heat-athlete]').forEach(button=>button.onclick=()=>finish(button.dataset.heatAthlete));
       panel.closest('.page')?.classList.toggle('mw-heat-running',Boolean(repActive||counting));
+      panel.classList.toggle('mwHeatTimingFocus',Boolean(repActive||counting));
       paint();
     }
     function change(action){try{action();persist();render()}catch(err){notice(err.message)}}
