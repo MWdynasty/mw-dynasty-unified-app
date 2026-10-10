@@ -3367,6 +3367,8 @@ img,svg,video,canvas{max-width:100%}
 @media(max-width:420px){.mwPaceAdvancedFields{grid-template-columns:1fr}.mwPaceAdvancedFields label{grid-template-columns:1fr 1fr;align-items:center}#coachGroupPaceAI .coach-ai-badge{display:none}}
 
 /* One timing surface: clock, Start/Stop and all four finish pads stay together. */
+.mwGroupDialogActions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mwGroupDialogActions button{min-height:48px}
 #mwHeatRun .mwHeatTimingStage{position:sticky;top:8px;z-index:15;display:grid;gap:10px;padding:12px;background:#061018;border:1px solid #786332;border-radius:16px;align-content:start}
 #mwHeatRun .mwHeatTimingHeading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
 #mwHeatRun .mwHeatTimingHeading>b{font-size:13px;line-height:1.3;color:#eccc83;overflow-wrap:anywhere}

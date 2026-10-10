@@ -21,7 +21,7 @@
       <div class="mwHeatStartRow"><button class="action" id="heatStart" disabled>START REP</button><button class="back" id="heatStop" disabled>STOP CLOCK</button></div>
       <div id="heatLanes" class="mwHeatLanes"></div>
       <div class="mwHeatPrimary"><button class="action" id="heatNext" disabled>NEXT REP</button><button class="action" id="heatSave" disabled>FINISH & SAVE</button></div>
-      <details class="mwHeatMore"><summary>Whistle & corrections</summary><div><button class="back mwHeatWhistle" id="heatWhistle" type="button">♬ WHISTLE</button><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button><button class="back" id="heatAttendance">ATTENDANCE</button></div></details>
+      <details class="mwHeatMore"><summary>Whistle & corrections</summary><div><button class="back mwHeatWhistle" id="heatWhistle" type="button">♬ WHISTLE</button><button class="back" id="heatUndo">UNDO LAST FINISH</button><button class="back" id="heatDNF">DID NOT FINISH</button><button class="back" id="heatManual">ENTER A TIME</button></div></details>
       </section>
       <details class="mwHeatPlan"><summary>Today’s workout</summary><div id="practiceTodayPlan"></div></details>
       </div>
@@ -117,7 +117,6 @@
       find('heatUndo').disabled=saving||counting||!heat?.repResults.length;
       find('heatDNF').disabled=saving||!finishable;
       find('heatManual').disabled=saving||!finishable;
-      find('heatAttendance').disabled=busy();
       find('heatRestToggle').disabled=saving||counting||repActive||!heat;
       find('heatRestReset').disabled=saving||counting||repActive||!heat;
       find('heatRestToggle').textContent=model.restComplete(heat)?'REST COMPLETE':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
@@ -145,12 +144,22 @@
     }
     function groupModal(group){
       if(busy())return;const selected=new Set(group?.athleteIds||[]);
-      d.mwModal(group?'Edit practice group':'Add practice group',`<div class="mwHeatGroupEditor"><label>Group name<input id="heatGroupName" maxlength="80" value="${e(group?.name||'')}" placeholder="Name your group"></label><fieldset><legend>Choose assigned athletes</legend>${roster.map(a=>`<label class="mwHeatMember"><input type="checkbox" data-heat-member="${e(a.id)}" ${selected.has(a.id)?'checked':''}><span>${e(a.name)}<small>${e(a.competition_division||a.event||'')}</small></span></label>`).join('')}</fieldset><p id="heatGroupError" role="alert"></p><button class="action" id="heatGroupConfirm">SAVE GROUP</button></div>`);
+      d.mwModal(group?'Edit practice group':'Add practice group',`<div class="mwHeatGroupEditor"><label>Group name<input id="heatGroupName" maxlength="80" value="${e(group?.name||'')}" placeholder="Name your group"></label><fieldset><legend>Choose assigned athletes</legend>${roster.map(a=>`<label class="mwHeatMember"><input type="checkbox" data-heat-member="${e(a.id)}" ${selected.has(a.id)?'checked':''}><span>${e(a.name)}<small>${e(a.competition_division||a.event||'')}</small></span></label>`).join('')}</fieldset><p id="heatGroupError" role="alert"></p><div class="mwGroupDialogActions"><button class="action" id="heatGroupConfirm">SAVE GROUP</button><button class="back" id="heatGroupCancel" type="button" data-close-modal>CANCEL</button></div>${group?'<button class="back" id="heatGroupArchive" type="button">ARCHIVE GROUP</button>':''}</div>`);
+      const modal=document.getElementById('mwModal');let writing=false;
+      const close=()=>{if(!writing)modal?.remove();};
+      find('heatGroupCancel').onclick=close;
+      modal?.querySelectorAll?.('[data-close-modal]').forEach(button=>button.onclick=close);
+      const setWriting=value=>{writing=value;for(const id of ['heatGroupConfirm','heatGroupCancel','heatGroupArchive'])if(find(id))find(id).disabled=value;};
+      if(group)find('heatGroupArchive').onclick=async()=>{
+        if(writing)return;setWriting(true);
+        try{if(await d.archiveCoachGroup(group.id,group.name)){await loadGroups();modal?.remove();render();notice('Group archived. Past results remain unchanged.');}}catch(err){if(find('heatGroupError'))find('heatGroupError').textContent=err.message;}finally{setWriting(false);}
+      };
       find('heatGroupConfirm').onclick=async()=>{
+        if(writing)return;
         const name=find('heatGroupName').value.trim(),ids=[...document.querySelectorAll('[data-heat-member]:checked')].map(x=>x.dataset.heatMember);
         if(!name||!ids.length){find('heatGroupError').textContent='Name the group and select at least one athlete.';return}
-        const button=find('heatGroupConfirm');button.disabled=true;button.textContent='SAVING…';
-        try{const result=await d.sbRest('rpc/mw_coach_save_training_group',{method:'POST',body:{p_group_id:group?.id||null,p_name:name,p_athlete_ids:ids}});await loadGroups();const savedId=result?.id||result?.[0]?.id;const first=heats.find(x=>x.groupId===savedId);if(first)model.select(first.key);persist();document.getElementById('mwModal')?.remove();render();notice('Group saved. Names and athletes will remain after signing back in.')}catch(err){find('heatGroupError').textContent=err.message;button.disabled=false;button.textContent='RETRY SAVE'}
+        const button=find('heatGroupConfirm');setWriting(true);button.textContent='SAVING…';
+        try{const result=await d.sbRest('rpc/mw_coach_save_training_group',{method:'POST',body:{p_group_id:group?.id||null,p_name:name,p_athlete_ids:ids}});await loadGroups();const savedId=result?.id||result?.[0]?.id;const first=heats.find(x=>x.groupId===savedId);if(first)model.select(first.key);persist();modal?.remove();render();notice('Group saved. Names and athletes will remain after signing back in.')}catch(err){if(find('heatGroupError'))find('heatGroupError').textContent=err.message;button.textContent='RETRY SAVE';}finally{setWriting(false);}
       };
     }
     find('heatAdd').onclick=()=>groupModal(null);
@@ -185,7 +194,6 @@
     };
     const whistle=async()=>{if(!await audio.whistle())notice('Whistle audio is unavailable. Check device sound and volume.');};
     find('heatWhistle').onclick=whistle;find('heatModeWhistle').onclick=whistle;
-    find('heatAttendance').onclick=()=>{persist();d.openPage('attendance')};
     find('heatDNF').onclick=()=>{const id=h()?.repAthleteIds?.find(id=>!h().repResults.some(r=>r.athleteId===id));if(!id)return; if(confirm('Mark '+name(id)+' as did not finish this rep?'))finish(id,{resultStatus:'dnf',paceStatus:null,paceLabel:'DID NOT FINISH',mwInterpretation:null})};
     find('heatManual').onclick=()=>{
       const ids=h()?.repAthleteIds?.filter(id=>!h().repResults.some(r=>r.athleteId===id))||[];if(!ids.length)return;

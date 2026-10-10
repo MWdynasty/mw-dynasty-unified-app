@@ -31,6 +31,7 @@ async function run(){
   assert.match(q('groupPaceResults').textContent,/Division Needed/);assert.match(q('groupPaceResults').textContent,/Trial Needed/);
   assert.equal(win.document.querySelectorAll('.coach-pace-athletes strong').length,16);
   assert.equal(q('coachSprintPace').hidden,true);assert.equal(q('paceToolsPanel').hidden,true);
+  assert.equal(q('jumpSprintPace'),null);assert.equal(q('openCoachStopwatch'),null,'no redundant Open shortcut above the stopwatch itself');
   q('paceToolsTab').click();assert.equal(q('paceToolsPanel').hidden,false);assert.equal(q('coachGroupPaceAI').hidden,true);
   q('paceGroupTab').click();q('groupPaceIntensity').value='0';q('groupPaceIntensity').onchange();assert.equal(q('savePaceGroups').disabled,true);
   q('groupPaceIntensity').value='90';q('groupPaceIntensity').onchange();assert.equal(q('savePaceGroups').disabled,false);
