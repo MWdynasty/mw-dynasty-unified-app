@@ -23,44 +23,58 @@
     const seconds=Number(match[2]||match[1])*(/^m/i.test(match[3])?60:1);
     return seconds>0&&seconds<=3600?seconds:null;
   }
-  function createNarrator({speech=root.speechSynthesis,Utterance=root.SpeechSynthesisUtterance,schedule=root.setTimeout,unschedule=root.clearTimeout}={}){
+  function createNarrator({speech=root.speechSynthesis,Utterance=root.SpeechSynthesisUtterance,schedule=root.setTimeout,unschedule=root.clearTimeout,gun=options=>audio.gun(options)}={}){
     let generation=0,active=false,timers=[],current=null;
     function cancel(){
       generation++;active=false;for(const timer of timers)unschedule(timer);timers=[];
       if(current){current.onstart=current.onend=current.onerror=null;current=null;speech?.cancel();}
+    }
+    function utteranceFor(text){
+      const utterance=new Utterance(text),voices=speech.getVoices?.()||[];
+      utterance.lang='en-US';utterance.rate=.85;utterance.pitch=.85;utterance.volume=1;
+      utterance.voice=voices.find(v=>v.lang==='en-US'&&v.localService)||voices.find(v=>v.lang==='en-US')||null;
+      return utterance;
+    }
+    function speak(text){
+      cancel();if(!speech||!Utterance)return false;
+      try{current=utteranceFor(text);current.onend=current.onerror=()=>{current=null;};speech.speak(current);return true;}catch{cancel();return false;}
     }
     function start({onCue=()=>{},onGo=()=>{},onError=()=>{}}={}){
       cancel();
       if(!speech||!Utterance){onError(Error('Block-start voice is unavailable on this device. Turn narration off to start manually.'));return;}
       const token=generation;active=true;let went=false;
       const live=()=>active&&token===generation;
-      const fail=()=>{if(!live()||went)return;cancel();onError(Error('Block-start voice did not play. Turn narration off to start manually.'));};
-      const cues=['On your marks','Set','Go'];
+      const fail=()=>{if(!live()||went)return;cancel();onError(Error('Meet-start audio did not play. Choose Off to start manually and check device sound.'));};
+      const cues=['On your marks','Set'];
+      function fire(){
+        if(!live())return;
+        timers.push(schedule(fail,7000));
+        try{Promise.resolve(gun({canFire:live,onFire:()=>{
+          if(!live()||went)return;went=true;active=false;current=null;
+          for(const timer of timers)unschedule(timer);timers=[];onGo();onCue('Gun');
+        }})).then(ok=>{if(!ok)fail();},fail);}catch{fail();}
+      }
       function say(index){
         if(!live())return;
         try{
-          const utterance=new Utterance(cues[index]);current=utterance;
-          utterance.lang='en-US';utterance.rate=.9;utterance.volume=1;
-          const voices=speech.getVoices?.()||[];
-          utterance.voice=voices.find(v=>v.lang==='en-US'&&v.localService)||voices.find(v=>v.lang==='en-US')||null;
+          const utterance=utteranceFor(cues[index]);current=utterance;
           const watchdog=schedule(fail,7000);timers.push(watchdog);
           utterance.onstart=()=>{
             if(!live())return;onCue(cues[index]);
-            if(index===2&&!went){went=true;unschedule(watchdog);onGo();}
           };
           utterance.onend=()=>{
             if(!live())return;unschedule(watchdog);
-            if(index===2){if(!went){fail();return}active=false;current=null;return;}
-            timers.push(schedule(()=>say(index+1),index===0?700:1100));
+            current=null;
+            timers.push(schedule(index===0?()=>say(1):fire,index===0?1600:1300));
           };
           utterance.onerror=()=>{if(went){active=false;current=null;}else fail();};
           speech.speak(utterance);
         }catch{fail();}
       }
-      // The clock begins at the Go utterance's start event, never at button tap or voice completion.
+      // The clock begins when the starting-gun buffer fires, not at button tap or spoken Set.
       say(0);
     }
-    return {start,cancel,isActive:()=>active};
+    return {start,speak,cancel,isActive:()=>active};
   }
   function createAudio(){
     let context=null;
@@ -72,15 +86,37 @@
     async function play(kind='whistle'){
       if(!await unlock())return false;
       try{
-        const start=context.currentTime+.015,duration=kind==='whistle'?.65:.55;
-        const gain=context.createGain();gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(kind==='whistle'?.12:.08,start+.025);gain.gain.setValueAtTime(kind==='whistle'?.12:.08,start+duration-.08);gain.gain.linearRampToValueAtTime(0,start+duration);gain.connect(context.destination);
-        const frequencies=kind==='whistle'?[2500,3150]:[880,1100];
+        if(kind==='whistle'){
+          // A lower whistle body, breath noise and rapid amplitude trill instead of two piercing sine tones.
+          const start=context.currentTime+.015,duration=.8,output=context.createGain();
+          output.gain.setValueAtTime(0,start);output.gain.linearRampToValueAtTime(.22,start+.035);output.gain.setValueAtTime(.22,start+.65);output.gain.linearRampToValueAtTime(0,start+duration);output.connect(context.destination);
+          const trill=context.createOscillator(),depth=context.createGain();trill.frequency.value=32;depth.gain.value=.055;trill.connect(depth);depth.connect(output.gain);
+          const body=context.createOscillator();body.type='triangle';body.frequency.setValueAtTime(1650,start);body.frequency.linearRampToValueAtTime(1850,start+.07);body.frequency.linearRampToValueAtTime(1700,start+duration);body.connect(output);
+          const buffer=context.createBuffer(1,Math.ceil(context.sampleRate*duration),context.sampleRate),samples=buffer.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*.28;
+          const breath=context.createBufferSource(),filter=context.createBiquadFilter();breath.buffer=buffer;filter.type='bandpass';filter.frequency.value=1750;filter.Q.value=1.2;breath.connect(filter);filter.connect(output);
+          breath.onended=()=>{for(const node of [breath,filter,body,trill,depth,output])node.disconnect();};
+          body.start(start);trill.start(start);breath.start(start);body.stop(start+duration);trill.stop(start+duration);return true;
+        }
+        const start=context.currentTime+.015,duration=.55;
+        const gain=context.createGain();gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(.08,start+.025);gain.gain.setValueAtTime(.08,start+duration-.08);gain.gain.linearRampToValueAtTime(0,start+duration);gain.connect(context.destination);
+        const frequencies=[880,1100];
         let ended=0;
-        for(const frequency of frequencies){const oscillator=context.createOscillator();oscillator.type='sine';oscillator.frequency.setValueAtTime(frequency,start);if(kind==='whistle')oscillator.frequency.linearRampToValueAtTime(frequency+90,start+.3);oscillator.connect(gain);oscillator.onended=()=>{oscillator.disconnect();if(++ended===frequencies.length)gain.disconnect();};oscillator.start(start);oscillator.stop(start+duration);}
+        for(const frequency of frequencies){const oscillator=context.createOscillator();oscillator.type='sine';oscillator.frequency.setValueAtTime(frequency,start);oscillator.connect(gain);oscillator.onended=()=>{oscillator.disconnect();if(++ended===frequencies.length)gain.disconnect();};oscillator.start(start);oscillator.stop(start+duration);}
         return true;
       }catch{return false;}
     }
-    return {unlock,whistle:()=>play('whistle'),alert:()=>play('alert')};
+    async function gun({onFire=()=>{},canFire=()=>true}={}){
+      if(!await unlock()||!canFire())return false;
+      try{
+        const duration=.32,buffer=context.createBuffer(1,Math.ceil(context.sampleRate*duration),context.sampleRate),samples=buffer.getChannelData(0);
+        for(let i=0;i<samples.length;i++){const t=i/context.sampleRate;samples[i]=((Math.random()*2-1)*Math.exp(-t*38)+.35*Math.sin(2*Math.PI*115*t)*Math.exp(-t*24))*.6;}
+        const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();source.buffer=buffer;filter.type='lowpass';filter.frequency.value=6000;gain.gain.value=.55;source.connect(filter);filter.connect(gain);gain.connect(context.destination);
+        source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+        if(!canFire()){source.disconnect();filter.disconnect();gain.disconnect();return false;}
+        source.start(context.currentTime);onFire();return true;
+      }catch{return false;}
+    }
+    return {unlock,whistle:()=>play('whistle'),alert:()=>play('alert'),gun};
   }
   const audio=createAudio(),stopwatch=new Stopwatch();
   function mountStopwatch(panel){
