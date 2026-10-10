@@ -51,9 +51,12 @@ async function run(){
    return (await db.query('select g.id,g.name,coalesce(jsonb_agg(jsonb_build_object(\'athlete_id\',m.athlete_id)) filter(where m.athlete_id is not null),\'[]\'::jsonb) as coach_group_members from coach_groups g left join coach_group_members m on m.group_id=g.id where not g.archived group by g.id order by g.created_at,g.id')).rows;
   }};
   let controller=await win.MWCoachPractice.mount(d),q=id=>win.document.getElementById(id);
+  assert.equal(q('heatAttendance'),null,'Attendance remains in Menu, not Practice');
+  q('heatAdd').click();q('heatGroupName').value='Cancelled draft';q('heatGroupCancel').click();assert.equal(q('mwModal'),null);assert.equal((await d.sbRest('coach_groups')).length,0,'Cancel creates no group');
   async function createGroup(name,indices){q('heatAdd').click();q('heatGroupName').value=name;for(const i of indices)win.document.querySelector('[data-heat-member="'+roster[i].id+'"]').checked=true;await q('heatGroupConfirm').onclick();assert.equal(q('mwModal'),null)}
   for(let i=0;i<4;i++)await createGroup((i<2?'Boys':'Girls')+' '+(i%2+1),Array.from({length:4},(_,j)=>i*4+j));
   let groups=(await d.sbRest('coach_groups')).map(g=>g.id);assert.equal(groups.length,4);
+  q('heatGroup').value=groups[0];q('heatGroup').onchange();q('heatEdit').click();q('heatGroupName').value='Cancelled rename';q('heatGroupCancel').click();assert.equal((await scalar(db,'select name from coach_groups where id=$1',[groups[0]])).name,'Boys 1','Cancel preserves saved group name');
   q('heatGroup').value=groups[0];q('heatGroup').onchange();q('heatEdit').click();q('heatGroupName').value='Acceleration boys';await q('heatGroupConfirm').onclick();
   assert.equal((await scalar(db,'select name from coach_groups where id=$1',[groups[0]])).name,'Acceleration boys');
   for(let i=0;i<4;i++){
@@ -90,6 +93,32 @@ async function run(){
   await role(db,OTHER);assert.equal((await scalar(db,'select count(*)::int as n from coach_groups')).n,0);await assert.rejects(groupRpc({p_group_id:groups[0],p_name:'Intrusion',p_athlete_ids:[roster[0].id]}),/assigned/);
   await role(db,C);const original=(await db.query('select athlete_id from coach_group_members where group_id=$1 order by athlete_id',[groups[0]])).rows;
   await assert.rejects(groupRpc({p_group_id:groups[0],p_name:'Invalid edit',p_athlete_ids:[OTHER]}),/assigned/);assert.deepEqual((await db.query('select athlete_id from coach_group_members where group_id=$1 order by athlete_id',[groups[0]])).rows,original,'invalid edit is atomic');
+  // Exercise the actual Team create/cancel and recoverable Archive handlers.
+  const appSource=fs.readFileSync('coach/app.js','utf8');
+  win.mwModal=(title,html)=>{q('mwModal')?.remove();const modal=win.document.createElement('section');modal.id='mwModal';modal.innerHTML='<button data-close-modal>Close</button>'+html;win.document.body.append(modal);return modal;};
+  win.mwCurrentUser=async()=>({id:C});win.logCoachAction=async()=>{};win.teamsPage=()=>{};win.toast=()=>{};win.escapeHtml=esc;
+  let groupWrites=0;
+  win.sbRest=async(path,options)=>{
+   groupWrites++;
+   if(options.method==='POST')return (await db.query('insert into coach_groups(coach_user_id,name,event_group,description) values($1,$2,$3,$4) returning *',[options.body.coach_user_id,options.body.name,options.body.event_group,options.body.description])).rows;
+   assert.equal(options.method,'PATCH');assert.deepEqual(JSON.parse(JSON.stringify(options.body)),{archived:true});
+   const params=new URL('https://fixture.invalid/'+path).searchParams;
+   return (await db.query('update coach_groups set archived=true where id=$1 and coach_user_id=$2 and archived=false returning *',[params.get('id').slice(3),params.get('coach_user_id').slice(3)])).rows;
+  };
+  win.eval(appSource.slice(appSource.indexOf('function createGroupModal()'),appSource.indexOf('async function groupWorkspaceLive(')));
+  win.createGroupModal();q('groupName').value='Cancelled team';q('cancelGroup').click();assert.equal(q('mwModal'),null);assert.equal(groupWrites,0,'Team Cancel makes no API write');
+  win.createGroupModal();q('groupName').value='Accidental team';const saving=q('saveGroup').onclick();await q('saveGroup').onclick();await saving;assert.equal(groupWrites,1,'double Save creates only one group');
+  const accidental=await scalar(db,"select id from coach_groups where name='Accidental team'");
+  win.confirm=()=>false;assert.equal(await win.archiveCoachGroup(accidental.id,'Accidental team'),false);assert.equal(groupWrites,1,'declining archive makes no write');
+  win.confirm=()=>true;await win.archiveCoachGroup(accidental.id,'Accidental team');assert.equal((await scalar(db,'select archived from coach_groups where id=$1',[accidental.id])).archived,true);
+  await role(db,OTHER);win.mwCurrentUser=async()=>({id:OTHER});await assert.rejects(win.archiveCoachGroup(groups[0],'Another coach group'),/could not be archived/);
+  await role(db,C);win.mwCurrentUser=async()=>({id:C});await win.archiveCoachGroup(groups[0],'Acceleration boys');
+  assert.equal((await db.query('select athlete_id from coach_group_members where group_id=$1',[groups[0]])).rows.length,0,'archived group memberships are hidden by RLS');
+  assert.equal((await scalar(db,'select count(*)::int as n from coach_practice_timing_results')).n,32,'Archive keeps all saved coach times');
+  assert.equal((await scalar(db,'select count(*)::int as n from athlete_practice_rep_results')).n,32,'Archive keeps athlete times');
+  await db.query('update coach_groups set archived=false where id=$1',[groups[0]]);
+  assert.deepEqual((await db.query('select athlete_id from coach_group_members where group_id=$1 order by athlete_id',[groups[0]])).rows,original,'Archive keeps memberships, visible again when restored');
+  assert.equal((await scalar(db,'select count(*)::int as n from coach_groups where not archived')).n,5,'archive is reversible without recreating groups');
   console.log('PASS: real Practice DOM controls + Node save handler + PostgreSQL RPC/RLS: 16 athletes, 5 named groups, membership/rename persistence, independent heat reps/rest, reset, refresh draft recovery, 32 durable results visible to each correct athlete and coach, completion uniqueness, replay safety, and cross-coach denial.');
  }finally{if(win)await win.happyDOM.abort();await db.close()}
 }
