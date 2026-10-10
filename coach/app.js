@@ -2486,7 +2486,7 @@ function mwCoachClusterByPr(rows,tolerancePct=3,maxSize=6){
   return groups;
 }
 async function pacingPage(){
-  pageBase('Pacing Tools','Sprint Pace AI + Distance Pacer + automatic PR-based practice groups.',`
+  pageBase('Pacing Tools','Pace targets, distance measurement, stopwatch and whistle.',`
   <div class="coach-pacer-hub">
     <article class="coach-pacer-card">
       <div><span class="eyebrow">⚡ SPRINT PACE AI</span><h3>Individual + Group Pace Intelligence</h3><p>Use live athlete PRs to calculate targets and build boys/girls practice groups with similar speed.</p></div>
@@ -2496,7 +2496,23 @@ async function pacingPage(){
       <div><span class="eyebrow">◎ DISTANCE PACER</span><h3>Measure the Rep Anywhere</h3><p>Track, football field or open field — measure the exact distance your group needs to run.</p></div>
       <button class="action" id="openCoachDistancePacer">OPEN DISTANCE PACER</button>
     </article>
+    <article class="coach-pacer-card">
+      <div><span class="eyebrow">◷ STOPWATCH</span><h3>Time Anything</h3><p>Start, pause, resume, stop and record laps with a regular stopwatch.</p></div>
+      <button class="action" id="openCoachStopwatch">OPEN STOPWATCH</button>
+    </article>
+    <article class="coach-pacer-card">
+      <div><span class="eyebrow">♬ WHISTLE</span><h3>Signal Your Group</h3><p>Tap to blow the whistle. Set your device volume for the practice space.</p></div>
+      <button class="action" id="coachPacingWhistle">BLOW WHISTLE</button>
+      <small id="coachWhistleStatus" role="status"></small>
+    </article>
   </div>
+
+  <section class="coach-pace-section mwCoachStopwatch" id="coachStopwatch" aria-label="Regular stopwatch">
+    <div class="coach-pace-section-head"><div><span class="eyebrow">REGULAR STOPWATCH</span><h2>Your clock. Your controls.</h2></div></div>
+    <strong data-stopwatch-clock>00:00.00</strong><p data-stopwatch-status role="status">READY</p>
+    <div class="mwCoachStopwatchControls"><button class="action" data-stopwatch-start>START</button><button class="back" data-stopwatch-stop disabled>STOP</button><button class="back" data-stopwatch-lap disabled>LAP</button><button class="back" data-stopwatch-reset>RESET</button></div>
+    <ol data-stopwatch-laps aria-label="Stopwatch laps"></ol>
+  </section>
 
   <section class="coach-pace-section" id="coachSprintPace">
     <div class="coach-pace-section-head"><div><span class="eyebrow">INDIVIDUAL PACE AI</span><h2>Calculate one athlete.</h2><p>Choose the athlete. MW uses their available PRs or full-effort trials to calculate a starting target.</p></div></div>
@@ -2536,6 +2552,9 @@ async function pacingPage(){
 
   document.getElementById('jumpSprintPace')?.addEventListener('click',()=>document.getElementById('coachSprintPace')?.scrollIntoView({behavior:'smooth',block:'start'}));
   document.getElementById('openCoachDistancePacer')?.addEventListener('click',()=>{location.href='/distance-pacer/?coach=1'});
+  window.MWCoachTimingTools.mountStopwatch(document.getElementById('coachStopwatch'));
+  document.getElementById('openCoachStopwatch').onclick=()=>document.getElementById('coachStopwatch').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('coachPacingWhistle').onclick=async()=>{const status=document.getElementById('coachWhistleStatus'),played=await window.MWCoachTimingTools.audio.whistle();if(status.isConnected)status.textContent=played?'Whistle played.':'Whistle audio is unavailable. Check device sound and volume.';};
 
   const paceout=document.getElementById('paceout'),divisionWrap=document.getElementById('paceDivisionRoster'),results=document.getElementById('groupPaceResults');
   let athletes=[];

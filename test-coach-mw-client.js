@@ -9,10 +9,11 @@ const voiceSource = fs.readFileSync(path.join(root, 'coach/voice-parity.js'), 'u
 const coachHtml = fs.readFileSync(path.join(root, 'coach/index.html'), 'utf8');
 const clientPaths = [...coachHtml.matchAll(/<script src="(\/coach\/[^"]+)"/g)]
   .map(match => match[1].split('?')[0].slice(1));
-assert.equal(clientPaths.length, 3, 'Coach page must load practice heats, app, and voice companion');
-assert.equal(clientPaths[0],'coach/practice-heats.js');
-assert.equal(fs.readFileSync(path.join(root, clientPaths[1]), 'utf8'), appSource, 'served app must match tested source');
-assert.equal(fs.readFileSync(path.join(root, clientPaths[2]), 'utf8'), voiceSource, 'served voice companion must match tested source');
+assert.equal(clientPaths.length, 4, 'Coach page must load timing tools, practice heats, app, and voice companion');
+assert.equal(clientPaths[0],'coach/timing-tools.js');
+assert.equal(clientPaths[1],'coach/practice-heats.js');
+assert.equal(fs.readFileSync(path.join(root, clientPaths[2]), 'utf8'), appSource, 'served app must match tested source');
+assert.equal(fs.readFileSync(path.join(root, clientPaths[3]), 'utf8'), voiceSource, 'served voice companion must match tested source');
 const start = appSource.indexOf('function coachMWPage(){');
 const end = appSource.indexOf('function membershipPage', start);
 assert.ok(start >= 0 && end > start, 'Coach MW page must exist');
