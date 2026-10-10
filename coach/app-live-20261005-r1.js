@@ -2184,15 +2184,53 @@ function createGroupModal(){
     finally{saving=false;if(modal.isConnected){button.disabled=false;modal.querySelector('#cancelGroup').disabled=false;button.textContent='Create Group';}}
   };
 }
+function editCoachGroup(g){
+  const modal=mwModal('Edit Group',`<div class="form"><label>Group Name<input id="editGroupName" value="${escapeHtml(g.name)}"></label><label>Event Group<input id="editGroupEvent" value="${escapeHtml(g.event_group||'')}"></label><label>Description<textarea id="editGroupDescription" rows="3">${escapeHtml(g.description||'')}</textarea></label><div class="mwGroupDialogActions"><button class="action" type="button" id="saveGroupEdit">Save Changes</button><button class="back" type="button" id="cancelGroupEdit">Cancel</button></div><p id="groupEditStatus" role="status" aria-live="polite"></p></div>`);
+  let saving=false;const button=modal.querySelector('#saveGroupEdit');
+  const cancel=()=>{if(!saving){modal.remove();groupWorkspaceLive(g.id);}};
+  modal.querySelectorAll('[data-close-modal]').forEach(el=>el.onclick=cancel);
+  modal.querySelector('#cancelGroupEdit').onclick=cancel;
+  button.onclick=async()=>{
+    if(saving||!modal.isConnected)return;
+    const name=modal.querySelector('#editGroupName').value.trim();
+    if(!name){modal.querySelector('#groupEditStatus').textContent='Group name required';return;}
+    saving=true;button.disabled=true;button.textContent='Saving…';modal.querySelector('#cancelGroupEdit').disabled=true;
+    try{
+      const u=await mwCurrentUser();if(!u?.id)throw Error('Coach session expired. Sign in again.');
+      const rows=await sbRest(`coach_groups?id=eq.${encodeURIComponent(g.id)}&coach_user_id=eq.${encodeURIComponent(u.id)}&archived=eq.false`,{method:'PATCH',body:{name,event_group:modal.querySelector('#editGroupEvent').value.trim()||null,description:modal.querySelector('#editGroupDescription').value.trim()||null}});
+      if(rows?.length!==1||rows[0].id!==g.id)throw Error('Changes were not saved. Refresh and check your coach access.');
+      await logCoachAction('group_updated','coach_group',g.id,{name});
+      modal.remove();await teamsPage();await groupWorkspaceLive(g.id);toast('Group updated');
+    }catch(e){if(modal.isConnected)modal.querySelector('#groupEditStatus').textContent=e.message;}
+    finally{saving=false;if(modal.isConnected){button.disabled=false;button.textContent='Save Changes';modal.querySelector('#cancelGroupEdit').disabled=false;}}
+  };
+}
+function confirmCoachGroupArchive(name){
+  const modal=document.getElementById('mwModal');
+  if(!modal)return Promise.resolve(false);
+  return new Promise(resolve=>{
+    const panel=document.createElement('div');panel.className='tile';panel.id='groupArchiveConfirm';panel.setAttribute('role','alertdialog');panel.setAttribute('aria-label','Confirm group deletion');
+    panel.innerHTML=`<h3>Delete ${escapeHtml(name)}?</h3><p>This group will leave active groups. Past results and athlete profiles will be kept.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="back" type="button" id="cancelGroupArchive">Cancel</button><button class="action" type="button" id="confirmGroupArchive">Delete Group</button></div>`;
+    modal.querySelector('.mw-modal-body').appendChild(panel);
+    const closers=Array.from(modal.querySelectorAll('[data-close-modal]'));
+    const finish=value=>{closers.forEach(el=>el.removeEventListener('click',cancel));panel.remove();resolve(value);};
+    const cancel=()=>finish(false);
+    closers.forEach(el=>el.addEventListener('click',cancel));
+    panel.querySelector('#cancelGroupArchive').onclick=cancel;
+    panel.querySelector('#confirmGroupArchive').onclick=()=>finish(true);
+    panel.querySelector('#cancelGroupArchive').focus();
+  });
+}
 async function archiveCoachGroup(id,name){
-  if(!window.confirm(`Archive ${name}? It will leave active groups. Past results and athlete profiles will not be deleted.`))return false;
+  if(!await confirmCoachGroupArchive(name))return false;
   const u=await mwCurrentUser();
+  if(!u?.id)throw Error('Coach session expired. Sign in again.');
   const rows=await sbRest(`coach_groups?id=eq.${encodeURIComponent(id)}&coach_user_id=eq.${encodeURIComponent(u.id)}&archived=eq.false`,{method:'PATCH',body:{archived:true}});
   if(rows?.length!==1||rows[0].id!==id)throw Error('Group could not be archived. Refresh and check your coach access.');
   await logCoachAction('group_archived','coach_group',id,{name});return true;
 }
 async function groupWorkspaceLive(id){
-  try{const [groups,members,roster]=await Promise.all([sbRest(`coach_groups?select=*&id=eq.${encodeURIComponent(id)}&limit=1`),liveGroupMembers(id),fetchCoachRoster()]);const g=groups?.[0];if(!g)throw new Error('Group not found');const assigned=roster.athletes||[],memberIds=new Set(members.map(m=>m.athlete_id));mwModal(g.name,`<div class="tile"><h3>${escapeHtml(g.event_group||'Team Group')}</h3><p>${escapeHtml(g.description||'Manage this group roster.')}</p></div><div class="form" style="margin-top:12px"><label>Add Assigned Athlete<select id="groupAthlete"><option value="">Select athlete</option>${assigned.filter(a=>!memberIds.has(a.id)).map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('')}</select></label><button class="action" id="addGroupAthlete">Add Athlete</button></div><div class="list" style="margin-top:12px">${assigned.filter(a=>memberIds.has(a.id)).map(a=>`<div class="row"><span><b>${escapeHtml(a.name)}</b><br><small>${escapeHtml(a.event||'Events not set')}</small></span><button class="back remove-member" data-athlete="${a.id}">Remove</button></div>`).join('')||'<div class="tile">No athletes in this group yet.</div>'}</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="action" id="messageGroup">Message Group</button><button class="back" id="archiveGroup">Archive Group</button></div>`);document.getElementById('addGroupAthlete').onclick=async()=>{const aid=groupAthlete.value;if(!aid)return toast('Select an athlete');const u=await mwCurrentUser();try{await sbRest('coach_group_members',{method:'POST',body:{group_id:id,athlete_id:aid,added_by:u.id}});await logCoachAction('athlete_added_to_group','coach_group',id,{athlete_id:aid});document.getElementById('mwModal')?.remove();groupWorkspaceLive(id)}catch(e){toast(e.message)}};document.querySelectorAll('.remove-member').forEach(b=>b.onclick=async()=>{try{await sbRest(`coach_group_members?group_id=eq.${encodeURIComponent(id)}&athlete_id=eq.${encodeURIComponent(b.dataset.athlete)}`,{method:'DELETE',prefer:'return=minimal'});document.getElementById('mwModal')?.remove();groupWorkspaceLive(id)}catch(e){toast(e.message)}});messageGroup.onclick=()=>{document.getElementById('mwModal')?.remove();messagesPage(id)};document.getElementById('archiveGroup').onclick=async()=>{const button=document.getElementById('archiveGroup');if(button.disabled)return;button.disabled=true;try{if(await archiveCoachGroup(id,g.name)){document.getElementById('mwModal')?.remove();teamsPage();toast('Group archived. Past results are kept.')}}catch(e){toast(e.message)}finally{if(button.isConnected)button.disabled=false}};}catch(e){toast(e.message)}
+  try{const [groups,members,roster]=await Promise.all([sbRest(`coach_groups?select=*&id=eq.${encodeURIComponent(id)}&limit=1`),liveGroupMembers(id),fetchCoachRoster()]);const g=groups?.[0];if(!g)throw new Error('Group not found');const assigned=roster.athletes||[],memberIds=new Set(members.map(m=>m.athlete_id));mwModal(g.name,`<div class="tile"><h3>${escapeHtml(g.event_group||'Team Group')}</h3><p>${escapeHtml(g.description||'Manage this group roster.')}</p></div><div class="form" style="margin-top:12px"><label>Add Assigned Athlete<select id="groupAthlete"><option value="">Select athlete</option>${assigned.filter(a=>!memberIds.has(a.id)).map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('')}</select></label><button class="action" id="addGroupAthlete">Add Athlete</button></div><div class="list" style="margin-top:12px">${assigned.filter(a=>memberIds.has(a.id)).map(a=>`<div class="row"><span><b>${escapeHtml(a.name)}</b><br><small>${escapeHtml(a.event||'Events not set')}</small></span><button class="back remove-member" data-athlete="${a.id}">Remove</button></div>`).join('')||'<div class="tile">No athletes in this group yet.</div>'}</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="action" id="messageGroup">Message Group</button><button class="back" id="editGroup">Edit Group</button><button class="back" id="archiveGroup">Delete Group</button></div><p id="groupArchiveStatus" role="status" aria-live="polite"></p>`);document.getElementById('addGroupAthlete').onclick=async()=>{const aid=groupAthlete.value;if(!aid)return toast('Select an athlete');const u=await mwCurrentUser();try{await sbRest('coach_group_members',{method:'POST',body:{group_id:id,athlete_id:aid,added_by:u.id}});await logCoachAction('athlete_added_to_group','coach_group',id,{athlete_id:aid});document.getElementById('mwModal')?.remove();groupWorkspaceLive(id)}catch(e){toast(e.message)}};document.querySelectorAll('.remove-member').forEach(b=>b.onclick=async()=>{try{await sbRest(`coach_group_members?group_id=eq.${encodeURIComponent(id)}&athlete_id=eq.${encodeURIComponent(b.dataset.athlete)}`,{method:'DELETE',prefer:'return=minimal'});document.getElementById('mwModal')?.remove();groupWorkspaceLive(id)}catch(e){toast(e.message)}});messageGroup.onclick=()=>{document.getElementById('mwModal')?.remove();messagesPage(id)};document.getElementById('editGroup').onclick=()=>editCoachGroup(g);document.getElementById('archiveGroup').onclick=async()=>{const button=document.getElementById('archiveGroup');if(button.disabled)return;button.disabled=true;try{if(await archiveCoachGroup(id,g.name)){document.getElementById('mwModal')?.remove();teamsPage();toast('Group removed. Past results are kept.')}}catch(e){const status=document.getElementById('groupArchiveStatus');if(status)status.textContent=e.message;toast(e.message)}finally{if(button.isConnected)button.disabled=false}};}catch(e){toast(e.message)}
 }
 async function programsPage(){
   if(experience==='performance')return mwTrackPage();
