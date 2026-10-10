@@ -1462,7 +1462,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 .mwOptionalDetailsBody>.question{margin:8px 0}
 </style>
 <link rel="stylesheet" href="/assets/mw-practice-rest.css?v=20260928"><script src="/assets/mw-practice-rest.js?v=20260928"></script><link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"><link rel="stylesheet" href="/assets/mw-signin-v3.css"><script src="/assets/mw-signin-v3.js"></script><script src="/assets/mw-ai-sharing.js?v=1"></script><script src="/lib/mw-pace-model.js?v=trial-pacing-1"></script><script>function mwResultDetails(prefix){return Object.fromEntries([60,100,150,200,300,400,500].map(d=>[d+'m',{mark_type:document.getElementById(prefix+d+'Type')?.value||'unspecified',timing_method:document.getElementById(prefix+d+'Timing')?.value||'unknown',date_recorded:document.getElementById(prefix+d+'Date')?.value||null}]))}</script></head>
-<body class="mw-auth-pending"><script src="/assets/mw-session-launch-live-20261004-r1.js" data-mw-launch-role="athlete"></script>
+<body class="mw-auth-pending mw-hybrid-athlete"><script src="/assets/mw-session-launch-live-20261004-r1.js" data-mw-launch-role="athlete"></script>
 <script>
 (()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
 </script>
@@ -1472,14 +1472,14 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <script>window.MWSignIn.mount(document.getElementById('mwAuth'),'athlete');</script>
 <main class="app">
 <section class="view active" id="home">
-<div class="top"><div><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">ATHLETE PERFORMANCE</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MW</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button></div></div></div></div>
+<div class="top"><div><img class="mwHybridHeaderCrest" src="/assets/mw-nav-mw.webp" alt=""><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">MW VELOCITY</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MW</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button><button type="button" class="mwHomeMenuSettings" data-open-settings role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚙</span><span class="mwHomeMenuCopy"><b>SETTINGS</b><small>Account, privacy and app preferences.</small></span></button></div></div></div></div>
 
-<div class="mwHomeBrand"><img src="/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG" alt="MW Dynasty" onerror="this.style.display='none'"></div>
+<div class="mwHybridIntro"><small class="mwHybridEyebrow">TODAY</small><h1>Ready for your next rep?</h1><p>Welcome back, <span id="homeName">Athlete</span>.</p></div>
 
 <div class="mwTodayCard">
-  <div class="mwTodayTop"><div><small>TODAY</small><h2>Welcome back, <span id="homeName">Athlete</span>.</h2></div><span class="mwTodayWeek">WEEK <b id="homeWeek">1</b></span></div>
+  <div class="mwTodayTop"><div><small>TODAY’S FOCUS</small><h2>Today’s training</h2></div><span class="mwTodayWeek">WEEK <b id="homeWeek">1</b></span></div>
   <div class="mwTodayStatus"><strong>YOUR TRAINING IS READY</strong><span>Track + Strength • Follow today’s MW session.</span></div>
-  <button class="mwTodayStart" data-open="workouts">START TODAY’S TRAINING <span>→</span></button>
+  <button class="mwTodayStart" data-open="workouts">Start today’s training <span aria-hidden="true">→</span></button>
 </div>
 
 <div class="mwHomeProgress">
@@ -1488,6 +1488,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <button type="button" id="homeTrainingYear" data-open="entry"><strong>ⓘ</strong><span>WHY THIS WEEK?</span></button>
   <div class="progressBar"><i id="homeProgressBar"></i></div>
 </div>
+<button type="button" class="mwHybridCoachLink" data-open="coach"><img src="/assets/mw-nav-mw.webp" alt=""><span><strong>Coach MW</strong><small>Your next move, made clear.</small></span><em aria-hidden="true">›</em></button>
 
 
 </section>
@@ -1858,7 +1859,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     <div class="mwPracticeQuick"><button type="button" data-practice-coach>MW • ASK COACH</button><button type="button" onclick="location.href='/distance-pacer/'">◎ DISTANCE</button><button type="button" onclick="location.href='/pace-ai/'">⚡ PACE</button></div>
   </div>
 </div>
-<nav class="nav mwDepthNav mwImageNav" aria-label="Athlete navigation"><button class="active" data-v="home"><b class="mwNavArt mwNavHome" aria-hidden="true"></b><span>HOME</span></button><button class="mwCoachOrb" data-v="coach"><b class="mwNavArt mwNavCoach" aria-hidden="true"></b><span>COACH MW</span></button><button data-v="workouts"><b class="mwNavArt mwNavTrain" aria-hidden="true"></b><span>TRAIN</span></button><button data-v="progress"><b class="mwNavArt mwNavProgram" aria-hidden="true"></b><span>PROGRESS</span></button><button data-v="athlete"><b class="mwNavArt mwNavProfile" aria-hidden="true"></b><span>PROFILE</span></button></nav>
+<nav class="nav mwDepthNav mwImageNav" aria-label="Athlete navigation"><button type="button" class="active" data-v="home"><b class="mwNavArt mwNavHome" aria-hidden="true"></b><span>Home</span></button><button type="button" data-v="workouts"><b class="mwNavArt mwNavTrain" aria-hidden="true"></b><span>Train</span></button><button type="button" class="mwCoachOrb" data-v="coach"><b class="mwNavArt mwNavCoach" aria-hidden="true"></b><span>Coach MW</span></button><button type="button" data-v="progress"><b class="mwNavArt mwNavProgram" aria-hidden="true"></b><span>Program</span></button><button type="button" data-v="athlete"><b class="mwNavArt mwNavProfile" aria-hidden="true"></b><span>Profile</span></button></nav>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const MW_SB_URL=window.MW_SUPABASE_URL+'';
@@ -4748,4 +4749,4 @@ document.addEventListener('click',e=>{
 .mwAthleteNotificationBtn,#home .mwHomeMenuButton,.topActions .gearBtn{position:relative!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;color:#f5c95e!important;font-size:21px!important;padding:0!important;display:grid!important;place-items:center!important;-webkit-tap-highlight-color:transparent}
 .mwAthleteNotificationBtn:active,#home .mwHomeMenuButton:active,#home .mwHomeMenuButton[aria-expanded="true"],.topActions .gearBtn:active{transform:scale(.92)!important;border:0!important;background:transparent!important;box-shadow:none!important}
 #mwAthleteNotificationBadge{border:2px solid #050a0f!important}
-</style></body></html>
+</style><link rel="stylesheet" href="/assets/mw-hybrid-design.css?v=20261010-hybrid-1"></body></html>

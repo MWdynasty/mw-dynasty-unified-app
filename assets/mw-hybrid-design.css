@@ -1,0 +1,329 @@
+/* Approved MW Dynasty direction: clear content, original 3D navigation, MW pulse. */
+body.mw-hybrid-athlete,
+body.mw-hybrid-coach {
+  --mw-hybrid-bg: #080d16;
+  --mw-hybrid-surface: #101827;
+  --mw-hybrid-raised: #182337;
+  --mw-hybrid-text: #f7f3e8;
+  --mw-hybrid-muted: #aab6c9;
+  --mw-hybrid-line: #2d394c;
+  --mw-hybrid-gold: #e7b84a;
+  --mw-hybrid-gold-light: #f4d47e;
+  --mw-hybrid-metal: linear-gradient(172deg, #fff1c9, #f4d47e 20%, #e7b84a 55%, #b08030 87%, #e7b84a);
+}
+
+/* The authenticated surfaces use the same restrained navy palette. */
+body.mw-hybrid-athlete.mw-auth-ready,
+body.mw-hybrid-coach:has(#app > .app, #app > .page) {
+  background: var(--mw-hybrid-bg) !important;
+  color: var(--mw-hybrid-text) !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app,
+body.mw-hybrid-coach #app > .app,
+body.mw-hybrid-coach #app > .page,
+body.mw-hybrid-coach #app .main,
+body.mw-hybrid-coach #app .sidebar {
+  background: var(--mw-hybrid-bg) !important;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view {
+  display: none !important;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view.active {
+  display: flex !important;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--mw-hybrid-text);
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .top {
+  min-height: 60px;
+  margin: 0 !important;
+  padding: 0 0 12px !important;
+  border-bottom: 1px solid var(--mw-hybrid-line);
+  align-items: center;
+  flex-shrink: 0;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .top > div:first-child {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  min-width: 0;
+}
+.mwHybridHeaderCrest { width: 38px; height: 38px; object-fit: contain; grid-row: 1 / 3; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .logo,
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .logo b {
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  letter-spacing: 1px !important;
+  color: var(--mw-hybrid-gold-light) !important;
+  text-shadow: none !important;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .sub {
+  margin: 3px 0 0 !important;
+  font-size: 11px !important;
+  line-height: 1.4;
+  letter-spacing: .5px;
+  color: var(--mw-hybrid-muted) !important;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .topActions { gap: 0 !important; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .topActions .gearBtn { display: none !important; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridIntro { margin: 2px 0 0; flex-shrink: 0; }
+.mwHybridEyebrow { display: block; color: var(--mw-hybrid-gold); font-size: 11px; line-height: 1.5; font-weight: 700; letter-spacing: 1.1px; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridIntro h1 {
+  margin: 7px 0;
+  font-size: 28px !important;
+  line-height: 1.15;
+  letter-spacing: -.6px;
+  font-weight: 650;
+  text-align: left;
+}
+.mwHybridIntro p { margin: 0; color: var(--mw-hybrid-muted); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayCard {
+  margin: 0 !important;
+  min-height: 0 !important;
+  display: block !important;
+  padding: 18px !important;
+  border: 1px solid var(--mw-hybrid-line) !important;
+  border-radius: 18px !important;
+  background: var(--mw-hybrid-surface) !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayTop small { font-size: 11px !important; letter-spacing: 1px; color: var(--mw-hybrid-muted) !important; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayTop h2 { margin: 8px 0 0 !important; font-size: 22px !important; line-height: 1.2; letter-spacing: -.4px; font-weight: 650; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayWeek { padding: 6px 8px; font-size: 11px !important; border-color: var(--mw-hybrid-line); color: var(--mw-hybrid-muted); }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayStatus { margin: 14px 0 !important; padding-top: 12px !important; border-color: var(--mw-hybrid-line); }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayStatus strong { font-size: 12px !important; line-height: 1.5; color: var(--mw-hybrid-text); font-weight: 600; letter-spacing: 0; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayStatus span { margin-top: 4px; font-size: 12px !important; line-height: 1.5; color: var(--mw-hybrid-muted) !important; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayStart,
+body.mw-hybrid-coach #app .action:not(:disabled):not(#deleteCoachAccount) {
+  min-height: 46px !important;
+  border: 1px solid var(--mw-hybrid-gold-light) !important;
+  border-radius: 12px !important;
+  background: var(--mw-hybrid-metal) !important;
+  color: #16130c !important;
+  box-shadow: inset 0 1px 0 #fff8e4b3, 0 3px 0 #6b471c, 0 6px 12px #00000030 !important;
+  font-size: 14px !important;
+  line-height: 1.4;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeProgress {
+  margin: 0 !important;
+  min-height: 0 !important;
+  padding: 15px 12px 23px !important;
+  gap: 8px;
+  border: 1px solid var(--mw-hybrid-line) !important;
+  border-radius: 18px !important;
+  background: var(--mw-hybrid-surface) !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+}
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeProgress strong { font-size: 21px !important; font-weight: 600; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeProgress span { font-size: 11px !important; line-height: 1.4; letter-spacing: 0; color: var(--mw-hybrid-muted); }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeProgress .progressBar { height: 4px; background: var(--mw-hybrid-raised); border: 0; bottom: 10px; }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view #homeProgressBar { background: var(--mw-hybrid-gold); }
+body.mw-hybrid-athlete.mw-auth-ready main.app #home.view #homeTrainingYear { min-height: 44px; }
+.mwHybridCoachLink {
+  width: 100%; min-height: 74px; display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border: 1px solid #675025; border-radius: 18px;
+  background: var(--mw-hybrid-surface); color: var(--mw-hybrid-text); text-align: left;
+  box-shadow: none; flex-shrink: 0;
+}
+.mwHybridCoachLink img { width: 44px; height: 44px; object-fit: contain; flex-shrink: 0; }
+.mwHybridCoachLink > span { flex: 1; min-width: 0; }
+.mwHybridCoachLink strong { display: block; font-size: 15px; line-height: 1.4; font-weight: 650; }
+.mwHybridCoachLink small { display: block; margin-top: 3px; font-size: 12px; line-height: 1.4; color: var(--mw-hybrid-muted); }
+.mwHybridCoachLink em { font-size: 21px; font-style: normal; color: var(--mw-hybrid-gold-light); }
+
+/* Shared original artwork; the control itself has no surrounding tile. */
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav {
+  gap: 0 !important;
+  padding: 10px max(8px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)) !important;
+  border-top: 1px solid var(--mw-hybrid-line) !important;
+  background: #090f1b !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button,
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button.active,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button.active {
+  min-width: 0 !important; min-height: 72px !important; margin: 0 !important; padding: 0 1px !important;
+  display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-end !important; gap: 6px !important;
+  border: 0 !important; border-radius: 10px !important; background: transparent !important; box-shadow: none !important;
+  transform: none !important; color: var(--mw-hybrid-muted) !important;
+}
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button::before,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button::before { display: none !important; }
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button > span,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button > span {
+  min-height: 17px !important; font-size: 11px !important; line-height: 17px !important; font-weight: 500 !important;
+  letter-spacing: 0 !important; text-transform: none !important; white-space: nowrap; text-shadow: none !important;
+}
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button.active > span,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button.active > span { color: var(--mw-hybrid-gold-light) !important; }
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button b.mwNavArt,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button b.mwNavArt {
+  display: block !important; width: 44px !important; height: 44px !important; flex: 0 0 44px !important;
+  margin: 0 auto 3px !important; border: 0 !important; border-radius: 9px !important;
+  background-size: contain !important; background-position: center !important; background-repeat: no-repeat !important;
+  background-color: transparent !important; box-shadow: none !important; transform: none !important; filter: none !important;
+}
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button b.mwNavArt::before,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button b.mwNavArt::before { display: none !important; }
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button b.mwNavHome,
+body.mw-hybrid-coach #app .mwNavHome { background-image: url('/assets/mw-nav-home.webp') !important; }
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button b.mwNavTrain,
+body.mw-hybrid-coach #app .mwNavTrain { background-image: url('/assets/mw-nav-train.webp') !important; }
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button b.mwNavProgram,
+body.mw-hybrid-coach #app .mwNavProgram { background-image: url('/assets/mw-nav-program.webp') !important; }
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button b.mwNavProfile,
+body.mw-hybrid-coach #app .mwNavProfile { background-image: url('/assets/mw-nav-profile.webp') !important; }
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button.mwCoachOrb b.mwNavArt.mwNavCoach,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button b.mwNavArt.mwNavCoach {
+  width: 50px !important; height: 50px !important; flex-basis: 50px !important; margin: 0 auto !important;
+  position: relative !important; overflow: visible !important;
+  background-image: none !important; transform: none !important; filter: none !important;
+  animation: none !important;
+}
+/* Animate the artwork separately from inherited navigation control effects. */
+body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button.mwCoachOrb b.mwNavArt.mwNavCoach::after,
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button b.mwNavArt.mwNavCoach::after {
+  content: ''; display: block !important; position: absolute; inset: 0; width: 100%; height: 100%;
+  background: url('/assets/mw-nav-mw.webp') center / contain no-repeat !important;
+  border: 0 !important; border-radius: 9px; opacity: 1 !important; pointer-events: none;
+  animation: mwHybridPulse 1.45s ease-in-out infinite !important;
+  will-change: transform, filter;
+}
+body.mw-hybrid-coach #app .side-nav .mwNavCoach { background-image: url('/assets/mw-nav-mw.webp') !important; }
+body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button b.coachMobileMenuArt img { width: 44px !important; height: 44px !important; object-fit: contain !important; }
+@keyframes mwHybridPulse {
+  0%, 100% { transform: translateY(-2px) scale(1); filter: brightness(1); box-shadow: 0 0 9px #ffc53655, 0 0 13px #2591ff26; }
+  50% { transform: translateY(-6px) scale(1.1); filter: brightness(1.22); box-shadow: 0 0 18px #ffd75399, 0 0 28px #2591ff66; }
+}
+
+/* Coach Home uses the same hierarchy, with a roomy desktop sidebar. */
+body.mw-hybrid-coach #app .top-ribbon,
+body.mw-hybrid-coach #app .footer { display: none !important; }
+body.mw-hybrid-coach #app .frame { max-width: 1360px !important; border: 1px solid var(--mw-hybrid-line) !important; border-radius: 20px !important; background: var(--mw-hybrid-bg) !important; box-shadow: none !important; }
+body.mw-hybrid-coach #app .brand-head { display: flex !important; align-items: center; gap: 12px; padding: 18px 24px !important; text-align: left !important; border-bottom: 1px solid var(--mw-hybrid-line); background: var(--mw-hybrid-bg) !important; }
+body.mw-hybrid-coach #app .mwHybridBrandCrest { width: 42px; height: 42px; object-fit: contain; flex-shrink: 0; }
+body.mw-hybrid-coach #app .brand-title { font-size: 15px !important; line-height: 1.4; letter-spacing: .7px; font-weight: 700; color: var(--mw-hybrid-gold-light); }
+body.mw-hybrid-coach #app .brand-tag { margin: 2px 0 0 !important; font-size: 11px !important; line-height: 1.5; letter-spacing: .8px; font-weight: 500; color: var(--mw-hybrid-muted); }
+body.mw-hybrid-coach #app .brand-sub { display: none !important; }
+body.mw-hybrid-coach #app .workspace { grid-template-columns: 224px minmax(0, 1fr) !important; }
+body.mw-hybrid-coach #app .sidebar { border-color: var(--mw-hybrid-line); }
+body.mw-hybrid-coach #app .side-logo { font-size: 16px !important; line-height: 1.2; }
+body.mw-hybrid-coach #app .side-nav .nav-btn { background: transparent !important; box-shadow: none !important; border: 0 !important; min-height: 52px; font-size: 14px !important; color: var(--mw-hybrid-muted) !important; }
+body.mw-hybrid-coach #app .side-nav .nav-btn.active { background: var(--mw-hybrid-raised) !important; color: var(--mw-hybrid-gold-light) !important; }
+body.mw-hybrid-coach #app .side-nav .mwNavArt { width: 32px !important; height: 32px !important; background-size: contain !important; border: 0 !important; box-shadow: none !important; }
+body.mw-hybrid-coach #app .main { padding: 24px !important; }
+body.mw-hybrid-coach #app .mw-profile-nudge { margin-bottom: 16px; }
+body.mw-hybrid-coach #app .mwHybridCoachHome { display: grid; gap: 16px; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .topbar { margin: 0; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .search { background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line); box-shadow: none !important; font-size: 14px; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head { display: block; margin: 0; padding: 0; background: transparent !important; border: 0 !important; box-shadow: none !important; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head h1 { margin: 7px 0; font-size: 30px !important; line-height: 1.15; letter-spacing: -.6px; font-weight: 650; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--mw-hybrid-muted); }
+body.mw-hybrid-coach #app .mwHybridHomeGrid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard { padding: 20px; background: var(--mw-hybrid-surface); border: 1px solid var(--mw-hybrid-line); border-radius: 18px; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard h2 { margin: 10px 0 5px; font-size: 24px; line-height: 1.25; font-weight: 650; letter-spacing: -.4px; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard p { margin: 0; color: var(--mw-hybrid-muted); font-size: 13px; line-height: 1.5; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard > .action { margin-top: 16px; width: 100%; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stats { display: block; margin: 14px 0 0; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat { display: flex; align-items: baseline; gap: 7px; width: auto; min-height: 44px; padding: 0; border: 0 !important; box-shadow: none !important; background: transparent !important; }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat b { font-size: 19px !important; color: var(--mw-hybrid-gold-light); }
+body.mw-hybrid-coach #app .mwHybridPracticeCard .stat span { margin: 0; font-size: 13px !important; color: var(--mw-hybrid-muted); }
+body.mw-hybrid-coach #app .mwHybridHomeSecondary { display: grid; gap: 14px; }
+body.mw-hybrid-coach #app .mwHybridHomeSecondary .mwHybridAttention { padding: 16px; border: 1px solid var(--mw-hybrid-line); border-radius: 18px; background: var(--mw-hybrid-surface); }
+.mwHybridAttention h2 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
+.mwHybridAttention button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 10px 0; border: 0; background: transparent; color: var(--mw-hybrid-text); text-align: left; font-size: 13px; }
+.mwHybridAttention button + button { border-top: 1px solid var(--mw-hybrid-line); }
+.mwHybridAttention button span { flex: 1; }
+.mwHybridAttention button em { font-style: normal; color: var(--mw-hybrid-gold-light); }
+body.mw-hybrid-coach #app .mwHybridCoachHome .athlete-status-section { margin: 0; background: var(--mw-hybrid-surface) !important; border: 1px solid var(--mw-hybrid-line) !important; border-radius: 18px; box-shadow: none !important; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .section-head { border-color: var(--mw-hybrid-line); }
+body.mw-hybrid-coach #app .mwHybridCoachHome .status-summary-card,
+body.mw-hybrid-coach #app .mwHybridCoachHome .athlete-status-card { background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line); box-shadow: none !important; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .athlete-status-card:nth-child(n + 4) { display: none; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .coach-first-run { margin: 0; background: var(--mw-hybrid-surface); border-color: var(--mw-hybrid-line); border-radius: 16px; }
+body.mw-hybrid-coach #app .mwHybridCoachHome .coach-training-year-card { margin: 0; background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line) !important; box-shadow: none !important; }
+body.mw-hybrid-coach #app .page .panel { background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line); border-radius: 18px; box-shadow: none !important; }
+
+/* Practice keeps its current timing behavior and large finish targets. */
+body.mw-hybrid-coach #app #mwHeatRun { color: var(--mw-hybrid-text); }
+body.mw-hybrid-coach #app #mwHeatRun .mwHeatTimingStage { background: var(--mw-hybrid-bg) !important; border: 1px solid var(--mw-hybrid-line); border-radius: 18px; box-shadow: none !important; }
+body.mw-hybrid-coach #app #mwHeatRun .mwHeatClocks > div { background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line); }
+body.mw-hybrid-coach #app #mwHeatRun #heatClock { color: var(--mw-hybrid-text); font-variant-numeric: tabular-nums; }
+body.mw-hybrid-coach #app #mwHeatRun .mwHeatLane { min-height: 112px !important; background: var(--mw-hybrid-surface) !important; border-color: var(--mw-hybrid-line); border-radius: 14px; box-shadow: none !important; }
+body.mw-hybrid-coach #app #mwHeatRun .mwHeatLane.finished { border-color: #5b9277; }
+
+@media (max-width: 820px) {
+  body.mw-hybrid-coach #app > .app { padding: 0 !important; }
+  body.mw-hybrid-coach #app .frame { border: 0 !important; border-radius: 0 !important; width: 100% !important; }
+  body.mw-hybrid-coach #app .brand-head { padding: calc(14px + env(safe-area-inset-top)) 20px 14px !important; }
+  body.mw-hybrid-coach #app .workspace { display: block !important; }
+  body.mw-hybrid-coach #app .sidebar { display: none !important; }
+  body.mw-hybrid-coach #app .main { padding: 20px 20px calc(112px + env(safe-area-inset-bottom)) !important; }
+  body.mw-hybrid-coach #app > .page { padding-bottom: calc(112px + env(safe-area-inset-bottom)) !important; }
+  body.mw-hybrid-coach #app .mwHybridCoachHome .coach-command-head h1 { font-size: 28px !important; }
+  body.mw-hybrid-coach #app .mwHybridHomeGrid { grid-template-columns: 1fr; }
+  body.mw-hybrid-coach #app .mwHybridPracticeCard { padding: 18px; }
+  body.mw-hybrid-coach #app #mwHeatRun .mwHeatPrimary { bottom: calc(94px + env(safe-area-inset-bottom)) !important; }
+  body.mw-hybrid-coach #app #mwHeatRun .mwHeatTimingStage { top: 8px !important; }
+}
+@media (max-width: 599px) {
+  body.mw-hybrid-athlete.mw-auth-ready main.app { max-width: 100% !important; padding: calc(12px + env(safe-area-inset-top)) 20px calc(104px + env(safe-area-inset-bottom)) !important; }
+  body.mw-hybrid-athlete.mw-auth-ready.mw-home-locked main.app { padding-bottom: calc(104px + env(safe-area-inset-bottom)) !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view.active { height: 100%; max-height: 100%; gap: 12px; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeMenuSettings { display: flex !important; }
+}
+@media (min-width: 600px) {
+  body.mw-hybrid-athlete.mw-auth-ready main.app { width: 100% !important; max-width: 920px !important; margin: 0 auto !important; padding: 24px 24px 124px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view.active { display: grid !important; grid-template-columns: 1fr 1fr !important; grid-template-areas: none !important; align-items: start !important; gap: 20px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .top,
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridIntro { grid-area: auto !important; grid-column: 1 / -1 !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayCard { grid-area: auto !important; grid-column: 1; grid-row: 3 / 5; height: 100%; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeProgress { grid-area: auto !important; grid-column: 2; grid-row: 3; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridCoachLink { grid-column: 2; grid-row: 4; }
+  body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav { width: 100% !important; max-width: 920px !important; left: 50% !important; right: auto !important; top: auto !important; bottom: 0 !important; transform: translateX(-50%) !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; grid-auto-rows: auto !important; border: 0 !important; border-top: 1px solid var(--mw-hybrid-line) !important; border-radius: 18px 18px 0 0 !important; }
+}
+@media (max-width: 370px), (max-height: 720px) and (max-width: 599px) {
+  body.mw-hybrid-athlete.mw-auth-ready main.app { padding-inline: 15px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view.active { gap: 10px; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridIntro h1 { font-size: 24px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayCard { padding: 14px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayTop h2 { font-size: 20px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeProgress { padding-top: 11px !important; padding-bottom: 19px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridCoachLink { min-height: 64px; padding: 8px 12px; }
+}
+@media (max-height: 650px) and (max-width: 599px) {
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view.active { gap: 8px; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .top { min-height: 52px; padding-bottom: 8px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridIntro p,
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridCoachLink small { display: none; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridIntro h1 { margin: 4px 0; font-size: 22px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayCard { padding: 12px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayTop small { display: none; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayTop h2 { margin: 0 !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayStatus { margin: 8px 0 !important; padding-top: 8px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayStatus strong,
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwTodayStatus span { font-size: 11px !important; line-height: 1.3; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHomeProgress { padding: 10px 8px 17px !important; }
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridCoachLink { min-height: 60px; padding: 6px 12px; }
+}
+@media (max-height: 540px) and (max-width: 599px) {
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridIntro .mwHybridEyebrow,
+  body.mw-hybrid-athlete.mw-auth-ready main.app #home.view .mwHybridCoachLink { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button.mwCoachOrb b.mwNavArt.mwNavCoach::after,
+  body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button b.mwNavArt.mwNavCoach::after {
+    animation: none !important; will-change: auto; transform: none !important; box-shadow: 0 0 12px #e7b84a66 !important;
+  }
+}
