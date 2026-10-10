@@ -57,8 +57,11 @@ async function run(){
   q('heatGroup').value=groups[0];q('heatGroup').onchange();q('heatEdit').click();q('heatGroupName').value='Acceleration boys';await q('heatGroupConfirm').onclick();
   assert.equal((await scalar(db,'select name from coach_groups where id=$1',[groups[0]])).name,'Acceleration boys');
   for(let i=0;i<4;i++){
-   q('heatGroup').value=groups[i];q('heatGroup').onchange();assert.equal(q('heatLanes').children.length,4);q('heatStart').click();assert.equal(q('heatGroup').disabled,true);
+   q('heatGroup').value=groups[i];q('heatGroup').onchange();assert.equal(q('heatLanes').children.length,4);
+   const stage=q('heatTimingStage');assert.ok(stage.contains(q('heatStart'))&&stage.contains(q('heatStop'))&&stage.contains(q('heatReset'))&&stage.contains(q('heatClock'))&&stage.contains(q('heatLanes')),'one pinned surface contains clock, Start/Stop/Reset and all finish pads');
+   q('heatStart').click();assert.equal(q('heatGroup').disabled,true);assert.equal(q('mwHeatRun').classList.contains('mwHeatTimingFocus'),true);
    for(const b of [...q('heatLanes').querySelectorAll('button')]){now+=500;win.document.querySelector('[data-heat-athlete="'+b.dataset.heatAthlete+'"]').click()}
+   assert.equal(q('mwHeatRun').classList.contains('mwHeatTimingFocus'),false,'last athlete finishing releases timing focus');
    now+=2000;q('heatNext').click();assert.equal(controller.model.heats[controller.model.active].rep,2);
   }
   const draft=win.localStorage.getItem('mw-practice-heats-v1:fixture:'+C+':'+today);assert.ok(draft);
@@ -67,8 +70,11 @@ async function run(){
   q('heatRestToggle').click();const paused=controller.model.rest();now+=6000;assert.equal(controller.model.rest(),paused);q('heatRestToggle').click();now+=1000;assert.equal(controller.model.rest(),paused+1000);
   q('heatStart').click();now+=500;q('heatLanes').querySelector('button').click();
   q('heatStart').click();assert.equal(q('heatStart').textContent,'RESUME REP');now+=3000;assert.equal(controller.model.elapsed(),500,'paused stopwatch excludes pause time');
+  assert.equal(q('mwHeatRun').classList.contains('mwHeatTimingFocus'),true,'Pause keeps all controls pinned');
   q('heatStart').click();now+=500;q('heatStop').click();assert.equal(controller.model.elapsed(),1000);assert.equal(q('heatGroup').disabled,true,'stopped unfinished heat cannot be mixed with another group');
+  assert.equal(q('mwHeatRun').classList.contains('mwHeatTimingFocus'),true,'Stop keeps remaining finish pads and Reset pinned');
   q('heatReset').click();assert.equal(first.results.length,4);assert.equal(first.repResults.length,0);
+  assert.equal(q('mwHeatRun').classList.contains('mwHeatTimingFocus'),false,'Reset returns to group setup');
   for(let i=0;i<4;i++){
    q('heatGroup').value=groups[i];q('heatGroup').onchange();q('heatStart').click();for(const b of [...q('heatLanes').querySelectorAll('button')]){now+=500;win.document.querySelector('[data-heat-athlete="'+b.dataset.heatAthlete+'"]').click()}
   }
