@@ -98,6 +98,10 @@ async function runUi(){
   const {model}=await context.MWCoachPractice.mount(dependencies),find=id=>elements.get(id),paint=()=>{for(const fn of [...intervals.values()])fn();};
   assert.equal(find('heatNarratorMode').value,'off');find('heatModeTab').onclick();assert.equal(find('heatModePanel').hidden,false);
   find('heatRestMinutes').value='0';find('heatRestSeconds').value='3';find('heatRestApply').onclick();assert.equal(model.restRemaining(),3000);
+  assert.equal(find('heatRestToggle').disabled,false);find('heatRestToggle').onclick();now+=1000;paint();assert.equal(find('heatRestClock').textContent,'00:02','manual Start Rest counts down');
+  find('heatRestToggle').onclick();now+=5000;paint();assert.equal(find('heatRestClock').textContent,'00:02','Pause Rest holds remaining time');
+  find('heatRestToggle').onclick();now+=500;paint();assert.equal(find('heatRestState').textContent,'RECOVERING');
+  find('heatRestReset').onclick();assert.equal(find('heatRestClock').textContent,'00:03');assert.equal(find('heatRestToggle').textContent,'START REST');
   find('heatNarratorMode').value='meet';find('heatNarratorMode').onchange();assert.equal(JSON.parse(storage.get('mw-practice-mode-v1:fixture:coach')).narratorMode,'meet');find('heatPracticeTab').onclick();find('heatStart').onclick();
   assert.equal(model.heats[model.active].runningAt,null);assert.equal(find('heatStart').textContent,'CANCEL START');
   find('heatStart').onclick();assert.equal(timeouts.size,0);assert.equal(model.heats[model.active].runningAt,null);
@@ -109,6 +113,10 @@ async function runUi(){
   find('heatStart').onclick();assert.equal(model.heats[model.active].runningAt,now);now+=500;find('heatStop').onclick();assert.equal(model.elapsed(),2000);
   for(const button of [...find('heatLanes').children])button.onclick();assert.equal(model.heats[model.active].repResults.length,4);
   assert.equal(find('heatRestClock').textContent,'00:03');now+=4000;paint();assert.equal(find('heatRestClock').textContent,'00:00');assert.equal(find('heatRestState').textContent,'REST COMPLETE');assert.equal(alerts,1);paint();assert.equal(alerts,1,'only one rest alert per heat');
+  assert.equal(find('heatRestToggle').textContent,'RESTART REST');assert.equal(find('heatRestToggle').disabled,false);
+  find('heatRestToggle').onclick();assert.equal(find('heatRestClock').textContent,'00:03');now+=4000;paint();assert.equal(alerts,2,'restarted countdown alerts once');
+  find('heatModeTab').onclick();find('heatRestSeconds').value='5';find('heatRestApply').onclick();assert.equal(find('heatRestClock').textContent,'00:05','setting new rest clears expired timer');
+  find('heatRestToggle').onclick();now+=6000;paint();assert.equal(find('heatRestClock').textContent,'00:00');find('heatPracticeTab').onclick();
   find('heatNext').onclick();assert.equal(model.heats[model.active].rep,2);
   find('heatGroup').value='group-1';find('heatGroup').onchange();assert.equal(find('heatRestClock').textContent,'01:30','each group keeps its own countdown');
   find('heatGroup').value='group-0';find('heatGroup').onchange();assert.equal(find('heatRestClock').textContent,'00:00');
@@ -130,6 +138,11 @@ async function runUi(){
   nodes.get('[data-stopwatch-reset]').onclick();assert.equal(nodes.get('[data-stopwatch-clock]').textContent,'00:00.00');ui.destroy();
   find('heatNarratorMode').value='workout';find('heatNarratorMode').onchange();await context.MWCoachPractice.mount(dependencies);assert.equal(find('heatNarratorMode').value,'workout','mode persists after remount');
   storage.set('mw-practice-mode-v1:fixture:coach',JSON.stringify({narration:true}));await context.MWCoachPractice.mount(dependencies);assert.equal(find('heatNarratorMode').value,'meet','legacy On migrates safely to Meet Start');
+  savedGroups.push({id:'empty-group',name:'Empty team',coach_group_members:[]});
+  await context.MWCoachPractice.mount(dependencies);find('heatReset').onclick();find('heatGroup').value='empty-group';find('heatGroup').onchange();
+  assert.equal(find('heatStart').disabled,true,'empty group cannot record reps');assert.equal(find('heatRestToggle').disabled,false,'empty group can still use rest countdown');
+  find('heatModeTab').onclick();find('heatRestMinutes').value='0';find('heatRestSeconds').value='10';find('heatRestApply').onclick();find('heatPracticeTab').onclick();find('heatRestToggle').onclick();now+=2000;paint();assert.equal(find('heatRestClock').textContent,'00:08');
+  const recovering=await context.MWCoachPractice.mount(dependencies);assert.equal(find('heatRestClock').textContent,'00:08','empty group countdown survives remount');now+=2000;paint();assert.equal(find('heatRestClock').textContent,'00:06');assert.ok(recovering.model.toSave().every(batch=>batch.heat.groupId!=='empty-group'),'rest-only heat produces no fake athlete results');
   context.__mwCoachPracticeDispose();assert.equal(intervals.size,0);assert.equal(timeouts.size,0);
 }
 Promise.all([runUi(),audioChecks()]).then(()=>console.log('PASS: whistle removed; three narrator modes, starting gun, rest alerts, timing controls, 16-athlete fixture, correct saves, and standalone stopwatch preserved.')).catch(err=>{console.error(err);process.exitCode=1;});

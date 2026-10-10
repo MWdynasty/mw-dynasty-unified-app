@@ -82,9 +82,9 @@
       const sec=Math.ceil(model.restRemaining(heat)/1000);find('heatRestClock').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
       const complete=model.restComplete(heat);
       find('heatRestPanel').classList.toggle('mwHeatRestComplete',complete);
-      find('heatRestState').textContent=complete?'REST COMPLETE':heat?.restPausedAt!=null?'REST PAUSED':heat?.restStartedAt!=null?'RECOVERING':'READY BETWEEN REPS';
-      find('heatRestToggle').textContent=complete?'REST COMPLETE':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
-      find('heatRestToggle').disabled=complete||saving||counting||root.MWPracticeHeats.active(heat)||!heat;
+      find('heatRestState').textContent=complete?'REST COMPLETE':heat?.restPausedAt!=null?'REST PAUSED':heat?.restStartedAt!=null?'RECOVERING':!heat?'CHOOSE A GROUP':root.MWPracticeHeats.active(heat)?'STARTS AFTER LAST FINISH':'READY BETWEEN REPS';
+      find('heatRestToggle').textContent=complete?'RESTART REST':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
+      find('heatRestToggle').disabled=saving||counting||root.MWPracticeHeats.active(heat)||!heat;
       for(const x of Object.values(model.heats))if(!x.saved&&model.restComplete(x)&&!x.restAlerted&&document.visibilityState!=='hidden'){
         x.restAlerted=true;persist();audio.alert();notice(x.groupName+' · Heat '+x.heatNumber+' — rest complete.');guide(x.groupName+'. Rest complete. Ready for the next rep.');
       }
@@ -102,7 +102,7 @@
       find('heatReset').disabled=saving||!heat||workoutsSaved(heat);
       find('heatRep').textContent=heat?`REP ${Math.min(heat.rep,max(heat)||heat.rep)}${max(heat)?' / '+max(heat):''}`:'NO HEAT';
       find('heatTimingGroup').textContent=heat?`${heat.groupName} · Heat ${heat.heatNumber} · Rep ${Math.min(heat.rep,max(heat)||heat.rep)}`:'Choose a group';
-      find('heatClockState').textContent=counting?countingCue||'Preparing block start…':!heat?'Choose athletes to start':workoutsSaved(heat)?'Workouts already saved':heat.interrupted?'Interrupted rep · Reset to retime':running?'Tap athletes as they cross':heat.paused?'STOPWATCH PAUSED':heat.stopped?'Stopped · Tap finishes or enter times':heat.repResults.length?'Rep finished · Recover':heat.detached?'Recovered draft · Save or review':'Ready for Rep '+heat.rep;
+      find('heatClockState').textContent=heat?.restOnly?'Rest timer ready · Add athletes in Teams to time reps':counting?countingCue||'Preparing block start…':!heat?'Choose athletes to start':workoutsSaved(heat)?'Workouts already saved':heat.interrupted?'Interrupted rep · Reset to retime':running?'Tap athletes as they cross':heat.paused?'STOPWATCH PAUSED':heat.stopped?'Stopped · Tap finishes or enter times':heat.repResults.length?'Rep finished · Recover':heat.detached?'Recovered draft · Save or review':'Ready for Rep '+heat.rep;
       find('heatStart').textContent=counting?'CANCEL START':running?'PAUSE':heat?.paused?'RESUME REP':heat?.stopped?'STOPPED':'START REP';
       find('heatStart').disabled=saving||!heat||heat.saved||heat.interrupted||heat.detached||heat.stopped||(!running&&!heat.paused&&!counting&&(heat.repResults.length>0||!heat.athleteIds.some(eligible)));
       find('heatStop').disabled=saving||counting||!heat||(!running&&!heat.paused);
@@ -116,15 +116,14 @@
       find('heatManual').disabled=saving||!finishable;
       find('heatRestToggle').disabled=saving||counting||repActive||!heat;
       find('heatRestReset').disabled=saving||counting||repActive||!heat;
-      find('heatRestToggle').textContent=model.restComplete(heat)?'REST COMPLETE':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
-      if(model.restComplete(heat))find('heatRestToggle').disabled=true;
+      find('heatRestToggle').textContent=model.restComplete(heat)?'RESTART REST':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
       find('heatNarratorMode').disabled=busy();find('heatNarratorMode').value=narratorMode;
       find('heatNarratorDescription').textContent=narratorMode==='meet'?'Meet-style block commands and gun. Cancel Start stops the sequence.':narratorMode==='workout'?'Announces rep distance, intensity, recovery and rest completion. You start the clock manually.':'No voice. Start the stopwatch manually.';
       find('heatModeGroup').textContent=heat?heat.groupName+' · Heat '+heat.heatNumber:'Choose a group created in Teams first.';
       for(const id of ['heatRestMinutes','heatRestSeconds','heatRestApply'])find(id).disabled=busy()||!heat;
       const duration=Math.round((heat?.restDurationMs||90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
       const firstPlan=plans[heat?.athleteIds[0]];
-      find('heatContext').textContent=heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Create your group and choose its athletes in Teams, then return here to time practice.';
+      find('heatContext').textContent=heat?.restOnly?'This group has no assigned athletes yet. Its rest countdown is available; add athletes in Teams to time reps.':heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Create your group and choose its athletes in Teams, then return here to time practice.';
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
         const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&d.coachPracticeWorkoutComplete(a),p=plans[id],t=targets[id]?.target;
         const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':finishable?'TAP FINISH':'READY';
@@ -167,7 +166,7 @@
     find('heatRestApply').onclick=()=>{
       const minutes=Number(find('heatRestMinutes').value),seconds=Number(find('heatRestSeconds').value);
       if(!Number.isInteger(minutes)||!Number.isInteger(seconds)||minutes<0||seconds<0||seconds>59){find('heatRestSettingStatus').textContent='Enter whole minutes and seconds from 0 to 59.';return;}
-      try{model.setRestSeconds(minutes*60+seconds);persist();render();find('heatRestSettingStatus').textContent='Rest countdown set for this heat.';}catch(err){find('heatRestSettingStatus').textContent=err.message;}
+      try{model.setRestSeconds(minutes*60+seconds);persist();render();find('heatRestSettingStatus').textContent='Rest countdown set. Tap Start Rest on the Practice tab.';}catch(err){find('heatRestSettingStatus').textContent=err.message;}
     };
     find('heatDNF').onclick=()=>{const id=h()?.repAthleteIds?.find(id=>!h().repResults.some(r=>r.athleteId===id));if(!id)return; if(confirm('Mark '+name(id)+' as did not finish this rep?'))finish(id,{resultStatus:'dnf',paceStatus:null,paceLabel:'DID NOT FINISH',mwInterpretation:null})};
     find('heatManual').onclick=()=>{
