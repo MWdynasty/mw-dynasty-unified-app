@@ -109,8 +109,8 @@ async function run(){
   win.createGroupModal();q('groupName').value='Cancelled team';q('cancelGroup').click();assert.equal(q('mwModal'),null);assert.equal(groupWrites,0,'Team Cancel makes no API write');
   win.createGroupModal();q('groupName').value='Accidental team';const saving=q('saveGroup').onclick();await q('saveGroup').onclick();await saving;assert.equal(groupWrites,1,'double Save creates only one group');
   const accidental=await scalar(db,"select id from coach_groups where name='Accidental team'");
-  win.confirm=()=>false;assert.equal(await win.archiveCoachGroup(accidental.id,'Accidental team'),false);assert.equal(groupWrites,1,'declining archive makes no write');
-  win.confirm=()=>true;await win.archiveCoachGroup(accidental.id,'Accidental team');assert.equal((await scalar(db,'select archived from coach_groups where id=$1',[accidental.id])).archived,true);
+  win.confirmCoachGroupArchive=async()=>false;assert.equal(await win.archiveCoachGroup(accidental.id,'Accidental team'),false);assert.equal(groupWrites,1,'declining archive makes no write');
+  win.confirmCoachGroupArchive=async()=>true;await win.archiveCoachGroup(accidental.id,'Accidental team');assert.equal((await scalar(db,'select archived from coach_groups where id=$1',[accidental.id])).archived,true);
   await role(db,OTHER);win.mwCurrentUser=async()=>({id:OTHER});await assert.rejects(win.archiveCoachGroup(groups[0],'Another coach group'),/could not be archived/);
   await role(db,C);win.mwCurrentUser=async()=>({id:C});await win.archiveCoachGroup(groups[0],'Acceleration boys');
   assert.equal((await db.query('select athlete_id from coach_group_members where group_id=$1',[groups[0]])).rows.length,0,'archived group memberships are hidden by RLS');
