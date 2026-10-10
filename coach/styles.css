@@ -3401,3 +3401,13 @@ img,svg,video,canvas{max-width:100%}
   #mwHeatRun.mwHeatTimingFocus .mwHeatStartRow{align-items:center}
   #mwHeatRun.mwHeatTimingFocus .mwHeatLanes{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+
+/* Persistent completion cue for any heat, including groups outside the active view. */
+#mwHeatRun .mwHeatRestAlert{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;border:2px solid #8cf0ba;border-radius:14px;background:#0b2d20;color:#effff5;box-shadow:0 0 22px #5de8a04d;animation:mwRestCompleteGlow 1.8s ease-in-out infinite}
+#mwHeatRun .mwHeatRestAlert[hidden]{display:none!important}
+#mwHeatRun .mwHeatRestAlert b{font-size:22px;letter-spacing:.04em;color:#b2ffd1}
+#mwHeatRun .mwHeatRestAlert p{font-weight:800;margin:6px 0;overflow-wrap:anywhere}
+#mwHeatRun .mwHeatRestAlert span{font-size:14px}
+#mwHeatRun .mwHeatRestAlert button{min-height:48px;flex-shrink:0}
+@keyframes mwRestCompleteGlow{50%{box-shadow:0 0 30px #5de8a080;border-color:#effff5}}
+@media(prefers-reduced-motion:reduce){#mwHeatRun .mwHeatRestAlert{animation:none}}

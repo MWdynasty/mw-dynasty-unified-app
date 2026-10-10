@@ -15,6 +15,7 @@
       <div class="mwHeatPickerRow"><label>Timed heat<select id="heatPicker" aria-label="Timed heat"></select></label><b id="heatRep">REP 1</b></div>
       <p id="heatContext" class="mwHeatContext"></p>
       <section id="heatTimingStage" class="mwHeatTimingStage" aria-label="Active group timing controls">
+      <div id="heatRestAlert" class="mwHeatRestAlert" role="alert" aria-live="assertive" hidden><div><b>REST COMPLETE</b><p id="heatRestAlertGroups"></p><span>Ready for the next rep</span></div><button class="back" id="heatRestDismiss" type="button">DISMISS</button></div>
       <div class="mwHeatTimingHeading"><b id="heatTimingGroup">Active heat</b><button class="back" id="heatReset">RESET REP</button></div>
       <div class="mwHeatClocks"><div><span>REP STOPWATCH</span><strong id="heatClock">00.00</strong><small id="heatClockState">Loading athletes…</small></div><div id="heatRestPanel"><span>REST COUNTDOWN</span><strong id="heatRestClock">01:30</strong><small id="heatRestState" role="status">READY BETWEEN REPS</small><div><button class="back" id="heatRestToggle">START REST</button><button class="back" id="heatRestReset">RESET REST</button></div></div></div>
       <div class="mwHeatStartRow"><button class="action" id="heatStart" disabled>START REP</button><button class="back" id="heatStop" disabled>STOP CLOCK</button></div>
@@ -85,8 +86,16 @@
       find('heatRestState').textContent=complete?'REST COMPLETE':heat?.restPausedAt!=null?'REST PAUSED':heat?.restStartedAt!=null?'RECOVERING':!heat?'CHOOSE A GROUP':root.MWPracticeHeats.active(heat)?'STARTS AFTER LAST FINISH':'READY BETWEEN REPS';
       find('heatRestToggle').textContent=complete?'RESTART REST':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
       find('heatRestToggle').disabled=saving||counting||root.MWPracticeHeats.active(heat)||!heat;
-      for(const x of Object.values(model.heats))if(!x.saved&&model.restComplete(x)&&!x.restAlerted&&document.visibilityState!=='hidden'){
-        x.restAlerted=true;persist();audio.alert();notice(x.groupName+' · Heat '+x.heatNumber+' — rest complete.');guide(x.groupName+'. Rest complete. Ready for the next rep.');
+      const completedRest=Object.values(model.heats).filter(x=>model.restComplete(x)&&!x.restAcknowledged);
+      find('heatRestAlert').hidden=!completedRest.length;
+      const completedNames=completedRest.map(x=>x.groupName+' · Heat '+x.heatNumber).join('; ');
+      if(find('heatRestAlertGroups').textContent!==completedNames)find('heatRestAlertGroups').textContent=completedNames;
+      const newlyCompleted=completedRest.filter(x=>!x.restAlerted);
+      if(newlyCompleted.length&&document.visibilityState!=='hidden'){
+        for(const x of newlyCompleted)x.restAlerted=true;
+        persist();audio.alert();
+        const names=newlyCompleted.map(x=>x.groupName+' · Heat '+x.heatNumber).join('; ');
+        notice(names+' — rest complete.');guide(names+'. Rest complete. Ready for the next rep.');
       }
     }
     function render(){
@@ -158,6 +167,7 @@
     find('heatReset').onclick=()=>change(()=>{if(h()?.repResults.length&&!confirm('Discard only the current rep’s unsaved times? Earlier reps and saved training history stay unchanged.'))return;cancelStart();model.reset();notice('Current rep reset. Earlier reps remain.');});
     find('heatUndo').onclick=()=>change(()=>model.undo());
     find('heatRestToggle').onclick=()=>change(()=>{audio.unlock();model.toggleRest();});
+    find('heatRestDismiss').onclick=()=>change(()=>{for(const x of Object.values(model.heats))if(model.restComplete(x))x.restAcknowledged=true;});
     find('heatRestReset').onclick=()=>change(()=>model.resetRest());
     function setTab(mode){for(const [id,selected] of [['heatPracticeTab',!mode],['heatModeTab',mode]]){find(id).setAttribute('aria-selected',String(selected));find(id).tabIndex=selected?0:-1;}find('heatPracticePanel').hidden=mode;find('heatModePanel').hidden=!mode;}
     find('heatPracticeTab').onclick=()=>setTab(false);find('heatModeTab').onclick=()=>setTab(true);

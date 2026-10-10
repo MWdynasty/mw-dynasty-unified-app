@@ -86,11 +86,14 @@
     async function alert(){
       if(!await unlock())return false;
       try{
-        const start=context.currentTime+.015,duration=.55;
-        const gain=context.createGain();gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(.08,start+.025);gain.gain.setValueAtTime(.08,start+duration-.08);gain.gain.linearRampToValueAtTime(0,start+duration);gain.connect(context.destination);
-        const frequencies=[880,1100];
-        let ended=0;
-        for(const frequency of frequencies){const oscillator=context.createOscillator();oscillator.type='sine';oscillator.frequency.setValueAtTime(frequency,start);oscillator.connect(gain);oscillator.onended=()=>{oscillator.disconnect();if(++ended===frequencies.length)gain.disconnect();};oscillator.start(start);oscillator.stop(start+duration);}
+        const start=context.currentTime+.015,frequencies=[523.25,659.25,783.99];
+        // Two clear three-note chimes, with a soft attack and a fuller level.
+        for(let repeat=0;repeat<2;repeat++)for(let i=0;i<frequencies.length;i++){
+          const at=start+repeat*1.4+i*.36,duration=.34;
+          const gain=context.createGain();gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.22,at+.035);gain.gain.setValueAtTime(.22,at+.12);gain.gain.linearRampToValueAtTime(0,at+duration);gain.connect(context.destination);
+          const oscillator=context.createOscillator();oscillator.type='sine';oscillator.frequency.setValueAtTime(frequencies[i],at);oscillator.connect(gain);
+          oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};oscillator.start(at);oscillator.stop(at+duration);
+        }
         return true;
       }catch{return false;}
     }
