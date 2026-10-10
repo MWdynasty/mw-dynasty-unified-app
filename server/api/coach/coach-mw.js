@@ -1,3 +1,4 @@
+const GroupProposals=require('../../lib/mw-group-proposals');
 const {requireConsent,permittedAthleteIds,filterAthleteContext}=require('../../lib/mw-ai-consent');
 const MW_QA_PREVIEW=process.env.VERCEL_ENV==='preview'&&process.env.VERCEL_GIT_COMMIT_REF==='feature/season-intelligence-v1';
 const SUPABASE_URL=MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':(process.env.SUPABASE_URL||'https://keqgunlfwhjgcsurynef.supabase.co');
@@ -90,7 +91,17 @@ module.exports=async function handler(req,res){
 
   if(req.body?.approvedAction&&typeof req.body.approvedAction==='object'){
     const a=req.body.approvedAction;
-    if(!['calendar_create','calendar_block','calendar_update','calendar_delete','message_send'].includes(a.type))return res.status(400).json({error:'Unsupported Coach MW action'});
+    if(!['calendar_create','calendar_block','calendar_update','calendar_delete','message_send','groups_create'].includes(a.type))return res.status(400).json({error:'Unsupported Coach MW action'});
+    if(a.type==='groups_create'){
+      try{
+        await requireConsent(token,user.id);
+        const proposal=GroupProposals.verify(a.approvalToken,user.id,process.env.OPENAI_API_KEY);
+        const payload={p_request_id:proposal.requestId,p_groups:proposal.groups.map(g=>({id:g.id,name:g.name,athlete_ids:g.athletes.map(a=>a.athleteId)}))};
+        const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/mw_coach_create_pr_groups`,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        const result=await r.json().catch(()=>null);if(!r.ok)throw Object.assign(new Error(result?.message||'Groups could not be saved. Please retry.'),{status:r.status});
+        return res.status(200).json({ok:true,groups:result.groups,replayed:!!result.replayed,actionPage:'teams',answer:`${proposal.groups.length} PR groups saved to Teams and available in Practice. ${proposal.excluded.length?`${proposal.excluded.length} athletes still need a division or recorded time.`:''}`.trim()});
+      }catch(e){return res.status(e.status||500).json({error:e.message});}
+    }
     if(a.type==='message_send'){
       const body=cleanActionText(a.body||a.message||'',2000);
       const audienceType=['all_assigned','group','athlete'].includes(a.audienceType)?a.audienceType:'';
@@ -224,6 +235,9 @@ COACH MW ACTION PROTOCOL:
 - Do not claim the calendar changed before approval. Say clearly that the change is READY FOR APPROVAL and that the coach must tap the approval control shown below your response.
 - Never use phrases such as "I'll move forward", "I've marked it off", "it's scheduled", or "it's handled" until the approved calendar write has succeeded.
 - For calendar actions end with exactly one single-line marker: MW_ACTION_JSON: {"type":"calendar_create|calendar_update|calendar_delete","eventId":"existing-id-when-known","matchTitle":"existing title when needed","title":"...","eventType":"school_break|exam_week|holiday|facility_closure|travel|practice|meet|testing|other","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","trainingImpact":"no_practice|reduced_load|awareness_only","location":"optional","meetPriority":"A|B|C when applicable","qualificationStage":"optional","isPrimaryTarget":false,"notes":"..."}
+- When asked to create/organize athletes into PR-based groups, emit type groups_create. Ask for the PR event and counts per division if unclear. Never invent athlete IDs, times, divisions, or group memberships; the server will build and display the actual groups locally after your response. Use the requested exact number of groups, including separately requested boys/girls counts. This action creates NEW Teams groups only after approval and does not replace existing groups or change training.
+- For PR grouping end with exactly one single-line marker: MW_ACTION_JSON: {"type":"groups_create","event":"100m|150m|200m|300m|400m|500m","divisions":[{"division":"boys","count":2},{"division":"girls","count":2}],"distanceM":null,"intensityPct":null}
+- Include distanceM and intensityPct only when the coach supplies the workout distance and intensity. Otherwise leave both null; the preview shows recorded PRs, not invented training targets. Missing data is flagged by the preview. PR grouping processes the assigned roster inside MW; athletes lacking AI sharing consent are never sent to OpenAI.
 - For an approved message send end with exactly one single-line marker: MW_ACTION_JSON: {"type":"message_send","audienceType":"athlete|group|all_assigned","athleteId":"assigned athlete id when applicable","groupId":"coach group id when applicable","body":"message text"}
 - Resolve explicit month/day dates using the current conversation year when unambiguous. If the year is ambiguous, ask instead of emitting an action.
 - For requests to move training indoors, first preserve the purpose of the day. Explain the goal in plain language and give 1-3 easy-to-understand alternatives based on available distance, surface, spikes, equipment, group size, athlete event, and current phase. Prefer exercises already present in the approved MW program/context; if the exact approved library is unavailable, clearly label the suggestion as an alternative rather than pretending it is an official MW library item.
@@ -284,7 +298,15 @@ ${JSON.stringify(context).slice(0,70000)}`;
   }
   const rawAnswer=outputText(data);
   const parsed=parseCoachAction(rawAnswer);
-  const answer=parsed.answer;
+  let answer=parsed.answer;
+  if(parsed.action?.type==='groups_create'){
+    try{
+      const {roster,groups}=await GroupProposals.loadRoster(token,user.id,SUPABASE_URL,SUPABASE_ANON_KEY);
+      parsed.action=GroupProposals.sign(GroupProposals.plan(parsed.action,roster,groups),user.id,process.env.OPENAI_API_KEY);
+      const count=parsed.action.groups.reduce((n,g)=>n+g.athletes.length,0);
+      answer=`${parsed.action.groups.length} groups are ready for your review, with ${count} athletes grouped by recorded ${parsed.action.spec.event} time. Faster athletes are grouped together within each division. Review the names below, then tap Approve & Save Groups. Existing groups are kept.${parsed.action.excluded.length?' Some athletes need a division or recorded time; they are listed below.':''}`;
+    }catch(e){parsed.action=null;answer=e.message;}
+  }
   if(!answer){
     console.warn('MW_COACH_AI_EMPTY_RESPONSE',{responseId:data?.id||null});
     return res.status(502).json({error:'Coach MW received an empty AI response. Please try again.',code:'COACH_MW_EMPTY_RESPONSE'});
