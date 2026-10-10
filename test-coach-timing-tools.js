@@ -63,7 +63,8 @@ async function audioChecks(){
   }
   const sandbox={AudioContext,Math,setInterval,clearInterval};sandbox.globalThis=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync('coach/timing-tools.js','utf8'),sandbox);
   const audio=sandbox.MWCoachTimingTools.audio;
-  assert.equal(audio.whistle,undefined,'whistle tool is removed');assert.equal(await audio.alert(),true);assert.deepEqual(nodes.filter(n=>n.kind==='oscillator').map(n=>n.frequency.events[0].v),[880,1100],'rest alert is preserved');
+  assert.equal(audio.whistle,undefined,'whistle tool is removed');assert.equal(await audio.alert(),true);assert.deepEqual(nodes.filter(n=>n.kind==='oscillator').map(n=>n.frequency.events[0].v),[523.25,659.25,783.99,523.25,659.25,783.99],'two fuller three-note rest chimes');
+  assert.ok(nodes.filter(n=>n.kind==='oscillator').at(-1).stoppedAt-nodes.filter(n=>n.kind==='oscillator')[0].startedAt>2.4,'rest chime lasts over two seconds');
   let fires=0;assert.equal(await audio.gun({onFire:()=>fires++}),true);assert.equal(fires,1);const gunBuffer=buffers.at(-1);assert.ok(gunBuffer.some(x=>x!==0));assert.ok(gunBuffer.every(x=>Math.abs(x)<=.81));assert.ok(Math.abs(gunBuffer.at(-1))<.002,'gun decays, not a sustained piercing tone');
   const before=nodes.length;assert.equal(await audio.gun({canFire:()=>false,onFire:()=>fires++}),false);assert.equal(fires,1);assert.equal(nodes.length,before);
   // If sound unlocking resumes late, a cancelled start must not emit a gun or start a clock.
@@ -112,13 +113,13 @@ async function runUi(){
   now+=1500;find('heatStart').onclick();assert.equal(find('heatStart').textContent,'RESUME REP');now+=9000;assert.equal(model.elapsed(),1500);
   find('heatStart').onclick();assert.equal(model.heats[model.active].runningAt,now);now+=500;find('heatStop').onclick();assert.equal(model.elapsed(),2000);
   for(const button of [...find('heatLanes').children])button.onclick();assert.equal(model.heats[model.active].repResults.length,4);
-  assert.equal(find('heatRestClock').textContent,'00:03');now+=4000;paint();assert.equal(find('heatRestClock').textContent,'00:00');assert.equal(find('heatRestState').textContent,'REST COMPLETE');assert.equal(alerts,1);paint();assert.equal(alerts,1,'only one rest alert per heat');
+  assert.equal(find('heatRestClock').textContent,'00:03');now+=4000;paint();assert.equal(find('heatRestClock').textContent,'00:00');assert.equal(find('heatRestState').textContent,'REST COMPLETE');assert.equal(alerts,1);paint();assert.equal(alerts,1,'only one rest alert per heat');assert.equal(find('heatRestAlert').hidden,false);assert.match(find('heatRestAlertGroups').textContent,/Group 0/);find('heatRestDismiss').onclick();paint();assert.equal(find('heatRestAlert').hidden,true,'Dismiss acknowledges completion');assert.equal(find('heatRestState').textContent,'REST COMPLETE','Dismiss leaves the countdown complete');
   assert.equal(find('heatRestToggle').textContent,'RESTART REST');assert.equal(find('heatRestToggle').disabled,false);
-  find('heatRestToggle').onclick();assert.equal(find('heatRestClock').textContent,'00:03');now+=4000;paint();assert.equal(alerts,2,'restarted countdown alerts once');
+  find('heatRestToggle').onclick();assert.equal(find('heatRestClock').textContent,'00:03');now+=4000;paint();assert.equal(alerts,2,'restarted countdown alerts once');assert.equal(find('heatRestAlert').hidden,false,'Restart creates a fresh persistent alert');
   find('heatModeTab').onclick();find('heatRestSeconds').value='5';find('heatRestApply').onclick();assert.equal(find('heatRestClock').textContent,'00:05','setting new rest clears expired timer');
   find('heatRestToggle').onclick();now+=6000;paint();assert.equal(find('heatRestClock').textContent,'00:00');find('heatPracticeTab').onclick();
   find('heatNext').onclick();assert.equal(model.heats[model.active].rep,2);
-  find('heatGroup').value='group-1';find('heatGroup').onchange();assert.equal(find('heatRestClock').textContent,'01:30','each group keeps its own countdown');
+  find('heatGroup').value='group-1';find('heatGroup').onchange();assert.equal(find('heatRestClock').textContent,'01:30','each group keeps its own countdown');assert.equal(find('heatRestAlert').hidden,false,'alert for completed group stays visible in another group');assert.match(find('heatRestAlertGroups').textContent,/Group 0/);
   find('heatGroup').value='group-0';find('heatGroup').onchange();assert.equal(find('heatRestClock').textContent,'00:00');
   await find('heatSave').onclick();assert.equal(requests.length,1);assert.equal(requests[0].results.length,4);assert.deepEqual(requests[0].results.map(x=>x.athleteId).sort(),roster.slice(0,4).map(a=>a.id));assert.ok(requests[0].results.every(x=>x.timeSeconds===2));
   assert.equal(find('heatWhistle'),undefined);assert.equal(find('heatModeWhistle'),undefined);
