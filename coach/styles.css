@@ -3298,3 +3298,70 @@ img,svg,video,canvas{max-width:100%}
 .mwCoachStopwatch [data-stopwatch-laps] li{display:grid;grid-template-columns:1fr auto;gap:5px;padding:12px 0;border-bottom:1px solid #344858;font-variant-numeric:tabular-nums}
 .mwCoachStopwatch [data-stopwatch-laps] small{grid-column:1/-1;color:#b9cbd7}
 @media(max-width:420px){.mwHeatMode{padding:12px}.mwHeatRestSetting{grid-template-columns:1fr 1fr}.mwHeatRestSetting button{grid-column:1/-1}.mwCoachStopwatchControls{grid-template-columns:1fr 1fr}}
+
+/* Coach work surfaces: compact controls, athlete targets first. */
+#mwHeatRun{padding:12px!important;gap:10px!important;border-radius:18px!important}
+#mwHeatRun [hidden],#coachGroupPaceAI[hidden],#coachSprintPace[hidden],#paceToolsPanel[hidden]{display:none!important}
+#mwHeatRun button:not(.mwHeatLane){min-height:44px!important;padding:9px 10px!important;border-radius:12px!important;font-size:12px!important;line-height:1.2!important;letter-spacing:.02em!important;box-shadow:none!important}
+#mwHeatRun .mwHeatTabs button{min-height:44px!important}
+#mwHeatRun label{font-size:12px!important;margin:0!important;display:grid;gap:4px;color:#bacbd5}
+#mwHeatRun select{width:100%;min-height:44px!important;height:44px!important;padding:8px 10px!important;border-radius:10px!important;font-size:15px!important;line-height:1.2!important;margin:0!important}
+#mwHeatRun #heatPracticePanel{gap:10px}
+#mwHeatRun .mwHeatGroupRow{grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}
+#mwHeatRun .mwHeatGroupMenu{position:relative;margin:0;padding:0;border:0;background:none;overflow:visible}
+#mwHeatRun summary{min-height:44px!important;padding:12px!important;font-size:12px!important;line-height:1.3!important;border-radius:10px;cursor:pointer}
+#mwHeatRun .mwHeatGroupMenu summary{border:1px solid #786332;color:#f5d380;list-style:none}
+#mwHeatRun .mwHeatGroupMenu>div{position:absolute;right:0;top:48px;width:205px;display:grid;gap:8px;background:#0a1720;border:1px solid #786332;border-radius:12px;padding:10px;z-index:12;box-shadow:0 12px 28px #0009}
+#mwHeatRun .mwHeatGroupMenu #heatEdit{grid-column:auto;min-height:44px!important}
+#mwHeatRun .mwHeatPickerRow{gap:10px}
+#mwHeatRun .mwHeatPickerRow b{font-size:13px}
+#mwHeatRun .mwHeatContext{margin:0;font-size:12px;color:#bacbd5;line-height:1.5}
+#mwHeatRun .mwHeatClocks{gap:8px;grid-template-columns:1fr 1fr}
+#mwHeatRun .mwHeatClocks>div{padding:10px!important;gap:5px;align-content:start;border-radius:12px}
+#mwHeatRun .mwHeatClocks strong{font-size:32px!important;line-height:1.1!important;margin:0!important}
+#mwHeatRun .mwHeatClocks span{font-size:10px!important}
+#mwHeatRun .mwHeatClocks small{font-size:10px;min-height:24px}
+#mwHeatRun .mwHeatClocks>div>div{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%}
+#mwHeatRun .mwHeatClocks button{min-height:44px!important;font-size:9px!important;padding:5px!important}
+#mwHeatRun .mwHeatStartRow{grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) minmax(0,1fr);gap:8px}
+#mwHeatRun #heatStop{min-width:0}
+#mwHeatRun .mwHeatLane{min-height:110px!important;padding:10px!important;border-radius:12px!important;gap:4px;box-shadow:none!important}
+#mwHeatRun .mwHeatLane b{font-size:15px!important;line-height:1.2!important}
+#mwHeatRun .mwHeatLane strong{font-size:15px!important}
+#mwHeatRun .mwHeatLane small{font-size:12px!important;color:#efcf84}
+#mwHeatRun .mwHeatPrimary{position:static;padding:8px 0 0!important;background:none;gap:8px}
+#mwHeatRun .mwHeatPlan,#mwHeatRun .mwHeatMore{margin:0!important;padding:0!important;border-radius:10px!important}
+#mwHeatRun .mwHeatMore>div{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
+#mwHeatRun .mwHeatStatus{font-size:12px;min-height:0}
+.mwPaceTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:12px}
+.mwPaceTabs button{min-height:44px!important;padding:10px 6px!important;border-radius:12px!important;font-size:12px!important}
+.mwPaceTabs [aria-selected=true]{background:#d8ae50!important;color:#081018!important}
+#coachGroupPaceAI{padding:14px!important;border-radius:18px!important}
+#coachGroupPaceAI h2{font-size:24px!important;line-height:1.15!important;margin:6px 0!important}
+#coachGroupPaceAI .coach-pace-section-head p{font-size:13px;line-height:1.45}
+#coachGroupPaceAI .coach-group-controls{display:grid;grid-template-columns:1fr 1fr!important;gap:10px!important;margin:14px 0!important}
+#coachGroupPaceAI label{font-size:12px!important;display:grid;gap:5px}
+#coachGroupPaceAI input,#coachGroupPaceAI select{min-height:44px!important;height:44px!important;padding:8px 10px!important;border-radius:10px!important;font-size:15px!important;width:100%}
+#coachGroupPaceAI button{min-height:44px!important;padding:10px!important;font-size:12px!important;border-radius:12px!important}
+#coachGroupPaceAI .coach-pace-span{grid-column:1/-1}
+#coachGroupPaceAI details{padding:0!important;margin:0!important}
+#coachGroupPaceAI summary{cursor:pointer;min-height:44px;padding:12px;font-size:12px;line-height:1.4;color:#e9cf91}
+.mwPaceAdvancedFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px}
+#coachGroupPaceAI .coach-group-summary{padding:12px!important;margin-bottom:12px}
+#coachGroupPaceAI .coach-group-summary span{font-size:12px;line-height:1.5}
+#coachGroupPaceAI .coach-pace-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
+#coachGroupPaceAI .coach-pace-group-card{padding:14px!important;border-radius:14px!important}
+#coachGroupPaceAI .coach-pace-group-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+#coachGroupPaceAI .coach-pace-group-head span{font-size:16px!important;font-weight:800;color:#efcf84}
+#coachGroupPaceAI .coach-pace-group-head b{font-size:21px!important;white-space:nowrap}
+.coach-pace-athlete-labels{display:flex;justify-content:space-between;margin-top:14px;padding-bottom:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#97abb9}
+#coachGroupPaceAI .coach-pace-athletes>div{display:flex;flex-direction:row!important;align-items:center;justify-content:space-between;gap:12px;padding:10px 0!important}
+#coachGroupPaceAI .coach-pace-athletes>div>span{display:grid;gap:3px;min-width:0}
+#coachGroupPaceAI .coach-pace-athletes b{font-size:14px;color:#f5f7fa;overflow-wrap:anywhere}
+#coachGroupPaceAI .coach-pace-athletes small{font-size:10px;color:#aebfca}
+#coachGroupPaceAI .coach-pace-athletes strong{font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap;color:#f1d58e}
+#savePaceGroups{width:100%;margin-top:14px}
+#paceSaveStatus{font-size:12px;line-height:1.5}
+.mwPacePracticeNote{display:block;font-size:11px;color:#aebfca;line-height:1.5;margin-bottom:14px}
+#coachGroupPaceAI .coach-division-row{padding:10px!important}
+@media(max-width:420px){.mwPaceAdvancedFields{grid-template-columns:1fr}.mwPaceAdvancedFields label{grid-template-columns:1fr 1fr;align-items:center}#coachGroupPaceAI .coach-ai-badge{display:none}}

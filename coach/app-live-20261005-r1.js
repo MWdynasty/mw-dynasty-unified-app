@@ -291,17 +291,14 @@ async function coachTrainPage(){
       <div class="coach-train-tools-head"><span class="status-kicker">PRACTICE TOOLS</span><h2>Run practice from here.</h2><p>You should not have to hunt through the Coach app while athletes are standing on the track.</p></div>
       <div class="coach-train-tool-grid coach-train-tool-grid-three">
         <button class="coach-train-tool" data-page="pacing"><b>⚡ SPRINT PACE AI</b><span>Calculate an individual athlete’s training target from their PR.</span><em>OPEN →</em></button>
-        <button class="coach-train-tool" data-page="grouppacing"><b>👥 GROUP PACE AI</b><span>Split Boys / Girls first, then build groups from athletes with close PRs.</span><em>BUILD GROUPS →</em></button>
+        <button class="coach-train-tool" data-page="grouppacing"><b>👥 GROUP PACE AI</b><span>Automatic time-based groups, athlete names and clear rep targets.</span><em>VIEW GROUPS →</em></button>
         <button class="coach-train-tool" id="coachTrainDistance"><b>◎ DISTANCE PACER</b><span>Measure the exact rep distance on a track, football field or open surface.</span><em>OPEN →</em></button>
       </div>
     </section>`);
   document.getElementById('coachTrainDistance').onclick=()=>{location.href='/distance-pacer/?coach=1'};
   hydrateCoachTodayPractice('coachTodayPractice');
 }
-function groupPacingPage(){
-  pacingPage();
-  setTimeout(()=>document.getElementById('coachGroupPaceAI')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
-}
+function groupPacingPage(){return pacingPage()}
 
 function coachPracticeWorkoutComplete(a){
   const w=a?.latest_workout||null;
@@ -2475,11 +2472,12 @@ function mwCoachEventPr(athlete,event){
 function mwCoachClusterByPr(rows,tolerancePct=3,maxSize=6){
   const tol=Math.max(.25,Math.min(10,Number(tolerancePct)||3))/100;
   const cap=Math.max(2,Math.min(12,Number(maxSize)||6));
-  const sorted=[...rows].sort((a,b)=>a.pr-b.pr),groups=[];
+  const time=row=>Number(row.target??row.pr);
+  const sorted=[...rows].filter(row=>Number.isFinite(time(row))&&time(row)>0).sort((a,b)=>time(a)-time(b)||String(a.athlete?.name||'').localeCompare(String(b.athlete?.name||''))),groups=[];
   for(const row of sorted){
     let g=groups[groups.length-1];
-    const avg=g?.length?g.reduce((s,x)=>s+x.pr,0)/g.length:0;
-    const close=!!g&&g.length<cap&&Math.abs(row.pr-avg)/avg<=tol;
+    const fastest=g?.length?time(g[0]):0;
+    const close=!!g&&g.length<cap&&(time(row)-fastest)/fastest<=tol;
     if(!close){g=[];groups.push(g)}
     g.push(row);
   }
@@ -2487,6 +2485,8 @@ function mwCoachClusterByPr(rows,tolerancePct=3,maxSize=6){
 }
 async function pacingPage(){
   pageBase('Pacing Tools','Pace targets, distance measurement, stopwatch and whistle.',`
+  <div class="mwPaceTabs" role="tablist" aria-label="Pacing tools"><button class="back" id="paceGroupTab" role="tab" aria-selected="true" aria-controls="coachGroupPaceAI">GROUPS</button><button class="back" id="paceIndividualTab" role="tab" aria-selected="false" aria-controls="coachSprintPace" tabindex="-1">INDIVIDUAL</button><button class="back" id="paceToolsTab" role="tab" aria-selected="false" aria-controls="paceToolsPanel" tabindex="-1">TOOLS</button></div>
+  <div id="paceToolsPanel" role="tabpanel" aria-labelledby="paceToolsTab" hidden>
   <div class="coach-pacer-hub">
     <article class="coach-pacer-card">
       <div><span class="eyebrow">⚡ SPRINT PACE AI</span><h3>Individual + Group Pace Intelligence</h3><p>Use live athlete PRs to calculate targets and build boys/girls practice groups with similar speed.</p></div>
@@ -2513,8 +2513,9 @@ async function pacingPage(){
     <div class="mwCoachStopwatchControls"><button class="action" data-stopwatch-start>START</button><button class="back" data-stopwatch-stop disabled>STOP</button><button class="back" data-stopwatch-lap disabled>LAP</button><button class="back" data-stopwatch-reset>RESET</button></div>
     <ol data-stopwatch-laps aria-label="Stopwatch laps"></ol>
   </section>
+  </div>
 
-  <section class="coach-pace-section" id="coachSprintPace">
+  <section class="coach-pace-section" id="coachSprintPace" role="tabpanel" aria-labelledby="paceIndividualTab" hidden>
     <div class="coach-pace-section-head"><div><span class="eyebrow">INDIVIDUAL PACE AI</span><h2>Calculate one athlete.</h2><p>Choose the athlete. MW uses their available PRs or full-effort trials to calculate a starting target.</p></div></div>
     <div class="form coach-pace-grid">
       <label>Athlete<select id="paceAthlete"></select></label>
@@ -2526,38 +2527,43 @@ async function pacingPage(){
     </div>
   </section>
 
-  <section class="coach-pace-section" id="coachGroupPaceAI">
+  <section class="coach-pace-section" id="coachGroupPaceAI" role="tabpanel" aria-labelledby="paceGroupTab">
     <div class="coach-pace-section-head">
-      <div><span class="eyebrow">MW GROUP PACE AI</span><h2>Build today’s running groups.</h2><p>MW separates competition divisions first, then groups athletes by comparable pace. Missing reference distances use starting estimates from their available results.</p></div>
+      <div><span class="eyebrow">MW GROUP PACE AI</span><h2>Your groups. Ready to run.</h2><p>Automatically sorted fastest to slowest within each division. Every athlete has a clear rep target.</p></div>
       <span class="coach-ai-badge">AI GROUPING</span>
     </div>
     <div class="form coach-group-controls">
-      <label>Reference distance<select id="groupPaceEvent"><option value="100m">100m</option><option value="150m">150m</option><option value="200m">200m</option><option value="300m">300m</option><option value="400m">400m</option><option value="500m">500m</option></select></label>
       <label>Rep Distance<input id="groupPaceDistance" type="number" min="10" max="500" value="150"></label>
       <label>Intensity %<input id="groupPaceIntensity" type="number" min="50" max="100" value="90"></label>
-      <label>PR Closeness<select id="groupPaceTolerance"><option value="1">Very tight · 1%</option><option value="2">Tight · 2%</option><option value="3" selected>Balanced · 3%</option><option value="5">Broad · 5%</option></select></label>
-      <label>Max per group<select id="groupPaceMax"><option value="4">4 athletes</option><option value="5">5 athletes</option><option value="6" selected>6 athletes</option><option value="8">8 athletes</option></select></label>
-      <button class="action coach-pace-span" id="buildPaceGroups">BUILD BOYS + GIRLS PACE GROUPS</button>
+      <details class="mwPaceAdvanced coach-pace-span"><summary>Grouping settings · 3% closeness · 4 per group</summary><div class="mwPaceAdvancedFields">
+      <label>Reference distance<select id="groupPaceEvent"><option value="100m">100m</option><option value="150m">150m</option><option value="200m">200m</option><option value="300m">300m</option><option value="400m">400m</option><option value="500m">500m</option></select></label>
+      <label>Target closeness<select id="groupPaceTolerance"><option value="1">Very tight · 1%</option><option value="2">Tight · 2%</option><option value="3" selected>Balanced · 3%</option><option value="5">Broad · 5%</option></select></label>
+      <label>Max per group<select id="groupPaceMax"><option value="4" selected>4 athletes</option><option value="5">5 athletes</option><option value="6">6 athletes</option><option value="8">8 athletes</option></select></label>
+      </div></details>
+      <button class="back coach-pace-span" id="buildPaceGroups">REFRESH GROUPS</button>
     </div>
 
-    <div class="coach-division-panel">
+    <div id="groupPaceResults" class="coach-group-results" aria-live="polite"><div class="tile">Organizing your roster…</div></div>
+    <button class="action" id="savePaceGroups" disabled>SAVE GROUPS & OPEN PRACTICE</button><p id="paceSaveStatus" role="status"></p>
+    <small class="mwPacePracticeNote">Practice uses each athlete’s assigned workout and its targets. Saved groups may split into heats when workouts differ or a group has more than four athletes.</small>
+    <details class="coach-division-panel" id="paceDivisions">
+      <summary id="paceDivisionSummary">Roster & competition divisions</summary>
       <div class="coach-division-head"><div><b>Competition Division</b><span>MW never guesses from an athlete’s name. Set Boys, Girls, or Open once and the pace groups will use it automatically.</span></div></div>
       <div id="paceDivisionRoster" class="coach-division-roster"><div class="tile">Loading roster…</div></div>
-    </div>
-
-    <div id="groupPaceResults" class="coach-group-results">
-      <div class="tile"><b>Ready when your roster is.</b><p>Choose an event, confirm divisions, then build the practice groups.</p></div>
-    </div>
+    </details>
   </section>`);
 
-  document.getElementById('jumpSprintPace')?.addEventListener('click',()=>document.getElementById('coachSprintPace')?.scrollIntoView({behavior:'smooth',block:'start'}));
+  const paceTabIds=['paceGroupTab','paceIndividualTab','paceToolsTab'],pacePanelIds=['coachGroupPaceAI','coachSprintPace','paceToolsPanel'];
+  function selectPaceTab(index){paceTabIds.forEach((id,i)=>{const tab=document.getElementById(id);tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;document.getElementById(pacePanelIds[i]).hidden=i!==index;});}
+  paceTabIds.forEach((id,index)=>{const tab=document.getElementById(id);tab.onclick=()=>selectPaceTab(index);tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3;selectPaceTab(next);document.getElementById(paceTabIds[next]).focus();};});
+  document.getElementById('jumpSprintPace')?.addEventListener('click',()=>selectPaceTab(0));
   document.getElementById('openCoachDistancePacer')?.addEventListener('click',()=>{location.href='/distance-pacer/?coach=1'});
   window.MWCoachTimingTools.mountStopwatch(document.getElementById('coachStopwatch'));
   document.getElementById('openCoachStopwatch').onclick=()=>document.getElementById('coachStopwatch').scrollIntoView({behavior:'smooth',block:'start'});
   document.getElementById('coachPacingWhistle').onclick=async()=>{const status=document.getElementById('coachWhistleStatus'),played=await window.MWCoachTimingTools.audio.whistle();if(status.isConnected)status.textContent=played?'Whistle played.':'Whistle audio is unavailable. Check device sound and volume.';};
 
   const paceout=document.getElementById('paceout'),divisionWrap=document.getElementById('paceDivisionRoster'),results=document.getElementById('groupPaceResults');
-  let athletes=[];
+  let athletes=[],generatedGroups=[],savingGroups=false;
   try{
     athletes=(await fetchCoachRoster()).athletes||[];
   }catch(e){
@@ -2608,19 +2614,23 @@ async function pacingPage(){
         const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/mw_coach_set_competition_division',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+mwSessionToken(),'Content-Type':'application/json'},body:JSON.stringify({p_athlete_id:athlete.id,p_division:value})});
         const d=await r.json().catch(()=>({}));
         if(!r.ok)throw new Error(d.message||d.hint||'Division could not be saved');
-        athlete.competition_division=value;toast(athlete.name+' → '+divisionLabel(value));
+        athlete.competition_division=value;toast(athlete.name+' → '+divisionLabel(value));buildGroups();
       }catch(e){toast(e.message);sel.value=athlete.competition_division||''}finally{sel.disabled=false}
     });
   }
-  document.getElementById('groupPaceEvent').onchange=()=>{renderDivisionRoster();results.innerHTML='<div class="tile"><b>Event changed.</b><p>Build the groups again using the new reference distance.</p></div>'};
+  document.getElementById('groupPaceEvent').onchange=()=>{renderDivisionRoster();buildGroups()};
   renderDivisionRoster();
 
-  document.getElementById('buildPaceGroups').onclick=()=>{
+  function buildGroups(){
+    if(savingGroups||!results.isConnected)return;
+    generatedGroups=[];document.getElementById('savePaceGroups').disabled=true;
     const event=document.getElementById('groupPaceEvent').value;
     const dist=Number(document.getElementById('groupPaceDistance').value);
     const intensity=Number(document.getElementById('groupPaceIntensity').value);
     const tolerance=Number(document.getElementById('groupPaceTolerance').value);
     const maxSize=Number(document.getElementById('groupPaceMax').value);
+    document.querySelector('.mwPaceAdvanced summary').textContent=`Grouping settings · ${tolerance}% closeness · ${maxSize} per group`;
+    if(!Number.isFinite(dist)||dist<10||dist>500||!Number.isFinite(intensity)||intensity<50||intensity>100){results.innerHTML='<div class="tile">Enter a distance from 10–500m and an intensity from 50–100%.</div>';return;}
     const usable=[],missingDivision=[],missingPr=[];
     for(const a of athletes){
       if(!a.competition_division){missingDivision.push(a);continue}
@@ -2628,7 +2638,8 @@ async function pacingPage(){
       if(!p){missingPr.push(a);continue}
       const target=mwCoachPracticeRecommendedTarget(a,dist,intensity);
       if(!target)continue;
-      usable.push({athlete:a,division:a.competition_division,pr:Number(p.time_seconds),target,estimated:estimate.estimated});
+      const paceBasis=window.MWPace?.calculate(a.prs,dist,intensity/100);
+      usable.push({athlete:a,division:a.competition_division,pr:Number(p.time_seconds),target,estimated:paceBasis?.estimated});
     }
     const sections=[];
     for(const [division,title] of [['boys','BOYS'],['girls','GIRLS'],['open','OPEN']]){
@@ -2638,19 +2649,50 @@ async function pacingPage(){
       sections.push(`<section class="coach-pace-division-result"><div class="coach-pace-result-title"><b>${title}</b><span>${rows.length} athlete${rows.length===1?'':'s'} · ${event}</span></div>
         <div class="coach-pace-group-grid">${groups.map((g,i)=>{
           const prs=g.map(x=>x.pr),targets=g.map(x=>x.target),minPr=Math.min(...prs),maxPr=Math.max(...prs),minT=Math.min(...targets),maxT=Math.max(...targets);
-          return `<article class="coach-pace-group-card"><div class="coach-pace-group-head"><span>GROUP ${i+1}</span><b>${minT.toFixed(2)}–${maxT.toFixed(2)}s</b></div><small>${dist}m @ ${intensity}% · Reference range ${minPr.toFixed(2)}–${maxPr.toFixed(2)}s</small><div class="coach-pace-athletes">${g.map(x=>`<div><b>${escapeHtml(x.athlete.name)}</b><span>${x.estimated?'Estimate':'Recorded'} ${x.pr.toFixed(2)} · Target ${x.target.toFixed(2)}s</span></div>`).join('')}</div></article>`;
+          const name=`${divisionLabel(division)} ${i+1}`;
+          generatedGroups.push({name:`Pace · ${name} · ${dist}m @ ${intensity}%`,athleteIds:g.map(x=>x.athlete.id)});
+          return `<article class="coach-pace-group-card"><div class="coach-pace-group-head"><span>${escapeHtml(name)}</span><b>${minT===maxT?minT.toFixed(2):minT.toFixed(2)+'–'+maxT.toFixed(2)}s</b></div><small>${g.length} athletes · ${dist}m @ ${intensity}%</small><div class="coach-pace-athlete-labels"><span>Athlete</span><span>Rep target</span></div><div class="coach-pace-athletes">${g.map(x=>`<div><span><b>${escapeHtml(x.athlete.name)}</b><small>${x.estimated?'Estimated target':'Recorded-distance target'}</small></span><strong>${x.target.toFixed(2)}s</strong></div>`).join('')}</div></article>`;
         }).join('')}</div></section>`);
     }
     if(!sections.length){
-      results.innerHTML='<div class="tile"><h3>No pace groups could be built yet.</h3><p>Set competition divisions and make sure athletes have a PR for the selected event.</p></div>';
+      results.innerHTML='<div class="tile"><h3>No eligible athletes yet.</h3><p>Set divisions below and add at least one PR or full-effort trial per athlete. No times are invented.</p></div>';
+      document.getElementById('paceDivisions').open=missingDivision.length>0;
+      document.getElementById('paceDivisionSummary').textContent=`Roster & divisions · ${missingDivision.length} need a division`;
       return;
     }
     const issues=[
       missingDivision.length?`<div><b>Division needed:</b> ${missingDivision.map(x=>escapeHtml(x.name)).join(', ')}</div>`:'',
-      missingPr.length?`<div><b>${escapeHtml(event)} PR needed:</b> ${missingPr.map(x=>escapeHtml(x.name)).join(', ')}</div>`:''
+      missingPr.length?`<div><b>PR or trial needed:</b> ${missingPr.map(x=>escapeHtml(x.name)).join(', ')}</div>`:''
     ].filter(Boolean).join('');
-    results.innerHTML=`<div class="coach-group-summary"><b>MW GROUPING COMPLETE</b><span>Separated by competition division first, then clustered within ${tolerance}% PR closeness. Max ${maxSize} athletes per group.</span></div>${sections.join('')}${issues?`<div class="coach-group-issues">${issues}</div>`:''}`;
+    results.innerHTML=`<div class="coach-group-summary"><b>${generatedGroups.length} groups · ${usable.length} athletes</b><span>${dist}m @ ${intensity}% · Fastest groups first · Targets within ${tolerance}% of the fastest athlete in each group.</span></div>${issues?`<div class="coach-group-issues">Not grouped yet: ${issues}</div>`:''}${sections.join('')}`;
+    document.getElementById('savePaceGroups').disabled=false;
+    document.getElementById('paceDivisionSummary').textContent=missingDivision.length?`Roster & divisions · ${missingDivision.length} need a division`:'Roster & divisions · All divisions set';
+  }
+  document.getElementById('buildPaceGroups').onclick=buildGroups;
+  for(const id of ['groupPaceDistance','groupPaceIntensity','groupPaceTolerance','groupPaceMax'])document.getElementById(id).onchange=buildGroups;
+  document.getElementById('savePaceGroups').onclick=async()=>{
+    if(savingGroups||!generatedGroups.length)return;
+    const button=document.getElementById('savePaceGroups'),status=document.getElementById('paceSaveStatus'),snapshot=generatedGroups.map(g=>({...g,athleteIds:[...g.athleteIds]}));
+    savingGroups=true;button.disabled=true;button.textContent='SAVING GROUPS…';
+    let count=0,firstGroupId=null;
+    try{
+      const coachId=(await mwCurrentUser()).id;
+      const existing=await sbRest('coach_groups?select=id,name,coach_group_members(athlete_id)&archived=eq.false');
+      const sameMembers=(group,ids)=>{const members=(group.coach_group_members||[]).map(m=>m.athlete_id).sort();return JSON.stringify(members)===JSON.stringify([...ids].sort());};
+      if(snapshot.some(g=>{const match=existing.find(x=>x.name===g.name);return match&&!sameMembers(match,g.athleteIds);})&&!window.confirm('Update the memberships of matching pace groups? Other groups and saved workout results will not be changed.'))return;
+      for(const group of snapshot){
+        const match=existing.find(x=>x.name===group.name);
+        const saved=(!match||!sameMembers(match,group.athleteIds))?await sbRest('rpc/mw_coach_save_training_group',{method:'POST',body:{p_group_id:match?.id||null,p_name:group.name,p_athlete_ids:group.athleteIds}}):match;
+        firstGroupId=firstGroupId||saved?.id||saved?.[0]?.id||match?.id;
+        count++;status.textContent=`${count} of ${snapshot.length} groups saved.`;
+      }
+      if(!button.isConnected)return;
+      window.__mwCoachPaceGroupHandoff={coachId,project:SUPABASE_URL,groupId:firstGroupId};
+      toast('Pace groups saved');openPage('practice');
+    }catch(error){status.textContent=`${count} groups saved. ${error.message} Retry to continue; matching groups will not be duplicated.`;}
+    finally{savingGroups=false;if(button.isConnected){button.disabled=false;button.textContent='SAVE GROUPS & OPEN PRACTICE';}}
   };
+  buildGroups();
 }
 const MW_FIELD_CIRCUIT_REFERENCE={
   structure:'2 sets · 2 full-circuit reps per set · 4 full circuits total · 8 × 100m sprints',
