@@ -874,37 +874,53 @@ function coachMWPage(){
     return bubble;
   };
   const appendCoachAction=(action)=>{
-    if(!action||!['calendar_create','calendar_block','calendar_update','calendar_delete','message_send'].includes(action.type))return;
+    if(!action||!['calendar_create','calendar_block','calendar_update','calendar_delete','message_send','groups_create'].includes(action.type))return;
+    const grouping=action.type==='groups_create';
     const messaging=action.type==='message_send',deleting=action.type==='calendar_delete',updating=action.type==='calendar_update';
     const card=document.createElement('div');card.className='tile mw-coach-message mw-coach-assistant mw-coach-action-card';
     const title=document.createElement('b');
-    title.textContent=messaging?'Message ready to send':(deleting?'Confirm calendar removal':(updating?'Calendar update ready':(action.eventType==='meet'?'Meet action ready':action.eventType==='practice'?'Practice action ready':'Calendar action ready')));
+    title.textContent=grouping?'PR groups ready to review':messaging?'Message ready to send':(deleting?'Confirm calendar removal':(updating?'Calendar update ready':(action.eventType==='meet'?'Meet action ready':action.eventType==='practice'?'Practice action ready':'Calendar action ready')));
     const detail=document.createElement('p');
-    if(messaging){
+    if(grouping){
+      detail.textContent=`${action.groups?.length||0} new groups · ${action.spec?.event||''} recorded times · Existing groups are kept`;
+    }else if(messaging){
       const audience=action.audienceType==='all_assigned'?'All Assigned Athletes':(action.audienceType==='group'?'Coach Group':'Assigned Athlete');
       detail.textContent=audience+' · '+String(action.body||'').slice(0,500);
     }else{
       detail.textContent=(action.title||action.matchTitle||'Schedule update')+(action.startDate?' · '+action.startDate:'')+(action.endDate&&action.endDate!==action.startDate?' through '+action.endDate:'')+(action.location?' · '+action.location:'')+(action.meetPriority?' · '+action.meetPriority+' meet':'')+(action.trainingImpact?' · '+String(action.trainingImpact).replaceAll('_',' '):'');
     }
     const approve=document.createElement('button');approve.className='action';approve.type='button';
-    approve.textContent=messaging?'Approve & Send Message':(deleting?'Confirm & Remove':(updating?'Approve & Update Calendar':action.eventType==='meet'?'Approve & Add Meet':action.eventType==='practice'?'Approve & Schedule Practice':'Approve & Add to Calendar'));
+    approve.textContent=grouping?'Approve & Save Groups':messaging?'Approve & Send Message':(deleting?'Confirm & Remove':(updating?'Approve & Update Calendar':action.eventType==='meet'?'Approve & Add Meet':action.eventType==='practice'?'Approve & Schedule Practice':'Approve & Add to Calendar'));
     const cancel=document.createElement('button');cancel.className='back';cancel.type='button';cancel.textContent='Cancel';cancel.style.marginLeft='8px';
-    card.append(title,detail,approve,cancel);chat.appendChild(card);
+    card.append(title,detail);
+    if(grouping){
+      for(const group of action.groups||[]){
+        const section=document.createElement('div');section.className='tile';
+        const heading=document.createElement('b');heading.textContent=group.name+' · '+group.athletes.length+' athletes';section.appendChild(heading);
+        for(const athlete of group.athletes){const row=document.createElement('p');row.textContent=athlete.name+' · '+Number(athlete.prSeconds).toFixed(2)+'s '+action.spec.event+(athlete.markType==='trial'?' trial':' PR')+(athlete.targetSeconds?' · Target '+Number(athlete.targetSeconds).toFixed(2)+'s'+(athlete.targetEstimated?' (estimated)':''):'');section.appendChild(row);}
+        card.appendChild(section);
+      }
+      if(action.excluded?.length){const warning=document.createElement('p');warning.textContent='Not grouped: '+action.excluded.map(a=>a.name+' — '+a.reason).join('; ');card.appendChild(warning);}
+      if(action.spec?.distanceM){const targetNote=document.createElement('p');targetNote.textContent=`Targets: ${action.spec.distanceM}m at ${action.spec.intensityPct}%. These group suggestions do not change the prescribed workout.`;card.appendChild(targetNote);}
+    }
+    const actionStatus=document.createElement('p');actionStatus.setAttribute('role','status');actionStatus.setAttribute('aria-live','polite');card.append(actionStatus,approve,cancel);chat.appendChild(card);
     requestAnimationFrame(()=>{chat.scrollTop=chat.scrollHeight;card.scrollIntoView({behavior:'smooth',block:'nearest'});});
-    cancel.onclick=()=>{card.remove();toast(messaging?'Message not sent':'Calendar left unchanged')};
+    cancel.onclick=()=>{card.remove();toast(grouping?'Groups left unchanged':messaging?'Message not sent':'Calendar left unchanged')};
     approve.onclick=async()=>{
+      if(approve.disabled)return;
       const idleLabel=approve.textContent;
-      approve.disabled=true;cancel.disabled=true;approve.textContent=messaging?'Sending…':(deleting?'Removing…':(updating?'Updating…':'Adding…'));
+      approve.disabled=true;cancel.disabled=true;approve.textContent=grouping?'Saving Groups…':messaging?'Sending…':(deleting?'Removing…':(updating?'Updating…':'Adding…'));
       try{
         const token=mwSessionToken(),headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;
         const rr=await fetch('/api/coach/coach-mw',{method:'POST',headers,body:JSON.stringify({approvedAction:action})});
-        const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||(messaging?'Message send failed':'Calendar update failed'));
-        card.remove();const confirmation=String(dd.answer||(messaging?'Message sent.':'Calendar updated.'));
+        const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||(grouping?'Groups could not be saved':messaging?'Message send failed':'Calendar update failed'));
+        card.remove();const confirmation=String(dd.answer||(grouping?'Groups saved to Teams.':messaging?'Message sent.':'Calendar updated.'));
         history.push({role:'assistant',content:confirmation});history=history.slice(-40);
         appendCoachBubble('assistant',confirmation);try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}
-        if(messaging){toast('Message sent through MW');}
+        if(grouping){toast('Groups saved to Teams');const open=document.createElement('button');open.type='button';open.className='back';open.textContent='Open Teams';open.onclick=()=>openPage('teams');chat.appendChild(open);}
+        else if(messaging){toast('Message sent through MW');}
         else{toast(deleting?'Removed from MW Calendar':(updating?'MW Calendar updated':action.eventType==='meet'?'Meet added to MW':'Added to MW Calendar'));try{sessionStorage.setItem('mwCalendarRefreshNeeded','1')}catch{}}
-      }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent=idleLabel;toast(e.message||(messaging?'Message send failed':'Calendar update failed'))}
+      }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent=idleLabel;actionStatus.textContent=e.message||'Please retry.';toast(e.message||(messaging?'Message send failed':'Calendar update failed'))}
     };
   };
   const runCoachRequest=()=>{

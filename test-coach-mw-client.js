@@ -141,7 +141,7 @@ function fixture(saved = []) {
       if(body.clientStage)return {ok:true,status:200,json:async()=>({})};
       if(url==='/api/speak')return {ok:true,status:200,blob:async()=>({synthetic:true})};
       if(deferReply)await deferReply.promise;
-      return {ok:reply.status===200,status:reply.status,json:async()=>({answer:reply.answer,error:reply.error})};
+      return {ok:reply.status===200,status:reply.status,json:async()=>({answer:reply.answer,error:reply.error,action:reply.action})};
     }
   });
   context.window=context;
@@ -199,6 +199,15 @@ async function run(){
   f.el('fixtureNav').click();assert.equal(f.navigation(),2);
   f.setReply({status:200,answer:'Recovered'});f.send('Try again');await f.flush();
   assert.ok(f.el('mwchat').textContent.includes('Recovered'),'next request must work after an error');
+
+  const groups={type:'groups_create',approvalToken:'signed-fixture',spec:{event:'200m'},groups:[{name:'Boys 1',athletes:[{name:'Runner One',prSeconds:22,targetSeconds:18,athleteId:'a'}]}],excluded:[{name:'Missing Time',reason:'No recorded 200m time'}]};
+  f.setReply({status:200,answer:'Groups ready',action:groups});f.send('Make groups');await f.flush();
+  let card=f.document.querySelector('.mw-coach-action-card');assert.ok(card.textContent.includes('Runner One'));assert.ok(card.textContent.includes('Missing Time'));
+  let buttons=card.querySelectorAll('button');buttons.at(-1).click();await f.flush();assert.equal(f.calls.filter(c=>c.body.approvedAction).length,0,'Cancel never writes groups');
+  f.send('Make groups again');await f.flush();card=f.document.querySelector('.mw-coach-action-card');buttons=card.querySelectorAll('button');
+  f.setReply({status:500,error:'Group save failed'});buttons.at(-2).click();await f.flush();assert.ok(card.textContent.includes('Group save failed'));assert.equal(buttons.at(-2).disabled,false,'Failed save permits retry');
+  f.setReply({status:200,answer:'Groups saved'});buttons.at(-2).click();buttons.at(-2).click();await f.flush();assert.equal(f.calls.filter(c=>c.body.approvedAction).length,2,'One failed save, one successful retry; rapid second tap blocked');
+  assert.ok(f.el('mwchat').textContent.includes('Open Teams'));assert.equal(f.document.querySelector('.mw-coach-action-card'),null);
 
   const saved=fixture([{role:'user',content:'Saved question'},{role:'assistant',content:'Saved answer'}]);
   saved.enter();await saved.flush();
