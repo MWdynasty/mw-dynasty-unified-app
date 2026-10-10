@@ -11,9 +11,9 @@ function coachTransient(error,status=0){return !navigator.onLine||error?.mwTrans
 function coachAccessError(message,status=0){const e=new Error(message);e.status=status;e.mwTransient=window.MWResilience?.isTransientStatus?.(status)===true;return e}
 
 const PLANS={
- core:{name:'MW Coach Core',theme:'',title:'MW COACH CORE',tag:'MANAGE. ORGANIZE. COACH.',sub:'Bring Your Own Program — Built for Coaches.',side:'COACH\nCORE',footer:'BUILD\nDEVELOP\nCOMPETE',planCode:'coach_core',monthly:49,sponsor:5},
- intelligence:{name:'MW Coach Intelligence',theme:'blue',title:'MW COACH INTELLIGENCE',tag:'YOUR PROGRAM. AMPLIFIED.',sub:'Bring Your Own Program + Full AI Intelligence.',side:'COACH\nINTELLIGENCE',footer:'DATA\nINTELLIGENCE\nRESULTS',planCode:'coach_intelligence',monthly:79,sponsor:6},
- performance:{name:'MW Sprint Performance System',theme:'gold',title:'MW SPRINT PERFORMANCE SYSTEM',tag:'PROVEN SPEED. A STRONGER FUTURE.',sub:'Complete MW System + Full AI Intelligence.',side:'PERFORMANCE\nSYSTEM',footer:'SPEED\nINTELLIGENCE\nLEGACY',planCode:'mw_sprint_performance',monthly:109,sponsor:7}
+ core:{name:'Coach Core',theme:'',title:'COACH CORE',tag:'MANAGE. ORGANIZE. COACH.',sub:'Coach Core helps you run the program.',side:'COACH\nCORE',footer:'BUILD\nDEVELOP\nCOMPETE',planCode:'coach_core',monthly:49,sponsor:5},
+ intelligence:{name:'Coach Intelligence',theme:'blue',title:'COACH INTELLIGENCE',tag:'YOUR PROGRAM. AMPLIFIED.',sub:'Coach Intelligence helps you understand the program.',side:'COACH\nINTELLIGENCE',footer:'DATA\nINTELLIGENCE\nRESULTS',planCode:'coach_intelligence',monthly:79,sponsor:6},
+ performance:{name:'Coach Velocity',theme:'gold',title:'COACH VELOCITY',tag:'PROVEN SPEED. A STRONGER FUTURE.',sub:'Coach Velocity includes the complete MW Velocity training system to drive the program.',side:'COACH\nVELOCITY',footer:'SPEED\nINTELLIGENCE\nLEGACY',planCode:'mw_sprint_performance',monthly:109,sponsor:7}
 };
 let pricingCatalogLoaded=false;
 function centsToDollars(cents,fallback){const n=Number(cents);return Number.isFinite(n)?n/100:fallback}
@@ -1134,7 +1134,7 @@ function smoothSwitchExperience(next,button){
 const COACH_TOUR_RANK={core:1,intelligence:2,performance:3};
 const COACH_TOURS={
   core:[
-    {icon:'✦',title:'Welcome to MW Coach Core',body:'This walkthrough is built around how you will actually coach inside MW Dynasty — where to start, where to go next, and why each main button matters.',hint:'The goal is not just to show you buttons. It is to teach you the coaching flow so you can move through the app without guessing.',target:null,label:'COACH CORE'},
+    {icon:'✦',title:'Welcome to Coach Core',body:'This walkthrough is built around how you will actually coach inside MW Dynasty — where to start, where to go next, and why each main button matters.',hint:'The goal is not just to show you buttons. It is to teach you the coaching flow so you can move through the app without guessing.',target:null,label:'COACH CORE'},
     {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAINING, MESSAGES and MENU are the five anchors of Coach Core on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Almost everything you do starts from one of these buttons.',hint:'Learn these five first. Once they make sense, the rest of the platform becomes much easier to navigate.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Know What Needs Your Attention',body:'HOME is where a coaching day should begin. It brings you back to your command center so you can see the current picture before jumping into individual tasks.',hint:'Why it matters: good coaching decisions start with context. Use Home to orient yourself before you act.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Know the Athlete Before You Coach the Athlete',body:'TEAM is where you move from the big picture to the people you coach. Open your roster, review athlete information, assignments and the athletes connected to your account.',hint:'Why it matters: training decisions should be athlete-specific. Team is the bridge between your roster and the work you assign.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
@@ -1145,7 +1145,7 @@ const COACH_TOURS={
     {icon:'',title:'Your Everyday Coach Core Flow',body:'A simple rhythm is HOME → TEAM → TRAINING → MESSAGES. Use MENU when you need Calendar, Settings or secondary tools, then return HOME to reset your view.',hint:'You do not need to hunt through the app. Let the five main buttons organize how you coach.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ],
   intelligence:[
-    {icon:'✦',title:'Welcome to MW Coach Intelligence',body:'This walkthrough is built around how you will actually use intelligence while coaching — orient yourself, understand the athlete, ask better questions and act on what matters.',hint:'MW Intelligence should make your coaching decisions clearer, not make the app feel more complicated.',target:null,label:'COACH INTELLIGENCE'},
+    {icon:'✦',title:'Welcome to Coach Intelligence',body:'This walkthrough is built around how you will actually use intelligence while coaching — orient yourself, understand the athlete, ask better questions and act on what matters.',hint:'MW Intelligence should make your coaching decisions clearer, not make the app feel more complicated.',target:null,label:'COACH INTELLIGENCE'},
     {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Coach Intelligence on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Think of them as the permanent map underneath the intelligence tools.',hint:'The intelligence features are powerful, but these five buttons keep you grounded and make the platform easy to move through.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Start With the Big Picture',body:'HOME is where every coaching day should begin. Use it to see the overall state of your roster and what deserves attention before opening a single athlete.',hint:'Why it matters: intelligence is most useful when you begin with the whole picture instead of reacting to one isolated data point.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Move From Signal to Athlete',body:'TEAM is where you inspect the actual athlete behind a status, flag or recommendation. Open profiles, assignments and the information connected to the people you coach.',hint:'Why it matters: MW can surface a signal, but you still need athlete context before making a coaching decision.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
@@ -1157,8 +1157,8 @@ const COACH_TOURS={
     {icon:'',title:'Your Everyday Intelligence Flow',body:'A simple rhythm is HOME → TEAM → TRAIN → COACH MW. MENU holds Messages, Calendar, Settings and secondary tools. The intelligence tools support that flow instead of replacing it.',hint:'Start broad, inspect the athlete, ask the right question, make the decision, then communicate it.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ],
   performance:[
-    {icon:'✦',title:'Welcome to MW Sprint Performance',body:'This walkthrough shows you how to operate the complete MW system without getting lost in all of its power — where to start, how to move, and what each main button is responsible for.',hint:'The 41-week system, strength, pacing and intelligence all become easier when you understand the five navigation anchors first.',target:null,label:'SPRINT PERFORMANCE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Sprint Performance on mobile. MENU holds Calendar, Settings / Profile and the rest of the performance tools. The complete MW system branches out from this navigation.',hint:'When you always know which anchor you are working from, the full performance platform stays organized instead of overwhelming.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
+    {icon:'✦',title:'Welcome to Coach Velocity',body:'This walkthrough shows you how to operate the complete MW system without getting lost in all of its power — where to start, how to move, and what each main button is responsible for.',hint:'The 41-week system, strength, pacing and intelligence all become easier when you understand the five navigation anchors first.',target:null,label:'COACH VELOCITY'},
+    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Coach Velocity on mobile. MENU holds Calendar, Settings / Profile and the rest of the performance tools. The complete MW system branches out from this navigation.',hint:'When you always know which anchor you are working from, the full performance platform stays organized instead of overwhelming.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Start With Today’s Coaching Picture',body:'HOME is where you orient yourself before touching the program. See what is happening across the coaching environment and what needs your attention first.',hint:'Why it matters: the training system is structured, but your coaching day still starts with understanding what is happening right now.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Connect the System to the Athlete',body:'TEAM is where the MW system becomes personal. Review the athlete, their placement, assignments and the information that should shape how you coach the prescribed work.',hint:'Why it matters: the system provides structure; Team gives you the athlete context needed to coach that structure correctly.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
     {icon:'',title:'3. Coach MW — Understand the System in Context',body:'COACH MW connects the MW methodology, your roster and coaching intelligence so you can ask questions about the work and the athletes doing it.',hint:'Why it matters: use Coach MW to understand, compare and prepare. The final coaching decision still belongs to you.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW'},
@@ -1167,7 +1167,7 @@ const COACH_TOURS={
     {icon:'🏃',title:'The 41-Week Track System Is the Backbone',body:'The protected MW Track Program gives you the progressive sprint prescription, recovery, cues and circuit order across the season.',hint:'Use the navigation anchors to manage the coaching day; use the MW Track Program when you need the actual system prescription.',target:'[data-page="mwtrack"]',label:'MW TRACK PROGRAM'},
     {icon:'🏋',title:'Strength Supports the Track Work',body:'Strength & Power is synchronized with the sprint progression so the weight room supports the same performance objective as the track.',hint:'Do not treat track and strength as two unrelated programs. They are designed to progress together.',target:'[data-page="strength"]',label:'STRENGTH & POWER'},
     {icon:'◷',title:'Pacing Makes the Prescription Individual',body:'Pacing Tools use athlete PR data to turn the prescribed work into individualized target times.',hint:'The program tells you the training intent. Pacing helps each athlete execute that intent at the right target.',target:'[data-page="pacing"]',label:'PACING TOOLS'},
-    {icon:'',title:'Your Everyday Sprint Performance Flow',body:'A simple rhythm is HOME → TEAM → COACH MW → execute the MW system → MESSAGES. MENU gives you Calendar, Settings and the deeper performance tools. Use those tools when the coaching question requires them.',hint:'The five main buttons keep you oriented; the 41-week system and performance tools give you the depth.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
+    {icon:'',title:'Your Everyday Coach Velocity Flow',body:'A simple rhythm is HOME → TEAM → COACH MW → execute the MW system → MESSAGES. MENU gives you Calendar, Settings and the deeper performance tools. Use those tools when the coaching question requires them.',hint:'The five main buttons keep you oriented; the 41-week system and performance tools give you the depth.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ]
 };
 
@@ -1179,7 +1179,7 @@ const COACH_UPGRADE_TOURS={
     {icon:'☻',title:'Coach MW + Insights',body:'Coach MW AI and AI Insights give you deeper context without taking control away from the coach.',hint:'Your upgraded platform is ready.',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MW'}
   ],
   performance:[
-    {icon:'⚡',title:'MW Sprint Performance Is Unlocked',body:'You now have the complete MW system plus the full Coach Intelligence layer.',hint:'Here are the major tools added with this platform.',target:null,label:'WHAT’S NEW'},
+    {icon:'⚡',title:'Coach Velocity Is Unlocked',body:'You now have the complete MW system plus the full Coach Intelligence layer.',hint:'Here are the major tools added with this platform.',target:null,label:'WHAT’S NEW'},
     {icon:'🏃',title:'41-Week Track System',body:'The complete progressive MW Track Program is now available. Standard Week 1 begins the day after Labor Day, or your team can use a coach-controlled Custom Season Start.',hint:'Athletes do not freely jump weeks: coached athletes follow coach placement; independent late joiners use Smart Entry.',target:'[data-page="mwtrack"]',label:'NEW · TRACK PROGRAM'},
     {icon:'🏋',title:'Strength & Power',body:'The synchronized MW weight-room progression is now connected to the sprint program.',hint:'Track and strength now live together.',target:'[data-page="strength"]',label:'NEW · STRENGTH'},
 
@@ -1791,7 +1791,7 @@ async function hydrateLivePerformanceSummary(){
 }
 async function hydratePerformanceInsightPreview(){
   const el=document.getElementById('performanceInsightPreview');if(!el)return;
-  try{const d=await fetchCoachPerformance();if(d.rep_tracking_enabled===false){el.innerHTML='<div class="insight"><span class="insight-symbol" style="color:#e3b51d">★</span><div><h4>Rep Tracking — MW System Exclusive</h4><p>Rep-by-rep sprint execution is reserved for the MW Sprint Performance System. Coach Intelligence still supports your coaching workflow without exposing MW rep tracking.</p></div><span>PREMIUM</span></div>';return}const a=d.athletes||[],s=d.summary||{},flagged=a.filter(x=>(x.flags||[]).length).sort((x,y)=>((y.flags||[]).some(f=>f.level==='attention')?2:1)-((x.flags||[]).some(f=>f.level==='attention')?2:1)),first=flagged[0];
+  try{const d=await fetchCoachPerformance();if(d.rep_tracking_enabled===false){el.innerHTML='<div class="insight"><span class="insight-symbol" style="color:#e3b51d">★</span><div><h4>Rep Tracking — MW System Exclusive</h4><p>Rep-by-rep sprint execution is reserved for MW Velocity. Coach Intelligence still supports your coaching workflow without exposing MW rep tracking.</p></div><span>PREMIUM</span></div>';return}const a=d.athletes||[],s=d.summary||{},flagged=a.filter(x=>(x.flags||[]).length).sort((x,y)=>((y.flags||[]).some(f=>f.level==='attention')?2:1)-((x.flags||[]).some(f=>f.level==='attention')?2:1)),first=flagged[0];
     const cards=[`<div class="insight"><span class="insight-symbol" style="color:#159bff">◷</span><div><h4>Pace Execution</h4><p>${s.average_latest_execution_pct!=null?`${s.average_latest_execution_pct}% average across latest check-ins.`:'No pace check-ins recorded yet.'}</p></div><span>LIVE</span></div>`,`<div class="insight"><span class="insight-symbol" style="color:#e3b51d">!</span><div><h4>Coach Review</h4><p>${s.review_flags||0} review flag${Number(s.review_flags||0)===1?'':'s'} · ${s.watch_flags||0} watch flag${Number(s.watch_flags||0)===1?'':'s'}.</p></div><span>LIVE</span></div>`];
     if(first){const roster=await fetchCoachRoster(),name=(roster.athletes||[]).find(x=>x.id===first.athlete_id)?.name||'Athlete',msg=first.flags?.[0]?.message||'Performance trend worth review';cards.push(`<div class="insight"><span class="insight-symbol" style="color:#ff8d66">↗</span><div><h4>${escapeHtml(name)}</h4><p>${escapeHtml(msg)}</p></div><span>REVIEW</span></div>`)}
     el.innerHTML=cards.join('');
@@ -1823,9 +1823,9 @@ async function athleteDetail(athleteId){
       </div>
       <div class="tile" style="margin-top:14px"><h3>Athlete Goal</h3><p>${escapeHtml(a.training_goal||'No Athlete Goal has been set yet.')}</p><small>Set by the athlete in MW Smart Entry or Athlete Profile</small></div>
       <div class="tile" style="margin-top:14px"><h3>Membership Responsibility</h3><p><b>${isSponsored?'Coach Sponsored':'Athlete Self-Pay'}</b></p><small>${isSponsored?`Sponsored rate: ${sponsorship.sponsored_athlete_price_cents?mwMoney(Number(sponsorship.sponsored_athlete_price_cents))+'/month':'current coach tier rate'}${sponsorship.access_ends_at?' · access scheduled through '+escapeHtml(fmtDate(sponsorship.access_ends_at)):''}`:'This athlete is responsible for their own MW Athlete membership.'}</small>${accountAccess.role==='coach'&&isSponsored?`<div style="margin-top:12px"><button class="${sponsorshipEnding?'action':'back'}" id="athSponsorshipAction">${sponsorshipEnding?'Resume Sponsorship':'Schedule Sponsorship End'}</button><div id="athSponsorshipState" style="margin-top:8px"></div></div>`:''}</div>
-      <div class="tile" style="margin-top:14px"><h3>Performance Intelligence</h3>${perfError?`<div class="lockNote"><b>PERFORMANCE INTELLIGENCE UNAVAILABLE</b><br>${escapeHtml(perfError.message||'Live performance data could not be loaded. Refresh and try again.')}</div>`:!repTrackingEnabled?'<div class="lockNote"><b>MW SPRINT PERFORMANCE EXCLUSIVE</b><br>Rep-by-rep sprint tracking is available only inside the MW Sprint Performance System.</div>':perf?.sprint?.latest?`<div class="panel-grid" style="margin-top:10px"><div class="tile"><h3>Pace Execution</h3><p><b>${perf.sprint.latest.execution_score_pct==null?'No target recorded':perf.sprint.latest.execution_score_pct+'%'}</b></p><small>${perf.sprint.latest.source==='quick_checkin'?'Quick athlete check-in':'Detailed timed session'}</small></div><div class="tile"><h3>Recorded Results</h3><p><b>${perf.sprint.latest.rep_count} reps</b></p><small>Best ${perf.sprint.latest.best_actual_seconds==null?'unavailable':perf.sprint.latest.best_actual_seconds+'s'} · Average ${perf.sprint.latest.average_actual_seconds==null?'unavailable':perf.sprint.latest.average_actual_seconds+'s'} · ${perf.sprint.latest.completed_at?'Completed':'Recorded'}</small></div><div class="tile"><h3>Rep Variation</h3><p><b>${perf.sprint.latest.time_variation_pct==null?'Needs comparable reps':perf.sprint.latest.time_variation_pct+'%'}</b></p><small>Recorded-time variation for equal distances; this is not a pace score.</small></div><div class="tile"><h3>Session RPE</h3><p><b>${perf.sprint.latest.session_rpe==null?'Not reported':perf.sprint.latest.session_rpe+'/10'}</b></p><small>Athlete reported effort</small></div></div><p style="margin-top:10px"><b>${escapeHtml(perf.sprint.latest.reason||'Performance recorded')}</b><br><small>Trend: ${escapeHtml(String(perf.sprint.trend||'insufficient data').replaceAll('_',' '))}. These are coaching signals, not medical conclusions.</small></p><div class="list" style="margin-top:10px">${(perf.sprint.sessions||[]).slice(0,5).map(x=>`<div class="row"><span><b>Week ${x.program_week} · Day ${x.program_day}</b><br><small>${x.rep_count} timed reps · ${x.session_rpe?`RPE ${x.session_rpe}/10 · `:''}${escapeHtml(x.reason||'Recorded')}</small></span><b>${x.execution_score_pct==null?x.rep_count+' recorded reps':x.execution_score_pct+'%'}</b></div>`).join('')}</div>`:'<p>No pace check-in yet. Once the athlete taps DONE, their pace check-in will appear here.</p>'}${perf?.strength?.latest_checkin?`<div style="margin-top:14px;border-top:1px solid #263641;padding-top:12px"><h3>Strength Check-In</h3><p><b>${perf.strength.latest_checkin.status==='as_prescribed'?'✓ Completed as written':'↔ Modified'}</b></p><small>Week ${perf.strength.latest_checkin.program_week} · ${escapeHtml(perf.strength.latest_checkin.day_label||'Strength day')}</small></div>`:''}${perf?.strength?.session_count?`<div style="margin-top:14px;border-top:1px solid #263641;padding-top:12px"><h3>Weight-Room Progression</h3><div class="panel-grid" style="margin-top:8px"><div class="tile"><h3>Sessions</h3><p><b>${Number(perf.strength.session_count||0)}</b></p><small>Completed</small></div><div class="tile"><h3>As Prescribed</h3><p><b>${perf.strength.as_prescribed_pct==null?'—':perf.strength.as_prescribed_pct+'%'}</b></p><small>Completion quality</small></div><div class="tile"><h3>Recent Response</h3><p><b>${escapeHtml(String(perf.strength.latest_response||'—').toUpperCase())}</b></p><small>Strong / Normal / Heavy</small></div></div><p style="margin-top:10px"><b>${escapeHtml(String(perf.strength.response_trend||'insufficient_data').replaceAll('_',' ').toUpperCase())}</b><br><small>Combined sprint + strength: ${escapeHtml(String(perf.strength.combined_signal||'insufficient_shared_data').replaceAll('_',' '))}. These are coaching signals; no program change is automatic.</small></p>${perf.strength.max_progression?.changes?`<details style="margin-top:10px"><summary style="cursor:pointer;color:#adbdc8">Established max progression</summary><div class="list" style="margin-top:8px">${[['Power Clean','power_clean'],['Front Squat','front_squat'],['Back Squat','back_squat'],['Deadlift','deadlift']].map(([label,key])=>{const x=perf.strength.max_progression.changes[key]||{},unit=perf.strength.max_progression.weight_unit||'lb';return `<div class="row"><span>${label}<br><small>${x.baseline==null?'No baseline yet':'Baseline '+x.baseline+' '+escapeHtml(unit)}</small></span><b>${x.current==null?'—':x.current+' '+escapeHtml(unit)+(x.delta==null?'':` · ${x.delta>=0?'+':''}${x.delta}`)}</b></div>`}).join('')}</div></details>`:''}</div>`:''}${perf?.strength?.latest?`<details style="margin-top:12px"><summary style="cursor:pointer;color:#adbdc8">Detailed strength log</summary><p>${perf.strength.latest.set_count} logged sets · ${perf.strength.latest.actual_volume??0} volume (${escapeHtml(perf.strength.latest.sets?.[0]?.weight_unit||'lb')})</p><small>${escapeHtml((perf.strength.latest.exercises||[]).join(' · '))}</small></details>`:''}</div>
+      <div class="tile" style="margin-top:14px"><h3>Performance Intelligence</h3>${perfError?`<div class="lockNote"><b>PERFORMANCE INTELLIGENCE UNAVAILABLE</b><br>${escapeHtml(perfError.message||'Live performance data could not be loaded. Refresh and try again.')}</div>`:!repTrackingEnabled?'<div class="lockNote"><b>COACH VELOCITY EXCLUSIVE</b><br>Rep-by-rep sprint tracking is available only inside MW Velocity.</div>':perf?.sprint?.latest?`<div class="panel-grid" style="margin-top:10px"><div class="tile"><h3>Pace Execution</h3><p><b>${perf.sprint.latest.execution_score_pct==null?'No target recorded':perf.sprint.latest.execution_score_pct+'%'}</b></p><small>${perf.sprint.latest.source==='quick_checkin'?'Quick athlete check-in':'Detailed timed session'}</small></div><div class="tile"><h3>Recorded Results</h3><p><b>${perf.sprint.latest.rep_count} reps</b></p><small>Best ${perf.sprint.latest.best_actual_seconds==null?'unavailable':perf.sprint.latest.best_actual_seconds+'s'} · Average ${perf.sprint.latest.average_actual_seconds==null?'unavailable':perf.sprint.latest.average_actual_seconds+'s'} · ${perf.sprint.latest.completed_at?'Completed':'Recorded'}</small></div><div class="tile"><h3>Rep Variation</h3><p><b>${perf.sprint.latest.time_variation_pct==null?'Needs comparable reps':perf.sprint.latest.time_variation_pct+'%'}</b></p><small>Recorded-time variation for equal distances; this is not a pace score.</small></div><div class="tile"><h3>Session RPE</h3><p><b>${perf.sprint.latest.session_rpe==null?'Not reported':perf.sprint.latest.session_rpe+'/10'}</b></p><small>Athlete reported effort</small></div></div><p style="margin-top:10px"><b>${escapeHtml(perf.sprint.latest.reason||'Performance recorded')}</b><br><small>Trend: ${escapeHtml(String(perf.sprint.trend||'insufficient data').replaceAll('_',' '))}. These are coaching signals, not medical conclusions.</small></p><div class="list" style="margin-top:10px">${(perf.sprint.sessions||[]).slice(0,5).map(x=>`<div class="row"><span><b>Week ${x.program_week} · Day ${x.program_day}</b><br><small>${x.rep_count} timed reps · ${x.session_rpe?`RPE ${x.session_rpe}/10 · `:''}${escapeHtml(x.reason||'Recorded')}</small></span><b>${x.execution_score_pct==null?x.rep_count+' recorded reps':x.execution_score_pct+'%'}</b></div>`).join('')}</div>`:'<p>No pace check-in yet. Once the athlete taps DONE, their pace check-in will appear here.</p>'}${perf?.strength?.latest_checkin?`<div style="margin-top:14px;border-top:1px solid #263641;padding-top:12px"><h3>Strength Check-In</h3><p><b>${perf.strength.latest_checkin.status==='as_prescribed'?'✓ Completed as written':'↔ Modified'}</b></p><small>Week ${perf.strength.latest_checkin.program_week} · ${escapeHtml(perf.strength.latest_checkin.day_label||'Strength day')}</small></div>`:''}${perf?.strength?.session_count?`<div style="margin-top:14px;border-top:1px solid #263641;padding-top:12px"><h3>Weight-Room Progression</h3><div class="panel-grid" style="margin-top:8px"><div class="tile"><h3>Sessions</h3><p><b>${Number(perf.strength.session_count||0)}</b></p><small>Completed</small></div><div class="tile"><h3>As Prescribed</h3><p><b>${perf.strength.as_prescribed_pct==null?'—':perf.strength.as_prescribed_pct+'%'}</b></p><small>Completion quality</small></div><div class="tile"><h3>Recent Response</h3><p><b>${escapeHtml(String(perf.strength.latest_response||'—').toUpperCase())}</b></p><small>Strong / Normal / Heavy</small></div></div><p style="margin-top:10px"><b>${escapeHtml(String(perf.strength.response_trend||'insufficient_data').replaceAll('_',' ').toUpperCase())}</b><br><small>Combined sprint + strength: ${escapeHtml(String(perf.strength.combined_signal||'insufficient_shared_data').replaceAll('_',' '))}. These are coaching signals; no program change is automatic.</small></p>${perf.strength.max_progression?.changes?`<details style="margin-top:10px"><summary style="cursor:pointer;color:#adbdc8">Established max progression</summary><div class="list" style="margin-top:8px">${[['Power Clean','power_clean'],['Front Squat','front_squat'],['Back Squat','back_squat'],['Deadlift','deadlift']].map(([label,key])=>{const x=perf.strength.max_progression.changes[key]||{},unit=perf.strength.max_progression.weight_unit||'lb';return `<div class="row"><span>${label}<br><small>${x.baseline==null?'No baseline yet':'Baseline '+x.baseline+' '+escapeHtml(unit)}</small></span><b>${x.current==null?'—':x.current+' '+escapeHtml(unit)+(x.delta==null?'':` · ${x.delta>=0?'+':''}${x.delta}`)}</b></div>`}).join('')}</div></details>`:''}</div>`:''}${perf?.strength?.latest?`<details style="margin-top:12px"><summary style="cursor:pointer;color:#adbdc8">Detailed strength log</summary><p>${perf.strength.latest.set_count} logged sets · ${perf.strength.latest.actual_volume??0} volume (${escapeHtml(perf.strength.latest.sets?.[0]?.weight_unit||'lb')})</p><small>${escapeHtml((perf.strength.latest.exercises||[]).join(' · '))}</small></details>`:''}</div>
       <div class="tile" style="margin-top:14px"><h3>Coach-Assigned Training Check-Ins</h3>${assignedCheckins.length?`<div class="list">${assignedCheckins.slice(0,10).map(x=>`<div class="row"><span><b>${escapeHtml(String(x.status||'completed').replaceAll('_',' ').toUpperCase())}</b><br><small>${escapeHtml(fmtDate(x.completed_at))}${x.session_rpe?` · RPE ${x.session_rpe}/10`:''}${x.pace_check_status?` · ${escapeHtml(String(x.pace_check_status).replaceAll('_',' '))}`:''}${x.pace_reps_total!=null?` · ${Number(x.pace_reps_hit||0)}/${Number(x.pace_reps_total)} reps`:''}</small>${x.athlete_note?`<br><small>${escapeHtml(x.athlete_note)}</small>`:''}</span></div>`).join('')}</div>`:'<p>No coach-assigned training check-ins yet.</p>'}</div>
-      <div class="tile" style="margin-top:14px"><h3>Personal Records</h3>${prs.length?`<div class="list">${prs.map(pr=>`<div class="row"><span><b>${escapeHtml(pr.event)}</b><br><small>${pr.verified?'Verified':'Athlete entered'} · ${pr.timing_method==='fat'?'Fully automatic':pr.timing_method==='hand'?'Hand timed':'Timing unknown'}${pr.date_recorded?' · '+escapeHtml(fmtDate(pr.date_recorded)):''}</small></span><b>${escapeHtml(String(pr.time_seconds))}s</b></div>`).join('')}</div>`:'<p>No PRs recorded yet.</p>'}</div>
+      <div class="tile" style="margin-top:14px"><h3>PRs & Time Trials</h3>${prs.length?`<div class="list">${prs.map(pr=>`<div class="row"><span><b>${escapeHtml(pr.event)}</b><br><small>${pr.mark_type==='time_trial'?'Practice trial':pr.mark_type==='race_pr'?'Race PR':'Recorded result'} · ${pr.verified?'Verified':'Athlete entered'} · ${pr.timing_method==='fat'?'Fully automatic':pr.timing_method==='hand'?'Hand timed':'Timing unknown'}${pr.date_recorded?' · '+escapeHtml(fmtDate(pr.date_recorded)):''}</small></span><b>${escapeHtml(String(pr.time_seconds))}s</b></div>`).join('')}</div>`:'<p>No PRs recorded yet.</p>'}</div>
       <div class="tile" style="margin-top:14px"><h3>Assessment Weight-Room Maximums</h3>${a.strength_maxes?`<div class="list"><div class="row"><span>Power Clean</span><b>${a.strength_maxes.power_clean_max??'Not established'} ${a.strength_maxes.power_clean_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div><div class="row"><span>Front Squat</span><b>${a.strength_maxes.front_squat_max??'Not established'} ${a.strength_maxes.front_squat_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div><div class="row"><span>Back Squat</span><b>${a.strength_maxes.back_squat_max??'Not established'} ${a.strength_maxes.back_squat_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div><div class="row"><span>${a.strength_maxes.deadlift_type==='trap_bar'?'Trap-Bar Deadlift':'Deadlift'}</span><b>${a.strength_maxes.deadlift_max??'Not established'} ${a.strength_maxes.deadlift_max!=null?escapeHtml(a.strength_maxes.weight_unit||'lb'):''}</b></div></div>`:'<p>No lifting maximums established. Use Foundation technique loading.</p>'}</div>
       <div class="form" style="margin-top:14px"><h3>Coach-Approved Assignment</h3><label>Track Tier<select id="athTrackTier"><option value="foundation">Foundation</option><option value="development">Development</option><option value="performance">Performance</option></select></label><label>Strength Tier<select id="athStrengthTier"><option value="foundation">Foundation</option><option value="development">Development</option><option value="performance">Performance</option></select></label><label>Official Week<input id="athProgramWeek" type="number" min="1" max="41" value="${Number(a.current_week||1)}"></label><label>Reason<textarea id="athAssignmentReason" rows="3" maxlength="1000" placeholder="Why is this assignment appropriate?"></textarea></label><button class="action" id="saveAthAssignment">Approve & Sync Assignment</button><div id="athAssignmentState"></div></div>
       <div class="tile" style="margin-top:14px"><h3>Private Coach Notes</h3><div id="athleteNotes">${notes.length?notes.map(n=>`<div class="row"><span>${escapeHtml(n.note)}<br><small>${escapeHtml(fmtDate(n.created_at))}</small></span></div>`).join(''):'<p>No coach notes yet.</p>'}</div></div>
@@ -1941,8 +1941,8 @@ function supportPage(){pageBase('Help & Support','Send a real support request to
 function taskBoardPage(){let tasks=mwLoad('aiTasks',[{name:'Maya T. — Missed Training',detail:'Review workload before next high-intensity day.',status:'Review'},{name:'Tyler B. — Performance Trend',detail:'Flying 30 trend improved across three sessions.',status:'Approve'},{name:'Aaliyah R. — Meet Preparation',detail:'Competition warm-up and race-model review are due.',status:'Open'}]);pageBase('AI Task Board','Daily coaching tasks and priorities.',`<div class="list">${tasks.map((t,i)=>`<div class="row"><span><b>${escapeHtml(t.name)}</b><br>${escapeHtml(t.detail)}<br><small>Status: ${escapeHtml(t.status)}</small></span><button class="action task-open" data-i="${i}">Open Task</button></div>`).join('')}</div>`);document.querySelectorAll('.task-open').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,t=tasks[i];mwModal('AI Task',`<div class="tile"><h3>${escapeHtml(t.name)}</h3><p>${escapeHtml(t.detail)}</p></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="action" id="approveTask">Approve</button><button class="back" id="holdTask">Hold</button></div>`);approveTask.onclick=()=>{tasks[i].status='Approved';mwStore('aiTasks',tasks);document.getElementById('mwModal')?.remove();taskBoardPage()};holdTask.onclick=()=>{tasks[i].status='Held';mwStore('aiTasks',tasks);document.getElementById('mwModal')?.remove();taskBoardPage()}})}
 async function seasonPage(){
   if(experience==='core'){
-    pageBase('Season Planner','Season Intelligence is reserved for Coach Intelligence and MW Sprint Performance.',`
-      <div class="tile"><span class="status-kicker">COACH CORE</span><h3>Calendar tools, without Season Intelligence</h3><p>Coach Core keeps practices, meets, testing, attendance, team events, and manual availability review. Upgrade to Coach Intelligence for season/calendar insights, or MW Sprint Performance for the full MW Season Intelligence programming engine.</p><button class="action" data-page="calendar" style="margin-top:12px">Open Core Calendar</button><button class="back" data-page="account" style="margin-top:12px">View Membership</button></div>`);
+    pageBase('Season Planner','Season Intelligence is reserved for Coach Intelligence and Coach Velocity.',`
+      <div class="tile"><span class="status-kicker">COACH CORE</span><h3>Calendar tools, without Season Intelligence</h3><p>Coach Core keeps practices, meets, testing, attendance, team events, and manual availability review. Upgrade to Coach Intelligence for season/calendar insights, or Coach Velocity for the complete MW Velocity Season Intelligence programming engine.</p><button class="action" data-page="calendar" style="margin-top:12px">Open Core Calendar</button><button class="back" data-page="account" style="margin-top:12px">View Membership</button></div>`);
     bindPageNavigation(app);return;
   }
 
@@ -1952,7 +1952,7 @@ async function seasonPage(){
     :'Calendar and readiness intelligence for your coach-authored program. Your programming stays yours.',`
     <section class="school-calendar-hero">
       <div>
-        <span class="status-kicker">${performance?'MW SPRINT PERFORMANCE EXCLUSIVE':'COACH INTELLIGENCE'}</span>
+        <span class="status-kicker">${performance?'COACH VELOCITY EXCLUSIVE':'COACH INTELLIGENCE'}</span>
         <h2>${performance?'Full Season Intelligence Engine':'Season Intelligence Insights'}</h2>
         <p>${performance?'MW can use your competition calendar as the anchor for the complete sprint + strength system.':'MW analyzes your season calendar, school constraints, athlete availability, and target dates without replacing your own training program.'}</p>
         <span class="smart-schedule-badge">${performance?'MW ENGINE ACTIVE':'INSIGHTS · YOUR PROGRAM STAYS YOURS'}</span>
@@ -1969,7 +1969,7 @@ async function seasonPage(){
 
     <details class="tile" style="margin-top:14px" open>
       <summary><b>SEASON TARGETS & CONTEXT</b></summary>
-      <p>${performance?'These dates become inputs to the MW engine. The championship date is the anchor; athlete age, experience, event, readiness, and missed work control how MW delivers the training.':'These dates power insights and Coach MW context only. Coach Intelligence does not receive or generate the MW Sprint Performance methodology.'}</p>
+      <p>${performance?'These dates become inputs to the MW engine. The championship date is the anchor; athlete age, experience, event, readiness, and missed work control how MW delivers the training.':'These dates power insights and Coach MW context only. Coach Intelligence does not receive or generate the MW Velocity methodology.'}</p>
       <div class="form">
         <div class="form-grid">
           <label>Season<select id="siSeasonType"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select></label>
@@ -2019,7 +2019,7 @@ async function seasonPage(){
     if(nextEl)nextEl.innerHTML=next?`<b>${escapeHtml(next.title)}</b><br><small>${new Date(next.startsAt).toLocaleDateString()}${next.meetPriority?' · '+escapeHtml(next.meetPriority)+' meet':''}</small>`:'No upcoming meet is saved.';
     if(engineEl)engineEl.innerHTML=performance
       ?`<b>Full engine</b><br><small>${intel.engine?.athletes?.length||0} athlete season state${Number(intel.engine?.athletes?.length||0)===1?'':'s'} connected.</small>`
-      :'<b>Insights only</b><br><small>MW methodology and automatic source-week programming remain locked to MW Sprint Performance.</small>';
+      :'<b>Insights only</b><br><small>MW methodology and automatic source-week programming remain locked to Coach Velocity.</small>';
 
     const constraints=intel.teamConstraints||[],availability=intel.athleteAvailability||[];
     const ce=document.getElementById('seasonPlannerConstraints');
@@ -2073,7 +2073,7 @@ async function seasonPage(){
     const constraints=intel?.teamConstraints||[],availability=intel?.athleteAvailability||[];
     const text=performance
       ?`MW Season Intelligence: ${target?`primary championship ${new Date(String(target).slice(0,10)+'T00:00:00').toLocaleDateString()}${days!=null?` (${Math.max(0,days)} days)`:''}.`:'set the primary championship date first.'} Protect the championship anchor. Use athlete age, experience, event, current readiness, completion history, school constraints, and synchronized track + strength state to adjust delivery without adding unsafe make-up volume. ${constraints.length?`${constraints.length} upcoming team constraint${constraints.length===1?'':'s'} require schedule awareness.`:''} Goal: ${goal}`
-      :`Season Intelligence Insights: ${target?`your primary target is ${new Date(String(target).slice(0,10)+'T00:00:00').toLocaleDateString()}${days!=null?` (${Math.max(0,days)} days)`:''}.`:'set your primary championship date to start the countdown.'} Use the saved meet calendar, school constraints, and ${availability.length} athlete availability report${availability.length===1?'':'s'} to organize your coach-authored program. MW will not generate or expose the MW Sprint Performance methodology on Coach Intelligence. Goal: ${goal}`;
+      :`Season Intelligence Insights: ${target?`your primary target is ${new Date(String(target).slice(0,10)+'T00:00:00').toLocaleDateString()}${days!=null?` (${Math.max(0,days)} days)`:''}.`:'set your primary championship date to start the countdown.'} Use the saved meet calendar, school constraints, and ${availability.length} athlete availability report${availability.length===1?'':'s'} to organize your coach-authored program. MW will not generate or expose the MW Velocity methodology on Coach Intelligence. Goal: ${goal}`;
     if(out){out.style.display='block';out.textContent=text}
   };
 }
@@ -2217,7 +2217,7 @@ function localDateValue(value){if(!value)return'';const d=new Date(value);if(Num
 function coachDateRange(e){const start=new Date(e.starts_at),end=e.ends_at?new Date(e.ends_at):null,s=start.toLocaleDateString();return end&&end.toDateString()!==start.toDateString()?`${s} – ${end.toLocaleDateString()}`:s}
 function smartScheduleUnlocked(){return experience==='intelligence'||experience==='performance'}
 function smartScheduleTierCopy(){
-  if(experience==='performance')return {kicker:'MW SMART SCHEDULING · 41-WEEK INTEGRATION',title:'Protect the program. Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. MW uses those constraints alongside the 41-week Sprint Performance + Strength system so recommendations preserve phase intent and training quality.',badge:'MW 41-WEEK INTEGRATION ACTIVE'};
+  if(experience==='performance')return {kicker:'MW SMART SCHEDULING · 41-WEEK INTEGRATION',title:'Protect the program. Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. MW uses those constraints alongside the 41-week MW Velocity + Strength system so recommendations preserve phase intent and training quality.',badge:'MW 41-WEEK INTEGRATION ACTIVE'};
   return {kicker:'MW SMART SCHEDULING',title:'Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. Coach MW and the Season Planner use those constraints when helping you organize your own program.',badge:'COACH INTELLIGENCE ACTIVE'};
 }
 async function calendarPage(){
@@ -2236,7 +2236,7 @@ async function calendarPage(){
       <div class="section-head"><div><span class="status-kicker">SCHOOL & AVAILABILITY</span><h2>Smart Schedule Constraints</h2></div><button class="link-btn" id="addSchoolConstraint2">+ Add</button></div>
       <div class="list" id="schoolConstraintList" style="padding:14px"><div class="tile">Loading school calendar…</div></div>
     </section>`:`<section class="school-calendar-locked">
-      <div><span class="status-kicker">COACH CORE CALENDAR</span><h2>Your team schedule stays simple.</h2><p>Add practices, meets, testing, and other team events below. School breaks, exam-week load awareness, and smart schedule intelligence unlock with Coach Intelligence and MW Sprint Performance.</p></div>
+      <div><span class="status-kicker">COACH CORE CALENDAR</span><h2>Your team schedule stays simple.</h2><p>Add practices, meets, testing, and other team events below. School breaks, exam-week load awareness, and smart schedule intelligence unlock with Coach Intelligence and Coach Velocity.</p></div>
       <button class="back" data-page="account">View Membership</button>
     </section>`}
     <section class="section athlete-availability-section" style="margin-top:14px">
@@ -2274,7 +2274,7 @@ async function calendarPage(){
 }
 async function schoolConstraintModal(id=null){
   if(!smartScheduleUnlocked()){
-    toast('Smart Schedule Constraints require Coach Intelligence or MW Sprint Performance.');
+    toast('Smart Schedule Constraints require Coach Intelligence or Coach Velocity.');
     return;
   }
   let row=null;if(id)row=(await sbRest(`coach_calendar_events?select=*&id=eq.${encodeURIComponent(id)}&limit=1`))?.[0];
@@ -2285,7 +2285,7 @@ async function schoolConstraintModal(id=null){
     <div class="form-grid"><label>Start Date<input id="scStart" type="date" value="${start}"></label><label>End Date<input id="scEnd" type="date" value="${end}"></label></div>
     <label>Training Impact<select id="scImpact"><option value="no_practice">No Practice — keep these dates clear</option><option value="reduced_load">Reduced Load — lighter / simplified schedule</option><option value="awareness_only">Awareness Only — coach decides day by day</option></select></label>
     <label>Coach Notes<textarea id="scNotes" rows="3" placeholder="Optional details for Coach MW and season planning">${escapeHtml(row?.notes||'')}</textarea></label>
-    <div class="tile"><b>${performance?'MW Sprint Performance Integration':'Coach Intelligence Integration'}</b><p>${performance?'MW considers this constraint alongside the synchronized 41-week sprint + strength progression. Recommendations protect the current phase and training quality without silently changing the official program.':'Coach MW and the Season Planner consider this constraint when helping organize your program. MW recommends around the conflict without silently changing your official schedule.'}</p></div>
+    <div class="tile"><b>${performance?'Coach Velocity Integration':'Coach Intelligence Integration'}</b><p>${performance?'MW considers this constraint alongside the synchronized 41-week sprint + strength progression. Recommendations protect the current phase and training quality without silently changing the official program.':'Coach MW and the Season Planner consider this constraint when helping organize your program. MW recommends around the conflict without silently changing your official schedule.'}</p></div>
     <button class="action" id="saveSC">Save School Calendar</button>
     ${row?'<button class="back" id="deleteSC" type="button">Delete Constraint</button>':''}
   </div>`);
@@ -2443,13 +2443,13 @@ async function messagesPage(preselectGroup=null){
 }
 
 async function activityPage(){pageBase('Activity Log','A real audit trail of coach actions in MW Dynasty.',`<div id="activityLive" class="list"><div class="tile">Loading activity…</div></div>`);try{const rows=await sbRest('coach_activity_log?select=id,action_type,entity_type,detail,created_at&order=created_at.desc&limit=50')||[];activityLive.innerHTML=rows.map(a=>`<div class="row"><span><b>${escapeHtml(a.action_type.replaceAll('_',' '))}</b><br><small>${escapeHtml(a.entity_type||'MW Coach')} ${a.detail?.name?'· '+escapeHtml(a.detail.name):''}</small></span><small>${new Date(a.created_at).toLocaleString()}</small></div>`).join('')||'<div class="tile">Activity will appear as you use the connected coach workspace.</div>'}catch(e){activityLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}}
-async function taskBoardPage(){pageBase('Coach Task Board','Live priorities generated from athlete performance, program state and training activity.',`<div id="taskLive" class="list"><div class="tile">Analyzing assigned athletes…</div></div>`);try{const [d,p]=await Promise.all([fetchCoachRoster(),fetchCoachPerformance().catch(()=>({athletes:[]}))]),a=d.athletes||[],pm=new Map((p.athletes||[]).map(x=>[x.athlete_id,x])),tasks=[];for(const x of a){const perf=pm.get(x.id);for(const f of (perf?.flags||[]))tasks.push({n:x.name,d:f.message,p:f.level==='attention'?'Review Now':'Watch'});if(!x.last_completed_workout_at)tasks.push({n:x.name,d:'No completed workout is currently recorded. Review training status.',p:'Review'});else{const days=(Date.now()-new Date(x.last_completed_workout_at).getTime())/86400000;if(days>7)tasks.push({n:x.name,d:`Last recorded workout was ${Math.floor(days)} days ago. Check attendance and readiness.`,p:'High'});}if((x.prs||[]).length===0)tasks.push({n:x.name,d:'No PRs are recorded. Add verified marks to unlock individualized pacing.',p:'Setup'});}taskLive.innerHTML=tasks.map(t=>`<div class="row"><span><b>${escapeHtml(t.n)}</b><br>${escapeHtml(t.d)}</span><span class="status">${t.p}</span></div>`).join('')||'<div class="tile"><h3>No urgent athlete tasks detected</h3><p>No performance review flags, basic data gaps, or inactivity signals are active right now.</p></div>'}catch(e){taskLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}}
+async function taskBoardPage(){pageBase('Coach Task Board','Live priorities generated from athlete performance, program state and training activity.',`<div id="taskLive" class="list"><div class="tile">Analyzing assigned athletes…</div></div>`);try{const [d,p]=await Promise.all([fetchCoachRoster(),fetchCoachPerformance().catch(()=>({athletes:[]}))]),a=d.athletes||[],pm=new Map((p.athletes||[]).map(x=>[x.athlete_id,x])),tasks=[];for(const x of a){const perf=pm.get(x.id);for(const f of (perf?.flags||[]))tasks.push({n:x.name,d:f.message,p:f.level==='attention'?'Review Now':'Watch'});if(!x.last_completed_workout_at)tasks.push({n:x.name,d:'No completed workout is currently recorded. Review training status.',p:'Review'});else{const days=(Date.now()-new Date(x.last_completed_workout_at).getTime())/86400000;if(days>7)tasks.push({n:x.name,d:`Last recorded workout was ${Math.floor(days)} days ago. Check attendance and readiness.`,p:'High'});}if((x.prs||[]).length===0)tasks.push({n:x.name,d:'No PR or trial times are recorded. Add any one full-effort result to start individualized pacing.',p:'Setup'});}taskLive.innerHTML=tasks.map(t=>`<div class="row"><span><b>${escapeHtml(t.n)}</b><br>${escapeHtml(t.d)}</span><span class="status">${t.p}</span></div>`).join('')||'<div class="tile"><h3>No urgent athlete tasks detected</h3><p>No performance review flags, basic data gaps, or inactivity signals are active right now.</p></div>'}catch(e){taskLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}}
 async function insightsPage(){
   pageBase('Performance Intelligence','Live coaching intelligence from your assigned athletes.',`<div id="insightLive" class="panel-grid"><div class="tile">Analyzing recorded performance…</div></div><div id="athletePerformanceLive" class="list" style="margin-top:16px"></div>`);
   try{
     const [d,p]=await Promise.all([fetchCoachRoster(),fetchCoachPerformance()]),a=d.athletes||[],pm=new Map((p.athletes||[]).map(x=>[x.athlete_id,x])),s=p.summary||{},rep=p.rep_tracking_enabled!==false;
     if(!rep){
-      insightLive.innerHTML=`<div class="tile mw-upgrade-teaser"><div class="mw-upgrade-lock">🔒</div><div><div class="eyebrow">MW SPRINT PERFORMANCE</div><h3>Rep-by-Rep Sprint Tracking</h3><p>Track every rep, pace execution, consistency and late-session drop-off inside the complete MW Sprint Performance System.</p><button class="action" id="upgradeRepTracking">Upgrade to MW Sprint Performance</button></div></div><div class="tile"><h3>Strength Intelligence</h3><p><b>${s.athletes_with_strength_data||0}</b> of ${a.length} athletes have strength data connected.</p><small>Coach Intelligence continues to analyze available strength and training signals.</small></div>`;
+      insightLive.innerHTML=`<div class="tile mw-upgrade-teaser"><div class="mw-upgrade-lock">🔒</div><div><div class="eyebrow">COACH VELOCITY</div><h3>Rep-by-Rep Sprint Tracking</h3><p>Track every rep, pace execution, consistency and late-session drop-off inside the complete MW Velocity training system.</p><button class="action" id="upgradeRepTracking">Upgrade to Coach Velocity</button></div></div><div class="tile"><h3>Strength Intelligence</h3><p><b>${s.athletes_with_strength_data||0}</b> of ${a.length} athletes have strength data connected.</p><small>Coach Intelligence continues to analyze available strength and training signals.</small></div>`;
       document.getElementById('upgradeRepTracking').onclick=membershipPage;
       athletePerformanceLive.innerHTML=a.map(x=>{const q=pm.get(x.id),flags=q?.flags||[],flag=flags[0];return `<button class="row" data-athlete-id="${escapeHtml(x.id)}" style="width:100%;text-align:left"><span><b>${escapeHtml(x.name)}</b><br><small>${q?.strength?.session_count?`${q.strength.session_count} strength session${q.strength.session_count===1?'':'s'} recorded`:'No strength session data yet'}</small><br><small>${escapeHtml(flag?.message||'Training status available for coach review')}</small></span><span class="status">INTELLIGENCE</span></button>`}).join('')||'<div class="tile">No assigned athletes yet.</div>';
     }else{
@@ -2460,43 +2460,14 @@ async function insightsPage(){
   }catch(e){insightLive.innerHTML=`<div class="tile"><h3>Performance intelligence unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}
 }
 
-function mwCoachPaceTarget(event,timeSeconds,repDistance,intensityPct){
-  const base=Number(String(event||'').replace(/[^0-9.]/g,''));
-  const pr=Number(timeSeconds),dist=Number(repDistance),intensity=Number(intensityPct);
-  if(!(base>0&&pr>0&&dist>0&&intensity>=50&&intensity<=100))return null;
-  return dist/((base/pr)*(intensity/100));
-}
+function mwCoachPaceTarget(event,timeSeconds,repDistance,intensityPct){return window.MWPace?.calculate([{event,time_seconds:timeSeconds}],repDistance,Number(intensityPct)/100)?.target||null}
 function mwCoachPracticePrescription(session){
   const raw=String(session?.prescribedWork||session?.work||session?.structure||'');
   const rep=raw.match(/(\d+)\s*[x×]\s*(\d+)\s*m\b/i);
   const pct=(raw+' '+String(session?.intensity||'')).match(/(?:@|at)?\s*(\d{2,3})(?:\s*[–-]\s*(\d{2,3}))?\s*%/i);
   return {reps:rep?Number(rep[1]):null,distance:rep?Number(rep[2]):null,intensityPct:pct?Number(pct[2]||pct[1]):null,raw}
 }
-function mwCoachPracticeRecommendedTarget(athlete,distance,intensityPct){
-  const dist=Number(distance),intensity=Number(intensityPct)/100;
-  if(!(dist>0&&intensity>0&&intensity<=1))return null;
-  const pr=(event)=>Number(mwCoachEventPr(athlete,event)?.time_seconds||0);
-  const t100=pr('100m'),t200=pr('200m'),t400=pr('400m');
-  if(t100>0&&t200>0&&t400>0){
-    const exponent=(d1,t1,d2,t2)=>Math.log(t2/t1)/Math.log(d2/d1);
-    const e12=exponent(100,t100,200,t200),e24=exponent(200,t200,400,t400);let estimate;
-    if(dist<100)estimate=t100*Math.pow(dist/100,e12);
-    else if(dist===100)estimate=t100;
-    else if(dist<=150)estimate=t200*Math.pow(dist/200,e12);
-    else if(dist<200)estimate=t200*Math.pow(dist/200,e12);
-    else if(dist===200)estimate=t200;
-    else if(dist<300)estimate=t200*Math.pow(dist/200,e24);
-    else if(dist===300)estimate=t400*Math.pow(dist/400,e24);
-    else if(dist<400)estimate=t400*Math.pow(dist/400,e24);
-    else if(dist===400)estimate=t400;
-    else estimate=t400*Math.pow(dist/400,e24);
-    const target=estimate/intensity;
-    if(Number.isFinite(target)&&target>0)return target;
-  }
-  const fallbackEvents=/400/.test(String(athlete?.primary_event||athlete?.event||''))?['400m','200m','100m']:['200m','100m','400m'];
-  for(const event of fallbackEvents){const p=mwCoachEventPr(athlete,event);if(p){const target=mwCoachPaceTarget(event,p.time_seconds,dist,intensityPct);if(target)return target}}
-  return null
-}
+function mwCoachPracticeRecommendedTarget(athlete,distance,intensityPct){return window.MWPace?.calculate(athlete?.prs||[],distance,Number(intensityPct)/100)?.target||null}
 function mwCoachEventPr(athlete,event){
   const needle=String(event||'').replace(/[^0-9]/g,'');
   return (athlete?.prs||[]).find(p=>String(p.event||'').replace(/[^0-9]/g,'')===needle)||null;
@@ -2528,10 +2499,10 @@ async function pacingPage(){
   </div>
 
   <section class="coach-pace-section" id="coachSprintPace">
-    <div class="coach-pace-section-head"><div><span class="eyebrow">INDIVIDUAL PACE AI</span><h2>Calculate one athlete.</h2><p>Choose the athlete and PR, then MW calculates the target for the rep.</p></div></div>
+    <div class="coach-pace-section-head"><div><span class="eyebrow">INDIVIDUAL PACE AI</span><h2>Calculate one athlete.</h2><p>Choose the athlete. MW uses their available PRs or full-effort trials to calculate a starting target.</p></div></div>
     <div class="form coach-pace-grid">
       <label>Athlete<select id="paceAthlete"></select></label>
-      <label>PR<select id="pacePr"></select></label>
+      <label>Available results<select id="pacePr"></select></label>
       <label>Rep Distance<input id="rd" type="number" value="150" min="10" max="1000"></label>
       <label>Intensity %<input id="pi" type="number" value="90" min="50" max="100"></label>
       <button class="action coach-pace-span" id="calc">CALCULATE INDIVIDUAL TARGET</button>
@@ -2541,12 +2512,12 @@ async function pacingPage(){
 
   <section class="coach-pace-section" id="coachGroupPaceAI">
     <div class="coach-pace-section-head">
-      <div><span class="eyebrow">MW GROUP PACE AI</span><h2>Build today’s running groups.</h2><p>MW separates competition divisions first, then groups athletes whose PRs are close enough to train together.</p></div>
+      <div><span class="eyebrow">MW GROUP PACE AI</span><h2>Build today’s running groups.</h2><p>MW separates competition divisions first, then groups athletes by comparable pace. Missing reference distances use starting estimates from their available results.</p></div>
       <span class="coach-ai-badge">AI GROUPING</span>
     </div>
     <div class="form coach-group-controls">
-      <label>Event<select id="groupPaceEvent"><option value="100m">100m</option><option value="200m">200m</option><option value="400m">400m</option></select></label>
-      <label>Rep Distance<input id="groupPaceDistance" type="number" min="10" max="1000" value="150"></label>
+      <label>Reference distance<select id="groupPaceEvent"><option value="100m">100m</option><option value="150m">150m</option><option value="200m">200m</option><option value="300m">300m</option><option value="400m">400m</option><option value="500m">500m</option></select></label>
+      <label>Rep Distance<input id="groupPaceDistance" type="number" min="10" max="500" value="150"></label>
       <label>Intensity %<input id="groupPaceIntensity" type="number" min="50" max="100" value="90"></label>
       <label>PR Closeness<select id="groupPaceTolerance"><option value="1">Very tight · 1%</option><option value="2">Tight · 2%</option><option value="3" selected>Balanced · 3%</option><option value="5">Broad · 5%</option></select></label>
       <label>Max per group<select id="groupPaceMax"><option value="4">4 athletes</option><option value="5">5 athletes</option><option value="6" selected>6 athletes</option><option value="8">8 athletes</option></select></label>
@@ -2581,16 +2552,16 @@ async function pacingPage(){
   paceAthlete.innerHTML=athletes.length?athletes.map((x,i)=>`<option value="${i}">${escapeHtml(x.name)}</option>`).join(''):'<option value="">No athletes assigned</option>';
   const syncIndividual=()=>{
     const x=athletes[Number(paceAthlete.value)],prs=x?.prs||[];
-    pacePr.innerHTML=prs.length?prs.map((p,i)=>`<option value="${i}">${escapeHtml(p.event)} — ${Number(p.time_seconds).toFixed(2)}s</option>`).join(''):'<option value="">No PR recorded</option>';
-    paceout.innerHTML=prs.length?'<b>Ready.</b><br><small>Select distance and intensity, then calculate.</small>':'This athlete needs a recorded PR first.';
+    pacePr.innerHTML=prs.length?prs.map((p,i)=>`<option value="${i}">${escapeHtml(p.event)} — ${Number(p.time_seconds).toFixed(2)}s</option>`).join(''):'<option value="">No PR or trial recorded</option>';
+    paceout.innerHTML=prs.length?'<b>Ready.</b><br><small>Select distance and intensity, then calculate.</small>':'Add any one PR or full-effort time trial to start.';
   };
-  paceAthlete.onchange=syncIndividual;syncIndividual();
+  paceAthlete.onchange=syncIndividual;syncIndividual();pacePr.disabled=true;pacePr.title="Targets use all available results automatically";
   document.getElementById('calc').onclick=()=>{
     const x=athletes[Number(paceAthlete.value)],p=x?.prs?.[Number(pacePr.value)];
-    if(!p)return toast('Select an athlete with a PR');
-    const dist=Number(document.getElementById('rd').value),intensity=Number(document.getElementById('pi').value),target=mwCoachPaceTarget(p.event,p.time_seconds,dist,intensity);
+    if(!p)return toast('Select an athlete with a PR or time trial');
+    const dist=Number(document.getElementById('rd').value),intensity=Number(document.getElementById('pi').value),estimate=window.MWPace?.calculate(x.prs,dist,intensity/100),target=estimate?.target;
     if(!target)return toast('Check pacing inputs');
-    paceout.innerHTML=`<b>${escapeHtml(x.name)}</b><br><strong style="font-size:28px;color:var(--accent)">${target.toFixed(2)}s</strong> for ${dist}m at ${intensity}%<br><small>Based on ${escapeHtml(p.event)} PR of ${Number(p.time_seconds).toFixed(2)}s.</small>`;
+    paceout.innerHTML=`<b>${escapeHtml(x.name)}</b><br><strong style="font-size:28px;color:var(--accent)">${target.toFixed(2)}s</strong> for ${dist}m at ${intensity}%<br><small>${escapeHtml(estimate.anchor)}. ${escapeHtml(estimate.note)}</small>`;
   };
 
   const divisionLabel=v=>v==='boys'?'Boys':v==='girls'?'Girls':v==='open'?'Open':'Not set';
@@ -2598,10 +2569,10 @@ async function pacingPage(){
     const event=document.getElementById('groupPaceEvent')?.value||'100m';
     if(!athletes.length){divisionWrap.innerHTML='<div class="tile">No assigned athletes yet.</div>';return}
     divisionWrap.innerHTML=athletes.map(a=>{
-      const pr=mwCoachEventPr(a,event);
+      const reference=window.MWPace?.calculate(a.prs,Number(event.replace('m','')),1),pr=reference?{time_seconds:reference.referenceTime}:null;
       const division=a.competition_division||'';
       return `<div class="coach-division-row">
-        <span><b>${escapeHtml(a.name)}</b><small>${pr?`${escapeHtml(event)} PR · ${Number(pr.time_seconds).toFixed(2)}s`:'No '+escapeHtml(event)+' PR recorded'}</small></span>
+        <span><b>${escapeHtml(a.name)}</b><small>${pr?`${escapeHtml(event)} ${reference.estimated?'estimate':'recorded'} · ${Number(pr.time_seconds).toFixed(2)}s`:'No PR or trial time recorded'}</small></span>
         <select data-pace-division="${escapeHtml(a.id)}" aria-label="Competition division for ${escapeHtml(a.name)}">
           <option value="" ${!division?'selected':''}>Choose division</option>
           <option value="boys" ${division==='boys'?'selected':''}>Boys</option>
@@ -2622,7 +2593,7 @@ async function pacingPage(){
       }catch(e){toast(e.message);sel.value=athlete.competition_division||''}finally{sel.disabled=false}
     });
   }
-  document.getElementById('groupPaceEvent').onchange=()=>{renderDivisionRoster();results.innerHTML='<div class="tile"><b>Event changed.</b><p>Build the groups again using the new PR event.</p></div>'};
+  document.getElementById('groupPaceEvent').onchange=()=>{renderDivisionRoster();results.innerHTML='<div class="tile"><b>Event changed.</b><p>Build the groups again using the new reference distance.</p></div>'};
   renderDivisionRoster();
 
   document.getElementById('buildPaceGroups').onclick=()=>{
@@ -2634,11 +2605,11 @@ async function pacingPage(){
     const usable=[],missingDivision=[],missingPr=[];
     for(const a of athletes){
       if(!a.competition_division){missingDivision.push(a);continue}
-      const p=mwCoachEventPr(a,event);
+      const estimate=window.MWPace?.calculate(a.prs,event.replace('m',''),1),p=estimate?{time_seconds:estimate.referenceTime}:null;
       if(!p){missingPr.push(a);continue}
-      const target=mwCoachPaceTarget(event,p.time_seconds,dist,intensity);
+      const target=mwCoachPracticeRecommendedTarget(a,dist,intensity);
       if(!target)continue;
-      usable.push({athlete:a,division:a.competition_division,pr:Number(p.time_seconds),target});
+      usable.push({athlete:a,division:a.competition_division,pr:Number(p.time_seconds),target,estimated:estimate.estimated});
     }
     const sections=[];
     for(const [division,title] of [['boys','BOYS'],['girls','GIRLS'],['open','OPEN']]){
@@ -2648,7 +2619,7 @@ async function pacingPage(){
       sections.push(`<section class="coach-pace-division-result"><div class="coach-pace-result-title"><b>${title}</b><span>${rows.length} athlete${rows.length===1?'':'s'} · ${event}</span></div>
         <div class="coach-pace-group-grid">${groups.map((g,i)=>{
           const prs=g.map(x=>x.pr),targets=g.map(x=>x.target),minPr=Math.min(...prs),maxPr=Math.max(...prs),minT=Math.min(...targets),maxT=Math.max(...targets);
-          return `<article class="coach-pace-group-card"><div class="coach-pace-group-head"><span>GROUP ${i+1}</span><b>${minT.toFixed(2)}–${maxT.toFixed(2)}s</b></div><small>${dist}m @ ${intensity}% · PR range ${minPr.toFixed(2)}–${maxPr.toFixed(2)}s</small><div class="coach-pace-athletes">${g.map(x=>`<div><b>${escapeHtml(x.athlete.name)}</b><span>PR ${x.pr.toFixed(2)} · Target ${x.target.toFixed(2)}s</span></div>`).join('')}</div></article>`;
+          return `<article class="coach-pace-group-card"><div class="coach-pace-group-head"><span>GROUP ${i+1}</span><b>${minT.toFixed(2)}–${maxT.toFixed(2)}s</b></div><small>${dist}m @ ${intensity}% · Reference range ${minPr.toFixed(2)}–${maxPr.toFixed(2)}s</small><div class="coach-pace-athletes">${g.map(x=>`<div><b>${escapeHtml(x.athlete.name)}</b><span>${x.estimated?'Estimate':'Recorded'} ${x.pr.toFixed(2)} · Target ${x.target.toFixed(2)}s</span></div>`).join('')}</div></article>`;
         }).join('')}</div></section>`);
     }
     if(!sections.length){

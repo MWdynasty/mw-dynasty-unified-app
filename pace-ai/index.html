@@ -52,7 +52,7 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
 <link rel="stylesheet" href="/assets/mw-dynasty-luxe-v21.css">
 <link rel="stylesheet" href="/assets/mw-responsive-v25.css">
 <link rel="icon" href="/favicon.png" type="image/png">
-<script src="/assets/mw-native.js"></script></head>
+<script src="/assets/mw-native.js"></script><script src="/lib/mw-pace-model.js?v=trial-pacing-1"></script></head>
 <body><script>function mwBackToAthlete(view){const target=(view==='workouts'||view==='pacer')?view:'pacer';location.replace('/athlete/?returnView='+encodeURIComponent(target)+'&toolReturn=1')}</script>
 <main><button type="button" class="mwReturn" onclick="mwBackToAthlete('pacer')">← BACK TO PERFORMANCE TOOLS</button>
 <div class="brand-stage" aria-label="MW Sprint Performance System">
@@ -104,9 +104,9 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
 <section id="ai" class="view">
   <div class="card">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div class="kicker">MW Pace AI</div><h2>Your Pace Specialist</h2></div><div id="aiStatus" class="status">● READY</div></div>
-    <p class="muted">Ask about today's workout, target times, every rep, intensity, PR anchor, or recovery. Full coaching stays inside Coach MW AI.</p>
+    <p class="muted">Ask about today's workout, target times, every rep, intensity, recorded result, or recovery. Full coaching stays inside Coach MW AI.</p>
     <div id="chat" class="chat"><div class="bubble ai">I’m ready. Try <b>“What do I need to hit today?”</b> or tap the mic.</div></div>
-    <div class="quick"><button data-q="What do I need to hit today?">Today's targets</button><button data-q="Which PR are you using?">Which PR?</button><button data-q="What is the recovery?">Recovery?</button><button data-q="Explain this intensity.">Explain intensity</button></div>
+    <div class="quick"><button data-q="What do I need to hit today?">Today's targets</button><button data-q="Which result are you using?">Which result?</button><button data-q="What is the recovery?">Recovery?</button><button data-q="Explain this intensity.">Explain intensity</button></div>
     <div class="ask"><button id="mic" class="ghost mic">🎙️</button><input id="ask" placeholder="Ask Pace AI…"><button id="send" class="send">ASK</button></div>
     <div class="voicebar"><span id="voiceState" class="muted">Tap mic to speak</span><label>Voice Tempo <select id="voiceSpeed"><option value=".9">0.9×</option><option value="1" selected>1.0×</option><option value="1.1">1.1×</option><option value="1.2">1.2×</option></select></label></div>
   </div>
@@ -117,9 +117,12 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
     <div class="kicker">Manual Calculator</div><h2>Build a Custom MW Target</h2>
     <p class="muted">The original deterministic MW pace calculator is still here for custom distances and prescribed intensities.</p>
     <div class="row3">
-      <label>100m PR<input id="pr100" type="number" step=".01" ></label>
-      <label>200m PR<input id="pr200" type="number" step=".01" ></label>
-      <label>400m PR<input id="pr400" type="number" step=".01" ></label>
+      <label>100m PR / trial<input id="pr100" type="number" step=".01" ></label>
+      <label>150m PR / trial<input id="pr150" type="number" step=".01" ></label>
+      <label>200m PR / trial<input id="pr200" type="number" step=".01" ></label>
+      <label>300m PR / trial<input id="pr300" type="number" step=".01" ></label>
+      <label>400m PR / trial<input id="pr400" type="number" step=".01" ></label>
+      <label>500m PR / trial<input id="pr500" type="number" step=".01" ></label>
     </div>
     <div class="row">
       <label>Distance<input id="distance" type="number" min="50" max="500" value="150"></label>
@@ -133,11 +136,14 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
 <section id="profile" class="view">
   <div class="card">
     <div class="kicker">Athlete Profile</div><h2>Save It Once</h2>
-    <p class="muted">Pace AI uses these PRs for Today’s Workout, manual calculations, and pace questions.</p>
+    <p class="muted">Enter any one full-effort PR or time trial to start. Add more results as you have them. Missing distances are estimated; recorded results stay unchanged.</p>
     <div class="row3">
-      <label>100m PR<input id="p100" type="number" step=".01"></label>
-      <label>200m PR<input id="p200" type="number" step=".01"></label>
-      <label>400m PR<input id="p400" type="number" step=".01"></label>
+      <label>100m PR / trial<input id="p100" type="number" step=".01"></label>
+      <label>150m PR / trial<input id="p150" type="number" step=".01"></label>
+      <label>200m PR / trial<input id="p200" type="number" step=".01"></label>
+      <label>300m PR / trial<input id="p300" type="number" step=".01"></label>
+      <label>400m PR / trial<input id="p400" type="number" step=".01"></label>
+      <label>500m PR / trial<input id="p500" type="number" step=".01"></label>
     </div>
     <button id="saveProfile" class="full">SAVE PROFILE</button>
   </div>
@@ -151,17 +157,10 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let TRACK={weeks:{}}, currentSession=null, currentPlan=null, mwAudio=null;
 const KEY='mwPaceAthleteV2', REPKEY='mwPaceRepLogV2';
 const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
-function profile(){return {p100:+($('#p100').value||saved.p100||0),p200:+($('#p200').value||saved.p200||0),p400:+($('#p400').value||saved.p400||0),week:+($('#week').value||saved.week||1),day:+($('#day').value||saved.day||1)}}
-function exponent(d1,t1,d2,t2){return Math.log(t2/t1)/Math.log(d2/d1)}
-function estimateTime(x,t1,t2,t4){const e12=exponent(100,t1,200,t2),e24=exponent(200,t2,400,t4);let time,anchor;
- if(x<100){time=t1*Math.pow(x/100,e12);anchor='100m PR'} else if(x===100){time=t1;anchor='100m PR'}
- else if(x<=150){time=t2*Math.pow(x/200,e12);anchor=x===150?'200m PR':'100m PR'} else if(x<200){time=t2*Math.pow(x/200,e12);anchor='200m PR'}
- else if(x===200){time=t2;anchor='200m PR'} else if(x<300){time=t2*Math.pow(x/200,e24);anchor='200m PR'}
- else if(x===300){time=t4*Math.pow(x/400,e24);anchor='400m PR'} else if(x<400){time=t4*Math.pow(x/400,e24);anchor='400m PR'}
- else if(x===400){time=t4;anchor='400m PR'} else{time=t4*Math.pow(x/400,e24);anchor='400m PR'}
- return {time,anchor}
-}
-function calc(distance,intensity){const p=profile(),r=estimateTime(distance,p.p100,p.p200,p.p400),target=r.time/intensity,tol=target*.01;return {distance,intensity,target,low:target-tol,high:target+tol,anchor:r.anchor}}
+let syncedMarks=null;
+const paceDistances=[100,150,200,300,400,500];
+function profile(){return {...Object.fromEntries(paceDistances.map(d=>['p'+d,Number($('#p'+d).value||0)])),week:+($('#week').value||saved.week||1),day:+($('#day').value||saved.day||1)}}
+function calc(distance,intensity){return window.MWPace?.calculate(syncedMarks||profile(),distance,intensity)||null}
 function parseWorkout(work){
  const s=String(work||'');
  const m=s.match(/(\d+)\s*[x×]\s*(\d+)\s*m\b.*?(\d{2,3})\s*%/i);
@@ -173,8 +172,6 @@ function sessionWorkText(session){
 }
 function buildPacePlan(parsed){
  if(!parsed)return null;
- const p=profile();
- if(!(p.p100>0&&p.p200>0&&p.p400>0))return null;
  const x=calc(parsed.distance,parsed.intensity);
  return Number.isFinite(x?.target)?{...parsed,...x}:null;
 }
@@ -182,7 +179,7 @@ function savePrefs(){const p=profile();localStorage.setItem(KEY,JSON.stringify(p
 async function init(){
  TRACK={weeks:{}};
  for(let i=1;i<=41;i++)$('#week').insertAdjacentHTML('beforeend',`<option value="${i}">Week ${i}</option>`);
- ['p100','p200','p400'].forEach(k=>$('#'+k).value=saved[k]||'');
+ paceDistances.map(d=>'p'+d).forEach(k=>$('#'+k).value=saved[k]||'');
  $('#week').value=saved.week||1;
  $('#day').value=Math.max(1,Math.min(5,Number(saved.day||1)));
  syncManual();
@@ -277,7 +274,7 @@ function renderTargets(){
  const box=$('#targets'),empty=$('#targetsEmpty');box.innerHTML='';
  if(!currentPlan){empty.style.display='block';return}
  empty.style.display='none';
- box.innerHTML=`<div class="target"><div class="kicker">${currentPlan.reps} × ${currentPlan.distance}m @ ${Math.round(currentPlan.intensity*100)}%</div><div><span class="targetBig">${currentPlan.target.toFixed(2)}</span> SEC</div><div class="muted">MW Target Zone: ${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)} sec • ${currentPlan.anchor}</div></div><div class="repList">${Array.from({length:currentPlan.reps},(_,i)=>`<div class="repRow"><b>R${i+1}</b><span>Target <strong>${currentPlan.target.toFixed(2)}</strong></span><span>${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)}</span><span class="repStatus">READY</span></div>`).join('')}</div>`;
+ box.innerHTML=`<div class="target"><div class="kicker">${currentPlan.reps} × ${currentPlan.distance}m @ ${Math.round(currentPlan.intensity*100)}%</div><div><span class="targetBig">${currentPlan.target.toFixed(2)}</span> SEC</div><div class="muted">MW Target Zone: ${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)} sec • ${currentPlan.anchor}<br>${currentPlan.note}</div></div><div class="repList">${Array.from({length:currentPlan.reps},(_,i)=>`<div class="repRow"><b>R${i+1}</b><span>Target <strong>${currentPlan.target.toFixed(2)}</strong></span><span>${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)}</span><span class="repStatus">READY</span></div>`).join('')}</div>`;
 }
 function repLogKey(){return `${$('#week').value}-${$('#day').value}`}
 function getLogs(){const all=JSON.parse(localStorage.getItem(REPKEY)||'{}');return all[repLogKey()]||{}}
@@ -293,8 +290,15 @@ function renderRecorder(){
  updateSummary();
 }
 function updateSummary(){const logs=getLogs(),vals=Object.values(logs).map(Number).filter(Boolean),inz=currentPlan?vals.filter(v=>v>=currentPlan.low&&v<=currentPlan.high).length:0;$('#sRecorded').textContent=vals.length;$('#sInZone').textContent=inz;$('#sPct').textContent=vals.length?Math.round(inz/vals.length*100)+'%':'—'}
-function syncManual(){const p=profile();$('#pr100').value=p.p100;$('#pr200').value=p.p200;$('#pr400').value=p.p400;manualCalc()}
-function manualCalc(){const d=Math.max(50,Math.min(500,+$('#distance').value||150)),i=+$('#intensity').value||.9;const p={p100:+$('#pr100').value,p200:+$('#pr200').value,p400:+$('#pr400').value};if(!(p.p100>0&&p.p200>0&&p.p400>0)){ $('#manualTarget').textContent='—'; $('#manualZone').textContent='Add your 100m, 200m, and 400m PRs in your MW Profile first.'; return;}const r=estimateTime(d,p.p100,p.p200,p.p400),t=r.time/i,tol=t*.01;$('#manualTarget').textContent=t.toFixed(2);$('#manualZone').textContent=`MW Target Zone: ${(t-tol).toFixed(2)}–${(t+tol).toFixed(2)} sec • ${r.anchor}`}
+function syncManual(){const p=profile();paceDistances.forEach(d=>$('#pr'+d).value=p['p'+d]||'');manualCalc()}
+function manualCalc(){
+ const d=Math.max(50,Math.min(500,+$('#distance').value||150)),i=+$('#intensity').value||.9;
+ const p=Object.fromEntries(paceDistances.map(d=>['p'+d,Number($('#pr'+d).value||0)]));
+ const r=window.MWPace?.calculate(p,d,i);
+ if(!r){$('#manualTarget').textContent='—';$('#manualZone').textContent='Enter any one PR or full-effort trial time to start.';return}
+ $('#manualTarget').textContent=r.target.toFixed(2);
+ $('#manualZone').textContent=`MW Target Zone: ${r.low.toFixed(2)}–${r.high.toFixed(2)} sec • ${r.anchor}. ${r.note}`;
+}
 
 function wordsToNumberWord(s){
  const map={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,
@@ -344,9 +348,9 @@ function localAnswer(q){
  }
  if(!currentSession)return 'Load your MW week and day first so I can use the actual session.';
  if(l.includes('recovery')||l.includes('rest'))return `Today’s recovery is <b>${currentSession.recovery||'as prescribed'}</b>.`;
- if(l.includes('which pr')||l.includes('anchor')||l.includes('based on'))return currentPlan?`I’m using your <b>${currentPlan.anchor}</b> for this ${currentPlan.distance}m target.`:'This session does not have an automatic pace target loaded.';
- if(l.includes('today')||l.includes('hit')||l.includes('target')||l.includes('pace')||l.includes('workout')||l.includes('what do i have')){const workText=sessionWorkText(currentSession);return currentPlan?`<b>${currentSession.title}</b><br>${workText}<br>Your target is <b>${currentPlan.target.toFixed(2)} sec</b> each rep, with an MW zone of ${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)}. Recovery: ${currentSession.recovery}.`:`<b>${currentSession.title}</b><br>${workText||'Follow the MW prescription.'}<br>Recovery: ${currentSession.recovery||'as prescribed'}. This session does not have a complete automatic pace target from the available PR data, so I won’t invent one.`}
- if(l.includes('intensity')&&currentPlan)return `${Math.round(currentPlan.intensity*100)}% means the calculator applies the prescribed training intensity to your MW best-equivalent for ${currentPlan.distance}m. The goal is execution—not turning every rep into a race.`;
+ if(l.includes('which pr')||l.includes('which result')||l.includes('trial')||l.includes('anchor')||l.includes('based on'))return currentPlan?`I’m using your <b>${currentPlan.anchor}</b> for this ${currentPlan.distance}m target.`:'This session does not have an automatic pace target loaded.';
+ if(l.includes('today')||l.includes('hit')||l.includes('target')||l.includes('pace')||l.includes('workout')||l.includes('what do i have')){const workText=sessionWorkText(currentSession);return currentPlan?`<b>${currentSession.title}</b><br>${workText}<br>Your target is <b>${currentPlan.target.toFixed(2)} sec</b> each rep, with an MW zone of ${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)}. Recovery: ${currentSession.recovery}.<br>${currentPlan.anchor}. ${currentPlan.note}`:`<b>${currentSession.title}</b><br>${workText||'Follow the MW prescription.'}<br>Recovery: ${currentSession.recovery||'as prescribed'}. This session does not have a complete automatic pace target from the available PR data, so I won’t invent one.`}
+ if(l.includes('intensity')&&currentPlan)return `${Math.round(currentPlan.intensity*100)}% means the calculator applies the prescribed training intensity to your recorded or estimated reference time for ${currentPlan.distance}m. The goal is execution—not turning every rep into a race.`;
  return null;
 }
 function addBubble(text,cls,html=false){const d=document.createElement('div');d.className='bubble '+cls;if(html)d.innerHTML=text;else d.textContent=text;$('#chat').appendChild(d);$('#chat').scrollTop=$('#chat').scrollHeight}
@@ -361,15 +365,15 @@ async function askAI(q){
  const fast=localAnswer(q);
  if(fast){addBubble(fast,'ai',true);$('#aiStatus').textContent='● READY';speakFast(stripHtml(fast));return}
  try{
-   const p=profile(),ctx={week:p.week,day:p.day,pr100:p.p100,pr200:p.p200,pr400:p.p400,session:currentSession,pace:currentPlan};
+   const p=profile(),ctx={week:p.week,day:p.day,prs:syncedMarks||p,session:currentSession,pace:currentPlan};
    const r=await fetch('/api/pace-chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(window.MW_SESSION?.access_token||'')},body:JSON.stringify({question:q,context:ctx})});
    const d=await r.json();if(!r.ok)throw new Error(d.error||'Pace AI unavailable');
    addBubble(d.text,'ai');speakFast(d.text);
  }catch(e){addBubble('I can still calculate your pace here, but open-ended Pace AI is temporarily unavailable.','ai')}
  $('#aiStatus').textContent='● READY';
 }
-$('#loadWorkout').onclick=loadTodayWorkout;$('#calculate').onclick=manualCalc;$('#saveProfile').onclick=()=>{savePrefs();syncManual();loadWorkout();$('#saveProfile').textContent='✓ SAVED';setTimeout(()=>$('#saveProfile').textContent='SAVE PROFILE',900)};
-$('#week').onchange=loadWorkout;$('#day').onchange=loadWorkout;['distance','intensity','pr100','pr200','pr400'].forEach(id=>$('#'+id).addEventListener('change',manualCalc));
+$('#loadWorkout').onclick=loadTodayWorkout;$('#calculate').onclick=manualCalc;$('#saveProfile').onclick=()=>{syncedMarks=null;savePrefs();syncManual();loadWorkout();$('#saveProfile').textContent='✓ SAVED';setTimeout(()=>$('#saveProfile').textContent='SAVE PROFILE',900)};
+$('#week').onchange=loadWorkout;$('#day').onchange=loadWorkout;['distance','intensity',...paceDistances.map(d=>'pr'+d)].forEach(id=>$('#'+id).addEventListener('change',manualCalc));
 $('#send').onclick=()=>askAI($('#ask').value);$('#ask').addEventListener('keydown',e=>{if(e.key==='Enter')askAI(e.target.value)});$$('.quick button').forEach(b=>b.onclick=()=>askAI(b.dataset.q));
 $('#sendPacer').onclick=()=>{
  if(!currentPlan){alert('Load a paceable workout first.');return}
@@ -404,14 +408,13 @@ init();
 <script>
 document.addEventListener('mw-athlete-ready',e=>{
  const a=e.detail,s=a.state||{}; window.MW_REP_TRACKING=a.repTracking===true; const pm={}; (a.prs||[]).forEach(x=>pm[String(x.event).toLowerCase()]=Number(x.time_seconds));
- const pick=(needle)=>{const k=Object.keys(pm).find(x=>x.includes(needle));return k?pm[k]:null};
- const p100=pick('100'),p200=pick('200'),p400=pick('400');
- const set=(id,v)=>{const el=document.getElementById(id);if(el&&v){el.value=v;el.dispatchEvent(new Event('change'))}};
- set('p100',p100);set('p200',p200);set('p400',p400);set('pr100',p100);set('pr200',p200);set('pr400',p400);
+ syncedMarks=a.prs||[];
+ const set=(id,v)=>{const el=document.getElementById(id);if(el){el.value=v??'';el.dispatchEvent(new Event('change'))}};
+ paceDistances.forEach(distance=>{const row=syncedMarks.find(x=>Number(String(x.event).replace(/m$/i,''))===distance);set('p'+distance,row?.time_seconds);set('pr'+distance,row?.time_seconds)});
  if(s.current_week){set('week',s.current_week);const w=document.getElementById('week');if(w)w.disabled=true}
  if(s.current_day&&Number(s.current_day)<=5){set('day',Math.max(1,Math.min(5,Number(s.current_day))));const d=document.getElementById('day');if(d)d.disabled=true}
- ['p100','p200','p400'].forEach(id=>{const el=document.getElementById(id);if(el)el.readOnly=true});
- const save=document.getElementById('saveProfile');if(save){save.disabled=true;save.textContent='PRs SYNCED FROM MW PROFILE'}
+ paceDistances.map(d=>'p'+d).forEach(id=>{const el=document.getElementById(id);if(el)el.readOnly=true});
+ const save=document.getElementById('saveProfile');if(save){save.disabled=true;save.textContent='RESULTS SYNCED FROM MW PROFILE'}
  setTimeout(()=>{loadTodayWorkout()},100);
 });
 </script>

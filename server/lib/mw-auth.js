@@ -76,7 +76,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   const athleteId=encodeURIComponent(athlete.id);
   const [programState,prs,repTracking,access,coachIdentity]=await Promise.all([
     one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at,season_plan_id,workout_cycle_id,season_length_weeks,source_program_week,season_phase_code&athlete_id=eq.${athleteId}&limit=1`,token),
-    sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified&athlete_id=eq.${athleteId}&order=event.asc`,token),
+    sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified,timing_method,mark_type&athlete_id=eq.${athleteId}&order=event.asc`,token),
     repTrackingAccess(token),
     Promise.resolve(membershipAccess),
     rpc('mw_athlete_assigned_coach_identity',token).catch(()=>[])

@@ -43,7 +43,7 @@
         const data=await cache.get(key),s=(data.track?.sessions||[]).find(x=>d.coachSessionDayNumber(x.day)===day),p=d.mwCoachPracticePrescription(s),t=d.mwCoachPracticeRecommendedTarget(a,p.distance,p.intensityPct);
         const text=[s?.title,s?.focus,s?.prescribedWork,s?.work,s?.structure,s?.intensity,...(Array.isArray(s?.cues)?s.cues:[])].filter(Boolean).join(' ').toLowerCase();
         const intent=/tempo|extensive|recovery|regeneration|easy/.test(text)?(/recovery|regeneration|easy/.test(text)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(text)?(/technical|technique|progressive|fly|flying|wicket/.test(text)?'technical':'speed'):'pace';
-        plans[a.id]={...p,...d.coachPracticeIdentity(a,week,day),week,day,sourceWeek,intent};if(t)targets[a.id]=t;
+        plans[a.id]={...p,...d.coachPracticeIdentity(a,week,day),week,day,sourceWeek,intent};if(t)targets[a.id]=typeof t==='object'?t:{target:t,paceBasis:root.MWPace?.calculate(a.prs,p.distance,Number(p.intensityPct)/100)};
       }catch(err){plans[a.id]={error:err.message}}}));
     }
     async function loadGroups(){
@@ -87,7 +87,7 @@
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
         const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&d.coachPracticeWorkoutComplete(a),p=plans[id],t=targets[id]?.target;
         const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':'TAP FINISH';
-        return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!running||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'Target '+Number(t).toFixed(2)+' s':''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
+        return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!running||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'Target '+Number(t).toFixed(2)+' s'+(targets[id]?.paceBasis?.estimated?' · ESTIMATE':''):''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
       }).join(''):'<p>No athletes in this group. Add or edit a group to choose athletes.</p>';
       find('heatLanes').querySelectorAll('[data-heat-athlete]').forEach(button=>button.onclick=()=>finish(button.dataset.heatAthlete));
       panel.closest('.page')?.classList.toggle('mw-heat-running',Boolean(running));
