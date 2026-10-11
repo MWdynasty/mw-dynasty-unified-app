@@ -80,6 +80,7 @@
     }
   ],
   "rewrites": [
+    {"source":"/api/coach/custom-program","destination":"/api/mw?route=coach/custom-program"},
     {
       "source": "/api/ai-sharing",
       "destination": "/api/mw?route=ai-sharing"
