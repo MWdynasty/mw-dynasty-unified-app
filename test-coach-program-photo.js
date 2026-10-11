@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {schema,imageMime,normalizeScan}=require('./server/lib/mw-coach-photo'),program=require('./lib/mw-coach-program');
+const authPath=require.resolve('./server/lib/mw-coach-auth'),consentPath=require.resolve('./server/lib/mw-ai-consent');
+let role='coach',ownAI=true,authFails=false,calls=[],response={ok:true,json:async()=>({output_text:JSON.stringify(sample())})};
+function sample(){return {name:'Photo speed plan',programType:'track',sessions:[{week:null,day:null,title:'Speed',warmup:'Easy movement',work:'2 sets of 3 x 60m at 85%',recovery:'[unclear] seconds between reps; 5 minutes between sets',cooldown:'Easy walking',manualOnly:false,unclear:['Rep rest is unreadable'],blocks:[{sets:2,reps:3,distance:60,intensityPct:85,restSeconds:null,setRestSeconds:300}]},{week:1,day:3,title:'Recovery',warmup:'',work:'Easy walking',recovery:'',cooldown:'',manualOnly:true,unclear:[],blocks:[]}]};}
+require.cache[authPath]={id:authPath,filename:authPath,loaded:true,exports:{getAccountContext:async()=>{if(authFails)throw Object.assign(Error('Sign in'),{status:401});return {profile:{role},token:'fixture',user:{id:'coach-id'}};}}};
+require.cache[consentPath]={id:consentPath,filename:consentPath,loaded:true,exports:{permissions:async()=>({ownAI})}};
+const handler=require('./server/api/coach/program-import');
+const png=Buffer.from([137,80,78,71,13,10,26,10,0]);
+assert.equal(imageMime(png),'image/png');assert.equal(imageMime(Buffer.from([255,216,255,0])),'image/jpeg');assert.equal(imageMime(Buffer.from('RIFF1234WEBPx')),'image/webp');assert.equal(imageMime(Buffer.from('not an image')),null);
+const draft=normalizeScan(sample());assert.equal(draft.structured,true);assert.equal(draft.sessions[0].week,null);assert.equal(draft.sessions[0].day,null);assert.equal(draft.sessions[0].blocks[0].restSeconds,null);assert.equal(draft.sessions[0].blocks[0].setRestSeconds,300);assert.equal(draft.sessions[0].scanConfirmed,false);assert.match(program.validate(draft.sessions).join(' '),/unclear photo/);assert.notEqual(normalizeScan(sample()).sessions[0].id,draft.sessions[0].id);assert.notEqual(draft.sessions[0].blocks[0].id,draft.sessions[0].id);
+assert.throws(()=>normalizeScan({sessions:[]}),/clearer/);const broken=sample();broken.sessions[0].blocks[0].sets='2';assert.throws(()=>normalizeScan(broken),/reliably/);assert.equal(schema.additionalProperties,false);
+async function run(){const originalKey=process.env.OPENAI_API_KEY,originalFetch=global.fetch;process.env.OPENAI_API_KEY='fixture-key-not-a-secret';global.fetch=async(url,opts)=>{calls.push({url,body:JSON.parse(opts.body)});return response;};try{
+ const invoke=async(body={fileName:'sheet.png',mimeType:'image/png',dataBase64:png.toString('base64')},method='POST')=>{let status,data;const res={setHeader(){},status(s){status=s;return this},json(d){data=d;return d;}};await handler({method,body},res);return {status,data};};
+ ownAI=false;assert.equal((await invoke()).status,403);assert.equal(calls.length,0);ownAI=true;role='athlete';assert.equal((await invoke()).status,403);assert.equal(calls.length,0);role='coach';authFails=true;assert.equal((await invoke()).status,401);assert.equal(calls.length,0);authFails=false;
+ delete process.env.OPENAI_API_KEY;assert.equal((await invoke()).status,503);assert.equal(calls.length,0);process.env.OPENAI_API_KEY='fixture-key-not-a-secret';
+ const scan=await invoke();assert.equal(scan.status,200);assert.equal(scan.data.photo,true);assert.equal(scan.data.sessions[0].blocks[0].restSeconds,null);assert.equal(calls.length,1);assert.equal(calls[0].url,'https://api.openai.com/v1/responses');assert.equal(calls[0].body.store,false);assert.equal(calls[0].body.text.format.strict,true);assert.equal(calls[0].body.input[0].content[1].image_url,'data:image/png;base64,'+png.toString('base64'));assert.equal(calls[0].body.input[0].content[1].detail,'high');
+ assert.equal((await invoke({fileName:'fake.png',mimeType:'image/png',dataBase64:Buffer.from('not image').toString('base64')})).status,400);assert.equal(calls.length,1);assert.equal((await invoke({fileName:'sheet.png',dataBase64:Buffer.alloc(3*1024*1024+1).toString('base64')})).status,413);assert.equal(calls.length,1);
+ response={ok:false,json:async()=>({error:{message:'provider internal'}})};const unavailable=await invoke();assert.equal(unavailable.status,502);assert.doesNotMatch(unavailable.data.error,/provider internal/);
+ response={ok:true,json:async()=>({status:'incomplete',output_text:'{}'})};assert.equal((await invoke()).status,422);
+ response={ok:true,json:async()=>({output_text:'Not JSON'})};assert.equal((await invoke()).status,422);
+ response={ok:true,json:async()=>({output_text:JSON.stringify({name:'Nothing',programType:'track',sessions:[]})})};assert.equal((await invoke()).status,422);
+ global.fetch=async()=>{throw Object.assign(Error('timeout'),{name:'TimeoutError'});};assert.match((await invoke()).data.error,/took too long/);
+ // The gateway accepts a base64 program/photo payload while retaining the lower limit elsewhere.
+ const vm=require('node:vm'),fs=require('node:fs'),context={module:{exports:{}},require:name=>name==='crypto'?require('crypto'):async(req,res)=>res.status(200).json({ok:true}),console};vm.runInNewContext(fs.readFileSync('api/mw.js','utf8'),context);
+ const gateway=async(route,length)=>{let status;const res={setHeader(){},status(value){status=value;return this;},json(){},headersSent:false};await context.module.exports({headers:{'content-length':String(length)},query:{route}},res);return status;};
+ assert.equal(await gateway('coach/program-import',4200000),200);assert.equal(await gateway('coach/program-import',4300001),413);assert.equal(await gateway('chat',2000001),413);
+ console.log('PASS: authenticated photo scan, current sharing consent, no transmission when off, image signature checks, size limits, existing Responses API image/schema payload, no response storage, precise nullable prescriptions, independent identities, unclear-text review gate, incomplete/unreadable/provider/timeout failures.');
+ }finally{global.fetch=originalFetch;if(originalKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=originalKey;}}
+run().catch(e=>{console.error(e);process.exitCode=1;});

@@ -2,6 +2,7 @@ const {permissions}=require('../../lib/mw-ai-consent');
 const path=require('path');
 const {getAccountContext}=require('../../lib/mw-coach-auth');
 const {readTemplate}=require('../../lib/mw-coach-template');
+const photo=require('../../lib/mw-coach-photo');
 
 function outputText(data){
   if(typeof data?.output_text==='string'&&data.output_text.trim())return data.output_text.trim();
@@ -29,7 +30,20 @@ module.exports=async(req,res)=>{
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
     const fileName=String(body.fileName||'program');const mimeType=String(body.mimeType||'');const b64=String(body.dataBase64||'');
     if(!b64)return res.status(400).json({error:'Choose a program file first.'});
-    const buffer=Buffer.from(b64,'base64');if(buffer.length>3*1024*1024)return res.status(413).json({error:'Program file is too large. Keep it under 3 MB.'});
+    const buffer=Buffer.from(b64,'base64');if(!buffer.length)return res.status(400).json({error:'That file is empty. Choose a workout sheet or program file.'});if(buffer.length>3*1024*1024)return res.status(413).json({error:'Program file is too large. Keep it under 3 MB.'});
+    const imageType=photo.imageMime(buffer),claimsPhoto=/^image\//i.test(mimeType)||/\.(jpe?g|png|webp|heic|heif)$/i.test(fileName);
+    if(imageType||claimsPhoto){
+      if(!imageType)return res.status(400).json({error:'Use a readable JPG, PNG or WebP photo. For HEIC, export the picture as JPG first.'});
+      const sharing=await permissions(c.token,c.user.id);
+      if(!sharing.ownAI)return res.status(403).json({error:'Allow sharing with OpenAI in AI & Data Sharing to scan a photo, or use Paste or Type Program.',code:'AI_CONSENT_REQUIRED'});
+      if(!process.env.OPENAI_API_KEY)return res.status(503).json({error:'Photo scanning is temporarily unavailable. You can still paste or type your program.'});
+      const r=await fetch('https://api.openai.com/v1/responses',{method:'POST',signal:AbortSignal.timeout(55000),headers:{'Content-Type':'application/json',Authorization:`Bearer ${process.env.OPENAI_API_KEY}`},body:JSON.stringify({model:process.env.OPENAI_MODEL||'gpt-5.6-sol',store:false,instructions:photo.instructions,input:[{role:'user',content:[{type:'input_text',text:'Transcribe this workout sheet for coach review.'},{type:'input_image',image_url:`data:${imageType};base64,${buffer.toString('base64')}`,detail:'high'}]}],reasoning:{effort:'low'},text:{format:{type:'json_schema',name:'coach_workout_photo',strict:true,schema:photo.schema}},max_output_tokens:10000})});
+      const result=await r.json().catch(()=>({}));
+      if(!r.ok)return res.status(502).json({error:'Photo scanning is unavailable right now. Retry shortly, or paste your program.'});
+      if(result.status==='incomplete')return res.status(422).json({error:'The sheet has too much content for one scan. Photograph a smaller section and try again.'});
+      let parsed;try{parsed=JSON.parse(outputText(result));}catch(e){return res.status(422).json({error:'The photo could not be read reliably. Try a clearer photo or paste your workout text.'});}
+      return res.status(200).json(photo.normalizeScan(parsed));
+    }
     const template=readTemplate(fileName,mimeType,buffer);
     if(template)return res.status(200).json({ok:true,suggestedName:path.basename(fileName,path.extname(fileName)).replace(/[_-]+/g,' ').trim()||'Imported Program',suggestedType:'track',...template,warning:null});
     let extracted=(await extractText(fileName,mimeType,buffer)).replace(/\u0000/g,'').trim();
@@ -46,5 +60,5 @@ module.exports=async(req,res)=>{
     const lower=programText.toLowerCase();if(/squat|clean|deadlift|bench|strength|lift/.test(lower)&&!/sprint|meter|metre|accel|tempo|velocity/.test(lower))suggestedType='strength';else if(/squat|clean|deadlift/.test(lower)&&/sprint|meter|metre|accel|tempo|velocity/.test(lower))suggestedType='combined';
     const suggestedName=path.basename(fileName,path.extname(fileName)).replace(/[_-]+/g,' ').trim()||'Imported Program';
     return res.status(200).json({ok:true,suggestedName,suggestedType,programText,warning});
-  }catch(e){return res.status(e.status||500).json({error:e.message||'Program import failed.'})}
+  }catch(e){return res.status(e.status||500).json({error:e.name==='TimeoutError'?'Photo scanning took too long. Try a closer photo or paste your workout text.':e.message||'Program import failed.'})}
 };
