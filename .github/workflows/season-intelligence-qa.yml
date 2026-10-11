@@ -36,6 +36,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install document import dependencies
+        run: npm install --ignore-scripts --no-package-lock --no-audit --no-fund
+
       - name: Run MW regression suite
         run: npm test
 

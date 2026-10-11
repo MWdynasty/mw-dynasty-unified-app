@@ -1,6 +1,7 @@
 const {permissions}=require('../../lib/mw-ai-consent');
 const path=require('path');
 const {getAccountContext}=require('../../lib/mw-coach-auth');
+const {readTemplate}=require('../../lib/mw-coach-template');
 
 function outputText(data){
   if(typeof data?.output_text==='string'&&data.output_text.trim())return data.output_text.trim();
@@ -29,6 +30,8 @@ module.exports=async(req,res)=>{
     const fileName=String(body.fileName||'program');const mimeType=String(body.mimeType||'');const b64=String(body.dataBase64||'');
     if(!b64)return res.status(400).json({error:'Choose a program file first.'});
     const buffer=Buffer.from(b64,'base64');if(buffer.length>3*1024*1024)return res.status(413).json({error:'Program file is too large. Keep it under 3 MB.'});
+    const template=readTemplate(fileName,mimeType,buffer);
+    if(template)return res.status(200).json({ok:true,suggestedName:path.basename(fileName,path.extname(fileName)).replace(/[_-]+/g,' ').trim()||'Imported Program',suggestedType:'track',...template,warning:null});
     let extracted=(await extractText(fileName,mimeType,buffer)).replace(/\u0000/g,'').trim();
     if(!extracted)return res.status(422).json({error:'No readable workout text was found in that file.'});
     extracted=extracted.slice(0,120000);
