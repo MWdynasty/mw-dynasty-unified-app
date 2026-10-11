@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#05090d"><meta name="robots" content="noindex,nofollow">
+ <title>Join Your Coach’s Pilot · MW Dynasty</title>
+ <link rel="icon" href="/favicon.png">
+ <style>
+ :root{color-scheme:dark;font-family:Arial,sans-serif;background:#05090d;color:#edf2f5}
+ *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#142335,#05090d 70%);min-height:100dvh}
+ main{width:min(480px,100%);margin:auto;padding:32px 18px}header{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+ header img{width:58px;height:58px;object-fit:contain}header b{font-size:24px;letter-spacing:-1px}header small{display:block;color:#deb868;letter-spacing:2px;font-size:9px;margin-top:5px}
+ section{background:linear-gradient(145deg,#111e2d,#070e17);border:1px solid #7b673740;border-radius:24px;padding:26px;box-shadow:0 22px 65px #0008}
+ .eyebrow{font-size:10px;color:#deb868;letter-spacing:2px;font-weight:bold}h1{font-size:32px;line-height:1.08;margin:12px 0}p{font-size:14px;color:#b9c6d0;line-height:1.6}
+ label{display:block;font-size:11px;font-weight:bold;color:#d6e0e6;margin:14px 0}input:not([type=checkbox]){display:block;width:100%;height:49px;border-radius:12px;border:1px solid #4b5661;background:#050b12;color:white;font-size:16px;padding:12px;margin-top:7px}
+ input:focus{outline:2px solid #deb868}button{width:100%;min-height:52px;border:1px solid #ffe8a3;border-radius:12px;background:linear-gradient(135deg,#ffe8a3,#c49744);font-weight:bold;font-size:14px;color:#0b0d11;cursor:pointer}
+ button:disabled{opacity:.55;cursor:wait}.check{display:flex;gap:10px;align-items:flex-start;font-weight:normal;line-height:1.6}.check input{margin-top:3px;accent-color:#deb868}
+ a{color:#eac87c}#status{min-height:24px;margin-bottom:0;color:#92d8f7}.error{color:#ff9daa!important}.note{font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}[hidden]{display:none!important}
+ footer{display:flex;justify-content:center;gap:15px;font-size:11px;margin-top:22px} .free{display:inline-block;border:1px solid #bd9b5440;border-radius:20px;padding:7px 12px;color:#eac87c;font-size:11px}
+ </style>
+</head>
+<body><main>
+ <header><img src="/assets/mw-official-crest.png" alt="MW Dynasty crest"><div><b>MW DYNASTY</b><small>BUILT FOR YOUR NEXT LEVEL</small></div></header>
+ <section><span class="eyebrow">ATHLETE PILOT</span><h1 id="title">Join your coach’s team.</h1>
+ <span class="free">Free during the pilot · No payment method</span>
+ <p id="intro">Verify your invited email, then create your own athlete profile and connect to your coach.</p>
+ <form id="verifyForm"><label>INVITED ATHLETE EMAIL<input id="verifyEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><button id="verifyButton">EMAIL MY SECURE SETUP LINK</button><p class="note">Use the same email your coach invited. Each athlete has a separate account.</p></form>
+ <form id="profileForm" hidden>
+  <p id="verifiedEmail" class="note"></p>
+  <div id="newProfile">
+   <div class="grid"><label>FIRST NAME<input id="firstName" autocomplete="given-name" maxlength="80"></label><label>LAST NAME<input id="lastName" autocomplete="family-name" maxlength="80"></label></div>
+   <label>DATE OF BIRTH · AGE 13+<input id="dateOfBirth" type="date" autocomplete="bday"></label>
+   <label>CREATE PASSWORD<input id="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></label>
+   <label>CONFIRM PASSWORD<input id="confirmPassword" type="password" autocomplete="new-password" minlength="8"></label>
+  </div>
+  <label class="check"><input id="agree" type="checkbox" required><span>I agree to connect my athlete profile to this coach for the pilot and accept the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
+  <button id="joinButton">CREATE PROFILE & JOIN FREE PILOT</button>
+ </form>
+ <p id="status" role="status" aria-live="polite"></p></section>
+ <footer><a href="/athlete/">Athlete sign in</a><a href="/support.html">Support</a></footer>
+</main><script src="/athlete/pilot.js?v=1"></script></body></html>
