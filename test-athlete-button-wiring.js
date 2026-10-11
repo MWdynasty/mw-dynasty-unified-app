@@ -41,7 +41,7 @@ const directIds=[
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
   'mwPracticeNext','mwPracticeSave','mwPracticeReset','mwPracticeRetry','mwDobVerifySave','mwScSave',
   'mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
-  'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton'
+  'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton','manageCoachConnections'
 ];
 
 for(const id of directIds){

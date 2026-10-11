@@ -19,6 +19,8 @@ Deno.serve(async(req:Request)=>{
     const user=await ur.json().catch(()=>null);
     if(!ur.ok||!user?.id)return json({ok:false,error:"Your session is invalid or expired"},401);
 
+    const live=await fetch(`${url}/rest/v1/rpc/mw_current_session_active`,{method:"POST",headers:{apikey:publishable,authorization:`Bearer ${token}`,"content-type":"application/json"},body:"{}"});
+    if(!live.ok||await live.json().catch(()=>false)!==true)return json({ok:false,error:"Your session is invalid or expired"},401);
     const base=adminHeaders(secret,{"content-type":"application/json"});
     const pr=await fetch(`${url}/rest/v1/profiles?user_id=eq.${encodeURIComponent(user.id)}&select=role&limit=1`,{headers:base});
     if(!pr.ok)return json({ok:false,error:"Your account type could not be verified. Try again shortly."},503);

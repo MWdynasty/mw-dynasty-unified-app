@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><script src="/lib/mw-account-scope.js?v=1"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070a">
@@ -206,15 +206,15 @@ function normalizeSession(s){
 }
 function readStoredFounderSession(){
   try{
-    const raw=JSON.parse(localStorage.getItem(KEY)||"null");
+    const raw=JSON.parse(window.MWAccountStorage.local.getItem(KEY)||"null");
     return raw?normalizeSession(raw):null
   }catch{return null}
 }
-function save(s){session=normalizeSession(s);localStorage.setItem(KEY,JSON.stringify(session))}
+function save(s){session=normalizeSession(s);window.MWAccountStorage.local.setItem(KEY,JSON.stringify(session))}
 function clear(){
   session=null;founderRefreshPromise=null;
   if(founderSessionTimer){clearInterval(founderSessionTimer);founderSessionTimer=null}
-  localStorage.removeItem(KEY)
+  window.MWAccountStorage.local.removeItem(KEY)
 }
 function adoptRotatedFounderSession(previousRefreshToken){
   const stored=readStoredFounderSession();
@@ -291,11 +291,11 @@ async function ensureFounderSession(){
   return session
 }
 function rememberFounderResumeView(view){
-  if(view&&titles[view])localStorage.setItem(FOUNDER_RESUME_VIEW_KEY,view)
+  if(view&&titles[view])window.MWAccountStorage.local.setItem(FOUNDER_RESUME_VIEW_KEY,view)
 }
 function consumeFounderResumeView(){
-  const v=localStorage.getItem(FOUNDER_RESUME_VIEW_KEY);
-  localStorage.removeItem(FOUNDER_RESUME_VIEW_KEY);
+  const v=window.MWAccountStorage.local.getItem(FOUNDER_RESUME_VIEW_KEY);
+  window.MWAccountStorage.local.removeItem(FOUNDER_RESUME_VIEW_KEY);
   return v&&titles[v]?v:"headquarters"
 }
 function showFounderRecoveryState(title,copy){
@@ -1049,8 +1049,8 @@ function openObjectiveModal(){
     finally{b.disabled=false}
   };
 }
-function founderAutoVoiceEnabled(){return localStorage.getItem(FOUNDER_AUTO_VOICE_KEY)!=="off"}
-function setFounderAutoVoice(enabled){localStorage.setItem(FOUNDER_AUTO_VOICE_KEY,enabled?"on":"off")}
+function founderAutoVoiceEnabled(){return window.MWAccountStorage.local.getItem(FOUNDER_AUTO_VOICE_KEY)!=="off"}
+function setFounderAutoVoice(enabled){window.MWAccountStorage.local.setItem(FOUNDER_AUTO_VOICE_KEY,enabled?"on":"off")}
 function updateAutoVoiceButton(id){
   const b=$(id);if(!b)return;
   b.textContent=founderAutoVoiceEnabled()?"🔊 Auto Voice: On":"🔇 Auto Voice: Off";
@@ -1566,9 +1566,9 @@ async function renderSecurity(){
 
 
 function renderSettings(){
-  const complete=localStorage.getItem(FOUNDER_TOUR_COMPLETE_KEY)===FOUNDER_TOUR_VERSION;
-  const progress=Number(localStorage.getItem(FOUNDER_TOUR_PROGRESS_KEY)||0);
-  const paused=localStorage.getItem(FOUNDER_TOUR_PAUSED_KEY)==="1";
+  const complete=window.MWAccountStorage.local.getItem(FOUNDER_TOUR_COMPLETE_KEY)===FOUNDER_TOUR_VERSION;
+  const progress=Number(window.MWAccountStorage.local.getItem(FOUNDER_TOUR_PROGRESS_KEY)||0);
+  const paused=window.MWAccountStorage.local.getItem(FOUNDER_TOUR_PAUSED_KEY)==="1";
   $("content").innerHTML='<section class="hero"><div class="brand">FOUNDER SETTINGS · ORIENTATION</div><h2>Your Founder Hub should always explain itself.</h2><p>This is where you can replay the complete Founder OS orientation whenever you get lost. The tour walks the real interface, opens each section, and explains the controls that are actually present at that moment.</p><div class="heroActions"><button class="btn primary" id="replayFounderTour">Replay Full Founder Tour</button>'+(paused||progress?'<button class="btn blue" id="resumeFounderTour">Resume Tour</button>':'')+'</div></section>'+
     '<div class="grid2">'+
       '<div class="card"><div class="brand">TOUR STATUS</div><h3>'+(complete?'Full orientation completed':'Orientation available')+'</h3><p class="muted">'+(complete?'You can replay it at any time. Replaying does not change company data.':'The full tour will automatically run on first access unless you exit it for later.')+'</p>'+badge(complete?"COMPLETED":"AVAILABLE",complete?"good":"blue")+'</div>'+
@@ -1581,7 +1581,7 @@ function renderSettings(){
   const start=()=>startFounderTour({resume:false});
   $("replayFounderTour").onclick=start;$("replayFounderTour2").onclick=start;
   const resumeBtn=$("resumeFounderTour");if(resumeBtn)resumeBtn.onclick=()=>startFounderTour({resume:true});
-  $("resetFounderTour").onclick=()=>{localStorage.removeItem(FOUNDER_TOUR_COMPLETE_KEY);localStorage.removeItem(FOUNDER_TOUR_PROGRESS_KEY);localStorage.removeItem(FOUNDER_TOUR_PAUSED_KEY);renderSettings()};
+  $("resetFounderTour").onclick=()=>{window.MWAccountStorage.local.removeItem(FOUNDER_TOUR_COMPLETE_KEY);window.MWAccountStorage.local.removeItem(FOUNDER_TOUR_PROGRESS_KEY);window.MWAccountStorage.local.removeItem(FOUNDER_TOUR_PAUSED_KEY);renderSettings()};
 }
 
 async function renderAnalytics(){
@@ -1861,7 +1861,7 @@ async function founderTourShow(){
   const s=founderTourState;if(!s?.active)return;
   s.index=Math.max(0,Math.min(s.index,s.plan.length-1));
   const step=s.plan[s.index];
-  localStorage.setItem(FOUNDER_TOUR_PROGRESS_KEY,String(s.index));
+  window.MWAccountStorage.local.setItem(FOUNDER_TOUR_PROGRESS_KEY,String(s.index));
   await founderTourPrepareStep(step);
   founderTourRenderCard(step,founderTourLocate(step))
 }
@@ -1872,23 +1872,23 @@ async function founderTourMove(delta){
 }
 function pauseFounderTour(){
   if(!founderTourState)return;
-  localStorage.setItem(FOUNDER_TOUR_PROGRESS_KEY,String(founderTourState.index));
-  localStorage.setItem(FOUNDER_TOUR_PAUSED_KEY,"1");
+  window.MWAccountStorage.local.setItem(FOUNDER_TOUR_PROGRESS_KEY,String(founderTourState.index));
+  window.MWAccountStorage.local.setItem(FOUNDER_TOUR_PAUSED_KEY,"1");
   closeModal();founderTourCleanup()
 }
 async function finishFounderTour(){
-  localStorage.setItem(FOUNDER_TOUR_COMPLETE_KEY,FOUNDER_TOUR_VERSION);
-  localStorage.removeItem(FOUNDER_TOUR_PROGRESS_KEY);
-  localStorage.removeItem(FOUNDER_TOUR_PAUSED_KEY);
+  window.MWAccountStorage.local.setItem(FOUNDER_TOUR_COMPLETE_KEY,FOUNDER_TOUR_VERSION);
+  window.MWAccountStorage.local.removeItem(FOUNDER_TOUR_PROGRESS_KEY);
+  window.MWAccountStorage.local.removeItem(FOUNDER_TOUR_PAUSED_KEY);
   closeModal();founderTourCleanup();await setView("headquarters")
 }
 async function startFounderTour({resume=false}={}){
   if(founderTourState?.active)return;
-  localStorage.removeItem(FOUNDER_TOUR_PAUSED_KEY);
+  window.MWAccountStorage.local.removeItem(FOUNDER_TOUR_PAUSED_KEY);
   founderTourPreparing("Reading the live Founder Hub so every current control can be included.");
   try{
     const plan=await buildFounderTourPlan();
-    const saved=resume?Number(localStorage.getItem(FOUNDER_TOUR_PROGRESS_KEY)||0):0;
+    const saved=resume?Number(window.MWAccountStorage.local.getItem(FOUNDER_TOUR_PROGRESS_KEY)||0):0;
     founderTourState={active:true,plan,index:Number.isFinite(saved)?Math.max(0,Math.min(saved,plan.length-1)):0};
     await founderTourShow()
   }catch(e){
@@ -1898,8 +1898,8 @@ async function startFounderTour({resume=false}={}){
   }
 }
 function maybeStartFounderTour(){
-  const done=localStorage.getItem(FOUNDER_TOUR_COMPLETE_KEY)===FOUNDER_TOUR_VERSION;
-  const paused=localStorage.getItem(FOUNDER_TOUR_PAUSED_KEY)==="1";
+  const done=window.MWAccountStorage.local.getItem(FOUNDER_TOUR_COMPLETE_KEY)===FOUNDER_TOUR_VERSION;
+  const paused=window.MWAccountStorage.local.getItem(FOUNDER_TOUR_PAUSED_KEY)==="1";
   if(!done&&!paused)setTimeout(()=>startFounderTour({resume:true}),650)
 }
 function setNavCount(name,value){
@@ -1938,7 +1938,7 @@ document.querySelectorAll(".navBtn").forEach(b=>b.onclick=()=>setView(b.dataset.
 $("menuBtn").onclick=()=>$("sidebar").classList.toggle("open");
 $("refreshBtn").onclick=()=>{cache={};renderView(currentView);refreshFounderNavCounts()};
 $("founderAIQuick").onclick=openAIModal;
-$("signOut").onclick=()=>{localStorage.removeItem(FOUNDER_RESUME_VIEW_KEY);clear();location.reload()};
+$("signOut").onclick=()=>{window.MWAccountStorage.local.removeItem(FOUNDER_RESUME_VIEW_KEY);return window.MWAccountScope.signOut(SUPABASE_URL,SUPABASE_KEY,session?.access_token)};
 window.addEventListener("online",()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")){founderViewHealAttempts[currentView]=0;cache={};renderView(currentView);refreshFounderNavCounts()}});
 window.addEventListener("offline",()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")){rememberFounderResumeView(currentView);showFounderRecoveryState("Connection interrupted","Founder OS is protecting your current place and will reconnect automatically when the internet returns.")}});
 window.addEventListener("storage",e=>{
@@ -1957,7 +1957,7 @@ document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible")return;
   const stored=readStoredFounderSession();
   if(stored?.access_token&&(!session?.access_token||stored.refresh_token!==session.refresh_token||Number(stored.expires_at||0)>Number(session.expires_at||0)))session=stored;
-  founderWatchdog().then(()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")&&localStorage.getItem(FOUNDER_RESUME_VIEW_KEY)){const v=consumeFounderResumeView();setView(v)}}).catch(()=>{})
+  founderWatchdog().then(()=>{if(session?.access_token&&!$("appShell").classList.contains("hidden")&&window.MWAccountStorage.local.getItem(FOUNDER_RESUME_VIEW_KEY)){const v=consumeFounderResumeView();setView(v)}}).catch(()=>{})
 });
 (async()=>{try{const s=readStoredFounderSession();if(s?.access_token||s?.refresh_token)await enter(s)}catch(err){const st=$("loginStatus");if(err?.status===401||err?.status===403)clear();st.textContent=err?.transient?"Founder access services are temporarily unavailable. Your saved session was kept; reload or try again shortly.":(err?.message||"Founder sign-in required.");st.className="status error"}})();
 </script>

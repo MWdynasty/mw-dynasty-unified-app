@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><script src="/lib/mw-account-scope.js?v=1"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050403">
@@ -156,9 +156,9 @@ const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
 const SESSION_KEY='mwSupabaseSession';
 let session=null,account=null;
 const el=id=>document.getElementById(id);
-function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY)||'null')}catch{return null}}
-function saveSession(value){if(!value?.access_token)return;const store=localStorage.getItem(SESSION_KEY)?localStorage:sessionStorage;store.setItem(SESSION_KEY,JSON.stringify(value))}
-function clearSession(){localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}
+function readSession(){try{return JSON.parse(window.MWAccountStorage.local.getItem(SESSION_KEY)||window.MWAccountStorage.session.getItem(SESSION_KEY)||'null')}catch{return null}}
+function saveSession(value){if(!value?.access_token)return;const store=window.MWAccountStorage.local.getItem(SESSION_KEY)?window.MWAccountStorage.local:window.MWAccountStorage.session;store.setItem(SESSION_KEY,JSON.stringify(value))}
+function clearSession(){window.MWAccountStorage.local.removeItem(SESSION_KEY);window.MWAccountStorage.session.removeItem(SESSION_KEY)}
 function message(text,error=false){el('saveStatus').textContent=text||'';el('saveStatus').className='status'+(error?' err':'')}
 function billingMessage(text,error=false){el('billingStatus').textContent=text||'';el('billingStatus').className='status'+(error?' err':'')}
 async function refreshSession(current){
@@ -521,7 +521,7 @@ el('restorePurchasesBtn')?.addEventListener('click',()=>{
   billingMessage('Checking your App Store purchases…');
   bridge.postMessage({planCode:'auto',accessToken:session.access_token});
 });
-el('signOutBtn').onclick=()=>{clearSession();location.reload()};
+el('signOutBtn').onclick=()=>window.MWAccountScope.signOut(SUPABASE_URL,SUPABASE_KEY,session?.access_token);
 const checkoutState=new URLSearchParams(location.search).get('checkout');
 if(checkoutState==='success') billingMessage('Payment completed. MW Dynasty is syncing your membership now.');
 if(checkoutState==='cancelled') billingMessage('Checkout cancelled. No membership change was made.');

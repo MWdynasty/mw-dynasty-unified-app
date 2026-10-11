@@ -1,9 +1,10 @@
 (function(){
   'use strict';
+  var mwLocalStore=window.MWAccountStorage?.local||localStorage,mwSessionStore=window.MWAccountStorage?.session||sessionStorage;
   if(window.MWDiag)return;
   var VERSION='1.1.0',QUEUE_KEY='mwLaunchDiagnosticsQueueV1',SYNC_KEY='mwLaunchDiagnosticsLastSyncV1';
   var native=/MWDynasty-iOS\//i.test(navigator.userAgent||'')||document.documentElement.classList.contains('mw-native-app');
-  var explicitlyEnabled=localStorage.getItem('mwLaunchDiagnostics')==='on';
+  var explicitlyEnabled=mwLocalStore.getItem('mwLaunchDiagnostics')==='on';
   var enabled=native||explicitlyEnabled;
   var originalFetch=window.fetch.bind(window),flushTimer=null,flushing=false;
 
@@ -43,13 +44,13 @@
       return u.pathname.slice(0,140);
     }catch{return String(location.pathname||'/').slice(0,140)}
   }
-  function readQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]')}catch{return []}}
-  function writeQueue(q){try{localStorage.setItem(QUEUE_KEY,JSON.stringify(q.slice(-100)))}catch{}}
+  function readQueue(){try{return JSON.parse(mwLocalStore.getItem(QUEUE_KEY)||'[]')}catch{return []}}
+  function writeQueue(q){try{mwLocalStore.setItem(QUEUE_KEY,JSON.stringify(q.slice(-100)))}catch{}}
   function accessToken(){
     var keys=['mwFounderSupabaseSession','mwCoachSupabaseSession','mwSupabaseSession'];
     for(var i=0;i<keys.length;i++){
       try{
-        var raw=localStorage.getItem(keys[i])||sessionStorage.getItem(keys[i]);
+        var raw=mwLocalStore.getItem(keys[i])||mwSessionStore.getItem(keys[i]);
         var s=raw?JSON.parse(raw):null;if(s&&s.access_token)return s.access_token;
       }catch{}
     }
@@ -102,11 +103,11 @@
   }
   function enable(value){
     enabled=!!value;
-    try{localStorage.setItem('mwLaunchDiagnostics',enabled?'on':'off')}catch{}
+    try{mwLocalStore.setItem('mwLaunchDiagnostics',enabled?'on':'off')}catch{}
     if(enabled){event('diagnostics_enabled',{context:{native:native}});scheduleFlush(100)}
     return enabled;
   }
-  function status(){return {enabled:enabled,native:native,queued:readQueue().length,lastSuccessfulSync:localStorage.getItem(SYNC_KEY)||null,online:navigator.onLine!==false,version:VERSION}}
+  function status(){return {enabled:enabled,native:native,queued:readQueue().length,lastSuccessfulSync:mwLocalStore.getItem(SYNC_KEY)||null,online:navigator.onLine!==false,version:VERSION}}
 
   window.MWDiag={event:event,snapshot:snapshot,flush:flush,report:report,enable:enable,status:status,version:VERSION};
 
@@ -145,9 +146,9 @@
         if(!response.ok){
           event('api_failure',{severity:response.status>=500?'error':'warn',code:'http_'+response.status,route:path,context:{method:method,status:response.status,duration_ms:ms}});
         }else if(method==='GET'&&(/\/api\/(me|billing|coach\/access|coach\/roster|coach\/performance)/.test(path)||path.indexOf('/rest/v1/')>=0)){
-          var now=Date.now(),last=Number(localStorage.getItem(SYNC_KEY+'_ts')||0);
-          localStorage.setItem(SYNC_KEY,new Date(now).toISOString());
-          if(now-last>300000){localStorage.setItem(SYNC_KEY+'_ts',String(now));event('sync_ok',{route:path,context:{duration_ms:ms}})}
+          var now=Date.now(),last=Number(mwLocalStore.getItem(SYNC_KEY+'_ts')||0);
+          mwLocalStore.setItem(SYNC_KEY,new Date(now).toISOString());
+          if(now-last>300000){mwLocalStore.setItem(SYNC_KEY+'_ts',String(now));event('sync_ok',{route:path,context:{duration_ms:ms}})}
         }
       }
       return response;

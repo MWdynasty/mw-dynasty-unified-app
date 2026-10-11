@@ -47,6 +47,11 @@ module.exports=async(req,res)=>{
     if(req.method==='POST'){
       const b=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
       const athleteId=String(b.athleteId||'').trim();
+      if(b.action==='end_connection'){
+        if(role!=='coach'||!athleteId||!(await canAccess(c,athleteId)))return res.status(403).json({error:'This athlete is not assigned to your coach account.'});
+        const result=await request('rpc/mw_end_coach_connection',c.token,{method:'POST',body:JSON.stringify({p_coach_user_id:c.user.id,p_athlete_id:athleteId})});
+        return res.status(200).json(result);
+      }
       if(b.action==='end_sponsorship'){
         if(!athleteId)return res.status(400).json({error:'Athlete is required'});
         if(role!=='coach')return res.status(403).json({error:'Only the responsible coach can change sponsorship.'});

@@ -69,7 +69,7 @@ assert(!css.includes('position: absolute'), 'The shared component must never abs
 const launch = fs.readFileSync('assets/mw-session-launch-live-20261004-r1.js','utf8');
 assert(launch.includes('#app [data-mw-signin]'), 'Returning-session overlay must recognize the new Coach screen');
 const serviceWorker = fs.readFileSync('mw-sw.js','utf8');
-assert(serviceWorker.includes("mw-dynasty-shell-v7-shared-signin"), 'Refresh the cached shell for the shared sign-in');
+assert(serviceWorker.includes("mw-dynasty-shell-v8-account-isolation"), 'Refresh the cached shell for account isolation');
 for (const path of ['/assets/mw-signin-v3.js','/assets/mw-signin-v3.css']) {
   assert(serviceWorker.includes("'" + path + "'"), 'Offline shell must cache ' + path);
 }

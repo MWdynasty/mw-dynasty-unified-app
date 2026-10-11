@@ -282,7 +282,7 @@ $('#resetGps').onclick=reset;
 
 $('#saveMark').onclick=()=>{
   if(!targetHit)return;
-  localStorage.setItem('mwLastDistanceMark',JSON.stringify({
+  window.MWAccountStorage.local.setItem('mwLastDistanceMark',JSON.stringify({
     target:target(),
     measured:Number(total.toFixed(1)),
     startAccuracy:start?Number(start.accuracy.toFixed(1)):null,
@@ -298,7 +298,7 @@ $('#saveMark').onclick=()=>{
 function receiveMwPaceHandoff(){
   const q=new URLSearchParams(location.search);
   let p=null;
-  try{p=JSON.parse(localStorage.getItem('mwPacerHandoff')||'null')}catch{}
+  try{p=JSON.parse(window.MWAccountStorage.local.getItem('mwPacerHandoff')||'null')}catch{}
   if(q.get('mw_handoff')==='1'){
     p={
       distance:+q.get('distance'),

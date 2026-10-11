@@ -146,6 +146,7 @@ function fixture(saved = []) {
     }
   });
   context.window=context;
+  context.window.MWAccountStorage={session:sessionStorage};
   vm.runInContext(appSource.slice(start,end),context,{timeout:1000});
   vm.runInContext(voiceSource,context,{timeout:1000});
   function deliver(){
