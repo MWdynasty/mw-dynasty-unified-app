@@ -8,6 +8,8 @@ Coach Core and Coach Intelligence use coach-authored programs for daily training
 4. Choose connected athletes or an owned group, with a calendar start date. Missing review items and save/loading failures remain visible beside the actions.
 5. Open Train and Practice Mode. Select the assigned timed block, run heats and finish every prescribed rep before saving. Non-timed days remain visible for athlete check-ins.
 
+My Program shows assignment status from saved assignment records, including the target and start date. Active programs with no assignment show Ready to assign. Assignment status failures show an explicit unavailable message and retry control. Both Review / Edit and Assign Program remain reachable on phones.
+
 Week 1 uses the Monday of the chosen start-date week. A Wednesday start begins on Week 1 Wednesday. Future dates, ended programs and unscheduled days do not invent sessions. Timing saves do not rewrite the original prescription or the MW Velocity workout system.
 
 Saved custom times appear in the coach's athlete workspace and the athlete's coach-assigned training/history. Each result preserves the reviewed prescription and revision. A coach's successful save adds a completed coach-program check-in after all timed blocks in that day have been saved. An athlete can separately add their perceived effort and notes.
