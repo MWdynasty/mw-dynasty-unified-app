@@ -11,6 +11,7 @@
         <div><b>Rest countdown for this heat</b><p>Uses prescribed rep rest when available. Adjust your group’s recovery time here.</p><div class="mwHeatRestSetting"><label>Minutes<input id="heatRestMinutes" type="number" inputmode="numeric" min="0" max="60" value="1"></label><label>Seconds<input id="heatRestSeconds" type="number" inputmode="numeric" min="0" max="59" value="30"></label><button class="action" id="heatRestApply">SET REST</button></div><p id="heatRestSettingStatus" role="status">Rest starts after the last athlete finishes. An alert sounds at zero.</p></div>
       </section>
       <div id="heatPracticePanel" role="tabpanel" aria-labelledby="heatPracticeTab">
+      ${d.customProgram?'<div class="mwHeatGroupRow"><label>Assigned workout block<select id="customWorkoutPicker"></select></label></div>':''}
       <div class="mwHeatGroupRow"><label>Practice group<select id="heatGroup" aria-label="Practice group"></select></label></div>
       <div class="mwHeatPickerRow"><label>Timed heat<select id="heatPicker" aria-label="Timed heat"></select></label><b id="heatRep">REP 1</b></div>
       <p id="heatContext" class="mwHeatContext"></p>
@@ -29,8 +30,8 @@
     </section>`);
     d.hydrateCoachTodayPractice('practiceTodayPlan',{practiceMode:true});
     const panel=document.getElementById('mwHeatRun'),find=id=>document.getElementById(id);
-    const today=d.mwLocalIsoDate();
-    const uid=(await d.mwCurrentUser()).id,storageKey='mw-practice-heats-v1:'+d.project+':'+uid+':'+today;
+    const today=d.mwLocalIsoDate();let customWorkouts=[],customSelection=null;const customComplete=new Set();
+    const uid=(await d.mwCurrentUser()).id,storageKey=(d.customProgram?'mw-custom-practice-heats-v1:':'mw-practice-heats-v1:')+d.project+':'+uid+':'+today;
     if(!panel.isConnected)return;
     const settingsKey='mw-practice-mode-v1:'+d.project+':'+uid;
     const narrator=root.MWCoachTimingTools.createNarrator(),audio=root.MWCoachTimingTools.audio;
@@ -41,14 +42,15 @@
     model=new root.MWPracticeHeats.Session({coachId:uid,date:today,draft:restored});
     const notice=text=>{if(panel.isConnected)find('heatStatus').textContent=text;};
     const guide=text=>{if(narratorMode==='workout'&&document.visibilityState!=='hidden'&&!narrator.speak(text))notice('Workout voice is unavailable on this device. Timing controls still work.');};
-    const persist=()=>{try{localStorage.setItem(storageKey,JSON.stringify(model.snapshot()));persistError=false}catch{persistError=true;notice('Device storage is unavailable. Keep this page open until you save.')}};
+    const persist=()=>{try{localStorage.setItem(storageKey,JSON.stringify({...model.snapshot(),...(d.customProgram?{customWorkoutKey:customSelection?.key||restored?.customWorkoutKey}: {})}));persistError=false}catch{persistError=true;notice('Device storage is unavailable. Keep this page open until you save.')}};
     const h=()=>model.heats[model.active];
     const busy=()=>saving||counting||Object.values(model.heats).some(root.MWPracticeHeats.active);
     const name=id=>roster.find(a=>a.id===id)?.name||'Athlete';
     const limit=id=>Math.max(0,Number(plans[id]?.reps)||0);
     const max=heat=>Math.max(0,...heat.athleteIds.map(limit));
-    const eligible=id=>{const heat=h();return !d.coachPracticeWorkoutComplete(roster.find(a=>a.id===id))&&!plans[id]?.error&&limit(id)>0&&heat.rep<=limit(id)&&!model.owner(id,heat.key)};
-    const workoutsSaved=heat=>!!heat&&(heat.saved||(heat.athleteIds.length>0&&heat.athleteIds.every(id=>d.coachPracticeWorkoutComplete(roster.find(a=>a.id===id)))));
+    const completed=id=>d.customProgram?customComplete.has(id):d.coachPracticeWorkoutComplete(roster.find(a=>a.id===id));
+    const eligible=id=>{const heat=h();return !completed(id)&&!plans[id]?.error&&limit(id)>0&&heat.rep<=limit(id)&&!model.owner(id,heat.key)};
+    const workoutsSaved=heat=>!!heat&&(heat.saved||(heat.athleteIds.length>0&&heat.athleteIds.every(completed)));
     const pace=(seconds,id)=>{
       const t=Number(targets[id]?.target)||null,intent=plans[id]?.intent||'pace';if(!t)return {targetSeconds:null,paceStatus:null,paceLabel:'',mwIntent:intent};
       const fast=t*.99,slow=t*1.01,above=seconds<fast,below=seconds>slow,quality=['speed','technical'].includes(intent);
@@ -56,6 +58,17 @@
     };
     async function loadPlans(){
       const cache=new Map();plans={};targets={};
+      if(d.customProgram){
+        const data=await root.MWCoachPrograms.api(d.customProgramDeps(),'today');customWorkouts=data.workouts.flatMap(w=>w.session.blocks.map((b,i)=>({...w,blockIndex:i,key:w.assignmentId+':'+w.revision+':'+w.session.id+':'+i})));
+        const picker=find('customWorkoutPicker');picker.innerHTML=customWorkouts.length?customWorkouts.map(w=>`<option value="${e(w.key)}">${e(w.programName+' · '+w.session.title+' · Block '+(w.blockIndex+1)+' · '+w.targetName)}</option>`).join(''):'<option value="">No timed workout assigned for today</option>';
+        customSelection=customWorkouts.find(w=>w.key===(customSelection?.key||restored?.customWorkoutKey))||customWorkouts[0]||null;if(customSelection)picker.value=customSelection.key;
+        customComplete.clear();
+        for(const a of roster){if(!customSelection?.athleteIds.includes(a.id)){plans[a.id]={error:'No selected workout assigned'};continue;}
+          plans[a.id]=root.MWCoachProgram.plan(customSelection.session,{id:customSelection.assignmentId},customSelection.revision,a.id,today,customSelection.blockIndex);
+          if(customSelection.completed.some(r=>r.athlete_id===a.id&&r.block_index===customSelection.blockIndex))customComplete.add(a.id);
+          const p=plans[a.id],t=d.mwCoachPracticeRecommendedTarget(a,p.distance,p.intensityPct);if(t)targets[a.id]=typeof t==='object'?t:{target:t};
+        }return;
+      }
       await Promise.all(roster.map(async a=>{try{
         const week=Number(a.current_week)||1,sourceWeek=Number(a.source_week)||week,day=Number(a.current_day)||1,tier=d.coachPracticeTier(a),strengthTier=d.coachPracticeStrengthTier(a),eg=d.coachPracticeEventGroup(a),key=[sourceWeek,day,tier,strengthTier,eg].join('|');
         if(!cache.has(key))cache.set(key,d.coachProgramData(sourceWeek,eg,tier,strengthTier));
@@ -69,6 +82,7 @@
     async function loadGroups(){
       const rows=await d.sbRest('coach_groups?select=id,name,coach_group_members(athlete_id)&archived=eq.false&order=created_at.asc');
       groups=(rows||[]).map(g=>({id:g.id,name:g.name,athleteIds:(g.coach_group_members||[]).map(m=>m.athlete_id)}));
+      if(d.customProgram){groups=groups.map(g=>({...g,athleteIds:g.athleteIds.filter(id=>plans[id]?.custom)})).filter(g=>g.athleteIds.length);const grouped=new Set(groups.flatMap(g=>g.athleteIds));const ungrouped=roster.filter(a=>plans[a.id]?.custom&&!grouped.has(a.id)).map(a=>a.id);if(ungrouped.length)groups.push({id:'custom-individual',name:'Assigned athletes',athleteIds:ungrouped});}
       heats=model.reconcile(groups,roster,plans);persist();
       const handoff=root.__mwCoachPaceGroupHandoff;
       if(handoff?.coachId===uid&&handoff.project===d.project){
@@ -118,7 +132,8 @@
       find('heatNext').disabled=saving||counting||!heat||repActive||!heat.repResults.length||heat.rep>=max(heat);
       find('heatNext').textContent=heat&&heat.rep>=max(heat)?'REPS COMPLETE':'NEXT REP';
       const hasResults=Object.values(model.heats).some(x=>!x.saved&&(x.results.length||x.repResults.length));
-      find('heatSave').disabled=busy()||!hasResults||Object.values(model.heats).some(x=>x.interrupted);
+      const unfinishedCustom=d.customProgram&&Object.values(model.heats).some(x=>!x.saved&&(x.results.length||x.repResults.length)&&x.athleteIds.some(id=>[...x.results,...x.repResults].filter(r=>r.athleteId===id).length<limit(id)));
+      find('heatSave').disabled=busy()||!hasResults||unfinishedCustom||Object.values(model.heats).some(x=>x.interrupted);
       find('heatSave').textContent=saving?'SAVING…':'FINISH & SAVE';
       find('heatUndo').disabled=saving||counting||!heat?.repResults.length;
       find('heatDNF').disabled=saving||!finishable;
@@ -126,15 +141,16 @@
       find('heatRestToggle').disabled=saving||counting||repActive||!heat;
       find('heatRestReset').disabled=saving||counting||repActive||!heat;
       find('heatRestToggle').textContent=model.restComplete(heat)?'RESTART REST':heat?.restStartedAt==null?'START REST':heat.restPausedAt==null?'PAUSE REST':'RESUME REST';
+      if(d.customProgram)find('customWorkoutPicker').disabled=busy();
       find('heatNarratorMode').disabled=busy();find('heatNarratorMode').value=narratorMode;
       find('heatNarratorDescription').textContent=narratorMode==='meet'?'Meet-style block commands and gun. Cancel Start stops the sequence.':narratorMode==='workout'?'Announces rep distance, intensity, recovery and rest completion. You start the clock manually.':'No voice. Start the stopwatch manually.';
       find('heatModeGroup').textContent=heat?heat.groupName+' · Heat '+heat.heatNumber:'Choose a group created in Teams first.';
       for(const id of ['heatRestMinutes','heatRestSeconds','heatRestApply'])find(id).disabled=busy()||!heat;
-      const duration=Math.round((heat?.restDurationMs||90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
+      const duration=Math.round((heat?.restDurationMs??90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
       const firstPlan=plans[heat?.athleteIds[0]];
       find('heatContext').textContent=heat?.restOnly?'This group has no assigned athletes yet. Its rest countdown is available; add athletes in Teams to time reps.':heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Create your group and choose its athletes in Teams, then return here to time practice.';
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
-        const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&d.coachPracticeWorkoutComplete(a),p=plans[id],t=targets[id]?.target;
+        const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&completed(a?.id),p=plans[id],t=targets[id]?.target;
         const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':finishable?'TAP FINISH':'READY';
         return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!finishable||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'Target '+Number(t).toFixed(2)+' s'+(targets[id]?.paceBasis?.estimated?' · ESTIMATE':''):''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
       }).join(''):'<p>No athletes available in this group. Manage its roster in Teams.</p>';
@@ -146,9 +162,10 @@
     function change(action){try{action();persist();render()}catch(err){notice(err.message)}}
     function details(id){return {...plans[id],division:roster.find(a=>a.id===id)?.competition_division||null,resultStatus:'finished',...pace(model.elapsed()/1000,id)}}
     function finish(id,override){
-      change(()=>{model.finish(id,{...details(id),...override});});
+      change(()=>{const p=plans[id];if(p?.custom&&!h().restConfigured){const isSetEnd=h().rep%p.repsPerSet===0&&h().rep<p.reps;h().restDurationMs=Math.max(0,isSetEnd?p.setRestSeconds:p.restSeconds)*1000;}model.finish(id,{...details(id),...override});});
       if(h()&&!root.MWPracticeHeats.active(h())&&h().repResults.length)guide('Rep complete. Recover for '+Math.round(h().restDurationMs/1000)+' seconds.');
     }
+    if(d.customProgram)find('customWorkoutPicker').onchange=async()=>{if(busy()||Object.values(model.heats).some(root.MWPracticeHeats.pending)){find('customWorkoutPicker').value=customSelection?.key||'';return notice('Save the current workout before switching assigned blocks.');}customSelection=customWorkouts.find(w=>w.key===find('customWorkoutPicker').value);try{await loadPlans();await loadGroups();render();}catch(err){notice(err.message);}};
     find('heatGroup').onchange=()=>change(()=>{selectedGroupId=find('heatGroup').value;const first=heats.find(x=>x.groupId===selectedGroupId);if(first)model.select(first.key);else{model.active=null;notice('No assigned athletes in this group. Choose its athletes in Teams.')}});
     find('heatPicker').onchange=()=>change(()=>model.select(find('heatPicker').value));
     function cancelStart(){narrator.cancel();counting=false;countingCue='';}
@@ -188,10 +205,11 @@
       if(saving)return;let batches;try{batches=model.toSave()}catch(err){notice(err.message);return}if(!batches.length)return;
       saving=true;persist();render();let saved=0,warnings=0;
       try{for(const {heat,results} of batches){
-        const body={sessionId:heat.sessionId,clientTimeZone:d.mwClientTimeZone(),results:results.map(x=>({athleteId:x.athleteId,sessionDate:model.date,division:x.division,groupName:x.groupName,laneNumber:x.laneNumber,repNumber:x.repNumber,timeSeconds:x.ms/1000,targetSeconds:x.targetSeconds,targetMinSeconds:x.targetMinSeconds,targetMaxSeconds:x.targetMaxSeconds,actualRestSeconds:x.actualRestSeconds,timingSource:x.resultStatus==='manual'?'manual':'coach',resultStatus:x.resultStatus||'finished',paceStatus:x.paceStatus,mwIntent:x.mwIntent,mwInterpretation:x.mwInterpretation,prescribedReps:x.reps,programWeek:x.week,programDay:x.day,sourceProgramWeek:x.sourceWeek,workoutKey:x.workoutKey,distanceM:x.distance,seasonPlanId:x.seasonPlanId||null,workoutCycleId:x.workoutCycleId||null}))};
+        const body={sessionId:heat.sessionId,clientTimeZone:d.mwClientTimeZone(),results:results.map(x=>({athleteId:x.athleteId,assignmentId:x.assignmentId,customSessionId:x.customSessionId,revision:x.revision,blockIndex:x.blockIndex,sessionDate:model.date,division:x.division,groupName:x.groupName,laneNumber:x.laneNumber,repNumber:x.repNumber,timeSeconds:x.ms/1000,targetSeconds:x.targetSeconds,targetMinSeconds:x.targetMinSeconds,targetMaxSeconds:x.targetMaxSeconds,actualRestSeconds:x.actualRestSeconds,timingSource:x.resultStatus==='manual'?'manual':'coach',resultStatus:x.resultStatus||'finished',paceStatus:x.paceStatus,mwIntent:x.mwIntent,mwInterpretation:x.mwInterpretation,prescribedReps:x.reps,programWeek:x.week,programDay:x.day,sourceProgramWeek:x.sourceWeek,workoutKey:x.workoutKey,distanceM:x.distance,seasonPlanId:x.seasonPlanId||null,workoutCycleId:x.workoutCycleId||null}))};
         notice('Saving '+heat.groupName+' · Heat '+heat.heatNumber+'…');
-        const response=await fetch('/api/coach/practice-timing',{method:'POST',headers:{Authorization:'Bearer '+d.mwSessionToken(),'Content-Type':'application/json'},body:JSON.stringify(body)}),receipt=await response.json().catch(()=>({}));if(!response.ok||receipt.ok!==true)throw Error(receipt.error||'Practice save failed');
-        model.receipt(heat.key);persist();saved+=Number(receipt.count)||results.length;warnings+=(receipt.intelligenceWarnings||[]).length;
+        const custom=results.every(x=>x.custom);if(custom)body.action='practice';
+        const response=await fetch(custom?'/api/coach/custom-program':'/api/coach/practice-timing',{method:'POST',headers:{Authorization:'Bearer '+d.mwSessionToken(),'Content-Type':'application/json'},body:JSON.stringify(body)}),receipt=await response.json().catch(()=>({}));if(!response.ok||receipt.ok!==true)throw Error(receipt.error||'Practice save failed');
+        model.receipt(heat.key);if(custom)for(const x of results)customComplete.add(x.athleteId);persist();saved+=Number(receipt.count)||results.length;warnings+=(receipt.intelligenceWarnings||[]).length;
       }
       // The atomic API receipt confirms coach timing, athlete reps, and completion together.
       try{const fresh=await d.fetchCoachRoster();roster=fresh.athletes||[]}catch{warnings++}

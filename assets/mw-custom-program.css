@@ -1,0 +1,14 @@
+.mwCustomReview,.mwCustomSession { min-width:0; padding:18px; margin:16px 0; border:1px solid #2d394c; border-radius:16px; background:#101827; color:#f7f3e8; }
+.mwCustomSession h3 { margin:0 0 12px; color:#f4d47e; font-size:16px; }
+.mwCustomSession p { font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+.mwCustomReview label { display:block; margin:10px 0; font-size:13px; color:#aab6c9; }
+.mwCustomFields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.mwCustomFields label { min-width:0; }
+.mwCustomReview input:not([type=checkbox]),.mwCustomReview select,.mwCustomReview textarea { width:100%; box-sizing:border-box; padding:12px; color:#f7f3e8; background:#080d16; border:1px solid #2d394c; border-radius:10px; font:inherit; }
+.mwCustomApproval { display:flex!important; align-items:flex-start; gap:10px; padding:12px; }
+.mwCustomApproval input,.mwCustomAthletes input { width:20px!important; height:20px; flex-shrink:0; }
+.mwCustomAthletes { display:grid; gap:8px; }
+.mwCustomAthletes label { display:flex; gap:10px; align-items:center; }
+.mwCustomReview button { min-height:44px; margin:6px 0; }
+.mwCustomReview [data-review-state] { color:#f4d47e; line-height:1.5; }
+@media(max-width:440px){.mwCustomSession,.mwCustomReview { padding:12px; }.mwCustomFields { gap:8px; }}

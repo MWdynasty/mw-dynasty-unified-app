@@ -29,6 +29,7 @@ const handlers = {
   'coach/athlete': require('../server/api/coach/athlete'),
   'coach/invite': require('../server/api/coach/invite'),
   'coach/notifications': require('../server/api/coach/notifications'),
+  'coach/custom-program': require('../server/api/coach/custom-program'),
   'coach/program-import': require('../server/api/coach/program-import'),
   'coach/attendance': require('../server/api/coach/attendance'),
   'coach/coach-mw': require('../server/api/coach/coach-mw'),
