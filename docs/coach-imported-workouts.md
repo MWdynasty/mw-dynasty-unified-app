@@ -1,10 +1,10 @@
 # Reviewed coach programs
 
-Coach Core and Coach Intelligence use coach-authored programs for daily training and Practice Mode. Existing text-only imports remain editable drafts until the coach builds workout days, checks the prescription, confirms non-timed days, and activates the program.
+Coach Core and Coach Intelligence use coach-authored programs for daily training and Practice Mode. Existing text-only imports remain editable drafts until the coach builds workout days, checks the prescription, and activates the program.
 
 1. Open My Program and the imported program.
-2. Build Workout Days. Review sets, reps, distance, intensity and recovery. Fill missing values; explicitly confirm rest/recovery/lifting days as non-timed.
-3. Confirm review. Save Program retains the selected status; Save & Assign saves reviewed days as Active and opens assignment directly.
+2. Build Workout Days. Review sets, reps, distance, intensity and recovery. Explicit rest/recovery days without running prescriptions are classified automatically, including older imports. Lifting, drills and unknown formats remain available for manual review. Errors identify the week and weekday and appear beside the affected workout.
+3. Confirm review once for the whole program. Save Program retains the selected status; Save & Assign saves reviewed days as Active and opens assignment directly.
 4. Choose connected athletes or an owned group, with a calendar start date. Missing review items and save/loading failures remain visible beside the actions.
 5. Open Train and Practice Mode. Select the assigned timed block, run heats and finish every prescribed rep before saving. Non-timed days remain visible for athlete check-ins.
 
