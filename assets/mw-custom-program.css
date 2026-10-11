@@ -34,3 +34,26 @@
 .mwProgramDeleteActions {display:flex;flex-wrap:wrap;gap:12px;}
 .mwProgramDeleteActions button {min-height:44px;}
 @media(max-width:640px){#programLive .mwProgramActions .program-delete {grid-column:1 / -1;}}
+
+/* Weekly upload preview: compact day cards with details only when needed. */
+.mwProgramSource {padding:12px;border:1px solid #675025;border-radius:12px;}
+.mwProgramSource summary,.mwPreviewDay summary {cursor:pointer;color:#f4d47e;min-height:44px;display:flex;align-items:center;font-weight:700;}
+.mwPreviewWeeks {display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
+.mwPreviewWeeks button {white-space:normal;max-width:100%;}
+.mwPreviewWeeks [aria-pressed=true] {background:#f4d47e!important;color:#080d16!important;}
+.mwPreviewDays {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
+.mwPreviewDays [hidden] {display:none!important;}
+.mwPreviewDay {margin:0;padding:14px;overflow-wrap:anywhere;}
+.mwPreviewDay h4 {margin:0;color:#f4d47e;font-size:16px;}
+.mwPreviewDay .mwPreviewPrescription {color:#fff;font-weight:700;}
+.mwPreviewQuestions {font-size:13px;line-height:1.6;color:#aab6c9;padding:10px 0;}
+.mwPreviewQuestions.mwNeedsAnswers {color:#f4d47e;border-top:1px solid #675025;}
+.mwPreviewQuestions ul {padding-left:18px;margin:6px 0;}
+.mwPreviewDay fieldset {border:1px solid #2d394c;border-radius:12px;padding:10px;margin:12px 0;min-width:0;}
+.mwPreviewDay legend {font-size:13px;color:#f4d47e;}
+.mwPreviewDay button {max-width:100%;white-space:normal;}
+@media(max-width:700px){.mwPreviewDays {grid-template-columns:minmax(0,1fr);}}
+
+.mwPreviewWeeks {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-height:180px;overflow-y:auto;}
+.mwPreviewWeeks button {display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 5px!important;font-size:13px!important;letter-spacing:0!important;line-height:1.4;min-width:0;margin:0;}
+.mwPreviewWeeks small {font-size:10px;font-weight:400;}
