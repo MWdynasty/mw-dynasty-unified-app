@@ -33,7 +33,7 @@
 .program-delete {color:#ffb5ae!important;border-color:#a45c54!important;background:#241419!important;}
 .mwProgramDeleteActions {display:flex;flex-wrap:wrap;gap:12px;}
 .mwProgramDeleteActions button {min-height:44px;}
-@media(max-width:640px){#programLive .mwProgramActions .program-delete {grid-column:1 / -1;}}
+@media(max-width:640px){#programLive .mwProgramActions .program-delete {grid-column:auto;}}
 
 /* Weekly upload preview: compact day cards with details only when needed. */
 .mwProgramSource {padding:12px;border:1px solid #675025;border-radius:12px;}

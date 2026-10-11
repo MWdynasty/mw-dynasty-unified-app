@@ -1,8 +1,9 @@
 const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../../lib/mw-coach-auth');
 const {localCalendarDate}=require('../../lib/mw-season-calendar');
 const Program=require('../../../lib/mw-coach-program');
+const {randomUUID}=require('node:crypto');
 const id=s=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s||'');
-async function rest(path,token,body,method){const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{method:method||(body?'POST':'GET'),headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',...(method==='PATCH'?{Prefer:'return=representation'}:{})},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Object.assign(Error(d.message||'Program request failed'),{status:r.status});return d;}
+async function rest(path,token,body,method){const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{method:method||(body?'POST':'GET'),headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',...((method==='PATCH'||method==='POST')?{Prefer:'return=representation'}:{})},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json();if(!r.ok)throw Object.assign(Error(d.message||'Program request failed'),{status:r.status});return d;}
 async function assignments(c){const rows=await rest('coach_program_assignments?select=*&coach_user_id=eq.'+c.user.id+'&status=eq.active&order=created_at.desc',c.token);return rows;}
 async function workouts(c,date){
  const [as,programs,groups,members,connections,saved]=await Promise.all([assignments(c),rest('coach_programs?select=*&coach_user_id=eq.'+c.user.id+'&status=eq.active',c.token),rest('coach_groups?select=id,name&coach_user_id=eq.'+c.user.id+'&archived=eq.false',c.token),rest('coach_group_members?select=group_id,athlete_id',c.token),rest('coach_assignments?select=athlete_id'+(c.profile.role==='coach'?'&coach_user_id=eq.'+c.user.id:'')+'&status=eq.active',c.token),rest('coach_custom_practice_results?select=assignment_id,athlete_id,revision,workout_session_id,block_index,session_date&coach_user_id=eq.'+c.user.id+'&session_date=eq.'+date,c.token)]);
@@ -16,6 +17,20 @@ module.exports=async(req,res)=>{res.setHeader('Cache-Control','no-store');try{
  const b=typeof req.body==='string'?JSON.parse(req.body):req.body||{},action=req.method==='GET'?req.query?.action:b.action;
  if(req.method==='GET'&&action==='today'){const date=localCalendarDate(new Date(),req.headers['x-mw-time-zone']||'UTC').toISOString().slice(0,10);return res.status(200).json({ok:true,date,workouts:await workouts(c,date)});}
  if(req.method==='GET'&&action==='assignments'){const [as,groups]=await Promise.all([assignments(c),rest('coach_groups?select=id,name&coach_user_id=eq.'+c.user.id,c.token)]);return res.status(200).json({assignments:as.map(a=>({...a,target_name:groups.find(g=>g.id===a.group_id)?.name||'Individual athlete'}))});}
+ if(req.method==='POST'&&action==='duplicate'){
+  const name=typeof b.name==='string'?b.name.trim():'';
+  if(!id(b.programId)||!id(b.copyId)||b.copyId===b.programId||!name||name.length>160)return res.status(400).json({error:'Choose a program and give the copy a name (up to 160 characters).'});
+  const sourceRows=await rest('coach_programs?select=*&id=eq.'+b.programId+'&coach_user_id=eq.'+c.user.id+'&status=neq.archived',c.token),source=sourceRows[0];
+  if(!source)return res.status(404).json({error:'Program not found. Refresh My Program and try again.'});
+  const copyPath='coach_programs?select=*&id=eq.'+b.copyId+'&coach_user_id=eq.'+c.user.id;
+  const isCopy=p=>p?.id===b.copyId&&p.coach_user_id===c.user.id&&p.content?.duplicated_from===source.id;
+  const existing=(await rest(copyPath,c.token))[0];
+  if(existing){if(!isCopy(existing))return res.status(409).json({error:'This copy request conflicts with another program. Open Duplicate Program again.'});return res.status(200).json({ok:true,program:existing});}
+  const content=source.content||{},body={id:b.copyId,coach_user_id:c.user.id,name,program_type:source.program_type,status:'draft',content:{text:content.text||'',source_file:content.source_file||null,sessions:Array.isArray(content.sessions)?content.sessions:[],schema_version:1,reviewed:false,review_required:true,revision:randomUUID(),duplicated_from:source.id}};
+  let rows;try{rows=await rest('coach_programs',c.token,body,'POST');}catch(err){if(err.status!==409)throw err;const copy=(await rest(copyPath,c.token))[0];if(!isCopy(copy))throw err;rows=[copy];}
+  const copy=rows?.[0];if(!isCopy(copy))throw Object.assign(Error('The program copy could not be confirmed. Please retry.'),{status:502});
+  return res.status(200).json({ok:true,program:copy});
+ }
  if(req.method==='POST'&&action==='delete'){
   if(!id(b.programId))return res.status(400).json({error:'Choose a valid program to delete.'});
   const rows=await rest('coach_programs?id=eq.'+b.programId+'&coach_user_id=eq.'+c.user.id+'&select=id,status',c.token,{status:'archived'},'PATCH');
