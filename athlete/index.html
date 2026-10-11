@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><script src="/lib/mw-account-scope.js?v=1"></script>
 <meta charset="utf-8">
 <script>
 window.MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
@@ -13,7 +13,7 @@ window.MW_SUPABASE_KEY=window.MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjA
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MW Dynasty">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/manifest.webmanifest">\n<script src="/lib/mw-resilience.js"></script><script src="/lib/mw-workout-identity.js"></script>
+<link rel="manifest" href="/manifest.webmanifest">\n<script src="/lib/mw-resilience.js?v=account-isolation-1"></script><script src="/lib/mw-workout-identity.js"></script>
 <script>if(/MWDynasty-iOS\//i.test(navigator.userAgent||'')){document.documentElement.classList.add('mw-native-app')}</script><title>MW Dynasty · Athlete</title>
 <style>
 :root{--bg:#02060b;--panel:#071019;--panel2:#091522;--blue:#159cff;--blue2:#55c9ff;--gold:#f5b92e;--text:#f5f7fb;--muted:#93a0ad;--line:#24313d}
@@ -1464,7 +1464,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <link rel="stylesheet" href="/assets/mw-practice-rest.css?v=20260928"><script src="/assets/mw-practice-rest.js?v=20260928"></script><link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"><link rel="stylesheet" href="/assets/mw-signin-v3.css"><script src="/assets/mw-signin-v3.js"></script><script src="/assets/mw-ai-sharing.js?v=1"></script><script src="/lib/mw-pace-model.js?v=trial-pacing-1"></script><script>function mwResultDetails(prefix){return Object.fromEntries([60,100,150,200,300,400,500].map(d=>[d+'m',{mark_type:document.getElementById(prefix+d+'Type')?.value||'unspecified',timing_method:document.getElementById(prefix+d+'Timing')?.value||'unknown',date_recorded:document.getElementById(prefix+d+'Date')?.value||null}]))}</script></head>
 <body class="mw-auth-pending mw-hybrid-athlete"><script src="/assets/mw-session-launch-live-20261004-r1.js" data-mw-launch-role="athlete"></script>
 <script>
-(()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
+(()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
 </script>
 <div id="mwToolReturnLoader" aria-live="polite"><div class="mwToolReturnInner"><img src="/mw-dynasty-app-icon-512.png" alt=""><b>RETURNING TO PERFORMANCE TOOLS</b><span>MW DYNASTY</span></div></div>
 <div id="mwEnteringLoader" aria-live="polite"><div class="mwEnteringInner"><div class="mwEnteringOrb"><img src="/mw-dynasty-app-icon-512.png" alt="MW Dynasty"></div><div class="mwEnteringCopy"><b>ENTERING MW DYNASTY</b><span>ATHLETE EXPERIENCE</span></div><div class="mwEnteringLine" aria-hidden="true"><i></i></div></div></div>
@@ -1678,7 +1678,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <details class="mwProfileSection">
 <summary><span>COACH CONNECTION</span><small id="mwProfileCoachStatus">MANAGE</small></summary>
 <div class="coachConnectCard" id="coachConnectionCard">
-  <div id="coachConnectedBadge" class="coachConnectionBadge"><b>✓ CONNECTED TO COACH</b><span id="coachConnectedText">Your coach connection is active.</span></div>
+  <div id="coachConnectedBadge" class="coachConnectionBadge"><b>✓ CONNECTED TO COACH</b><span id="coachConnectedText">Your coach connection is active.</span><button id="manageCoachConnections" class="secondary" type="button">Manage Coach Connections</button></div>
   <div id="coachInviteControls">
     <p>Paste the secure invite code your coach sent you.</p>
     <div class="coachConnectRow"><input id="coachInviteCode" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Paste invite code"><button type="button" id="coachInviteReview">Review Invite</button></div>
@@ -1864,9 +1864,9 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const MW_SB_URL=window.MW_SUPABASE_URL+'';
 const MW_SB_KEY=window.MW_SUPABASE_KEY;
-const saved=JSON.parse(localStorage.getItem('mwPremiumProfile')||'{}');
+const saved=JSON.parse(window.MWAccountStorage.local.getItem('mwPremiumProfile')||'{}');
 const LIFT_MAX_KEY='mwLiftMaxes';
-function getLiftMaxes(){return JSON.parse(localStorage.getItem(LIFT_MAX_KEY)||'{}')}
+function getLiftMaxes(){return JSON.parse(window.MWAccountStorage.local.getItem(LIFT_MAX_KEY)||'{}')}
 function round5(x){return Math.round(x/5)*5}
 function liftKey(name){name=String(name||'').toLowerCase();if(name.includes('front squat'))return'maxFrontSquat';if(name.includes('back squat'))return'maxBackSquat';if(name.includes('deadlift'))return'maxDeadlift';if(name.includes('hang clean')||name.includes('clean pull')||name.includes('power clean'))return'maxPowerClean';return''}
 function isDumbbellLift(name){return /\bdb\b|dumbbell/i.test(String(name||''))}
@@ -1876,7 +1876,7 @@ function loadSetupLine(name,total){if(isDumbbellLift(name))return `Use <b>${tota
 function workingLoadHTML(name,prescription){const k=liftKey(name),m=Number(getLiftMaxes()[k]||0);if(!k||!m)return'';const q=String(prescription||'').match(/@(\s*)(\d+(?:\.\d+)?)(?:-(\d+(?:\.\d+)?))?%/);if(!q)return'';const a=Number(q[2]),b=q[3]?Number(q[3]):a;const lo=round5(m*a/100),hi=round5(m*b/100);if(lo===hi)return `<span class="loadCalc"><span class="loadTarget">MW LOAD: ~${lo} lb</span><span class="plateLine">${loadSetupLine(name,lo)}</span></span>`;return `<span class="loadCalc"><span class="loadTarget">MW LOAD: ~${lo}–${hi} lb</span><span class="plateLine">LOW: ${loadSetupLine(name,lo)}</span><span class="plateLine">HIGH: ${loadSetupLine(name,hi)}</span></span>`}
 
 ['name','coachType','p60','p100','p150','p200','p300','p400','p500','week','startDate','startWeek','maxFrontSquat','maxBackSquat','maxBench','maxHangClean','maxHangSnatch','maxHexBar','maxPushPress','maxTestDate'].forEach(k=>{if(saved[k]!==undefined && $('#'+k))$('#'+k).value=saved[k]}); if($('#startDate')&&!$('#startDate').value)$('#startDate').value=new Date().toISOString().slice(0,10);
-function coachVisualChoice(){const remote=(typeof mwRemoteProfile!=='undefined'&&['male','female'].includes(mwRemoteProfile?.coachType))?mwRemoteProfile.coachType:'';const select=['male','female'].includes($('#coachType')?.value)?$('#coachType').value:'';const local=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}').coachType||'';return remote||local||select||'male'}
+function coachVisualChoice(){const remote=(typeof mwRemoteProfile!=='undefined'&&['male','female'].includes(mwRemoteProfile?.coachType))?mwRemoteProfile.coachType:'';const select=['male','female'].includes($('#coachType')?.value)?$('#coachType').value:'';const local=JSON.parse(window.MWAccountStorage.local.getItem('mwCoachPreference')||'{}').coachType||'';return remote||local||select||'male'}
 function applyCoachVisual(choice){
   choice=(choice==='female')?'female':'male';
   const avatar=$('#coachAvatar');
@@ -1889,12 +1889,12 @@ function applyCoachVisual(choice){
 function setCoachChoice(choice){
   choice=(choice==='female')?'female':'male';
   if($('#coachType'))$('#coachType').value=choice;
-  try{let pref=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}');pref.coachType=choice;localStorage.setItem('mwCoachPreference',JSON.stringify(pref))}catch{}
+  try{let pref=JSON.parse(window.MWAccountStorage.local.getItem('mwCoachPreference')||'{}');pref.coachType=choice;window.MWAccountStorage.local.setItem('mwCoachPreference',JSON.stringify(pref))}catch{}
   try{if(typeof mwRemoteProfile!=='undefined')mwRemoteProfile.coachType=choice}catch{}
   applyCoachVisual(choice);
 }
 function sync(){let n=$('#name').value.trim();$('#helloName').textContent=(n||'Athlete')+'.';$('#weekBadge').textContent=$('#week').value||'1';applyCoachVisual(coachVisualChoice())}sync();
-$('#save').onclick=()=>{let d=getProfile();['name','coachType','p60','p100','p150','p200','p300','p400','p500','week','startDate','startWeek','maxPowerClean','maxFrontSquat','maxBackSquat','maxDeadlift'].forEach(k=>{if($('#'+k))d[k]=$('#'+k).value});localStorage.setItem('mwPremiumProfile',JSON.stringify(d));sync();renderEntryStatus();$('#save').textContent='✓ PROFILE SAVED';setTimeout(()=>$('#save').textContent='SAVE ATHLETE PROFILE',1200)};
+$('#save').onclick=()=>{let d=getProfile();['name','coachType','p60','p100','p150','p200','p300','p400','p500','week','startDate','startWeek','maxPowerClean','maxFrontSquat','maxBackSquat','maxDeadlift'].forEach(k=>{if($('#'+k))d[k]=$('#'+k).value});window.MWAccountStorage.local.setItem('mwPremiumProfile',JSON.stringify(d));sync();renderEntryStatus();$('#save').textContent='✓ PROFILE SAVED';setTimeout(()=>$('#save').textContent='SAVE ATHLETE PROFILE',1200)};
 function mwFeatureEnabled(key){return window.mwFeatureAccess?.[key]===true}
 function mwFeatureLock(title,message){if(typeof window.o==='function')window.o(title,`<p>${message}</p><button class="save" onclick="document.querySelector('#mwUtilityClose')?.click()">GOT IT</button>`);else alert(message)}
 function mwMaxEligibleDob(){const d=new Date();d.setFullYear(d.getFullYear()-13);return d.toISOString().slice(0,10)}
@@ -2171,11 +2171,11 @@ function renderTourStep(){
   },120);
 }
 function finishTour(){
-  localStorage.setItem(tourStorageKey(),'1');clearTourFocus();
+  window.MWAccountStorage.local.setItem(tourStorageKey(),'1');clearTourFocus();
   $('#mwTour').classList.remove('show');openView('home');
 }
 function startTour(force=false){
-  if(!force&&localStorage.getItem(tourStorageKey())==='1')return;
+  if(!force&&window.MWAccountStorage.local.getItem(tourStorageKey())==='1')return;
   tourIndex=0;$('#mwTour').classList.add('show');renderTourStep();
 }
 $('#tourSkip').onclick=finishTour;
@@ -2226,12 +2226,12 @@ function renderQuickStart(){
   $('#qsNext').textContent=s.ready?'ENTER MW DYNASTY':'NEXT';
 }
 function finishQuickStart(){
-  localStorage.setItem(qsStorageKey(),'1');
+  window.MWAccountStorage.local.setItem(qsStorageKey(),'1');
   $('#mwQuickStart').classList.remove('show');
   if(window.mwAssessmentComplete)openView('home');else {openView('entry');loadSeasonCalendar()}
 }
 function startQuickStart(force=false){
-  if(!force&&localStorage.getItem(qsStorageKey())==='1')return;
+  if(!force&&window.MWAccountStorage.local.getItem(qsStorageKey())==='1')return;
   QS_STEPS=buildQuickStartSteps();
   qsIndex=0;
   $('#mwQuickStart').classList.add('show');
@@ -2246,7 +2246,7 @@ $('#qsNext').onclick=()=>{
 if($('#replayTour'))$('#replayTour').onclick=()=>startQuickStart(true);
 
 const DEFAULT_PREFS={voiceSpeed:'1',voiceMode:'fast',autoVoice:'on',workoutReminders:'on',meetReminders:'on',messageAlerts:'on'};
-function getPrefs(){return {...DEFAULT_PREFS,...JSON.parse(localStorage.getItem('mwPrefs')||'{}')}}
+function getPrefs(){return {...DEFAULT_PREFS,...JSON.parse(window.MWAccountStorage.local.getItem('mwPrefs')||'{}')}}
 let mwCompletionCache={};
 let mwWorkoutStatusCache={};
 let mwSessionRpeCache={};
@@ -2257,7 +2257,7 @@ let mwPendingCompletion=null;
 let mwSeasonCalendar=null;
 function getCompletion(){return mwCompletionCache}
 function completionHeaders(extra={}){
-  const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
+  const raw=window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession');
   let sess=null;try{sess=JSON.parse(raw||'null')}catch{}
   const access=sess?.access_token||'';
   let timeZone='UTC';try{timeZone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}
@@ -2406,7 +2406,7 @@ function completedCount(){const c=getCompletion();return Object.values(c).reduce
 function weeksComplete(){let n=0;for(let w=1;w<=41;w++)if(weekDone(w))n++;return n}
 function scheduledWeek(){const p=getProfile();const start=Number(p.startWeek||p.entryAssessment?.assignedWeek||1);const d=p.startDate?new Date(p.startDate+'T00:00:00'):new Date();const days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));return Math.min(41,start+Math.floor(days/7))}
 function unlockedThrough(){const p=getProfile();const seasonWeek=Number(mwSeasonCalendar?.week);return Math.max(1,Math.min(41,Number.isFinite(seasonWeek)&&seasonWeek>0?seasonWeek:Number(p.week||scheduledWeek()||p.startWeek||1)))}
-function advanceCurrentWeek(){const p=getProfile();const seasonWeek=Number(mwSeasonCalendar?.week);const current=Math.max(1,Math.min(41,Number.isFinite(seasonWeek)&&seasonWeek>0?seasonWeek:Number(p.week||scheduledWeek()||p.startWeek||1)));p.week=String(current);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
+function advanceCurrentWeek(){const p=getProfile();const seasonWeek=Number(mwSeasonCalendar?.week);const current=Math.max(1,Math.min(41,Number.isFinite(seasonWeek)&&seasonWeek>0?seasonWeek:Number(p.week||scheduledWeek()||p.startWeek||1)));p.week=String(current);window.MWAccountStorage.local.setItem('mwPremiumProfile',JSON.stringify(p));if($('#week'))$('#week').value=p.week;sync();return current}
 function mwTodayTrackSessionNumber(){
   const n=new Date().getDay();
   return (n>=1&&n<=5)?n:null;
@@ -2567,10 +2567,10 @@ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openView(b.dat
   document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
   window.mwCloseAthleteHomeMenu=close;
 })();
-const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=async()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);localStorage.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
+const prefs=getPrefs();['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>{if($('#'+k))$('#'+k).value=prefs[k]});if($('#settingsCoachType'))$('#settingsCoachType').value=coachVisualChoice();if($('#saveSettings'))$('#saveSettings').onclick=async()=>{const x={};['voiceSpeed','voiceMode','autoVoice','workoutReminders','meetReminders','messageAlerts'].forEach(k=>x[k]=$('#'+k).value);window.MWAccountStorage.local.setItem('mwPrefs',JSON.stringify(x));const c=$('#settingsCoachType')?.value||coachVisualChoice();setCoachChoice(c);if($('#coachType'))$('#coachType').value=c;$('#saveSettings').textContent='✓ SETTINGS SAVED';renderProgressUI();setTimeout(()=>$('#saveSettings').textContent='SAVE SETTINGS',1200)};
 
 
-(function initLiftMaxes(){const m=getLiftMaxes();['maxHangSnatch','maxHangClean','maxFrontSquat','maxBackSquat','maxBench','maxHexBar','maxPushPress','maxTestDate','olympicBarWeight','hexBarWeight'].forEach(id=>{const el=document.getElementById(id);if(el&&m[id]!=null)el.value=m[id]});const b=document.getElementById('saveLiftMaxes');if(b)b.onclick=()=>{const x={};['maxHangSnatch','maxHangClean','maxFrontSquat','maxBackSquat','maxBench','maxHexBar','maxPushPress','maxTestDate','olympicBarWeight','hexBarWeight'].forEach(id=>x[id]=document.getElementById(id)?.value||'');localStorage.setItem(LIFT_MAX_KEY,JSON.stringify(x));const st=document.getElementById('liftMaxStatus');if(st)st.textContent='✓ Weight-room maxes saved. Weekly loads and plate-by-plate bar setups will now calculate automatically.';try{renderStrengthWeek(activeMWWeek())}catch{}}})();
+(function initLiftMaxes(){const m=getLiftMaxes();['maxHangSnatch','maxHangClean','maxFrontSquat','maxBackSquat','maxBench','maxHexBar','maxPushPress','maxTestDate','olympicBarWeight','hexBarWeight'].forEach(id=>{const el=document.getElementById(id);if(el&&m[id]!=null)el.value=m[id]});const b=document.getElementById('saveLiftMaxes');if(b)b.onclick=()=>{const x={};['maxHangSnatch','maxHangClean','maxFrontSquat','maxBackSquat','maxBench','maxHexBar','maxPushPress','maxTestDate','olympicBarWeight','hexBarWeight'].forEach(id=>x[id]=document.getElementById(id)?.value||'');window.MWAccountStorage.local.setItem(LIFT_MAX_KEY,JSON.stringify(x));const st=document.getElementById('liftMaxStatus');if(st)st.textContent='✓ Weight-room maxes saved. Weekly loads and plate-by-plate bar setups will now calculate automatically.';try{renderStrengthWeek(activeMWWeek())}catch{}}})();
 const MW={
   christianFoundation:{
     worldview:'Historic Trinitarian Christian',
@@ -2622,7 +2622,7 @@ const MW_WORDS=[
 ];
 function wordForToday(){const d=new Date();const seed=Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(d.getFullYear(),0,0))/86400000);return MW_WORDS[seed%MW_WORDS.length]}
 function renderWord(){const w=wordForToday(); if($('#verseRef'))$('#verseRef').textContent=w.ref;if($('#verseTheme'))$('#verseTheme').textContent=w.theme}
-function getProfile(){return JSON.parse(localStorage.getItem('mwPremiumProfile')||'{}')}
+function getProfile(){return JSON.parse(window.MWAccountStorage.local.getItem('mwPremiumProfile')||'{}')}
 function intentOf(x){for(const i of MW.intents)if(i.keys.some(k=>x.includes(k)))return i.name;return 'general'}
 
 function activeMWWeek(q=''){
@@ -2690,7 +2690,7 @@ async function loadStrengthQuickCheckins(){
   mwStrengthQuickCache={};for(const x of rows){const k=`${Number(x.program_week)}-${Number(x.strength_day)}`;if(!mwStrengthQuickCache[k])mwStrengthQuickCache[k]=x}
   for(const x of Object.values(mwStrengthQuickCache)){
     if(x?.lifecycle_status!=='completed'||x?.session_feel)continue;
-    let legacy='';try{legacy=String(localStorage.getItem('mwLiftFeel:'+trainingCycleKey()+':'+Number(x.program_week)+':'+Number(x.strength_day))||'').toLowerCase()}catch{}
+    let legacy='';try{legacy=String(window.MWAccountStorage.local.getItem('mwLiftFeel:'+trainingCycleKey()+':'+Number(x.program_week)+':'+Number(x.strength_day))||'').toLowerCase()}catch{}
     if(['strong','normal','heavy'].includes(legacy)){try{await saveStrengthFeel(x.program_week,x.strength_day,legacy)}catch{}}
   }
   try{renderWeightRoomProgressUI()}catch{}
@@ -2809,7 +2809,7 @@ function add(t,c){let d=document.createElement('div');d.className='msg '+c;if(c=
 const MW_CONVERSATION_PREFIX='mwConversationV3:';
 function mwConversationSession(){
   try{
-    const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');
+    const raw=window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession');
     return raw?JSON.parse(raw):null;
   }catch{return null}
 }
@@ -2819,13 +2819,13 @@ function mwConversationKey(session){
 }
 function readConversation(key){
   try{
-    const parsed=JSON.parse(localStorage.getItem(key)||'[]');
+    const parsed=JSON.parse(window.MWAccountStorage.local.getItem(key)||'[]');
     return Array.isArray(parsed)?parsed.filter(m=>m&&typeof m.content==='string'&&['user','assistant'].includes(m.role)).slice(-30):[];
   }catch{return []}
 }
 let MW_CONVERSATION_KEY=mwConversationKey(mwConversationSession());
 let conversation=readConversation(MW_CONVERSATION_KEY);
-function saveConversation(){localStorage.setItem(MW_CONVERSATION_KEY,JSON.stringify(conversation.slice(-30)))}
+function saveConversation(){window.MWAccountStorage.local.setItem(MW_CONVERSATION_KEY,JSON.stringify(conversation.slice(-30)))}
 function renderSavedConversation(){
   const chat=$('#chat');if(!chat)return;
   chat.innerHTML='';
@@ -3136,7 +3136,7 @@ async function loadSeasonCalendar(){
         mwRemoteProfile.currentPhase=String(mwSeasonCalendar.phase||mwRemoteProfile.currentPhase||1);
       }
       $('#seasonWeek').value=seasonWeek;
-      const p=getProfile();p.week=String(seasonWeek);localStorage.setItem('mwPremiumProfile',JSON.stringify(p));
+      const p=getProfile();p.week=String(seasonWeek);window.MWAccountStorage.local.setItem('mwPremiumProfile',JSON.stringify(p));
       if($('#week'))$('#week').value=String(seasonWeek);
       if($('#homeWeek'))$('#homeWeek').textContent=String(seasonWeek);
       if($('#completionWeek'))$('#completionWeek').textContent=String(seasonWeek);
@@ -3404,9 +3404,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   function hideRoleMismatch(){const box=document.querySelector('#mwRoleMismatch');if(box){box.hidden=true;box.innerHTML=''}}
   function handoffMWSession(path,key){
     if(!mwSession?.access_token)return;
-    try{localStorage.setItem(key,JSON.stringify(mwSession))}catch{}
-    try{localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY)}catch{}
-    location.assign(path);
+    window.MWAccountScope.handoff(path,key,mwSession);
   }
   function showRoleMismatch(error){
     const box=document.querySelector('#mwRoleMismatch');if(!box||error?.roleMismatch!==true)return false;
@@ -3429,8 +3427,8 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     box.querySelector('[data-mw-target="coach"]')?.addEventListener('click',()=>handoffMWSession('/coach/','mwCoachSupabaseSession'));
     return true;
   }
-  function saveSession(s,persist=null){mwSession=s;window.mwSetConversationIdentity?.(s);const keep=persist===null?!!localStorage.getItem(SESSION_KEY):!!persist;if(keep){localStorage.setItem(SESSION_KEY,JSON.stringify(s));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(s));localStorage.removeItem(SESSION_KEY)}}
-  function clearSession(){mwSession=null;window.mwSetConversationIdentity?.(null);localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
+  function saveSession(s,persist=null){mwSession=s;window.mwSetConversationIdentity?.(s);const keep=persist===null?!!window.MWAccountStorage.local.getItem(SESSION_KEY):!!persist;if(keep){window.MWAccountStorage.local.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.session.removeItem(SESSION_KEY)}else{window.MWAccountStorage.session.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.local.removeItem(SESSION_KEY)}}
+  function clearSession(){mwSession=null;window.mwSetConversationIdentity?.(null);window.MWAccountStorage.local.removeItem(SESSION_KEY);window.MWAccountStorage.session.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();try{h['X-MW-Time-Zone']=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status,d);return d}
   function prsToProfile(prs=[]){const out=Object.fromEntries([60,100,150,200,300,400,500].map(d=>['p'+d,'']));for(const x of prs){const d=String(x.event||'').toLowerCase().replace(/\s/g,'').replace(/m$/,'');if(Object.hasOwn(out,'p'+d))out['p'+d]=String(x.time_seconds??'')}return out}
@@ -3494,7 +3492,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     window.mwAssessmentComplete=Boolean(ps.onboarding_assessment_completed_at);
     window.mwAssessmentRequired=hasAthlete&&featureAccess.smart_entry===true&&!window.mwAssessmentComplete;
     window.mwDobRequired=hasAthlete&&!d.athlete?.date_of_birth&&featureAccess.access_mode!=='internal_test';
-    const localVoice=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}');
+    const localVoice=JSON.parse(window.MWAccountStorage.local.getItem('mwCoachPreference')||'{}');
 
     mwRemoteProfile={
       userId:d.user?.id||'',
@@ -3572,7 +3570,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
           }
         };
         const c=document.querySelector('#coachType')?.value||'male';
-        localStorage.setItem('mwCoachPreference',JSON.stringify({coachType:c}));
+        window.MWAccountStorage.local.setItem('mwCoachPreference',JSON.stringify({coachType:c}));
         mwRemoteProfile.coachType=c;
         save.disabled=true; save.textContent='SAVING…';
         try{
@@ -3597,7 +3595,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       coach.value=mwRemoteProfile.coachType;
       coach.onchange=()=>{
         mwRemoteProfile.coachType=coach.value;
-        localStorage.setItem('mwCoachPreference',JSON.stringify({coachType:coach.value}));
+        window.MWAccountStorage.local.setItem('mwCoachPreference',JSON.stringify({coachType:coach.value}));
         applyCoachVisual(coach.value)
       }
     }
@@ -3710,7 +3708,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       for(const [id,col] of Object.entries(STRENGTH_FIELD_MAP)){
         const el=document.getElementById(id); if(el&&row[col]!=null)el.value=row[col];
       }
-      localStorage.setItem(LIFT_MAX_KEY,JSON.stringify(Object.fromEntries(Object.keys(STRENGTH_FIELD_MAP).map(id=>[id,document.getElementById(id)?.value||'']))));
+      window.MWAccountStorage.local.setItem(LIFT_MAX_KEY,JSON.stringify(Object.fromEntries(Object.keys(STRENGTH_FIELD_MAP).map(id=>[id,document.getElementById(id)?.value||'']))));
     }
     const b=document.getElementById('saveLiftMaxes');
     if(b)b.onclick=saveStrengthMaxes;
@@ -3734,7 +3732,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     try{
       const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_strength_maxes?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});
       const out=await r.json().catch(()=>[]); if(!r.ok)throw new Error(out?.message||out?.details||'Weight-room save failed.');
-      const local={};for(const id of Object.keys(STRENGTH_FIELD_MAP))local[id]=document.getElementById(id)?.value||'';localStorage.setItem(LIFT_MAX_KEY,JSON.stringify(local));
+      const local={};for(const id of Object.keys(STRENGTH_FIELD_MAP))local[id]=document.getElementById(id)?.value||'';window.MWAccountStorage.local.setItem(LIFT_MAX_KEY,JSON.stringify(local));
       if(st)st.textContent='✓ Weight-room maxes saved to MW Dynasty. They will stay synced across devices.';
       if(b)b.textContent='✓ WEIGHT ROOM MAXES SAVED';
       try{await loadStrengthMaxes()}catch{}
@@ -3816,13 +3814,13 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load athlete settings.');const x=Array.isArray(rows)?rows[0]:null;if(!x)return;
     const cv=['male','female'].includes(x.coach_visual)?x.coach_visual:'male';mwRemoteProfile.coachType=cv;['coachType','settingsCoachType'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=cv});applyCoachVisual(cv);
     const speed=['0.9','1','1.1','1.2'].includes(String(x.voice_speed))?String(x.voice_speed):'1';const mode=['fast','standard'].includes(String(x.voice_mode))?String(x.voice_mode):(String(x.voice_mode)==='natural'?'standard':'fast');const map={voiceSpeed:speed,voiceMode:mode,autoVoice:x.auto_voice?'on':'off',workoutReminders:x.workout_reminders?'on':'off',meetReminders:x.meet_reminders?'on':'off',messageAlerts:x.message_alerts?'on':'off'};
-    for(const [id,val] of Object.entries(map)){const el=document.getElementById(id);if(el&&val!=null)el.value=val}localStorage.setItem('mwPrefs',JSON.stringify(map))
+    for(const [id,val] of Object.entries(map)){const el=document.getElementById(id);if(el&&val!=null)el.value=val}window.MWAccountStorage.local.setItem('mwPrefs',JSON.stringify(map))
   }
   async function saveAthleteSettings(){
     if(!mwRemoteProfile.athleteId||!token())throw new Error('Athlete account is not connected.');
     const v=id=>document.getElementById(id)?.value;
     const payload={athlete_id:mwRemoteProfile.athleteId,coach_visual:v('settingsCoachType')||v('coachType')||'male',voice_speed:v('voiceSpeed')||'1',voice_mode:v('voiceMode')||'fast',auto_voice:v('autoVoice')==='on',workout_reminders:v('workoutReminders')!=='off',meet_reminders:v('meetReminders')!=='off',message_alerts:v('messageAlerts')!=='off',updated_at:new Date().toISOString()};
-    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'Settings save failed.');mwRemoteProfile.coachType=payload.coach_visual;applyCoachVisual(payload.coach_visual);localStorage.setItem('mwPrefs',JSON.stringify({voiceSpeed:payload.voice_speed,voiceMode:payload.voice_mode,autoVoice:payload.auto_voice?'on':'off',workoutReminders:payload.workout_reminders?'on':'off',meetReminders:payload.meet_reminders?'on':'off',messageAlerts:payload.message_alerts?'on':'off'}));return d;
+    const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'Settings save failed.');mwRemoteProfile.coachType=payload.coach_visual;applyCoachVisual(payload.coach_visual);window.MWAccountStorage.local.setItem('mwPrefs',JSON.stringify({voiceSpeed:payload.voice_speed,voiceMode:payload.voice_mode,autoVoice:payload.auto_voice?'on':'off',workoutReminders:payload.workout_reminders?'on':'off',meetReminders:payload.meet_reminders?'on':'off',messageAlerts:payload.message_alerts?'on':'off'}));return d;
   }
   async function loadMe(){
     const d=await api('/api/me',{cache:'no-store'});
@@ -4053,7 +4051,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     return false;
   }
   async function resume(){
-  const raw=localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY);
+  const raw=window.MWAccountStorage.local.getItem(SESSION_KEY)||window.MWAccountStorage.session.getItem(SESSION_KEY);
   if(!raw)return;
   document.body.classList.add('mw-entering');
 
@@ -4153,6 +4151,23 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   }catch(e){console.warn('MW auth network override',e)}
 
 
+  document.getElementById('manageCoachConnections')?.addEventListener('click',async()=>{
+    const aid=mwRemoteProfile.athleteId;if(!aid||!token())return;
+    const host=document.getElementById('coachConnectedText');
+    try{
+      const rows=await api(SUPABASE_URL+'/rest/v1/coach_assignments?select=coach_user_id&athlete_id=eq.'+encodeURIComponent(aid)+'&status=eq.active',{headers:{apikey:SUPABASE_KEY}});
+      const names=await api(SUPABASE_URL+'/rest/v1/rpc/mw_athlete_assigned_coach_identity',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:'{}'});
+      host.replaceChildren();
+      for(const row of rows){const name=names.find(n=>n.coach_user_id===row.coach_user_id)?.coach_name||'Connected coach';const line=document.createElement('div'),button=document.createElement('button');line.textContent=name+' ';button.textContent='Disconnect';button.className='secondary';line.appendChild(button);host.appendChild(line);
+        button.onclick=async()=>{if(!confirm('Disconnect from '+name+'? This coach will lose access to your athlete account. Your personal history is retained. Billing is managed separately.'))return;button.disabled=true;
+          try{await api(SUPABASE_URL+'/rest/v1/rpc/mw_end_coach_connection',{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_coach_user_id:row.coach_user_id,p_athlete_id:aid})});location.reload()}
+          catch(e){button.disabled=false;button.textContent='Retry disconnect';authStatus(e.message,true)}
+        };
+      }
+      if(!rows.length)host.textContent='No active coach connections.';
+    }catch(e){host.textContent=e.message}
+  });
+
   const accessReason=new URLSearchParams(location.search).get('access');
   if(accessReason==='membership'){authStatus('This account does not currently have active MW Dynasty access.',true)}
 
@@ -4161,9 +4176,9 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   document.querySelector('#mwAthleteLoginForm').onsubmit=e=>{e.preventDefault();login()};
   document.querySelector('#mwForgotPassword').onclick=requestPasswordReset;document.querySelector('#mwAuthLogin').style.display='';authStatus('');
   document.querySelector('#mwSavePassword').onclick=saveRecoveredPassword;
-  const out=document.querySelector('#mwSignOut');if(out)out.onclick=async()=>{out.disabled=true;out.textContent='SIGNING OUT…';try{const t=token();if(t)await fetch(SUPABASE_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+t}})}catch(e){console.warn('MW remote sign-out unavailable',e)}finally{clearSession();location.replace('/athlete/')}};
+  const out=document.querySelector('#mwSignOut');if(out)out.onclick=async()=>{out.disabled=true;out.textContent='SIGNING OUT…';await window.MWAccountScope.signOut(SUPABASE_URL,SUPABASE_KEY,token())};
   window.addEventListener('mw:session-refreshed',e=>{if(e?.detail?.key===SESSION_KEY&&e.detail.session)mwSession=e.detail.session});
-  window.addEventListener('online',()=>{const raw=localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY);if(raw&&!document.body.classList.contains('mw-auth-ready'))setTimeout(()=>resume(),220)});
+  window.addEventListener('online',()=>{const raw=window.MWAccountStorage.local.getItem(SESSION_KEY)||window.MWAccountStorage.session.getItem(SESSION_KEY);if(raw&&!document.body.classList.contains('mw-auth-ready'))setTimeout(()=>resume(),220)});
   if(!initRecoveryMode()){
     const confirmed=confirmedSignupSessionFromUrl();
     if(confirmed){saveSession(confirmed,true);history.replaceState({},document.title,location.pathname);renderAthleteMembership(confirmed)}
@@ -4180,7 +4195,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   const SUPABASE_KEY=window.MW_SUPABASE_KEY;
   const $=s=>document.querySelector(s);
   let currentInvite=null;
-  function session(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+  function session(){try{return JSON.parse(window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession')||'null')}catch{return null}}
   function authHeaders(extra={}){const ss=session();return {apikey:SUPABASE_KEY,Authorization:`Bearer ${ss?.access_token||''}`,'Content-Type':'application/json',...extra}}
   async function sb(path,opts={}){const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers:authHeaders(opts.headers||{})});const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}if(!r.ok)throw new Error(data?.message||data?.hint||data?.details||String(data||`Supabase ${r.status}`));return data}
   function status(msg,kind=''){const el=$('#coachInvitePreview');if(!el)return;el.textContent=msg;el.className='coachConnectStatus show'+(kind?' '+kind:'')}
@@ -4236,7 +4251,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
 <script>(function(){
 const m=document.getElementById('mwUtilityModal'),t=document.getElementById('mwUtilityTitle'),b=document.getElementById('mwUtilityBody');
 function o(x,h){t.textContent=x;b.innerHTML=h;m.classList.add('open')}function c(){m.classList.remove('open')}document.getElementById('mwUtilityClose')?.addEventListener('click',c);m?.addEventListener('click',e=>{if(e.target===m)c()});
-function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+function sess(){try{return JSON.parse(window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession')||'null')}catch{return null}}
 const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
 async function mwLoadPublicPricing(){try{const r=await fetch('/api/pricing',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!Array.isArray(d.plans))throw new Error(d.error||'Pricing unavailable');const p=d.plans.find(x=>x.plan_code==='mw_athlete');if(!p)return;const monthly=Number(p.monthly_price_cents),annual=Number(p.annual_price_cents);window.__mwAthletePricing={monthly,annual,annualEnabled:!!p.annual_enabled};if(Number.isFinite(monthly)){const el=document.getElementById('mwAthleteMembershipPrice');if(el)el.textContent=`MW Athlete · $${(monthly/100).toFixed(monthly%100===0?0:2)}/month${Number.isFinite(annual)&&p.annual_enabled?` · $${(annual/100).toFixed(annual%100===0?0:2)}/year`:''}`;}}catch(e){console.warn('MW public pricing sync unavailable; using locked fallback price.',e)}}
 async function mwBillingRequest(method='GET',body=null){const s=sess();if(!s?.access_token)throw new Error('Sign in again to manage your membership.');const r=await fetch('/api/billing',{method,headers:{Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Membership request failed');return d}
@@ -4251,7 +4266,7 @@ document.getElementById('reportIssueBtn')?.addEventListener('click',()=>{o('Repo
 document.getElementById('privacyBtn')?.addEventListener('click',()=>location.href='/privacy.html');
 document.getElementById('termsBtn')?.addEventListener('click',()=>location.href='/terms.html');
 document.getElementById('mwAISharingSettings')?.addEventListener('click',()=>window.MWAISharing.open(sess()?.access_token).catch(e=>alert(e.message)));
-document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{const typed=prompt('Delete your MW Dynasty athlete account and associated training data? This cannot be undone. If you have an Apple-billed subscription, account deletion does NOT cancel Apple billing; manage that subscription separately. You may still delete immediately now. Type DELETE to continue.');if(typed!=='DELETE')return;const s=sess();if(!s?.access_token){alert('Sign in again before deleting your account.');return}if(!confirm('Final confirmation: permanently delete this MW Athlete account?'))return;const btn=document.getElementById('deleteAccountBtn');btn.disabled=true;btn.textContent='DELETING…';try{const r=await fetch(SB+'/functions/v1/mw-delete-account',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion failed');localStorage.clear();sessionStorage.clear();alert('Your MW Athlete account and associated account data were deleted.');location.replace('/')}catch(e){alert(e.message||'Account deletion failed.');btn.disabled=false;btn.textContent='DELETE ACCOUNT'}});
+document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{const typed=prompt('Delete your MW Dynasty athlete account and associated training data? This cannot be undone. If you have an Apple-billed subscription, account deletion does NOT cancel Apple billing; manage that subscription separately. You may still delete immediately now. Type DELETE to continue.');if(typed!=='DELETE')return;const s=sess();if(!s?.access_token){alert('Sign in again before deleting your account.');return}if(!confirm('Final confirmation: permanently delete this MW Athlete account?'))return;const btn=document.getElementById('deleteAccountBtn');btn.disabled=true;btn.textContent='DELETING…';try{const r=await fetch(SB+'/functions/v1/mw-delete-account',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion failed');window.MWAccountStorage.local.clear();window.MWAccountStorage.session.clear();alert('Your MW Athlete account and associated account data were deleted.');location.replace('/')}catch(e){alert(e.message||'Account deletion failed.');btn.disabled=false;btn.textContent='DELETE ACCOUNT'}});
 })();</script>
 
 
@@ -4268,7 +4283,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
       if(!r.ok||!user?.id)throw new Error('Invite sign-in could not be completed.');
       const expiresIn=Number(h.get('expires_in')||3600);
       const session={access_token:access,refresh_token:refresh||'',token_type:h.get('token_type')||'bearer',expires_in:expiresIn,expires_at:Math.floor(Date.now()/1000)+expiresIn,user};
-      localStorage.setItem('mwSupabaseSession',JSON.stringify(session));
+      window.MWAccountStorage.local.setItem('mwSupabaseSession',JSON.stringify(session));
       history.replaceState({},document.title,location.pathname+location.search);
       return true;
     }catch(e){console.warn('MW invite session capture:',e.message);return false}
@@ -4281,7 +4296,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
   async function autoCoachInvite(){
     const q=new URLSearchParams(location.search), token=q.get('invite')||q.get('invite_token');
     if(!token)return;
-    let ss=null;try{ss=JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{}
+    let ss=null;try{ss=JSON.parse(window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession')||'null')}catch{}
     if(!ss?.access_token)return;
     try{
       const r=await fetch(window.MW_SUPABASE_URL+'/rest/v1/rpc/mw_accept_coach_invitation',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY,Authorization:'Bearer '+ss.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({p_invite_token:token})});
@@ -4300,7 +4315,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 (()=>{
   const SB=window.MW_SUPABASE_URL+'',PK=window.MW_SUPABASE_KEY;
   let coachRows=[],replyRows=[],coachIdentityRows=[],selectedCoachId=null;
-  function sess(){try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession')||'null')}catch{return null}}
+  function sess(){try{return JSON.parse(window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession')||'null')}catch{return null}}
   function headers(){const s=sess();return {apikey:PK,Authorization:'Bearer '+(s?.access_token||''),'Content-Type':'application/json'}}
   async function rpc(name,body={}){const r=await fetch(`${SB}/rest/v1/rpc/${name}`,{method:'POST',headers:headers(),body:JSON.stringify(body)}),text=await r.text();let d=null;try{d=text?JSON.parse(text):null}catch{d=text}if(!r.ok)throw new Error(d?.message||d?.details||d?.hint||`MW message request failed (${r.status})`);return d}
   async function rest(path){const r=await fetch(`${SB}/rest/v1/${path}`,{headers:headers()}),text=await r.text();let d=null;try{d=text?JSON.parse(text):null}catch{d=text}if(!r.ok)throw new Error(d?.message||d?.details||`MW message request failed (${r.status})`);return d}
@@ -4340,7 +4355,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 (()=>{
   const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
   let items=[];
-  function authToken(){try{const raw=localStorage.getItem('mwSupabaseSession')||sessionStorage.getItem('mwSupabaseSession');return JSON.parse(raw||'null')?.access_token||''}catch{return ''}}
+  function authToken(){try{const raw=window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession');return JSON.parse(raw||'null')?.access_token||''}catch{return ''}}
   async function request(method='GET',body=null){
     const token=authToken();if(!token)return null;
     const r=await fetch('/api/athlete/notifications',{method,headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});

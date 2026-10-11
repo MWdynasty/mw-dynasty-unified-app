@@ -57,6 +57,7 @@ function checkTutorials(){
   const athlete=fs.readFileSync('athlete/index.html','utf8'),views=[];
   const scope={localStorage:storage,mwOnboardingUserKey:'test-athlete',window:{mwAssessmentComplete:true,mwGetRemoteProfile:()=>({assessmentCompletedAt:'2026-09-26T10:42:16Z'})},
     $:selector=>element(selector),QS_STEPS:[],qsIndex:0,buildQuickStartSteps:()=>[{},{},{}],renderQuickStart(){},openView:view=>views.push(view),loadSeasonCalendar(){}};
+  scope.window.MWAccountStorage={local:storage};
   vm.createContext(scope);
   vm.runInContext(athlete.slice(athlete.indexOf('function qsStorageKey('),athlete.indexOf('function renderQuickStart(')),scope);
   vm.runInContext(athlete.slice(athlete.indexOf('function finishQuickStart('),athlete.indexOf('const DEFAULT_PREFS=')),scope);
@@ -75,6 +76,7 @@ function checkTutorials(){
     document:{getElementById:()=>root},window:{removeEventListener(){}},coachTourReposition(){},coachTourCloseNav(){},toast(){},
     startCoachTour(){starts++;root={remove(){root=null}};coachScope.coachTourState={root}}
   };
+  coachScope.window.MWAccountStorage={local:storage};
   vm.createContext(coachScope);
   vm.runInContext(coach.slice(coach.indexOf('function coachTourUserKey('),coach.indexOf('function coachTourEnsureDashboard(')),coachScope);
   vm.runInContext(coach.slice(coach.indexOf('function finishCoachTour('),coach.indexOf('function renderLogin(')),coachScope);

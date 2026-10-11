@@ -36,13 +36,13 @@
     const settingsKey='mw-practice-mode-v1:'+d.project+':'+uid;
     const narrator=root.MWCoachTimingTools.createNarrator(),audio=root.MWCoachTimingTools.audio;
     let roster=[],groups=[],plans={},targets={},heats=[],selectedGroupId=null,model,saving=false,persistError=false,counting=false,countingCue='',narratorMode='off';
-    try{const saved=JSON.parse(localStorage.getItem(settingsKey)||'null');narratorMode=['off','workout','meet'].includes(saved?.narratorMode)?saved.narratorMode:saved?.narration===true?'meet':'off';}catch{}
+    try{const saved=JSON.parse((root.MWAccountStorage?.local||localStorage).getItem(settingsKey)||'null');narratorMode=['off','workout','meet'].includes(saved?.narratorMode)?saved.narratorMode:saved?.narration===true?'meet':'off';}catch{}
     let restored;
-    try{restored=JSON.parse(localStorage.getItem(storageKey)||'null')}catch{}
+    try{restored=JSON.parse((root.MWAccountStorage?.local||localStorage).getItem(storageKey)||'null')}catch{}
     model=new root.MWPracticeHeats.Session({coachId:uid,date:today,draft:restored});
     const notice=text=>{if(panel.isConnected)find('heatStatus').textContent=text;};
     const guide=text=>{if(narratorMode==='workout'&&document.visibilityState!=='hidden'&&!narrator.speak(text))notice('Workout voice is unavailable on this device. Timing controls still work.');};
-    const persist=()=>{try{localStorage.setItem(storageKey,JSON.stringify({...model.snapshot(),...(d.customProgram?{customWorkoutKey:customSelection?.key||restored?.customWorkoutKey}: {})}));persistError=false}catch{persistError=true;notice('Device storage is unavailable. Keep this page open until you save.')}};
+    const persist=()=>{try{(root.MWAccountStorage?.local||localStorage).setItem(storageKey,JSON.stringify({...model.snapshot(),...(d.customProgram?{customWorkoutKey:customSelection?.key||restored?.customWorkoutKey}: {})}));persistError=false}catch{persistError=true;notice('Device storage is unavailable. Keep this page open until you save.')}};
     const h=()=>model.heats[model.active];
     const busy=()=>saving||counting||Object.values(model.heats).some(root.MWPracticeHeats.active);
     const name=id=>roster.find(a=>a.id===id)?.name||'Athlete';
@@ -189,7 +189,7 @@
     function setTab(mode){for(const [id,selected] of [['heatPracticeTab',!mode],['heatModeTab',mode]]){find(id).setAttribute('aria-selected',String(selected));find(id).tabIndex=selected?0:-1;}find('heatPracticePanel').hidden=mode;find('heatModePanel').hidden=!mode;}
     find('heatPracticeTab').onclick=()=>setTab(false);find('heatModeTab').onclick=()=>setTab(true);
     for(const id of ['heatPracticeTab','heatModeTab'])find(id).onkeydown=event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const mode=event.key==='End'||(event.key!=='Home'&&id==='heatPracticeTab');setTab(mode);find(mode?'heatModeTab':'heatPracticeTab').focus();}};
-    find('heatNarratorMode').onchange=()=>{if(busy())return;const value=find('heatNarratorMode').value;if(!['off','workout','meet'].includes(value))return;narrator.cancel();narratorMode=value;try{localStorage.setItem(settingsKey,JSON.stringify({narratorMode}));}catch{notice('Narrator selection could not be saved on this device.');}render();guide('Workout guidance on. Choose your group and start a rep when ready.');};
+    find('heatNarratorMode').onchange=()=>{if(busy())return;const value=find('heatNarratorMode').value;if(!['off','workout','meet'].includes(value))return;narrator.cancel();narratorMode=value;try{(root.MWAccountStorage?.local||localStorage).setItem(settingsKey,JSON.stringify({narratorMode}));}catch{notice('Narrator selection could not be saved on this device.');}render();guide('Workout guidance on. Choose your group and start a rep when ready.');};
     find('heatRestApply').onclick=()=>{
       const minutes=Number(find('heatRestMinutes').value),seconds=Number(find('heatRestSeconds').value);
       if(!Number.isInteger(minutes)||!Number.isInteger(seconds)||minutes<0||seconds<0||seconds>59){find('heatRestSettingStatus').textContent='Enter whole minutes and seconds from 0 to 59.';return;}

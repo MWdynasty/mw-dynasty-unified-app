@@ -1,9 +1,12 @@
 'use strict';
+// This fixture verifies the Chicago-local billing date independent of runner timezone.
+process.env.TZ='America/Chicago';
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const source=fs.readFileSync('athlete/index.html','utf8');
 const el={textContent:'',innerHTML:''},btn={style:{}},note={style:{}},calls=[];
 let stored=null;
 const c={window:{},document:{getElementById:id=>id==='mwAthleteBillingStatus'?el:id==='mwContinueSelfPay'?btn:id==='mwBillingTransitionNote'?note:null,querySelectorAll:()=>[]},localStorage:{getItem:()=>stored},sessionStorage:{getItem:()=>null},fetch:async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({status:{billing_type:'individual',subscription_status:'active',current_period_end:'2026-11-04T18:21:07Z'}})}},console,Date,JSON,history:{state:{},pushState(){}},location:{href:'fixture'},mwSetHomeScrollLock(){},$(){return null}};
+c.window.MWAccountStorage={local:c.localStorage,session:c.sessionStorage};
 vm.createContext(c);
 vm.runInContext(source.slice(source.indexOf("function sess(){",source.indexOf("<script>(function(){")),source.indexOf('function mwMoney(')),c);
 vm.runInContext(source.slice(source.indexOf('async function mwLoadBillingStatus('),source.indexOf('async function mwPrepareSelfPay(')),c);

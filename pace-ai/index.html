@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script src="/lib/mw-account-scope.js?v=1"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#09090a">
@@ -156,7 +156,7 @@ button{box-shadow:0 8px 24px rgba(214,179,90,.12)}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let TRACK={weeks:{}}, currentSession=null, currentPlan=null, mwAudio=null;
 const KEY='mwPaceAthleteV2', REPKEY='mwPaceRepLogV2';
-const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+const saved=JSON.parse(window.MWAccountStorage.local.getItem(KEY)||'{}');
 let syncedMarks=null;
 const paceDistances=[100,150,200,300,400,500];
 function profile(){return {...Object.fromEntries(paceDistances.map(d=>['p'+d,Number($('#p'+d).value||0)])),week:+($('#week').value||saved.week||1),day:+($('#day').value||saved.day||1)}}
@@ -175,7 +175,7 @@ function buildPacePlan(parsed){
  const x=calc(parsed.distance,parsed.intensity);
  return Number.isFinite(x?.target)?{...parsed,...x}:null;
 }
-function savePrefs(){const p=profile();localStorage.setItem(KEY,JSON.stringify(p))}
+function savePrefs(){const p=profile();window.MWAccountStorage.local.setItem(KEY,JSON.stringify(p))}
 async function init(){
  TRACK={weeks:{}};
  for(let i=1;i<=41;i++)$('#week').insertAdjacentHTML('beforeend',`<option value="${i}">Week ${i}</option>`);
@@ -277,8 +277,8 @@ function renderTargets(){
  box.innerHTML=`<div class="target"><div class="kicker">${currentPlan.reps} × ${currentPlan.distance}m @ ${Math.round(currentPlan.intensity*100)}%</div><div><span class="targetBig">${currentPlan.target.toFixed(2)}</span> SEC</div><div class="muted">MW Target Zone: ${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)} sec • ${currentPlan.anchor}<br>${currentPlan.note}</div></div><div class="repList">${Array.from({length:currentPlan.reps},(_,i)=>`<div class="repRow"><b>R${i+1}</b><span>Target <strong>${currentPlan.target.toFixed(2)}</strong></span><span>${currentPlan.low.toFixed(2)}–${currentPlan.high.toFixed(2)}</span><span class="repStatus">READY</span></div>`).join('')}</div>`;
 }
 function repLogKey(){return `${$('#week').value}-${$('#day').value}`}
-function getLogs(){const all=JSON.parse(localStorage.getItem(REPKEY)||'{}');return all[repLogKey()]||{}}
-function setLog(rep,val){const all=JSON.parse(localStorage.getItem(REPKEY)||'{}');all[repLogKey()]=all[repLogKey()]||{};all[repLogKey()][rep]=val;localStorage.setItem(REPKEY,JSON.stringify(all));renderRecorder()}
+function getLogs(){const all=JSON.parse(window.MWAccountStorage.local.getItem(REPKEY)||'{}');return all[repLogKey()]||{}}
+function setLog(rep,val){const all=JSON.parse(window.MWAccountStorage.local.getItem(REPKEY)||'{}');all[repLogKey()]=all[repLogKey()]||{};all[repLogKey()][rep]=val;window.MWAccountStorage.local.setItem(REPKEY,JSON.stringify(all));renderRecorder()}
 window.MW_REP_TRACKING=null;
 function renderRecorder(){
  const box=$('#repRecorder');box.innerHTML='';
@@ -383,7 +383,7 @@ $('#sendPacer').onclick=()=>{
    restSeconds:(()=>{const m=String(currentSession?.recovery||'').match(/(\d+(?:\.\d+)?)\s*min/i);return m?Math.round(+m[1]*60):0})(),
    week:+$('#week').value,day:+$('#day').value,title:currentSession?.title||'MW Workout',work:sessionWorkText(currentSession)
  };
- localStorage.setItem('mwPacerHandoff',JSON.stringify(payload));
+ window.MWAccountStorage.local.setItem('mwPacerHandoff',JSON.stringify(payload));
  $('#handoffProof').style.display='block';
  const raw='/distance-pacer/';
  try{
@@ -422,7 +422,7 @@ document.addEventListener('mw-athlete-ready',e=>{
 <script id="mw-pace-supabase-history-v1">
 (()=>{
  const URL='https://keqgunlfwhjgcsurynef.supabase.co',KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';let cache={};
- const sess=()=>window.MW_SESSION||(()=>{try{return JSON.parse(localStorage.getItem('mwSupabaseSession')||'null')}catch{return null}})();
+ const sess=()=>window.MW_SESSION||(()=>{try{return JSON.parse(window.MWAccountStorage.local.getItem('mwSupabaseSession')||'null')}catch{return null}})();
  const headers=(x={})=>({apikey:KEY,Authorization:'Bearer '+(sess()?.access_token||''),'Content-Type':'application/json',...x});
  function workoutKey(){return `mw-track-w${Number(document.getElementById('week')?.value||1)}-d${Number(document.getElementById('day')?.value||1)}`}
  async function loadHistory(){if(window.MW_ATHLETE?.repTracking!==true)return;const a=window.MW_ATHLETE?.athlete;if(!a)return;const wk=workoutKey();const r=await fetch(URL+'/rest/v1/athlete_pace_logs?athlete_id=eq.'+encodeURIComponent(a.id)+'&workout_key=eq.'+encodeURIComponent(wk)+'&select=rep_number,actual_seconds',{headers:headers(),cache:'no-store'});const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Pace history sync failed');cache={};for(const x of rows)cache[x.rep_number]=x.actual_seconds??'';renderRecorder()}

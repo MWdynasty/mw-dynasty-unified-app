@@ -524,7 +524,7 @@ function taskBoardPage(){pageBase('AI Task Board','Daily coaching tasks and prio
 function seasonPage(){pageBase('AI Season Planner','Build and optimize the season while keeping the coach in control.',`<div class="panel-grid"><div class="tile"><h3>Current Phase</h3><p>Acceleration Development · Week 12</p></div><div class="tile"><h3>Next Meet</h3><p>Spring Invitational · APR 12</p></div></div><button class="action" data-toast="Season recommendation generated" style="margin-top:14px">Generate Recommendation</button>`)}
 function adjustmentPage(){pageBase('AI Season Adjustment','Detect → Analyze → Recommend → Coach Approves → System Executes.',`<div class="tile"><h3>Recommended Adjustment</h3><p>Maya T. missed two sessions. Hold the next high-intensity progression until attendance and readiness are reviewed.</p><button class="action" data-toast="Recommendation approved" style="margin-top:12px">Approve Adjustment</button> <button class="back" data-toast="Recommendation dismissed">Dismiss</button></div>`)}
 function coachMWPrefs(){
-  try{return {...{coachType:'male',voiceSpeed:1,voiceMode:'fast',autoVoice:'on'},...(JSON.parse(localStorage.getItem('mwCoachAISettings')||'{}')||{})}}catch{return {coachType:'male',voiceSpeed:1,voiceMode:'fast',autoVoice:'on'}}
+  try{return {...{coachType:'male',voiceSpeed:1,voiceMode:'fast',autoVoice:'on'},...(JSON.parse(window.MWAccountStorage.local.getItem('mwCoachAISettings')||'{}')||{})}}catch{return {coachType:'male',voiceSpeed:1,voiceMode:'fast',autoVoice:'on'}}
 }
 function coachMWSettingsHTML(){
   const pref=coachMWPrefs();
@@ -532,7 +532,7 @@ function coachMWSettingsHTML(){
 }
 function bindCoachMWSettings(){
   const btn=document.getElementById('saveCoachMWSettings');if(!btn)return;
-  btn.onclick=()=>{const prefs={coachType:document.getElementById('coachMWType')?.value==='female'?'female':'male',voiceSpeed:Number(document.getElementById('coachMWVoiceSpeed')?.value||1),voiceMode:document.getElementById('coachMWVoiceMode')?.value==='standard'?'standard':'fast',autoVoice:document.getElementById('coachMWAutoVoice')?.value==='off'?'off':'on'};localStorage.setItem('mwCoachAISettings',JSON.stringify(prefs));btn.textContent='✓ Saved';setTimeout(()=>btn.textContent='Save Coach MW Settings',1000)};
+  btn.onclick=()=>{const prefs={coachType:document.getElementById('coachMWType')?.value==='female'?'female':'male',voiceSpeed:Number(document.getElementById('coachMWVoiceSpeed')?.value||1),voiceMode:document.getElementById('coachMWVoiceMode')?.value==='standard'?'standard':'fast',autoVoice:document.getElementById('coachMWAutoVoice')?.value==='off'?'off':'on'};window.MWAccountStorage.local.setItem('mwCoachAISettings',JSON.stringify(prefs));btn.textContent='✓ Saved';setTimeout(()=>btn.textContent='Save Coach MW Settings',1000)};
 }
 const MW_US_STATES=[
   ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']
@@ -804,15 +804,15 @@ function coachMWPage(){
   document.querySelector('.page')?.classList.add('coach-mw-athlete-page');
   let pendingImage='',activeAudio=null,activeVoiceButton=null,activeVoiceURL='',voiceRun=0;
   const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate'),requestState=document.getElementById('mwcoachrequeststate');
-  const draftPrompt=sessionStorage.getItem('mwCoachDraftPrompt')||'';if(draftPrompt){q.value=draftPrompt;sessionStorage.removeItem('mwCoachDraftPrompt')}
+  const draftPrompt=window.MWAccountStorage.session.getItem('mwCoachDraftPrompt')||'';if(draftPrompt){q.value=draftPrompt;window.MWAccountStorage.session.removeItem('mwCoachDraftPrompt')}
   let history=[];
   try{
-    const saved=JSON.parse(sessionStorage.getItem('mwCoachProConversation')||'[]');
+    const saved=JSON.parse(window.MWAccountStorage.session.getItem('mwCoachProConversation')||'[]');
     history=Array.isArray(saved)?saved.filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40):[];
-    if(!Array.isArray(saved))sessionStorage.removeItem('mwCoachProConversation');
+    if(!Array.isArray(saved))window.MWAccountStorage.session.removeItem('mwCoachProConversation');
   }catch{
     history=[];
-    sessionStorage.removeItem('mwCoachProConversation');
+    window.MWAccountStorage.session.removeItem('mwCoachProConversation');
   }
   const voiceChunks=(text,mode)=>{if(mode==='standard')return [text];const parts=String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text],chunks=[];let current='';for(const part of parts){if((current+part).length>360&&current){chunks.push(current.trim());current=''}current+=part}if(current.trim())chunks.push(current.trim());return chunks.slice(0,8)};
   const resetVoice=()=>{voiceRun++;if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch{}}if(activeVoiceURL)URL.revokeObjectURL(activeVoiceURL);if(activeVoiceButton){activeVoiceButton.textContent='▶ Start Voice';activeVoiceButton.disabled=false;activeVoiceButton=null}activeAudio=null;activeVoiceURL=''};
@@ -911,10 +911,10 @@ function coachMWPage(){
         const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||(grouping?'Groups could not be saved':messaging?'Message send failed':'Calendar update failed'));
         card.remove();const confirmation=String(dd.answer||(grouping?'Groups saved to Teams.':messaging?'Message sent.':'Calendar updated.'));
         history.push({role:'assistant',content:confirmation});history=history.slice(-40);
-        appendCoachBubble('assistant',confirmation);try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}
+        appendCoachBubble('assistant',confirmation);try{window.MWAccountStorage.session.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}
         if(grouping){toast('Groups saved to Teams');const open=document.createElement('button');open.type='button';open.className='back';open.textContent='Open Teams';open.onclick=()=>openPage('teams');chat.appendChild(open);}
         else if(messaging){toast('Message sent through MW');}
-        else{toast(deleting?'Removed from MW Calendar':(updating?'MW Calendar updated':action.eventType==='meet'?'Meet added to MW':'Added to MW Calendar'));try{sessionStorage.setItem('mwCalendarRefreshNeeded','1')}catch{}}
+        else{toast(deleting?'Removed from MW Calendar':(updating?'MW Calendar updated':action.eventType==='meet'?'Meet added to MW':'Added to MW Calendar'));try{window.MWAccountStorage.session.setItem('mwCalendarRefreshNeeded','1')}catch{}}
       }catch(e){approve.disabled=false;cancel.disabled=false;approve.textContent=idleLabel;actionStatus.textContent=e.message||'Please retry.';toast(e.message||(messaging?'Message send failed':'Calendar update failed'))}
     };
   };
@@ -965,7 +965,7 @@ function coachMWPage(){
       chat.scrollTop=chat.scrollHeight;
       requestState.textContent='';
       pendingImage='';pick.value='';
-      setTimeout(()=>{try{sessionStorage.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
+      setTimeout(()=>{try{window.MWAccountStorage.session.setItem('mwCoachProConversation',JSON.stringify(history))}catch{}},0);
     }).catch(e=>{
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
       const timedOut=e?.name==='AbortError';
@@ -1054,10 +1054,10 @@ async function requestCoachAccountDeletion(){
   }catch(e){if(state)state.textContent=e.message||'Account deletion request failed.';if(btn){btn.disabled=false;btn.textContent='Delete Account'}}
 }
 const COACH_ACTIVE_PAGE_KEY='mwCoachActivePage';
-function rememberCoachActivePage(page){try{sessionStorage.setItem(COACH_ACTIVE_PAGE_KEY,String(page||'dashboard'))}catch{}}
+function rememberCoachActivePage(page){try{window.MWAccountStorage.session.setItem(COACH_ACTIVE_PAGE_KEY,String(page||'dashboard'))}catch{}}
 function resumeCoachActivePage(){
   let page=history.state?.mwCoachPage||'';
-  if(!page)try{page=sessionStorage.getItem(COACH_ACTIVE_PAGE_KEY)||''}catch{}
+  if(!page)try{page=window.MWAccountStorage.session.getItem(COACH_ACTIVE_PAGE_KEY)||''}catch{}
   const allowed=new Set(['train','practice','founderpreview','athletes','teams','programs','calendar','meets','attendance','messages','activity','account','support','taskboard','season','adjustment','coachmw','insights','mwtrack','strength','pacing','grouppacing','more']);
   if(page&&page!=='dashboard'&&allowed.has(page)){openPage(page,false);return}
   dashboard();
@@ -1128,7 +1128,7 @@ function smoothSwitchExperience(next,button){
   veil.innerHTML=`<div class="experience-card ${nextPlan.theme}"><div class="experience-kicker">MW DYNASTY COACH</div><div class="experience-name">${nextPlan.title}</div><div class="experience-tag">${nextPlan.tag}</div><div class="experience-line"><span></span></div></div>`;
   requestAnimationFrame(()=>veil.classList.add('show'));
   window.setTimeout(()=>{
-    experience=next;localStorage.setItem('mwCoachExperience',experience);dashboard();
+    experience=next;window.MWAccountStorage.local.setItem('mwCoachExperience',experience);dashboard();
     const fresh=document.querySelector('.app');if(fresh)fresh.classList.add('experience-entering');
     requestAnimationFrame(()=>{if(fresh)fresh.classList.add('experience-entered')});
     veil.classList.remove('show');
@@ -1223,16 +1223,16 @@ function maybeStartCoachTour(){
   if(document.getElementById('coachTour'))return;
   const uid=coachTourUserKey();if(uid==='local')return;
   if(accountAccess.isFounder){
-    if(localStorage.getItem(coachTourCompleteKey(experience))!=='1')startCoachTour({mode:'full'});
+    if(window.MWAccountStorage.local.getItem(coachTourCompleteKey(experience))!=='1')startCoachTour({mode:'full'});
     return;
   }
-  const last=localStorage.getItem(coachTourLastTierKey())||'';
+  const last=window.MWAccountStorage.local.getItem(coachTourLastTierKey())||'';
   const current=experience;
   if(last&&coachTourRank(current)>coachTourRank(last)&&COACH_UPGRADE_TOURS[current]){
     startCoachTour({mode:'upgrade'});return;
   }
-  if(localStorage.getItem(coachTourCompleteKey(current))!=='1')startCoachTour({mode:'full'});
-  else localStorage.setItem(coachTourLastTierKey(),current);
+  if(window.MWAccountStorage.local.getItem(coachTourCompleteKey(current))!=='1')startCoachTour({mode:'full'});
+  else window.MWAccountStorage.local.setItem(coachTourLastTierKey(),current);
 }
 function coachTourEnsureDashboard(){
   if(!document.querySelector('.app'))dashboard();
@@ -1328,8 +1328,8 @@ function coachTourPosition(step){
 function coachTourReposition(){const st=coachTourState;if(st)coachTourPosition(st.steps[st.index])}
 function finishCoachTour(skipped=false){
   const st=coachTourState;if(!st)return;
-  localStorage.setItem(coachTourCompleteKey(experience),'1');
-  if(!accountAccess.isFounder)localStorage.setItem(coachTourLastTierKey(),experience);
+  window.MWAccountStorage.local.setItem(coachTourCompleteKey(experience),'1');
+  if(!accountAccess.isFounder)window.MWAccountStorage.local.setItem(coachTourLastTierKey(),experience);
   window.removeEventListener('resize',coachTourReposition);
   st.root?.remove();coachTourState=null;coachTourCloseNav();
   toast(skipped?'Tutorial skipped — replay it from Account anytime.':'Tutorial complete — you’re ready to coach.');
@@ -1517,7 +1517,7 @@ async function validateSession(session){
   if(window.MWResilience?.isTransientStatus?.(r.status))throw coachAccessError('Coach authentication is temporarily unavailable.',r.status);
   return r.ok;
 }
-function storedSessionIsPersistent(){return !!localStorage.getItem(SESSION_KEY)}
+function storedSessionIsPersistent(){return !!window.MWAccountStorage.local.getItem(SESSION_KEY)}
 async function refreshCoachSession(session){
   if(!session?.refresh_token)return null;
   let r;
@@ -1532,18 +1532,15 @@ async function refreshCoachSession(session){
 }
 function persistSession(session,remember=true){
   authSession=session;
-  if(remember){localStorage.setItem(SESSION_KEY,JSON.stringify(session));sessionStorage.removeItem(SESSION_KEY)}else{sessionStorage.setItem(SESSION_KEY,JSON.stringify(session));localStorage.removeItem(SESSION_KEY)}
+  if(remember){window.MWAccountStorage.local.setItem(SESSION_KEY,JSON.stringify(session));window.MWAccountStorage.session.removeItem(SESSION_KEY)}else{window.MWAccountStorage.session.setItem(SESSION_KEY,JSON.stringify(session));window.MWAccountStorage.local.removeItem(SESSION_KEY)}
 }
-function clearSession(){authSession=null;localStorage.removeItem(SESSION_KEY);sessionStorage.removeItem(SESSION_KEY);try{sessionStorage.removeItem(COACH_ACTIVE_PAGE_KEY)}catch{}}
+function clearSession(){authSession=null;window.MWAccountStorage.local.removeItem(SESSION_KEY);window.MWAccountStorage.session.removeItem(SESSION_KEY);try{window.MWAccountStorage.session.removeItem(COACH_ACTIVE_PAGE_KEY)}catch{}}
 function readStoredSession(){
-  try{return JSON.parse(localStorage.getItem(SESSION_KEY)||sessionStorage.getItem(SESSION_KEY)||'null')}catch{return null}
+  try{return JSON.parse(window.MWAccountStorage.local.getItem(SESSION_KEY)||window.MWAccountStorage.session.getItem(SESSION_KEY)||'null')}catch{return null}
 }
 async function signOut(){
   if(window.__mwCoachNotificationPoll){clearInterval(window.__mwCoachNotificationPoll);window.__mwCoachNotificationPoll=null}
-  const token=authSession?.access_token;
-  clearSession();
-  if(token){try{await fetch(`${SUPABASE_URL}/auth/v1/logout`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`}})}catch{}}
-  renderLogin('You have been signed out.');
+  await window.MWAccountScope.signOut(SUPABASE_URL,SUPABASE_KEY,authSession?.access_token);
 }
 
 function renderCoachMembershipSelection(session=authSession){
@@ -1769,8 +1766,8 @@ function mwModal(title,body){
   el.innerHTML=`<div class="mw-modal-backdrop" data-close-modal></div><section class="mw-modal-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}"><div class="mw-modal-head"><div><div class="eyebrow">${PLANS[experience].name}</div><h2>${escapeHtml(title)}</h2></div><button class="back" type="button" data-close-modal>✕</button></div><div class="mw-modal-body">${body}</div></section>`;
   document.body.appendChild(el);el.querySelectorAll('[data-close-modal]').forEach(x=>x.onclick=()=>el.remove());return el;
 }
-function mwStore(key,value){localStorage.setItem('mwCoach:'+key,JSON.stringify(value))}
-function mwLoad(key,fallback){try{return JSON.parse(localStorage.getItem('mwCoach:'+key)||'null')??fallback}catch{return fallback}}
+function mwStore(key,value){window.MWAccountStorage.local.setItem('mwCoach:'+key,JSON.stringify(value))}
+function mwLoad(key,fallback){try{return JSON.parse(window.MWAccountStorage.local.getItem('mwCoach:'+key)||'null')??fallback}catch{return fallback}}
 function mwClientTimeZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{return'UTC'}}
 function mwLocalIsoDate(date=new Date()){
   const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');
@@ -1856,6 +1853,17 @@ async function athleteDetail(athleteId){
       <div class="tile" style="margin-top:14px"><h3>Private Coach Notes</h3><div id="athleteNotes">${notes.length?notes.map(n=>`<div class="row"><span>${escapeHtml(n.note)}<br><small>${escapeHtml(fmtDate(n.created_at))}</small></span></div>`).join(''):'<p>No coach notes yet.</p>'}</div></div>
       <div class="form" style="margin-top:14px"><label>Add Private Coach Note<textarea rows="4" id="athNote" maxlength="5000" placeholder="Add a private coaching note…"></textarea></label><button class="action" id="saveAthNote">Save Note</button><div id="athNoteState"></div></div>
     </div>`;
+    if(accountAccess.role==='coach'){
+      const section=document.createElement('div');section.className='tile';section.style.marginTop='14px';
+      section.innerHTML='<h3>Team Connection</h3><p>Disconnecting stops this coach account from accessing the athlete. Their personal history and recorded team results are retained. Billing is managed separately.</p><button class="back" id="endAthleteConnection">Disconnect Athlete</button><p id="endConnectionState"></p>';
+      modal.querySelector('#athleteDetailLive').appendChild(section);
+      section.querySelector('button').onclick=async()=>{
+        if(!confirm('Disconnect this athlete from your coach account? Your access will end immediately. Their personal history and recorded team results will be retained. Billing is managed separately.'))return;
+        const btn=section.querySelector('button');btn.disabled=true;
+        try{const r=await fetch('/api/coach/athlete',{method:'POST',headers:{Authorization:'Bearer '+mwSessionToken(),'Content-Type':'application/json'},body:JSON.stringify({action:'end_connection',athleteId})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Connection could not be ended.');modal.remove();athletesPage();toast('Athlete disconnected')}
+        catch(e){section.querySelector('p:last-child').textContent=e.message;btn.disabled=false}
+      };
+    }
     const sponsorshipBtn=modal.querySelector('#athSponsorshipAction');
     if(sponsorshipBtn)sponsorshipBtn.onclick=async()=>{
       const msg=modal.querySelector('#athSponsorshipState'),ending=sponsorshipEnding;
@@ -2353,7 +2361,7 @@ function smartScheduleTierCopy(){
 }
 async function calendarPage(){
   const smart=smartScheduleUnlocked(),tier=smartScheduleTierCopy();
-  try{sessionStorage.removeItem('mwCalendarRefreshNeeded')}catch{}
+  try{window.MWAccountStorage.session.removeItem('mwCalendarRefreshNeeded')}catch{}
   pageBase('Calendar',smart?'School constraints, practices, meets, and team events in one coaching calendar.':'Practice, meet, testing, and team-event scheduling for Coach Core.',`
     ${smart?`<section class="school-calendar-hero">
       <div><span class="status-kicker">${tier.kicker}</span><h2>${tier.title}</h2><p>${tier.body}</p><span class="smart-schedule-badge">${tier.badge}</span></div>

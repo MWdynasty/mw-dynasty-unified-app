@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v7-shared-signin';
+const CACHE='mw-dynasty-shell-v8-account-isolation';
 const CORE=[
   '/',
   '/athlete/',
@@ -10,6 +10,7 @@ const CORE=[
   '/favicon.png',
   '/coach/app.js',
   '/lib/mw-workout-identity.js',
+  '/lib/mw-account-scope.js?v=1',
   '/coach/styles.css',
   '/assets/mw-unified-theme.css',
   '/assets/mw-signin-v3.js',
@@ -43,6 +44,7 @@ function excluded(url){
   return url.pathname.startsWith('/api/')||
     url.pathname.startsWith('/coach/')||
     url.pathname.startsWith('/founder/')||
+    url.pathname.startsWith('/account/')||
     url.pathname.startsWith('/.well-known/');
 }
 function fallbackFor(url){
@@ -57,7 +59,7 @@ async function networkFirst(request){
   try{
     const r=await fetch(request,{signal:ctl.signal});
     clearTimeout(timer);
-    if(r&&r.ok)cache.put(request,r.clone()).catch(()=>{});
+    if(r&&r.ok&&!/private|no-store/i.test(r.headers.get('Cache-Control')||''))cache.put(request,r.clone()).catch(()=>{});
     return r
   }catch(e){
     clearTimeout(timer);
@@ -74,6 +76,7 @@ async function networkFirst(request){
 self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
+  if(request.headers.has('Authorization'))return;
   const url=new URL(request.url);
   if(url.origin!==self.location.origin||excluded(url))return;
   event.respondWith(networkFirst(request))

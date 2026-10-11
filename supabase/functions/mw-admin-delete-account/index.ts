@@ -15,6 +15,8 @@ Deno.serve(async(req:Request)=>{
     if(!url||!secret||!publishable)return json({ok:false,error:"Administration service is not configured"},503);
     const ur=await fetch(`${url}/auth/v1/user`,{headers:{apikey:publishable,authorization:`Bearer ${token}`}});const caller=await ur.json().catch(()=>null);
     if(!ur.ok||!caller?.id)return json({ok:false,error:"Your session is invalid or expired"},401);
+    const live=await fetch(`${url}/rest/v1/rpc/mw_current_session_active`,{method:"POST",headers:{apikey:publishable,authorization:`Bearer ${token}`,"content-type":"application/json"},body:"{}"});
+    if(!live.ok||await live.json().catch(()=>false)!==true)return json({ok:false,error:"Your session is invalid or expired"},401);
     const base=adminHeaders(secret,{"content-type":"application/json"});
     const cp=await fetch(`${url}/rest/v1/profiles?user_id=eq.${encodeURIComponent(caller.id)}&select=role,account_status&limit=1`,{headers:base});const cr=await cp.json().catch(()=>[]);const callerProfile=Array.isArray(cr)?cr[0]:null;
     if(!callerProfile||callerProfile.account_status!=="active"||!["founder_owner","admin"].includes(callerProfile.role))return json({ok:false,error:"Founder/Admin access required"},403);
