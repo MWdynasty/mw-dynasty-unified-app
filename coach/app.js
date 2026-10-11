@@ -2264,7 +2264,7 @@ async function programsPage(){
   if(experience==='performance')return mwTrackPage();
   pageBase('My Program','Build, upload, save and manage your own coaching program in the MW workspace.',`<div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px"><button class="back" id="uploadProgram">Upload PDF / Word / Excel</button><button class="action" id="newProgram">+ New Program</button></div><div id="programLive" class="list"><div class="tile">Loading programs…</div></div>`);
   document.getElementById('newProgram').onclick=()=>programEditor();document.getElementById('uploadProgram').onclick=()=>programEditor(null,true);const wrap=document.getElementById('programLive');
-  try{const rows=await sbRest('coach_programs?select=id,name,program_type,status,content,updated_at&order=updated_at.desc')||[];await MWCoachPrograms.list(wrap,rows,customProgramDeps(),programEditor);}catch(e){wrap.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}
+  try{const rows=await sbRest('coach_programs?select=id,name,program_type,status,content,updated_at&status=neq.archived&order=updated_at.desc')||[];await MWCoachPrograms.list(wrap,rows,customProgramDeps(),programEditor);}catch(e){wrap.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}
 }
 function customProgramDeps(){return {token:mwSessionToken,timeZone:mwClientTimeZone,roster:fetchCoachRoster,rest:sbRest,modal:mwModal,date:mwLocalIsoDate,toast,bind:bindPageNavigation,programs:programsPage};}
 function readFileBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||'').split(',')[1]||'');r.onerror=()=>reject(new Error('Could not read that file.'));r.readAsDataURL(file)})}

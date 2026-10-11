@@ -29,3 +29,8 @@
  #programLive .mwProgramActions button { width:100%; }
 }
 @media(max-width:380px){#programLive .mwProgramActions { grid-template-columns:minmax(0,1fr); }}
+
+.program-delete {color:#ffb5ae!important;border-color:#a45c54!important;background:#241419!important;}
+.mwProgramDeleteActions {display:flex;flex-wrap:wrap;gap:12px;}
+.mwProgramDeleteActions button {min-height:44px;}
+@media(max-width:640px){#programLive .mwProgramActions .program-delete {grid-column:1 / -1;}}
