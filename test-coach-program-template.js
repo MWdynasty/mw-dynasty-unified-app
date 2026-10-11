@@ -21,6 +21,8 @@ assert.equal(result.sessions[1].manualOnly,true);assert.equal(result.sessions[2]
 const roundtrip=program.parse(result.programText);
 for(let i=0;i<roundtrip.length;i++)assert.deepEqual(roundtrip[i].blocks.map(({id,...b})=>b),result.sessions[i].blocks.map(({id,...b})=>b));
 assert.equal(roundtrip[1].manualOnly,true);assert.equal(roundtrip[2].manualOnly,true);
+assert.equal(roundtrip[2].work,'Rest day.');
+const serialized=program.parse(program.serialize(result.sessions));assert.equal(serialized[2].work,'Rest day.');assert.deepEqual(serialized[0].blocks.map(({id,...b})=>b),s.blocks.map(({id,...b})=>b));
 for(const [changed,error] of [
  [[1,'Monday','Speed','Rest','','',1],/row 2: sets/],
  [[1,'Monday','Speed','Guess'],/Session type/],
