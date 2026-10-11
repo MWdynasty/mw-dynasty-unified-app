@@ -153,7 +153,7 @@ html.mw-native-app .nativeIapDisclosure{display:block}
 <script>
 const SUPABASE_URL='https://keqgunlfwhjgcsurynef.supabase.co';
 const SUPABASE_KEY='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
-const SESSION_KEY='mwSupabaseSession';
+const SESSION_KEY=window.MWAccountScope.sessionKey;
 let session=null,account=null;
 const el=id=>document.getElementById(id);
 function readSession(){try{return JSON.parse(window.MWAccountStorage.local.getItem(SESSION_KEY)||window.MWAccountStorage.session.getItem(SESSION_KEY)||'null')}catch{return null}}

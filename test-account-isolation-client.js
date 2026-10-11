@@ -44,6 +44,8 @@ async function main(){
  assert.equal(logout.c.document.documentElement.style.visibility,'hidden');assert.equal(logout.reloads,0,'do not cancel server revocation with an immediate reload');assert.equal(local.getItem('mwCoachSupabaseSession'),null);assert.equal(logoutInit.keepalive,true);assert.throws(()=>logout.c.MWAccountStorage.local.setItem('private','late'),/account changed/);
  revoke(new Response('{}'));await done;assert.equal(logout.reloads,1);
  local.setItem('mwCoachSupabaseSession',JSON.stringify(session(uidA)));local.setItem('mwConversationV3:'+uidA,'Owned history');const legacy=page(local);assert.equal(legacy.c.MWAccountStorage.local.getItem('mwConversationV3:'+uidA),'Owned history');assert.equal(legacy.c.MWAccountStorage.local.getItem('mwConversationV3:'+uidB),null);
+ local.setItem('mwCoachSupabaseSession',JSON.stringify(session(uidA)));local.setItem('mwSupabaseSession',JSON.stringify(session(uidB)));let transmitted=false;
+ const roles=page(local,storage(),async()=>{transmitted=true;return new Response('{}')});assert.equal(roles.c.MWAccountScope.sessionKey,'mwCoachSupabaseSession');await assert.rejects(roles.c.fetch('/api/me',{headers:{Authorization:'Bearer '+token(uidB)}}),/account changed/);assert.equal(transmitted,false,'another workspace account token is rejected before transmission');
  console.log('PASS: separate account caches, shared-device switch, second tab, stale API/body, late refresh, token rotation and back/forward restoration.');
 }
 main().catch(e=>{console.error(e);process.exitCode=1});
