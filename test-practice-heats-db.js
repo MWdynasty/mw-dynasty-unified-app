@@ -10,6 +10,8 @@ async function run(){
   for(const name of ['20261002030901_canonical_workout_identity.sql','20261003004000_atomic_practice_commit.sql','20261003024000_lock_completed_practice_workouts.sql','20261003025500_serialize_workout_completion_writes.sql','20261003031000_local_program_day_and_completion_authority.sql','20261003032000_refresh_coach_practice_program_position.sql','20261003155114_stabilize_legacy_program_refresh.sql','20261003155417_preserve_atomic_practice_intent.sql','20261003190541_immutable_completed_practice_retries.sql','20261003191637_protect_completed_practice_table_evidence.sql','20261003192608_validate_coach_evidence_session_links.sql'])await db.exec(read(name));
   await db.exec(fs.readFileSync('test-fixtures/practice-groups.sql','utf8'));
   await db.exec(read('20261006152137_coach_saved_practice_groups.sql'));
+  // The simulated coach uses UTC; keep the database fixture date in the same zone.
+  await db.exec("set time zone 'UTC'");
   const {today,day}=await scalar(db,'select current_date::text as today,extract(isodow from current_date)::int as day');
   const roster=[];
   for(let i=0;i<16;i++){
