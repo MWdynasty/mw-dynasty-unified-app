@@ -58,3 +58,5 @@
 .mwPreviewWeeks button {display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 5px!important;font-size:13px!important;letter-spacing:0!important;line-height:1.4;min-width:0;margin:0;}
 .mwPreviewWeeks small {font-size:10px;font-weight:400;}
 .mwProgramEntryActions{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}.mwProgramEntryActions button{min-width:0;white-space:normal}.mwProgramEntryActions button[aria-pressed=true]{border-color:#ffd56b;color:#ffd56b}.mwProgramEntry [hidden],#cpUploadPanel[hidden],.mwProgramSource[hidden]{display:none!important}
+
+.mwWorkoutCopy{margin:14px 0;padding:16px;border:1px solid #675025;border-radius:12px;background:#080f19}.mwWorkoutCopy[hidden]{display:none!important}.mwWorkoutCopy h4{margin:0;color:#f4d47e}.mwWorkoutCopy button{white-space:normal;max-width:100%}.mwWorkoutCopy [data-copy-error]{color:#ffd56b}.mwPreviewDay [data-duplicate-workout]{margin:8px 0}
