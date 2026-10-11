@@ -4,8 +4,8 @@ Coach Core and Coach Intelligence use coach-authored programs for daily training
 
 1. Open My Program and the imported program.
 2. Build Workout Days. Review sets, reps, distance, intensity and recovery. Fill missing values; explicitly confirm rest/recovery/lifting days as non-timed.
-3. Confirm review, choose Active and save.
-4. Assign the saved program to connected athletes or an owned group, with a calendar start date.
+3. Confirm review. Save Program retains the selected status; Save & Assign saves reviewed days as Active and opens assignment directly.
+4. Choose connected athletes or an owned group, with a calendar start date. Missing review items and save/loading failures remain visible beside the actions.
 5. Open Train and Practice Mode. Select the assigned timed block, run heats and finish every prescribed rep before saving. Non-timed days remain visible for athlete check-ins.
 
 Week 1 uses the Monday of the chosen start-date week. A Wednesday start begins on Week 1 Wednesday. Future dates, ended programs and unscheduled days do not invent sessions. Timing saves do not rewrite the original prescription or the MW Velocity workout system.
