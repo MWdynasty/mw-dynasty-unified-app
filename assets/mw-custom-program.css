@@ -12,3 +12,20 @@
 .mwCustomReview button { min-height:44px; margin:6px 0; }
 .mwCustomReview [data-review-state] { color:#f4d47e; line-height:1.5; }
 @media(max-width:440px){.mwCustomSession,.mwCustomReview { padding:12px; }.mwCustomFields { gap:8px; }}
+
+/* Keep program actions and long uploaded filenames within the card on phones. */
+#programLive { min-width:0; max-width:100%; }
+#programLive .mwProgramCard { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:16px; padding:16px; box-sizing:border-box; min-width:0; max-width:100%; border:1px solid #675025; border-radius:16px; background:#07121a; }
+#programLive .mwProgramDetails { min-width:0; overflow-wrap:anywhere; }
+#programLive .mwProgramDetails h3 { margin:0 0 8px; color:#fff; font-size:18px; line-height:1.4; }
+#programLive .mwProgramDetails p { margin:6px 0; font-size:14px; line-height:1.5; color:#adbdc8; }
+#programLive .mwProgramDetails .mwProgramAssignmentStatus { color:#f4d47e; font-weight:700; }
+#programLive .mwProgramTargets { padding-left:18px; margin:8px 0 0; font-size:14px; line-height:1.6; color:#adbdc8; }
+#programLive .mwProgramActions { display:flex; flex-wrap:wrap; gap:8px; align-items:start; min-width:0; }
+#programLive .mwProgramActions button { min-width:0; max-width:100%; min-height:44px; box-sizing:border-box; white-space:normal; }
+@media(max-width:640px){
+ #programLive .mwProgramCard { grid-template-columns:minmax(0,1fr); gap:12px; }
+ #programLive .mwProgramActions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+ #programLive .mwProgramActions button { width:100%; }
+}
+@media(max-width:380px){#programLive .mwProgramActions { grid-template-columns:minmax(0,1fr); }}
