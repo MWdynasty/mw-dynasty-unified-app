@@ -51,7 +51,7 @@ module.exports = async function mwGateway(req, res) {
 
   const route = String(req.query && req.query.route || '').replace(/^\/+|\/+$/g, '');
   const length=Number(req.headers?.['content-length']||0);
-  const maxRequestBytes=route==='transcribe'?4_000_000:2_000_000;
+  const maxRequestBytes=route==='coach/program-import'?4_300_000:route==='transcribe'?4_000_000:2_000_000;
   if(Number.isFinite(length)&&length>maxRequestBytes){
     return res.status(413).json({error:'Request is too large.',requestId});
   }
