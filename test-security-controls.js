@@ -42,6 +42,11 @@ includes('SECURITY_CONTROL_FRAMEWORK.md','Fail closed','security governance stan
 includes('supabase/migrations/20260921_company_security_control_framework.sql','company_security_controls','security-control migration missing');
 includes('supabase/migrations/20260921_public_web_security_signals.sql','availability_degraded','public website security signal migration missing');
 
+
+includes('server/api/status.js',"/auth/v1/health",'Health must check the actual auth provider');
+includes('server/api/status.js',"authentication:auth",'Health must distinguish auth reachability');
+excludes('server/api/status.js','auth:true','Health must not report hardcoded auth health');
+
 if(failures.length){
   console.error('\nMW security baseline FAILED:\n- '+failures.join('\n- ')+'\n');
   process.exit(1);
