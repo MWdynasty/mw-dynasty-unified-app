@@ -159,7 +159,7 @@ ${JSON.stringify(context).slice(0,70000)}
       const allowedActions=new Set(['create_task','create_objective','create_skool_post','create_lead','create_partnership']);
       const actionName=allowedActions.has(String(plan?.action))?String(plan.action):'create_task';
       const agents=Array.isArray(context.ai_company.agents)?context.ai_company.agents:[];
-      const selected=agents.find(a=>String(a.code)===String(plan?.agent_code))||agents.find(a=>a.status==='active')||null;
+      const selected=agents.find(a=>String(a.code)===String(body.agentCode))||agents.find(a=>String(a.code)===String(plan?.agent_code))||agents.find(a=>a.status==='active')||null;
       const agentCode=selected?.code||'chief_of_staff';
       const title=clean(plan?.title,180)||'Founder Commander Action';
       const description=clean(plan?.description,5000)||message;
