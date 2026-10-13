@@ -122,6 +122,121 @@ CURRENT FOUNDER OS CAPABILITIES:
 SECURED MW BUSINESS CONTEXT:
 ${JSON.stringify(context).slice(0,90000)}`;
 
+    if(mode==='command'){
+      const message=clean(body.message,8000);
+      if(!message)return res.status(400).json({error:'Founder command is required.'});
+      const history=Array.isArray(body.history)?body.history.slice(-8).map(x=>({role:String(x?.role||'').slice(0,30),text:clean(x?.text,1200)})):[];
+
+      const commandInstructions=guard+\`
+You are the Founder Commander action router for MW Dynasty.
+The Founder may ask a question or issue an instruction such as "act upon this", "do it", "create it", "assign it", "pause it", or "move forward".
+You must return JSON only in this exact shape:
+{"kind":"answer|action","answer":"...","action":"none|create_task|create_objective|create_skool_post|create_lead|create_partnership","section":"...","agent_code":"...","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":false,"parameters":{},"risk":"low|medium|high|critical","reason":"..."}
+
+Routing rules:
+- If the Founder is only asking for information, return kind=answer, action=none, and answer the question from the secured context.
+- If the Founder clearly asks the system to do something, return kind=action. Do not merely describe a plan.
+- create_task is the universal action for Founder Office, Boardroom, AI Workforce, Team Members, Coaches, Athletes, Access & Permissions, Company Health, Reports & Analytics, Decision & Audit Trail, Program Control, School Content Center, Website Studio, Execution Center, Risk & Legal, Finance, Growth, and support operations when no narrower action exists.
+- Use create_objective for an explicit company objective or priority.
+- Use create_skool_post only for a specific Skool post the Founder asks the system to draft/store.
+- Use create_lead for a new CRM lead and create_partnership for a partnership opportunity.
+- Pick the best active AI employee from the secured agent list. If no exact employee exists, use the closest operational agent.
+- Any request involving account deletion, access changes, password/authentication, security controls, privacy, money movement/refunds, legal commitments, medical/safety decisions, external messages, code changes, production deployment, publishing, or irreversible/destructive changes must set requires_approval=true and risk=high or critical.
+- Low-risk internal work such as creating an internal brief, report, draft, audit review, data review, or queued analysis may set requires_approval=false.
+- Never claim an action happened in answer. The server will perform or queue the action after this JSON is validated.
+AVAILABLE AI EMPLOYEES:
+${JSON.stringify((context.ai_company.agents||[]).map(a=>({code:a.code,title:a.title,department:a.department,authority_level:a.authority_level,oversight_mode:a.oversight_mode,mission:a.mission}))).slice(0,30000)}
+SECURED CONTEXT:
+${JSON.stringify(context).slice(0,70000)}
+\`;
+
+      const raw=await openai(commandInstructions,
+        `Founder command:\n${message}\n\nRecent conversation:\n${JSON.stringify(history)}\n\nInterpret the command and, if it is an instruction, prepare the actual Founder OS action.`,2600);
+      let plan;try{plan=parseJson(raw)}catch{return res.status(502).json({error:'Founder Commander returned an unreadable action plan. Try again.'})}
+      const kind=plan?.kind==='action'?'action':'answer';
+      if(kind==='answer')return res.status(200).json({ok:true,mode,kind,answer:clean(plan?.answer,12000)||'I could not determine the answer from the secured Founder context.',action:'none'});
+
+      const allowedActions=new Set(['create_task','create_objective','create_skool_post','create_lead','create_partnership']);
+      const actionName=allowedActions.has(String(plan?.action))?String(plan.action):'create_task';
+      const agents=Array.isArray(context.ai_company.agents)?context.ai_company.agents:[];
+      const selected=agents.find(a=>String(a.code)===String(body.agentCode))||agents.find(a=>String(a.code)===String(plan?.agent_code))||agents.find(a=>a.status==='active')||null;
+      const agentCode=selected?.code||'chief_of_staff';
+      const title=clean(plan?.title,180)||'Founder Commander Action';
+      const description=clean(plan?.description,5000)||message;
+      const priority=['low','normal','high','urgent'].includes(plan?.priority)?plan.priority:'normal';
+      const risky=!!plan?.requires_approval||['high','critical'].includes(String(plan?.risk||'').toLowerCase());
+      const authUserId=profile?.user_id||null;
+
+      if(actionName==='create_objective'){
+        const params=plan?.parameters&&typeof plan.parameters==='object'?plan.parameters:{};
+        const row=one(await rest(token,'founder_ai_objectives',{method:'POST',body:{
+          title,description:clean(params.description,4000)||description,status:'draft',priority,
+          success_definition:clean(params.success_definition||params.successDefinition,3000)||null,
+          owner_agent_code:agentCode,target_date:clean(params.target_date||params.targetDate,20)||null
+        }}));
+        return res.status(200).json({ok:true,mode,kind,executed:true,action:actionName,section:clean(plan?.section,100)||'Founder Office',item:row,answer:`Created the Founder objective “${title}” and stored it in the Founder Office.`});
+      }
+
+      if(actionName==='create_skool_post'&&!risky){
+        const p=plan?.parameters&&typeof plan.parameters==='object'?plan.parameters:{};
+        const scheduledFor=clean(p.scheduled_for||p.scheduledFor,20);
+        if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(scheduledFor))return res.status(400).json({error:'A Skool post command needs a scheduled_for date in YYYY-MM-DD format.'});
+        const row=one(await rest(token,'founder_skool_posts',{method:'POST',body:{
+          scheduled_for:scheduledFor,title,body:clean(p.body,12000)||description,
+          category:clean(p.category,120)||'Community',
+          post_type:['discussion','education','challenge','announcement','poll','spotlight','recap'].includes(p.post_type)?p.post_type:'discussion',
+          audience:['athletes','coaches','parents','athletes_and_coaches','everyone'].includes(p.audience)?p.audience:'athletes_and_coaches',
+          source:'founder',ai_agent_code:agentCode,status:'draft',
+          generation_metadata:{created_from:'founder_commander',command:message}
+        }}));
+        return res.status(200).json({ok:true,mode,kind,executed:true,action:actionName,section:'Skool Content Center',item:row,answer:`Created the Skool draft “${title}” for Founder review. It is not published automatically.`});
+      }
+
+      if(actionName==='create_lead'&&!risky){
+        const p=plan?.parameters&&typeof plan.parameters==='object'?plan.parameters:{};
+        const row=one(await rest(token,'founder_crm_leads',{method:'POST',body:{
+          name:clean(p.name,160)||title,organization:clean(p.organization,200)||null,contact_email:clean(p.contact_email||p.contactEmail,240)||null,
+          lead_type:['coach','school','club','partner','other'].includes(p.lead_type)?p.lead_type:'other',
+          stage:'new',source:'founder_commander',assigned_agent_code:agentCode,
+          estimated_monthly_value_cents:Math.max(0,Number(p.estimated_monthly_value_cents||p.estimatedMonthlyValueCents)||0),
+          next_action:clean(p.next_action||p.nextAction,500)||description,notes:description
+        }}));
+        return res.status(200).json({ok:true,mode,kind,executed:true,action:actionName,section:'Growth Systems',item:row,answer:`Created the CRM lead “${title}”.`});
+      }
+
+      if(actionName==='create_partnership'&&!risky){
+        const p=plan?.parameters&&typeof plan.parameters==='object'?plan.parameters:{};
+        const row=one(await rest(token,'founder_partnership_opportunities',{method:'POST',body:{
+          organization_name:clean(p.organization_name||p.organizationName,220)||title,
+          opportunity_type:['school','district','club','team','brand','partner','other'].includes(p.opportunity_type)?p.opportunity_type:'school',
+          stage:'research',contact_name:clean(p.contact_name||p.contactName,180)||null,contact_email:clean(p.contact_email||p.contactEmail,240)||null,
+          estimated_coaches:Math.max(0,Math.round(Number(p.estimated_coaches||p.estimatedCoaches)||0)),
+          estimated_athletes:Math.max(0,Math.round(Number(p.estimated_athletes||p.estimatedAthletes)||0)),
+          estimated_monthly_value_cents:Math.max(0,Math.round(Number(p.estimated_monthly_value_cents||p.estimatedMonthlyValueCents)||0)),
+          assigned_agent_code:agentCode,next_action:clean(p.next_action||p.nextAction,1000)||description,notes:description
+        }}));
+        return res.status(200).json({ok:true,mode,kind,executed:true,action:actionName,section:'Growth Systems',item:row,answer:`Created the partnership opportunity “${title}”.`});
+      }
+
+      const task=one(await rest(token,'founder_ai_tasks',{method:'POST',body:{
+        agent_code:agentCode,title,description,department:selected?.department||clean(plan?.section,100)||'Founder Office',
+        priority,source:'founder_commander',requires_approval:risky,
+        approval_status:risky?'pending':null,status:risky?'waiting_approval':'queued',
+        metadata:{command:message,section:clean(plan?.section,100)||null,risk:clean(plan?.risk,30)||'low',parameters:plan?.parameters||{}}
+      }}));
+      if(!task)return res.status(500).json({error:'Founder Commander could not create the action task.'});
+      if(risky){
+        await insert(token,'founder_approvals',[{
+          task_id:task.id,category:'commander_action',title:`Approve: ${title}`,
+          description, risk_level:plan?.risk==='critical'?'critical':plan?.risk==='high'?'high':'medium',
+          status:'pending',requested_by_agent_code:agentCode,
+          requested_action:{action:actionName,section:clean(plan?.section,100)||null,parameters:plan?.parameters||{},command:message}
+        }]);
+      }
+      const disposition=risky?'approval_required':'queued_for_execution';
+      return res.status(200).json({ok:true,mode,kind,executed:!risky,action:actionName,section:clean(plan?.section,100)||'Founder Office',agent:selected?.title||agentCode,task,disposition,
+        answer:risky?`I created the action request “${title}” and placed it in Boardroom approval. It will not change accounts, security, money, external communications, code, or production until you approve it.`:`I routed “${title}” to ${selected?.title||'the AI workforce'} in the ${clean(plan?.section,100)||'Founder Office'} queue.`});
+    }
     if(mode==='generate_skool_week'){
       const startDate=clean(body.startDate,20);
       if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate))return res.status(400).json({error:'Valid Skool calendar start date required.'});
