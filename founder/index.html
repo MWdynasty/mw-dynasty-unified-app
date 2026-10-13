@@ -1224,7 +1224,7 @@ async function sendFounderAIMessage(){
   chat.innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';
   box.value="";send.disabled=true;
   try{
-    const d=await ai("chat",{message:q});
+    const d=await ai("command",{message:q,history:aiHistory.slice(-10)});
     const answer=d.answer||"";
     aiHistory.push({role:"ai",text:answer});
     chat.innerHTML+='<div class="bubble ai"><b>Founder AI</b><br>'+esc(answer)+'</div>';
@@ -1237,9 +1237,9 @@ function openAIModal(){
   stopFounderAIReadAloud();stopFounderVoiceInput(true);
   const hist=aiHistory.map(x=>'<div class="bubble '+(x.role==="user"?"user":"ai")+'"><b>'+(x.role==="user"?"Founder":"Founder AI")+'</b><br>'+esc(x.text)+'</div>').join("");
   modal("Founder AI",
-    '<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask me about MW Dynasty revenue, Coaches, Athletes, website conversion, system health, support, or company priorities.</div>')+'</div>'+
+    '<div class="aiChat" id="aiChat">'+(hist||'<div class="bubble ai"><b>Founder AI</b><br>Ask Founder AI for information—or give it a command. It can route work into the appropriate Founder OS section, execute low-risk internal actions, and place consequential actions in Boardroom approval.</div>')+'</div>'+
     '<div class="heroActions" style="margin:0 0 10px"><button class="btn small blue" id="aiSpeak" type="button">🎙 Speak to Founder AI</button><button class="btn small blue" id="aiReadAloud" type="button">🔊 Read Aloud</button><button class="btn small" id="aiAutoVoice" type="button"></button><small class="muted" id="aiMicStatus" style="align-self:center">Speak or type. AI responses can play aloud automatically.</small></div>'+
-    '<div class="chatRow"><textarea id="aiMessage" placeholder="Ask Founder AI…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>'
+    '<div class="chatRow"><textarea id="aiMessage" placeholder="Ask a question or tell Founder AI what to act upon…"></textarea><button class="btn blue" id="aiSend">Ask</button></div>'
   );
   $("aiSpeak").dataset.voiceInputLabel="🎙 Speak to Founder AI";
   updateFounderAIVoiceButton("idle");updateAutoVoiceButton("aiAutoVoice");
@@ -1258,7 +1258,7 @@ async function sendEmployeeMessage(agent){
   chat.innerHTML+='<div class="bubble user"><b>Founder</b><br>'+esc(q)+'</div>';
   box.value="";send.disabled=true;
   try{
-    const d=await ai("employee_chat",{agentCode:agent.code,message:q,history:prior});
+    const d=await ai("command",{agentCode:agent.code,message:q,history:prior});
     const answer=d.answer||"";
     history.push({role:"assistant",text:answer});
     chat.innerHTML+='<div class="bubble ai"><b>'+esc(agent.title)+'</b><br>'+esc(answer)+'</div>';
