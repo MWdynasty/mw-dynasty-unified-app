@@ -34,6 +34,15 @@ async function main(){
  const refreshPage=page(local,storage(),()=>new Promise(r=>finishRefresh=r));
  const refresh=refreshPage.c.fetch('https://db.invalid/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:session(uidA).refresh_token})});
  local.removeItem('mwCoachSupabaseSession');finishRefresh(new Response(JSON.stringify(session(uidA))));await assert.rejects(refresh,/account changed/);assert.equal(local.getItem('mwCoachSupabaseSession'),null);
+ // A new password login creates a different session ID for the SAME user. It must not trigger account-switch recovery.
+ local.setItem('mwCoachSupabaseSession',JSON.stringify(session(uidA,'first-login')));
+ const reauth=page(local);
+ reauth.c.MWAccountStorage.local.setItem('mwCoach:program','Preserved private data');
+ reauth.c.MWAccountStorage.local.setItem('mwCoachSupabaseSession',JSON.stringify(session(uidA,'second-login')));
+ reauth.flush();
+ assert.equal(reauth.reloads,0,'same-user reauthentication must not reload to sign-in');
+ assert.equal(reauth.c.MWAccountStorage.local.getItem('mwCoach:program'),'Preserved private data');
+ assert.equal(reauth.c.MWAccountScope.isCurrent(),true);
  // A token rotation for the same authenticated session must preserve the workspace.
  local.setItem('mwCoachSupabaseSession',JSON.stringify(session(uidA)));const stable=page(local);stable.c.MWAccountStorage.local.setItem('mwCoachSupabaseSession',JSON.stringify({...session(uidA),refresh_token:'rotated'}));stable.flush();assert.equal(stable.reloads,0);
  local.removeItem('mwCoachSupabaseSession');stable.events.pageshow({persisted:true});assert.equal(stable.reloads,1);
