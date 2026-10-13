@@ -1,4 +1,5 @@
 const fs=require('fs');
+const assert=require('node:assert/strict');
 const path=require('path');
 const root=__dirname;
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
@@ -42,8 +43,42 @@ includes('SECURITY_CONTROL_FRAMEWORK.md','Fail closed','security governance stan
 includes('supabase/migrations/20260921_company_security_control_framework.sql','company_security_controls','security-control migration missing');
 includes('supabase/migrations/20260921_public_web_security_signals.sql','availability_degraded','public website security signal migration missing');
 
+
+includes('server/api/status.js',"/auth/v1/health",'Health must check the actual auth provider');
+includes('server/api/status.js',"authentication:auth",'Health must distinguish auth reachability');
+ok(!read('server/api/status.js').includes('auth:true'),'Health must not report hardcoded auth health');
+
 if(failures.length){
   console.error('\nMW security baseline FAILED:\n- '+failures.join('\n- ')+'\n');
   process.exit(1);
 }
-console.log('MW security baseline passed.');
+// Probe behavior is deterministic and never calls a live service in CI.
+const health=require('./server/api/status');
+const originalFetch=global.fetch;
+async function checkHealth(responseOk){
+  let status,body,headers={};
+  global.fetch=async(url,init)=>{
+    assert.ok(String(url).endsWith('/auth/v1/health'),'must probe auth dependency');
+    assert.equal(init.method,'GET');
+    assert.ok(init.signal,'health check must have a deadline');
+    return {ok:responseOk};
+  };
+  await health({method:'GET'},{
+    setHeader:(key,value)=>{headers[key]=value},
+    status(code){status=code;return this},
+    json(value){body=value;return this}
+  });
+  assert.equal(status,responseOk?200:503);
+  assert.equal(body.ok,responseOk);
+  assert.equal(body.dependencies.authentication,responseOk?'reachable':'unavailable');
+  assert.equal(body.dependencies.database,'not_checked');
+  assert.equal(body.dependencies.authorization,'not_checked');
+  assert.equal(headers['X-MW-Health'],responseOk?'reachable':'degraded');
+}
+(async()=>{
+  try{
+    await checkHealth(true);
+    await checkHealth(false);
+    console.log('MW security baseline and dependency health probes passed.');
+  }finally{global.fetch=originalFetch}
+})().catch(e=>{console.error(e);process.exitCode=1});
