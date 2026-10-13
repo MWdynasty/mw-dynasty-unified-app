@@ -1660,7 +1660,7 @@ function bindLogin(){
     const email=document.getElementById('loginEmail').value.trim();
     if(!email)return setLoginMessage('Enter your email address first, then tap Forgot password.');
     forgot.disabled=true;forgot.textContent='Sending…';
-    try{const redirectTo=location.origin+'/coach/';const r=await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.msg||d.message||'Unable to send reset email.')}setLoginMessage('Password reset email sent. Check your inbox.','success')}catch(e){setLoginMessage(e.message)}finally{forgot.disabled=false;forgot.textContent='Forgot password?'}
+    try{const redirectTo=location.origin+'/coach/password-setup.html';const r=await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`,{method:'POST',headers:{apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.msg||d.message||'Unable to send reset email.')}setLoginMessage('Password reset email sent. Check your inbox.','success')}catch(e){setLoginMessage(e.message)}finally{forgot.disabled=false;forgot.textContent='Forgot password?'}
   });
   form.addEventListener('submit',async e=>{
     e.preventDefault();
