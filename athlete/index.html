@@ -1850,7 +1850,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     <div id="mwPracticeSummary" class="mwPracticeSummary" hidden></div>
     <div class="mwPracticeHandsFree" style="margin:12px 0 0;padding:12px 14px;border:1px solid rgba(85,201,255,.35);border-radius:14px;background:rgba(7,19,30,.8)">
       <button id="mwPracticeHandsFree" type="button" aria-pressed="false" style="width:100%;min-height:46px;border-radius:12px;border:1px solid #55c9ff;background:#071b2b;color:#bcecff;font-weight:900;letter-spacing:.04em">ENABLE HANDS-FREE FINISH</button>
-      <div id="mwPracticeVoiceStatus" role="status" aria-live="polite" style="margin-top:8px;color:#93a0ad;font-size:11px;line-height:1.35">Optional: say “MW, record rep” after you cross the line. The Finish Rep button remains available.</div>
+      <div id="mwPracticeVoiceStatus" role="status" aria-live="polite" style="margin-top:8px;color:#93a0ad;font-size:11px;line-height:1.35">Optional: say “Done” after you cross the line. The Finish Rep button remains available.</div>
     </div>
     <div class="mwPracticeControls">
       <button id="mwPracticeStart" type="button">START PRACTICE</button>
@@ -4417,7 +4417,7 @@ function startPracticeVoice(){
    for(let i=e.resultIndex;i<e.results.length;i++){
      if(!e.results[i].isFinal)continue;
      const phrase=String(e.results[i][0]?.transcript||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
-     if(/\b(?:mw[ ,]*)?(?:record|log|save) (?:my )?rep\b/.test(phrase)&&running&&!paused&&!savingRep){
+     if(/\bdone\b/.test(phrase)&&running&&!paused&&!savingRep){
        updatePracticeVoiceUI('Command heard — saving this rep.');
        finishRep('voice');
        return;
@@ -4426,12 +4426,12 @@ function startPracticeVoice(){
  };
  r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){handsFreeFinish=false;stopPracticeVoice();updatePracticeVoiceUI('Microphone permission is off. Use the Finish Rep button or enable access in Settings.')}};
  r.onend=()=>{if(practiceVoice===r){practiceVoice=null;if(handsFreeFinish&&running&&!savingRep)startPracticeVoice()}};
- try{r.start();updatePracticeVoiceUI('Listening during this rep. Say “MW, record rep” after you cross the line.')}catch{practiceVoice=null;updatePracticeVoiceUI('Voice finish could not start. Use the Finish Rep button.')}
+ try{r.start();updatePracticeVoiceUI('Listening during this rep. Say “Done” after you cross the line.')}catch{practiceVoice=null;updatePracticeVoiceUI('Voice finish could not start. Use the Finish Rep button.')}
 }
 function togglePracticeVoice(){
  handsFreeFinish=!handsFreeFinish;
  if(!handsFreeFinish)stopPracticeVoice();
- updatePracticeVoiceUI(handsFreeFinish?(running?'Hands-free is listening now.':'Armed — it will listen when the rep starts.'):'Optional: say “MW, record rep” after you cross the line. The Finish Rep button remains available.');
+ updatePracticeVoiceUI(handsFreeFinish?(running?'Hands-free is listening now.':'Armed — it will listen when the rep starts.'):'Optional: say “Done” after you cross the line. The Finish Rep button remains available.');
  if(handsFreeFinish&&running)startPracticeVoice();
 }
 function clock(){if(!running||paused)return;const s=(performance.now()-startedAt)/1000;$p('mwPracticeClock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')+'.'+Math.floor((s%1)*10);raf=requestAnimationFrame(clock)}
