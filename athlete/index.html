@@ -4412,8 +4412,8 @@ function startPracticeVoice(){
  r.onresult=e=>{
    for(let i=e.resultIndex;i<e.results.length;i++){
      if(!e.results[i].isFinal)continue;
-     const phrase=String(e.results[i][0]?.transcript||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\\s+/g,' ').trim();
-     if(/\\b(?:mw[ ,]*)?(?:record|log|save) (?:my )?rep\\b/.test(phrase)&&running&&!savingRep){
+     const phrase=String(e.results[i][0]?.transcript||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+     if(/\b(?:mw[ ,]*)?(?:record|log|save) (?:my )?rep\b/.test(phrase)&&running&&!paused&&!savingRep){
        updatePracticeVoiceUI('Command heard — saving this rep.');
        finishRep('voice');
        return;
@@ -4633,7 +4633,7 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#mwPracticeSave'))saveWorkout();
  if(e.target.closest('#mwPracticeReset'))resetCurrentRep();
  if(e.target.closest('#mwPracticeRetry'))retryLastRep();
- if(e.target.closest('#mwPracticePause')){if(!running)return;const b=$p('mwPracticePause');if(!paused){paused=true;pausedAt=performance.now();cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();b.textContent='RESUME';$p('mwPracticeCue').textContent='PAUSED'}else{startedAt+=performance.now()-pausedAt;paused=false;b.textContent='PAUSE';$p('mwPracticeCue').textContent='RESUMED';clock()}}
+ if(e.target.closest('#mwPracticePause')){if(!running)return;const b=$p('mwPracticePause');if(!paused){paused=true;pausedAt=performance.now();stopPracticeVoice();cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();b.textContent='RESUME';$p('mwPracticeCue').textContent='PAUSED'}else{startedAt+=performance.now()-pausedAt;paused=false;b.textContent='PAUSE';$p('mwPracticeCue').textContent='RESUMED';clock();startPracticeVoice()}}
  if(e.target.closest('[data-practice-coach]')){exit().finally(()=>document.querySelector('[data-v="coach"]')?.click())}
 });
 })();
