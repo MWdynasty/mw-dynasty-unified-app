@@ -1848,6 +1848,10 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     <div class="mwPracticePace" id="mwPracticePace"><b>COACH MW PACE CALLER</b><span>Target pace calls will play hands-free during timed reps.</span></div>
     <div id="mwPracticeRepLog" class="mwPracticeRepLog" hidden></div>
     <div id="mwPracticeSummary" class="mwPracticeSummary" hidden></div>
+    <div class="mwPracticeHandsFree" style="margin:12px 0 0;padding:12px 14px;border:1px solid rgba(85,201,255,.35);border-radius:14px;background:rgba(7,19,30,.8)">
+      <button id="mwPracticeHandsFree" type="button" aria-pressed="false" style="width:100%;min-height:46px;border-radius:12px;border:1px solid #55c9ff;background:#071b2b;color:#bcecff;font-weight:900;letter-spacing:.04em">ENABLE HANDS-FREE FINISH</button>
+      <div id="mwPracticeVoiceStatus" role="status" aria-live="polite" style="margin-top:8px;color:#93a0ad;font-size:11px;line-height:1.35">Optional: say “MW, record rep” after you cross the line. The Finish Rep button remains available.</div>
+    </div>
     <div class="mwPracticeControls">
       <button id="mwPracticeStart" type="button">START PRACTICE</button>
       <button id="mwPracticePause" type="button" disabled>PAUSE</button>
@@ -4386,11 +4390,46 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 </script>
 <script id="mw-practice-runtime-v3">
 (()=>{
-let session=null, running=false, paused=false, starting=false, savingRep=false, retryRep=null, startedAt=0, pausedAt=0, raf=0, timers=[], results=[], practiceWeek=0, practiceDay=0, practiceStarted=false, workoutSaved=false, practiceGeneration=0;
+let session=null, running=false, paused=false, starting=false, savingRep=false, retryRep=null, startedAt=0, pausedAt=0, raf=0, timers=[], results=[], practiceWeek=0, practiceDay=0, practiceStarted=false, workoutSaved=false, practiceGeneration=0, practiceVoice=null, handsFreeFinish=false;
 const $p=id=>document.getElementById(id);
 const restTimer=window.MWPracticeRestTimer.mount($p('mwPracticeRest'));
 function clearTimers(){timers.forEach(clearTimeout);timers=[]}
 function say(x){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(x));u.rate=1;u.pitch=.95;speechSynthesis.speak(u)}catch{}}
+function updatePracticeVoiceUI(message){
+ const b=$p('mwPracticeHandsFree'),st=$p('mwPracticeVoiceStatus');
+ if(b){b.setAttribute('aria-pressed',handsFreeFinish?'true':'false');b.textContent=handsFreeFinish?'HANDS-FREE FINISH ON':'ENABLE HANDS-FREE FINISH';b.style.borderColor=handsFreeFinish?'#f5b92e':'#55c9ff';b.style.color=handsFreeFinish?'#f5d36a':'#bcecff'}
+ if(st&&message)st.textContent=message;
+}
+function stopPracticeVoice(){
+ const r=practiceVoice;practiceVoice=null;
+ if(r){r.onend=null;try{r.stop()}catch{}}
+}
+function startPracticeVoice(){
+ if(!handsFreeFinish||!running||practiceVoice)return;
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Recognition){updatePracticeVoiceUI('Voice finish is not available in this app build. Use the Finish Rep button.');return}
+ const r=new Recognition();practiceVoice=r;r.lang='en-US';r.continuous=true;r.interimResults=false;
+ r.onresult=e=>{
+   for(let i=e.resultIndex;i<e.results.length;i++){
+     if(!e.results[i].isFinal)continue;
+     const phrase=String(e.results[i][0]?.transcript||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\\s+/g,' ').trim();
+     if(/\\b(?:mw[ ,]*)?(?:record|log|save) (?:my )?rep\\b/.test(phrase)&&running&&!savingRep){
+       updatePracticeVoiceUI('Command heard — saving this rep.');
+       finishRep('voice');
+       return;
+     }
+   }
+ };
+ r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed')updatePracticeVoiceUI('Microphone permission is off. Use the Finish Rep button or enable access in Settings.')};
+ r.onend=()=>{if(practiceVoice===r){practiceVoice=null;if(handsFreeFinish&&running&&!savingRep)startPracticeVoice()}};
+ try{r.start();updatePracticeVoiceUI('Listening during this rep. Say “MW, record rep” after you cross the line.')}catch{practiceVoice=null;updatePracticeVoiceUI('Voice finish could not start. Use the Finish Rep button.')}
+}
+function togglePracticeVoice(){
+ handsFreeFinish=!handsFreeFinish;
+ if(!handsFreeFinish)stopPracticeVoice();
+ updatePracticeVoiceUI(handsFreeFinish?(running?'Hands-free is listening now.':'Armed — it will listen when the rep starts.'):'Optional: say “MW, record rep” after you cross the line. The Finish Rep button remains available.');
+ if(handsFreeFinish&&running)startPracticeVoice();
+}
 function clock(){if(!running||paused)return;const s=(performance.now()-startedAt)/1000;$p('mwPracticeClock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')+'.'+Math.floor((s%1)*10);raf=requestAnimationFrame(clock)}
 function mwPracticeExponent(d1,t1,d2,t2){return Math.log(t2/t1)/Math.log(d2/d1)}
 function mwPracticeEstimateTime(distance,t100,t200,t400){
@@ -4483,12 +4522,12 @@ async function beginRep(){
  clearTimers();speechSynthesis.cancel();$p('mwPracticeCue').textContent='GET READY';say('On your marks');
  $p('mwPracticeStart').disabled=true;$p('mwPracticeNext').disabled=true;
  timers.push(setTimeout(()=>say('Set'),1800));
- timers.push(setTimeout(()=>{say('Go!');startedAt=performance.now();running=true;paused=false;starting=false;$p('mwPracticeCue').textContent=p.target?'COACH MW IS CALLING YOUR TARGET MARKS':'REP TIMER IS LIVE';$p('mwPracticePause').disabled=false;$p('mwPracticeNext').disabled=false;clock();schedulePace(p)},3000));
+ timers.push(setTimeout(()=>{say('Go!');startedAt=performance.now();running=true;paused=false;starting=false;$p('mwPracticeCue').textContent=p.target?'COACH MW IS CALLING YOUR TARGET MARKS':'REP TIMER IS LIVE';$p('mwPracticePause').disabled=false;$p('mwPracticeNext').disabled=false;clock();schedulePace(p);startPracticeVoice()},3000));
 }
 async function finishRep(){
  if(!running)return;
  const p=parsePrescription(), rep=currentRep(), actual=Math.max(.01,((paused?pausedAt:performance.now())-startedAt)/1000), generation=practiceGeneration;
- running=false;paused=false;savingRep=true;cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();
+ running=false;paused=false;savingRep=true;stopPracticeVoice();cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();
  restTimer.setDisabled(false);
  if(rep<p.reps)restTimer.restart();
  const intentText=[session?.title,session?.focus,session?.prescribedWork,session?.work,session?.structure,session?.intensity,...(Array.isArray(session?.cues)?session.cues:[])].filter(Boolean).join(' ').toLowerCase();
@@ -4581,13 +4620,14 @@ window.mwOpenPractice=async function(){
  return openPracticeFor(w,d);
 }
 async function exit(){
- practiceGeneration++;clearTimers();cancelAnimationFrame(raf);speechSynthesis.cancel();running=false;paused=false;starting=false;restTimer.pause();
+ practiceGeneration++;clearTimers();cancelAnimationFrame(raf);stopPracticeVoice();speechSynthesis.cancel();running=false;paused=false;starting=false;restTimer.pause();
  if(practiceStarted&&!workoutSaved){try{await setWorkoutStatus(practiceWeek,practiceDay,'incomplete')}catch{}}
  $p('mwPracticeMode').hidden=true;document.body.style.overflow='';renderCompletion().catch(()=>{});
 }
 document.addEventListener('click',e=>{
  if(e.target.closest('#mwPracticeLaunch'))mwOpenPractice();
  if(e.target.closest('#mwPracticeExit'))exit();
+ if(e.target.closest('#mwPracticeHandsFree'))togglePracticeVoice();
  if(e.target.closest('#mwPracticeStart'))beginRep();
  if(e.target.closest('#mwPracticeNext'))finishRep();
  if(e.target.closest('#mwPracticeSave'))saveWorkout();
