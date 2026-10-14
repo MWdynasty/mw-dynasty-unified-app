@@ -127,7 +127,7 @@ ${JSON.stringify(context).slice(0,90000)}`;
       if(!message)return res.status(400).json({error:'Founder command is required.'});
       const history=Array.isArray(body.history)?body.history.slice(-8).map(x=>({role:String(x?.role||'').slice(0,30),text:clean(x?.text,1200)})):[];
 
-      const commandInstructions=guard+\`
+      const commandInstructions=guard+`
 You are the Founder Commander action router for MW Dynasty.
 The Founder may ask a question or issue an instruction such as "act upon this", "do it", "create it", "assign it", "pause it", or "move forward".
 You must return JSON only in this exact shape:
@@ -148,7 +148,7 @@ AVAILABLE AI EMPLOYEES:
 ${JSON.stringify((context.ai_company.agents||[]).map(a=>({code:a.code,title:a.title,department:a.department,authority_level:a.authority_level,oversight_mode:a.oversight_mode,mission:a.mission}))).slice(0,30000)}
 SECURED CONTEXT:
 ${JSON.stringify(context).slice(0,70000)}
-\`;
+`;
 
       const raw=await openai(commandInstructions,
         `Founder command:\n${message}\n\nRecent conversation:\n${JSON.stringify(history)}\n\nInterpret the command and, if it is an instruction, prepare the actual Founder OS action.`,2600);
