@@ -4394,6 +4394,10 @@ let session=null, running=false, paused=false, starting=false, savingRep=false, 
 const $p=id=>document.getElementById(id);
 const restTimer=window.MWPracticeRestTimer.mount($p('mwPracticeRest'));
 function clearTimers(){timers.forEach(clearTimeout);timers=[]}
+function releasePracticeTextFocus(){
+ const active=document.activeElement;
+ if(active&&/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)){try{active.blur()}catch{}}
+}
 function say(x){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(x));u.rate=1;u.pitch=.95;speechSynthesis.speak(u)}catch{}}
 function updatePracticeVoiceUI(message){
  const b=$p('mwPracticeHandsFree'),st=$p('mwPracticeVoiceStatus');
@@ -4513,6 +4517,7 @@ async function ensureStarted(){
  practiceStarted=true;workoutSaved=false;
 }
 async function beginRep(){
+ releasePracticeTextFocus();
  const p=parsePrescription(); if(!p.timed||running||starting||savingRep||workoutSaved||(!retryRep&&results.length>=p.reps))return;
  const generation=practiceGeneration;starting=true;$p('mwPracticeStart').disabled=true;
  updateRepResetButtons();
@@ -4612,7 +4617,7 @@ async function openPracticeFor(w,d){
    $p('mwPracticeSummary').hidden=true;if(!p.timed||results.length>=p.reps)showSummary();
    if(!p.timed){try{await ensureStarted()}catch{}}
  }
- updateRepResetButtons();$p('mwPracticeMode').hidden=false;document.body.style.overflow='hidden';
+ updateRepResetButtons();releasePracticeTextFocus();$p('mwPracticeMode').hidden=false;document.body.style.overflow='hidden';
 }
 window.mwOpenPracticeFor=openPracticeFor;
 window.mwOpenPractice=async function(){
@@ -4620,7 +4625,7 @@ window.mwOpenPractice=async function(){
  return openPracticeFor(w,d);
 }
 async function exit(){
- practiceGeneration++;clearTimers();cancelAnimationFrame(raf);stopPracticeVoice();speechSynthesis.cancel();running=false;paused=false;starting=false;restTimer.pause();
+ practiceGeneration++;clearTimers();cancelAnimationFrame(raf);stopPracticeVoice();speechSynthesis.cancel();running=false;paused=false;starting=false;releasePracticeTextFocus();restTimer.pause();
  if(practiceStarted&&!workoutSaved){try{await setWorkoutStatus(practiceWeek,practiceDay,'incomplete')}catch{}}
  $p('mwPracticeMode').hidden=true;document.body.style.overflow='';renderCompletion().catch(()=>{});
 }
