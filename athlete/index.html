@@ -1851,6 +1851,8 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     <div class="mwPracticeHandsFree" style="margin:12px 0 0;padding:12px 14px;border:1px solid rgba(85,201,255,.35);border-radius:14px;background:rgba(7,19,30,.8)">
       <button id="mwPracticeHandsFree" type="button" aria-pressed="false" style="width:100%;min-height:46px;border-radius:12px;border:1px solid #55c9ff;background:#071b2b;color:#bcecff;font-weight:900;letter-spacing:.04em">ENABLE HANDS-FREE FINISH</button>
       <div id="mwPracticeVoiceStatus" role="status" aria-live="polite" style="margin-top:8px;color:#93a0ad;font-size:11px;line-height:1.35">Optional: say “Done” after you cross the line. The Finish Rep button remains available.</div>
+      <button id="mwPracticeVoiceAdjust" type="button" hidden style="margin-top:9px;width:100%;min-height:38px;border-radius:10px;border:1px solid #55c9ff;background:#07131e;color:#bcecff;font-weight:800">ADJUST VOICE TIME</button>
+      <div id="mwPracticeVoiceOptions" hidden role="group" aria-label="Adjust estimated voice finish time" style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap"></div>
     </div>
     <div class="mwPracticeControls">
       <button id="mwPracticeStart" type="button">START PRACTICE</button>
@@ -4390,7 +4392,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',async()=>{
 </script>
 <script id="mw-practice-runtime-v3">
 (()=>{
-let session=null, running=false, paused=false, starting=false, savingRep=false, retryRep=null, startedAt=0, pausedAt=0, raf=0, timers=[], results=[], practiceWeek=0, practiceDay=0, practiceStarted=false, workoutSaved=false, practiceGeneration=0, practiceVoice=null, handsFreeFinish=false;
+let session=null, running=false, paused=false, starting=false, savingRep=false, retryRep=null, startedAt=0, pausedAt=0, raf=0, timers=[], results=[], practiceWeek=0, practiceDay=0, practiceStarted=false, workoutSaved=false, practiceGeneration=0, practiceVoice=null, handsFreeFinish=false, practiceVoiceAdjustRep=null;
 const $p=id=>document.getElementById(id);
 const restTimer=window.MWPracticeRestTimer.mount($p('mwPracticeRest'));
 function clearTimers(){timers.forEach(clearTimeout);timers=[]}
@@ -4516,7 +4518,7 @@ async function ensureStarted(){
  practiceStarted=true;workoutSaved=false;
 }
 async function beginRep(){
- releasePracticeTextFocus();
+ releasePracticeTextFocus();hideVoiceAdjustment();
  const p=parsePrescription(); if(!p.timed||running||starting||savingRep||workoutSaved||(!retryRep&&results.length>=p.reps))return;
  const generation=practiceGeneration;starting=true;$p('mwPracticeStart').disabled=true;
  updateRepResetButtons();
@@ -4528,7 +4530,37 @@ async function beginRep(){
  timers.push(setTimeout(()=>say('Set'),1800));
  timers.push(setTimeout(()=>{say('Go!');startedAt=performance.now();running=true;paused=false;starting=false;$p('mwPracticeCue').textContent=p.target?'COACH MW IS CALLING YOUR TARGET MARKS':'REP TIMER IS LIVE';$p('mwPracticePause').disabled=false;$p('mwPracticeNext').disabled=false;clock();schedulePace(p);startPracticeVoice()},3000));
 }
-async function finishRep(){
+function hideVoiceAdjustment(){
+ practiceVoiceAdjustRep=null;
+ const b=$p('mwPracticeVoiceAdjust'),box=$p('mwPracticeVoiceOptions');
+ if(b)b.hidden=true;
+ if(box){box.hidden=true;box.innerHTML=''}
+}
+function showVoiceAdjustment(row){
+ practiceVoiceAdjustRep=row.rep_number;
+ const b=$p('mwPracticeVoiceAdjust'),box=$p('mwPracticeVoiceOptions');
+ if(!b||!box)return;
+ const center=Math.round(Number(row.time_seconds)*2)/2;
+ const options=[center-2,center-1,center].filter(v=>v>0).map(v=>Number(v.toFixed(1)));
+ box.innerHTML=options.map(v=>'<button type="button" data-practice-adjust="'+v+'" style="flex:1;min-width:84px;min-height:38px;border-radius:10px;border:1px solid #55c9ff;background:#071b2b;color:#bcecff;font-weight:900">'+v.toFixed(1)+'s</button>').join('');
+ b.hidden=false;box.hidden=true;
+}
+async function adjustVoiceEstimate(value){
+ const row=results.find(r=>r.rep_number===practiceVoiceAdjustRep);
+ if(!row)return;
+ const actual=Number(value);
+ if(!Number.isFinite(actual)||actual<=0)return;
+ row.time_seconds=Number(actual.toFixed(2));row.time_source='athlete_estimate';
+ const p=parsePrescription();
+ if(row.target_seconds!=null){
+   row.pace_status=actual>=Number(row.target_seconds)*.99&&actual<=Number(row.target_seconds)*1.01?'on_pace':'outside_target';
+   row.mw_interpretation=row.pace_status==='on_pace'?'on_target':actual<Number(row.target_seconds)?'too_fast':'too_slow';
+ }
+ renderLog();hideVoiceAdjustment();
+ $p('mwPracticeCue').textContent='REP '+row.rep_number+' UPDATED · ATHLETE ESTIMATE';
+ try{await persistOneRep(row)}catch{$p('mwPracticeCue').textContent='REP '+row.rep_number+' UPDATED ON SCREEN · SAVE WILL RETRY'}
+}
+async function finishRep(source='button'){
  if(!running)return;
  const p=parsePrescription(), rep=currentRep(), actual=Math.max(.01,((paused?pausedAt:performance.now())-startedAt)/1000), generation=practiceGeneration;
  running=false;paused=false;savingRep=true;stopPracticeVoice();cancelAnimationFrame(raf);clearTimers();speechSynthesis.cancel();
@@ -4538,7 +4570,7 @@ async function finishRep(){
  const intent=/tempo|extensive|recovery|regeneration|easy/.test(intentText)?(/recovery|regeneration|easy/.test(intentText)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(intentText)?(/technical|technique|progressive|fly|flying|wicket/.test(intentText)?'technical':'speed'):'pace';
  const aboveTarget=Boolean(p.target&&actual<p.target*.99&&['technical','speed'].includes(intent));
  const status=p.target?(aboveTarget||actual>=p.target*.99&&actual<=p.target*1.01?'on_pace':'outside_target'):'timed';
- const row={rep_number:rep,time_seconds:Number(actual.toFixed(2)),target_seconds:p.target?Number(p.target):null,pace_status:status,mw_interpretation:aboveTarget?'above_target':status==='on_pace'?'on_target':actual<p.target?'too_fast':'too_slow',mw_intent:intent};
+ const row={rep_number:rep,time_seconds:Number(actual.toFixed(2)),target_seconds:p.target?Number(p.target):null,pace_status:status,mw_interpretation:aboveTarget?'above_target':status==='on_pace'?'on_target':actual<p.target?'too_fast':'too_slow',mw_intent:intent,time_source:source==='voice'?'voice_estimate':'button'};
  const previous=results.findIndex(r=>r.rep_number===rep);
  if(previous>=0)results[previous]=row;else results.push(row);
  retryRep=null;renderLog();updateRepResetButtons();
@@ -4547,7 +4579,7 @@ async function finishRep(){
  try{
    await persistOneRep(row);
    if(generation!==practiceGeneration)return;
-   $p('mwPracticeCue').textContent=rep>=p.reps?'ALL REPS SAVED · FINISH WORKOUT':'REP '+rep+' SAVED · RECOVER';
+   $p('mwPracticeCue').textContent=rep>=p.reps?'ALL REPS SAVED · FINISH WORKOUT':'REP '+rep+' SAVED · RECOVER';if(source==='voice')showVoiceAdjustment(row);
  }catch(e){
    if(generation!==practiceGeneration)return;
    $p('mwPracticeCue').textContent='REP '+rep+' IS ON THIS SCREEN · SAVE WILL RETRY';
@@ -4632,6 +4664,8 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#mwPracticeLaunch'))mwOpenPractice();
  if(e.target.closest('#mwPracticeExit'))exit();
  if(e.target.closest('#mwPracticeHandsFree'))togglePracticeVoice();
+ if(e.target.closest('#mwPracticeVoiceAdjust')){$p('mwPracticeVoiceOptions').hidden=false;}
+ if(e.target.closest('[data-practice-adjust]'))adjustVoiceEstimate(Number(e.target.closest('[data-practice-adjust]').dataset.practiceAdjust));
  if(e.target.closest('#mwPracticeStart'))beginRep();
  if(e.target.closest('#mwPracticeNext'))finishRep();
  if(e.target.closest('#mwPracticeSave'))saveWorkout();
