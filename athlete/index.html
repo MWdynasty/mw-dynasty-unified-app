@@ -4420,7 +4420,7 @@ function startPracticeVoice(){
      }
    }
  };
- r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed')updatePracticeVoiceUI('Microphone permission is off. Use the Finish Rep button or enable access in Settings.')};
+ r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){handsFreeFinish=false;stopPracticeVoice();updatePracticeVoiceUI('Microphone permission is off. Use the Finish Rep button or enable access in Settings.')}};
  r.onend=()=>{if(practiceVoice===r){practiceVoice=null;if(handsFreeFinish&&running&&!savingRep)startPracticeVoice()}};
  try{r.start();updatePracticeVoiceUI('Listening during this rep. Say “MW, record rep” after you cross the line.')}catch{practiceVoice=null;updatePracticeVoiceUI('Voice finish could not start. Use the Finish Rep button.')}
 }
