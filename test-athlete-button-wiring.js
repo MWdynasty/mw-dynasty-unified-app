@@ -39,7 +39,7 @@ const directIds=[
   'mwAISharingSettings','helpCenterBtn','reportIssueBtn','privacyBtn','termsBtn','deleteAccountBtn','mwDiagnosticsSend',
   'saveSettings','replayTour','mwSignOut','tourSkip','tourBack','tourNext','qsSkip','qsBack','qsNext',
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
-  'mwPracticeNext','mwPracticeHandsFree','mwPracticeSave','mwPracticeReset','mwPracticeRetry','mwDobVerifySave','mwScSave',
+  'mwPracticeNext','mwPracticeHandsFree','mwPracticeVoiceAdjust','mwPracticeSave','mwPracticeReset','mwPracticeRetry','mwDobVerifySave','mwScSave',
   'mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
   'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton','manageCoachConnections'
 ];
@@ -59,6 +59,7 @@ assert(html.includes("if(e.target.closest('#mwPracticeStart'))"),'Practice start
 assert(html.includes("if(e.target.closest('#mwPracticePause'))"),'Practice pause delegated handler missing');
 assert(html.includes("if(e.target.closest('#mwPracticeNext'))"),'Practice finish-rep delegated handler missing');
 assert(html.includes("if(e.target.closest('#mwPracticeHandsFree'))"),'Practice hands-free finish delegated handler missing');
+assert(html.includes("if(e.target.closest('#mwPracticeVoiceAdjust'))"),'Practice voice adjustment handler missing');
 assert(html.includes("if(e.target.closest('#mwPracticeSave'))"),'Practice save delegated handler missing');
 assert(html.includes("if(e.target.closest('#mwPracticeExit'))"),'Practice exit delegated handler missing');
 assert(html.includes("[data-practice-coach]"),'Practice Ask Coach handler missing');
