@@ -497,7 +497,7 @@ async function renderHome(){
       stat("Diagnostic Errors",m.diagnostic_errors_24h||0,"Last 24 hours")+
     '</div>'+
     sectionHead("Needs Your Attention","Highest-priority Founder decisions and operating exceptions.")+
-    '<div class="grid2"><div class="list">'+(a.length?a.slice(0,8).map(attentionRow).join(""):'<div class="card empty">No urgent Founder items detected.</div>')+'</div><div class="card aiHero"><div class="brand">FOUNDER AI · CHIEF OF STAFF</div><h2 style="margin:8px 0">Your executive intelligence layer</h2><p class="muted">Ask about revenue, costs, growth, customer health, product health, website conversion, support, Coach applications, risk, or give MW a company objective.</p><div class="heroActions"><button class="btn blue" id="askAIHome">Ask Founder AI</button><button class="btn" data-go="ai">Open AI Company</button></div><div id="briefOut" class="bubble ai hidden" style="margin-top:12px"></div></div></div>'+
+    '<div class="grid2"><div class="list">'+(a.length?a.slice(0,8).map(attentionRow).join(""):'<div class="card empty">No urgent Founder items detected.</div>')+'</div><div class="card aiHero"><div class="brand">FOUNDER AI · CHIEF OF STAFF</div><h2 style="margin:8px 0">Your executive intelligence layer</h2><p class="muted">Ask about revenue, costs, growth, customer health, product health, website conversion, support, Coach applications, risk, or give MW a company objective.</p><div class="heroActions"><button class="btn blue" id="askAIHome">Ask Founder AI</button><button class="btn" data-go="ai">Open AI Company</button></div><div id="briefOut" class="bubble ai hidden" style="margin-top:12px"></div><div id="briefVoiceActions" class="heroActions hidden" style="margin-top:10px"><button class="btn small blue" id="briefReadAloud" type="button">🔊 Read Brief Aloud</button></div></div></div>'+
     '<div class="grid2">'+
       '<div>'+sectionHead("Customer Success Watch","Lowest customer-health scores that deserve follow-up.")+'<div class="list">'+ath.concat(co).filter(x=>x.health!=="healthy").sort((a,b)=>Number(a.score)-Number(b.score)).slice(0,8).map(x=>'<div class="row"><div><b>'+esc(x.name||"Member")+'</b><small>'+esc((x.signals||[]).join(" · ")||"Attention signal")+'</small></div><div class="right">'+badge((x.score||0)+" / 100",x.health==="high_risk"?"bad":"warn")+'</div></div>').join("")+'</div></div>'+
       '<div>'+sectionHead("Open High Risks","Launch, security, legal, deployment, and operating exposure.")+'<div class="list">'+(highRisks.length?highRisks.slice(0,8).map(x=>'<div class="row"><div><b>'+esc(x.title)+'</b><small>'+esc((x.category||"Risk")+(x.mitigation?" · "+x.mitigation:""))+'</small></div><div class="right">'+badge(x.severity,x.severity==="critical"?"bad":"warn")+'</div></div>').join(""):'<div class="card empty">No open high or critical risks.</div>')+'</div></div>'+
@@ -509,8 +509,22 @@ async function renderHome(){
 }
 
 async function generateBrief(){
-  const b=$("briefBtn"),out=$("briefOut");b.disabled=true;b.textContent="Building executive brief…";out.classList.remove("hidden");out.textContent="Founder AI is reviewing live MW data…";
-  try{const d=await ai("brief");const answer=d.answer||"No briefing returned.";out.textContent=answer;cache.ai_company=null;autoSpeakFounderText(answer,null,"founder","Founder AI")}catch(e){out.textContent=e.message}finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
+  const b=$("briefBtn"),out=$("briefOut"),voiceActions=$("briefVoiceActions"),voiceButton=$("briefReadAloud");
+  stopFounderAIReadAloud();
+  if(voiceActions)voiceActions.classList.add("hidden");
+  b.disabled=true;b.textContent="Building executive brief…";out.classList.remove("hidden");out.textContent="Founder AI is reviewing live MW data…";
+  try{
+    const d=await ai("brief"),answer=d.answer||"No briefing returned.";
+    out.textContent=answer;cache.ai_company=null;
+    if(voiceActions)voiceActions.classList.remove("hidden");
+    if(voiceButton){
+      voiceButton.dataset.voiceLabel="🔊 Read Brief Aloud";
+      voiceButton.onclick=()=>playFounderVoiceText(out.textContent,"briefReadAloud","founder","Executive AI Brief");
+      updateVoiceButton("briefReadAloud","idle","🔊 Read Brief Aloud");
+    }
+    autoSpeakFounderText(answer,null,"founder","Founder AI");
+  }catch(e){out.textContent=e.message;if(voiceActions)voiceActions.classList.add("hidden")}
+  finally{b.disabled=false;b.textContent="Generate Executive AI Brief"}
 }
 async function renderAttention(){
   const [d,r,h,a,t,l]=await Promise.all([api("overview"),api("risk"),api("customer_health"),api("ai_company"),api("support_triage"),api("launch")]);
