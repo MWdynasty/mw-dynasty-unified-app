@@ -71,7 +71,7 @@ module.exports=async function handler(req,res){
   try{
     const {token,profile}=await founderAuth(req);
     const body=typeof req.body==='string'?JSON.parse(req.body||'{}'):(req.body||{});
-    const mode=['brief','chat','employee_chat','plan','execute_task','triage_support','department_brief','partnership_proposal','website_redesign','generate_skool_week'].includes(body.mode)?body.mode:'chat';
+    const mode=['brief','chat','command','employee_chat','plan','execute_task','triage_support','department_brief','partnership_proposal','website_redesign','generate_skool_week'].includes(body.mode)?body.mode:'chat';
     const [overview,revenue,website,system,aiCompany,finance,customerHealth,risk,launch]=await Promise.all([
       rpc(token,'overview'),rpc(token,'revenue'),rpc(token,'website'),rpc(token,'system'),rpc(token,'ai_company'),
       rpcNamed(token,'mw_founder_finance_snapshot',{}),
@@ -132,12 +132,13 @@ ${JSON.stringify(context).slice(0,90000)}`;
 You are the Founder Commander action router for MW Dynasty.
 The Founder may ask a question or issue an instruction such as "act upon this", "do it", "create it", "assign it", "pause it", or "move forward".
 You must return JSON only in this exact shape:
-{"kind":"answer|action","answer":"...","action":"none|create_task|create_objective|set_ai_autonomy|create_skool_post|update_skool_post|update_objective|create_ai_task|update_ai_task|review_website_project|create_knowledge|review_knowledge|review_approval|create_lead|update_lead|create_partnership|update_partnership|review_partnership_proposal|record_partnership_proposal_sent|create_campaign|update_campaign|create_cost|update_cost|update_support_triage|update_notification|mark_all_notifications_read|update_launch_gate|create_risk|update_risk|create_people_role|promote_ai_task_to_sop|create_sop|review_sop","section":"...","agent_code":"...","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":false,"parameters":{},"risk":"low|medium|high|critical","reason":"..."}
+{"kind":"answer|action","answer":"...","action":"none|unsupported|create_task|create_objective|set_ai_autonomy|create_skool_post|update_skool_post|update_objective|create_ai_task|update_ai_task|review_website_project|create_knowledge|review_knowledge|review_approval|create_lead|update_lead|create_partnership|update_partnership|review_partnership_proposal|record_partnership_proposal_sent|create_campaign|update_campaign|create_cost|update_cost|update_support_triage|update_notification|mark_all_notifications_read|update_launch_gate|create_risk|update_risk|create_people_role|promote_ai_task_to_sop|create_sop|review_sop","section":"...","agent_code":"...","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":false,"parameters":{},"risk":"low|medium|high|critical","reason":"..."}
 
 Routing rules:
 - If the Founder is only asking for information, return kind=answer, action=none, and answer the question from the secured context.
 - If the Founder clearly asks the system to do something, return kind=action. Do not merely describe a plan.
-- create_task is the universal action for Founder Office, Boardroom, AI Workforce, Team Members, Coaches, Athletes, Access & Permissions, Company Health, Reports & Analytics, Decision & Audit Trail, Program Control, School Content Center, Website Studio, Execution Center, Risk & Legal, Finance, Growth, and support operations when no narrower action exists.
+- Use create_task only when the Founder explicitly asks to create or queue an internal work item. Do not use it as a substitute for changing a coach account, athlete account, access permission, program, website, or other platform record.
+- If the requested operation has no implemented action in the available list, return kind=action with action=unsupported and explain that no change has been made. Do not create a generic task or imply the requested action is underway.
 - Use create_objective for an explicit company objective or priority.
 - Use create_skool_post only for a specific Skool post the Founder asks the system to draft/store.
 - Use create_lead for a new CRM lead and create_partnership for a partnership opportunity.
@@ -158,7 +159,12 @@ ${JSON.stringify(context).slice(0,70000)}
       if(kind==='answer')return res.status(200).json({ok:true,mode,kind,answer:clean(plan?.answer,12000)||'I could not determine the answer from the secured Founder context.',action:'none'});
 
       const allowedActions=new Set(['create_task','create_objective','set_ai_autonomy','create_skool_post','update_skool_post','update_objective','create_ai_task','update_ai_task','review_website_project','create_knowledge','review_knowledge','review_approval','create_lead','update_lead','create_partnership','update_partnership','review_partnership_proposal','record_partnership_proposal_sent','create_campaign','update_campaign','create_cost','update_cost','update_support_triage','update_notification','mark_all_notifications_read','update_launch_gate','create_risk','update_risk','create_people_role','promote_ai_task_to_sop','create_sop','review_sop']);
-      const actionName=allowedActions.has(String(plan?.action))?String(plan.action):'create_task';
+      const requestedAction=String(plan?.action||'');
+      if(requestedAction==='unsupported'||(!allowedActions.has(requestedAction)&&requestedAction!=='create_task')){
+        const capabilityMessage=clean(plan?.answer,12000)||`I cannot perform “${clean(message,300)}” yet because the required platform action is not connected to Commander. No account, platform, or website change was made.`;
+        return res.status(501).json({ok:false,mode,kind:'action',executed:false,action:'unsupported',code:'CAPABILITY_NOT_CONNECTED',error:capabilityMessage,answer:capabilityMessage});
+      }
+      const actionName=allowedActions.has(requestedAction)?requestedAction:'create_task';
       const agents=Array.isArray(context.ai_company.agents)?context.ai_company.agents:[];
       const selected=agents.find(a=>String(a.code)===String(body.agentCode))||agents.find(a=>String(a.code)===String(plan?.agent_code))||agents.find(a=>a.status==='active')||null;
       const agentCode=selected?.code||'chief_of_staff';
