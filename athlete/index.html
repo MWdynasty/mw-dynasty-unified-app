@@ -4412,10 +4412,9 @@ function startPracticeVoice(){
  if(!handsFreeFinish||!running||practiceVoice)return;
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!Recognition){updatePracticeVoiceUI('Voice finish is not available in this app build. Use the Finish Rep button.');return}
- const r=new Recognition();practiceVoice=r;r.lang='en-US';r.continuous=true;r.interimResults=false;
+ const r=new Recognition();practiceVoice=r;r.lang='en-US';r.continuous=true;r.interimResults=true;
  r.onresult=e=>{
    for(let i=e.resultIndex;i<e.results.length;i++){
-     if(!e.results[i].isFinal)continue;
      const phrase=String(e.results[i][0]?.transcript||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
      if(/\bdone\b/.test(phrase)&&running&&!paused&&!savingRep){
        updatePracticeVoiceUI('Command heard — saving this rep.');
