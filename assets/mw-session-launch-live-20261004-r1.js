@@ -68,11 +68,26 @@
   const observer = new MutationObserver(() => { if (ready()) { observer.disconnect(); close(); } });
   observer.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
   if (ready()) { observer.disconnect(); close(); }
+  const retryButton = overlay.querySelector('.mwSessionLaunchRetry');
+  const returnToSignIn = () => {
+    if (finished) return;
+    document.body?.classList.remove('mw-entering');
+    const status = document.querySelector(role === 'coach' ? '#loginMessage' : '#mwAuthStatus');
+    if (status) {
+      status.textContent = 'MW is still connecting. Sign in again to retry; your saved session has not been removed.';
+      status.style.display = 'block';
+    }
+    close();
+  };
   window.setTimeout(() => {
     if (finished) return;
     overlay.classList.add('is-slow');
     const sub = overlay.querySelector('.mwSessionLaunchSub');
     if (sub) sub.textContent = 'MW IS TAKING A LITTLE LONGER';
-    overlay.querySelector('.mwSessionLaunchRetry')?.addEventListener('click', () => location.reload(), { once:true });
+    retryButton?.addEventListener('click', () => location.reload(), { once:true });
   }, 4500);
+  window.setTimeout(() => {
+    if (finished) return;
+    returnToSignIn();
+  }, 15000);
 })();
