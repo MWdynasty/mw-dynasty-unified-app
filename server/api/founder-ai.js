@@ -1,5 +1,6 @@
 const {SUPABASE_URL,SUPABASE_KEY}=require('../lib/mw-auth');
 const {founderAuth}=require('../lib/founder-auth');
+const {invokeFounderAction,normalizeActionParameters,requiresCommanderApproval}=require('./founder-commander-actions');
 
 function outputText(data){
   if(typeof data?.output_text==='string'&&data.output_text.trim())return data.output_text.trim();
@@ -131,7 +132,7 @@ ${JSON.stringify(context).slice(0,90000)}`;
 You are the Founder Commander action router for MW Dynasty.
 The Founder may ask a question or issue an instruction such as "act upon this", "do it", "create it", "assign it", "pause it", or "move forward".
 You must return JSON only in this exact shape:
-{"kind":"answer|action","answer":"...","action":"none|create_task|create_objective|create_skool_post|create_lead|create_partnership","section":"...","agent_code":"...","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":false,"parameters":{},"risk":"low|medium|high|critical","reason":"..."}
+{"kind":"answer|action","answer":"...","action":"none|create_task|create_objective|set_ai_autonomy|create_skool_post|update_skool_post|update_objective|create_ai_task|update_ai_task|review_website_project|create_knowledge|review_knowledge|review_approval|create_lead|update_lead|create_partnership|update_partnership|review_partnership_proposal|record_partnership_proposal_sent|create_campaign|update_campaign|create_cost|update_cost|update_support_triage|update_notification|mark_all_notifications_read|update_launch_gate|create_risk|update_risk|create_people_role|promote_ai_task_to_sop|create_sop|review_sop","section":"...","agent_code":"...","title":"...","description":"...","priority":"low|normal|high|urgent","requires_approval":false,"parameters":{},"risk":"low|medium|high|critical","reason":"..."}
 
 Routing rules:
 - If the Founder is only asking for information, return kind=answer, action=none, and answer the question from the secured context.
@@ -156,7 +157,7 @@ ${JSON.stringify(context).slice(0,70000)}
       const kind=plan?.kind==='action'?'action':'answer';
       if(kind==='answer')return res.status(200).json({ok:true,mode,kind,answer:clean(plan?.answer,12000)||'I could not determine the answer from the secured Founder context.',action:'none'});
 
-      const allowedActions=new Set(['create_task','create_objective','create_skool_post','create_lead','create_partnership']);
+      const allowedActions=new Set(['create_task','create_objective','set_ai_autonomy','create_skool_post','update_skool_post','update_objective','create_ai_task','update_ai_task','review_website_project','create_knowledge','review_knowledge','review_approval','create_lead','update_lead','create_partnership','update_partnership','review_partnership_proposal','record_partnership_proposal_sent','create_campaign','update_campaign','create_cost','update_cost','update_support_triage','update_notification','mark_all_notifications_read','update_launch_gate','create_risk','update_risk','create_people_role','promote_ai_task_to_sop','create_sop','review_sop']);
       const actionName=allowedActions.has(String(plan?.action))?String(plan.action):'create_task';
       const agents=Array.isArray(context.ai_company.agents)?context.ai_company.agents:[];
       const selected=agents.find(a=>String(a.code)===String(body.agentCode))||agents.find(a=>String(a.code)===String(plan?.agent_code))||agents.find(a=>a.status==='active')||null;
@@ -164,10 +165,10 @@ ${JSON.stringify(context).slice(0,70000)}
       const title=clean(plan?.title,180)||'Founder Commander Action';
       const description=clean(plan?.description,5000)||message;
       const priority=['low','normal','high','urgent'].includes(plan?.priority)?plan.priority:'normal';
-      const risky=!!plan?.requires_approval||['high','critical'].includes(String(plan?.risk||'').toLowerCase());
+      const risky=!!plan?.requires_approval||['high','critical'].includes(String(plan?.risk||'').toLowerCase())||requiresCommanderApproval(actionName,plan?.parameters||{});
       const authUserId=profile?.user_id||null;
 
-      if(actionName==='create_objective'){
+      if(actionName==='create_objective'&&!risky){
         const params=plan?.parameters&&typeof plan.parameters==='object'?plan.parameters:{};
         const row=one(await rest(token,'founder_ai_objectives',{method:'POST',body:{
           title,description:clean(params.description,4000)||description,status:'draft',priority,
@@ -218,6 +219,12 @@ ${JSON.stringify(context).slice(0,70000)}
         return res.status(200).json({ok:true,mode,kind,executed:true,action:actionName,section:'Growth Systems',item:row,answer:`Created the partnership opportunity “${title}”.`});
       }
 
+      if(actionName!=='create_task'&&!['create_objective','create_skool_post','create_lead','create_partnership'].includes(actionName)&&!risky){
+        const result=await invokeFounderAction(req,{action:actionName,...normalizeActionParameters(plan?.parameters||{}),title,description,priority,agentCode});
+        if(!result?.ok)return res.status(400).json({error:result?.error||'Founder action was not completed.'});
+        return res.status(200).json({ok:true,mode,kind,executed:true,action:actionName,section:clean(plan?.section,100)||'Founder Office',item:result.item||result,answer:`Completed “${title}” in the ${clean(plan?.section,100)||'Founder Office'}.`});
+      }
+
       const task=one(await rest(token,'founder_ai_tasks',{method:'POST',body:{
         agent_code:agentCode,title,description,department:selected?.department||clean(plan?.section,100)||'Founder Office',
         priority,source:'founder_commander',requires_approval:risky,
@@ -230,12 +237,12 @@ ${JSON.stringify(context).slice(0,70000)}
           task_id:task.id,category:'commander_action',title:`Approve: ${title}`,
           description, risk_level:plan?.risk==='critical'?'critical':plan?.risk==='high'?'high':'medium',
           status:'pending',requested_by_agent_code:agentCode,
-          requested_action:{action:actionName,section:clean(plan?.section,100)||null,parameters:plan?.parameters||{},command:message}
+          requested_action:{action:actionName,section:clean(plan?.section,100)||null,parameters:normalizeActionParameters(plan?.parameters||{}),title,description,priority,agentCode,command:message}
         }]);
       }
       const disposition=risky?'approval_required':'queued_for_execution';
-      return res.status(200).json({ok:true,mode,kind,executed:!risky,action:actionName,section:clean(plan?.section,100)||'Founder Office',agent:selected?.title||agentCode,task,disposition,
-        answer:risky?`I created the action request “${title}” and placed it in Boardroom approval. It will not change accounts, security, money, external communications, code, or production until you approve it.`:`I routed “${title}” to ${selected?.title||'the AI workforce'} in the ${clean(plan?.section,100)||'Founder Office'} queue.`});
+      return res.status(200).json({ok:true,mode,kind,executed:false,action:actionName,section:clean(plan?.section,100)||'Founder Office',agent:selected?.title||agentCode,task,disposition,
+        answer:risky?`I created the action request “${title}” and placed it in Boardroom approval. It will not change accounts, security, money, external communications, code, or production until you approve it.`:`Queued “${title}” for ${selected?.title||'the AI workforce'} in the ${clean(plan?.section,100)||'Founder Office'}. The work has not been completed yet.`});
     }
     if(mode==='generate_skool_week'){
       const startDate=clean(body.startDate,20);

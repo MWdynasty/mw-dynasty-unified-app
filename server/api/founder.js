@@ -1,5 +1,6 @@
 const {SUPABASE_URL,SUPABASE_KEY}=require('../lib/mw-auth');
 const {founderAuth}=require('../lib/founder-auth');
+const {SUPPORTED_ACTIONS,invokeFounderAction}=require('./founder-commander-actions');
 
 async function rpc(token,name,args={}){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{
@@ -125,6 +126,12 @@ module.exports=async function handler(req,res){
       if(typeof b.enabled!=='boolean')return res.status(400).json({error:'Autonomy enabled state is required.'});
       const state=await rpc(token,'mw_founder_set_ai_autonomy',{p_enabled:b.enabled});
       return res.status(200).json({ok:true,autonomy:state});
+    }
+    if(action==='create_objective'){
+      const title=clean(b.title,180),description=clean(b.description,4000);
+      if(!title)return res.status(400).json({error:'Objective title is required.'});
+      const row=one(await rest(token,'founder_ai_objectives',{method:'POST',body:{title,description,status:'draft',priority:['low','normal','high','urgent'].includes(b.priority)?b.priority:'normal',success_definition:clean(b.successDefinition,3000)||null,owner_agent_code:clean(b.agentCode,80)||null,target_date:clean(b.targetDate,20)||null}}));
+      return res.status(200).json({ok:true,item:row});
     }
     if(action==='create_skool_post'){
       const scheduledFor=clean(b.scheduledFor,20),title=clean(b.title,180),body=clean(b.body,12000);
@@ -255,19 +262,35 @@ module.exports=async function handler(req,res){
       const id=clean(b.id,80),decision=clean(b.decision,20);
       if(!id||!['approved','rejected'].includes(decision))return res.status(400).json({error:'Valid approval decision required.'});
       const auth=await founderAuth(req);
-      const existing=one(await rest(token,`founder_approvals?id=eq.${encodeURIComponent(id)}&select=id,task_id,status&limit=1`));
+      const existing=one(await rest(token,`founder_approvals?id=eq.${encodeURIComponent(id)}&select=id,task_id,status,category,requested_action&limit=1`));
       if(!existing)return res.status(404).json({error:'Founder approval request not found.'});
-      const row=one(await rest(token,`founder_approvals?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{
+      if(existing.status!=='pending')return res.status(409).json({error:`Approval is already ${existing.status} and cannot be reviewed again.`});
+      const row=one(await rest(token,`founder_approvals?id=eq.${encodeURIComponent(id)}&status=eq.pending`,{method:'PATCH',body:{
         status:decision,reviewed_by:auth.user.id,review_note:clean(b.note,2000)||null,reviewed_at:new Date().toISOString()
       }}));
-      if(existing.task_id){
-        await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(existing.task_id)}`,{method:'PATCH',body:{
-          approval_status:decision,
-          status:decision==='approved'?'queued':'cancelled',
-          updated_at:new Date().toISOString()
-        }});
+      if(!row)return res.status(409).json({error:'Approval was already reviewed by another request.'});
+      if(decision==='rejected'){
+        if(existing.task_id)await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(existing.task_id)}`,{method:'PATCH',body:{approval_status:'rejected',status:'cancelled',updated_at:new Date().toISOString()}});
+        return res.status(200).json({ok:true,item:row,linkedTaskId:existing.task_id||null,executed:false});
       }
-      return res.status(200).json({ok:true,item:row,linkedTaskId:existing.task_id||null});
+      const request=existing.requested_action&&typeof existing.requested_action==='object'?existing.requested_action:{};
+      if(existing.category==='commander_action'&&request.action&&request.action!=='create_task'){
+        if(!SUPPORTED_ACTIONS.has(request.action)){
+          if(existing.task_id)await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(existing.task_id)}`,{method:'PATCH',body:{approval_status:'approved',status:'blocked',updated_at:new Date().toISOString()}});
+          return res.status(400).json({error:'This approval references an unsupported action; no action was executed.'});
+        }
+        try{
+          const result=await invokeFounderAction(req,{...request.parameters,action:request.action,title:request.title,description:request.description,priority:request.priority,agentCode:request.agentCode});
+          const executed=one(await rest(token,`founder_approvals?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{status:'executed',executed_at:new Date().toISOString(),review_note:clean(b.note,1800)||'Approved and executed.'}}));
+          if(existing.task_id)await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(existing.task_id)}`,{method:'PATCH',body:{approval_status:'approved',status:'completed',updated_at:new Date().toISOString()}});
+          return res.status(200).json({ok:true,item:executed,linkedTaskId:existing.task_id||null,executed:true,result});
+        }catch(e){
+          if(existing.task_id)await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(existing.task_id)}`,{method:'PATCH',body:{approval_status:'approved',status:'blocked',updated_at:new Date().toISOString()}});
+          return res.status(e.status||500).json({error:`Approval was recorded, but the action did not complete: ${e.message}`,approval:row,executed:false});
+        }
+      }
+      if(existing.task_id)await rest(token,`founder_ai_tasks?id=eq.${encodeURIComponent(existing.task_id)}`,{method:'PATCH',body:{approval_status:'approved',status:'queued',updated_at:new Date().toISOString()}});
+      return res.status(200).json({ok:true,item:row,linkedTaskId:existing.task_id||null,executed:false,queued:true});
     }
     if(action==='create_lead'){
       const row=one(await rest(token,'founder_crm_leads',{method:'POST',body:{
