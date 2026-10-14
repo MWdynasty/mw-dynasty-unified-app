@@ -48,6 +48,13 @@ includes('server/api/status.js',"/auth/v1/health",'Health must check the actual 
 includes('server/api/status.js',"authentication:auth",'Health must distinguish auth reachability');
 ok(!read('server/api/status.js').includes('auth:true'),'Health must not report hardcoded auth health');
 
+
+const {execFileSync}=require('node:child_process');
+for(const path of ['api/mw.js','server/api/founder.js','server/api/founder-ai.js','server/api/founder-autonomous-task.js','server/api/founder-engineering-task.js']){
+  try{execFileSync(process.execPath,['--check',path],{cwd:__dirname,stdio:'pipe'});}
+  catch(error){failures.push(path+' has invalid JavaScript syntax: '+String(error.stderr||error.message).slice(0,500));}
+}
+
 if(failures.length){
   console.error('\nMW security baseline FAILED:\n- '+failures.join('\n- ')+'\n');
   process.exit(1);
