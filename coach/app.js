@@ -1495,6 +1495,7 @@ async function verifyCoachAccess(session){
   const map={core:'core',intelligence:'intelligence',mw_sprint_performance:'performance'};
   if(!map[d.tier])throw new Error('This coach account does not have an active MW Coach tier.');
   experience=map[d.tier];
+  window.MWAccountActivity?.start(d.role);
   return d;
 }
 function setLoginMessage(text,type='error'){
