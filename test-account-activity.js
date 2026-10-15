@@ -73,6 +73,7 @@ async function client(){
  assert.deepEqual(JSON.parse(calls[0].opts.body),{p_platform:'ios'});
  now+=30000;events.keydown({isTrusted:true});await tick();assert.equal(calls.length,1);
  now+=300000;await tick();assert.equal(calls.length,1,'idle time must not heartbeat');
+ context.window.MWAccountActivity.start('coach');await tick();assert.equal(calls.length,1,'background access refresh must not count as use');
  events.pointerdown({isTrusted:false});await tick();assert.equal(calls.length,1,'scripted events must not create activity');
  context.document.hidden=true;events.pointerdown({isTrusted:true});await tick();assert.equal(calls.length,1);
  context.document.hidden=false;events.visibilitychange();await tick();assert.equal(calls.length,2);

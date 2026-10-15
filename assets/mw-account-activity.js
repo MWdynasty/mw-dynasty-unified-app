@@ -35,7 +35,9 @@
     start:function(authenticatedRole){
       if(authenticatedRole!==role)return;
       var next=identity(session());
-      if(next!==owner){owner=next;lastSent=0}
+      // Access checks can repeat during background refresh; only the first verified open counts.
+      if(!next||next===owner)return;
+      owner=next;lastSent=0;
       void record();
     }
   };
