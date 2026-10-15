@@ -123,6 +123,20 @@ radial-gradient(ellipse at 50% 0,#f3c75f38,transparent 58%),linear-gradient(150d
 @media(max-width:1180px){.hqKpis{grid-template-columns:repeat(3,1fr)}.hqWingGrid.operating,.hqWingGrid.governance{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.hqKpis{grid-template-columns:repeat(2,1fr)}.hqWingGrid.executive,.hqWingGrid.operating,.hqWingGrid.governance{grid-template-columns:1fr}.hqWingGrid.executive .hqScene{padding:120px 14px 12px}}
 
+
+.accountDirectory th.accountActivityHeading{color:var(--gold2)}
+.accountDirectory td.accountActivityCell{background:rgba(239,189,67,.035);min-width:145px}
+@media(max-width:700px){
+  .accountDirectory{display:block;min-width:0;width:100%}
+  .accountDirectory thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .accountDirectory tbody{display:block}
+  .accountDirectory tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:8px;border-bottom:1px solid var(--line)}
+  .accountDirectory td{display:block;min-width:0;padding:9px;border:0;overflow-wrap:anywhere}
+  .accountDirectory td:first-child{grid-column:1/-1;font-size:15px}
+  .accountDirectory td:before{content:attr(data-label);display:block;margin-bottom:6px;color:var(--muted);font-size:9px;font-weight:850;letter-spacing:.05em;text-transform:uppercase}
+  .accountDirectory td.accountActivityCell{min-width:0;border:1px solid #5e4b25;border-radius:10px}
+  .accountDirectory td.accountActivityCell:before{color:var(--gold2)}
+}
 </style>
 <script src="/assets/mw-diagnostics.js"></script>
 </head>
@@ -582,24 +596,33 @@ function activityTime(value,empty){
   return '<b>'+esc(ago)+'</b><br><small>'+esc(at.toLocaleString())+'</small>';
 }
 function activityCells(x){
-  return '<td>'+activityTime(x.last_sign_in_at,"Never signed in")+'</td><td>'+activityTime(x.last_active_at,"No activity recorded")+(x.last_active_at?'<br><small>'+esc(x.last_active_platform==="ios"?"iOS app":"Web app")+'</small>':"")+'</td>';
+  return '<td class="accountActivityCell">'+activityTime(x.last_sign_in_at,"Never signed in")+'</td><td class="accountActivityCell">'+activityTime(x.last_active_at,"No activity recorded")+(x.last_active_at?'<br><small>'+esc(x.last_active_platform==="ios"?"iOS app":"Web app")+'</small>':"")+'</td>';
 }
 function activityNote(d){
   return 'Last sign-in and app use are tracked separately. App use updates at most once per minute while interacting or returning to the app. Times shown in your local time zone. Updated '+date(d.generated_at)+'. Use Refresh for the latest activity.';
+}
+function labelAccountDirectory(){
+  $("content").querySelectorAll(".accountDirectory").forEach(table=>{
+    const headings=Array.from(table.querySelectorAll("thead th"));
+    headings.forEach(th=>th.setAttribute("scope","col"));
+    table.querySelectorAll("tbody tr").forEach(row=>Array.from(row.children).forEach((cell,i)=>cell.setAttribute("data-label",headings[i]?.textContent||"")));
+  });
 }
 async function renderCoaches(){
   const d=await api("coaches",true),items=d.items||[];
   $("content").innerHTML='<section class="hero"><div class="brand">COACH OPERATIONS</div><h2>Every Coach. One operating view.</h2><p>Membership tier, billing provider, sponsored seats, Athlete load, organization, and verification state.</p></section>'+
     '<div class="stats">'+stat("Coach Accounts",items.length)+stat("Paid / Active",items.filter(x=>x.billing_status==="active"||x.billing_status==="trialing"||x.access_source==="internal_test").length)+stat("Sprint Performance",items.filter(x=>x.tier==="mw_sprint_performance").length)+stat("Sponsored Athletes",items.reduce((n,x)=>n+(Number(x.sponsor_used)||0),0))+'</div>'+
     sectionHead("Coach Directory",activityNote(d))+
-    '<div class="tableWrap"><table class="table"><thead><tr><th>Coach</th><th>Organization</th><th>Tier</th><th>Billing</th><th>Athletes</th><th>Sponsor Seats</th><th>Verification</th><th>Last Sign-in</th><th>Last App Activity</th></tr></thead><tbody>'+items.map(x=>'<tr><td><b>'+esc(x.name||"Coach")+'</b><br><small>'+esc(x.title||"")+'</small></td><td>'+esc(x.organization||"—")+'</td><td>'+esc(x.tier||"—")+'</td><td>'+esc((x.provider||"—")+" · "+(x.billing_status||"—"))+'</td><td>'+esc(x.athletes||0)+'</td><td>'+esc((x.sponsor_used||0)+"/"+(x.sponsor_total||0))+'</td><td>'+esc(x.application_status||"—")+'</td>'+activityCells(x)+'</tr>').join("")+'</tbody></table></div>';
+    '<div class="tableWrap"><table class="table accountDirectory"><thead><tr><th>Coach</th><th class="accountActivityHeading">Last Sign-in</th><th class="accountActivityHeading">Last App Activity</th><th>Organization</th><th>Tier</th><th>Billing</th><th>Athletes</th><th>Sponsor Seats</th><th>Verification</th></tr></thead><tbody>'+items.map(x=>'<tr><td><b>'+esc(x.name||"Coach")+'</b><br><small>'+esc(x.title||"")+'</small></td>'+activityCells(x)+'<td>'+esc(x.organization||"—")+'</td><td>'+esc(x.tier||"—")+'</td><td>'+esc((x.provider||"—")+" · "+(x.billing_status||"—"))+'</td><td>'+esc(x.athletes||0)+'</td><td>'+esc((x.sponsor_used||0)+"/"+(x.sponsor_total||0))+'</td><td>'+esc(x.application_status||"—")+'</td></tr>').join("")+'</tbody></table></div>';
+  labelAccountDirectory();
 }
 async function renderAthletes(){
   const d=await api("athletes",true),items=d.items||[];
   $("content").innerHTML='<section class="hero"><div class="brand">ATHLETE OPERATIONS</div><h2>The entire Athlete ecosystem.</h2><p>Membership source, Coach connection, program position, tiers, onboarding status, and recent activity.</p></section>'+
     '<div class="stats">'+stat("Athletes",items.length)+stat("Active Accounts",items.filter(x=>x.account_status==="active").length)+stat("Sponsored",items.filter(x=>x.membership_source==="coach_sponsored").length)+stat("Assessment Complete",items.filter(x=>x.assessment_complete).length)+'</div>'+
     sectionHead("Athlete Directory",activityNote(d))+
-    '<div class="tableWrap"><table class="table"><thead><tr><th>Athlete</th><th>Membership</th><th>Coach</th><th>Program</th><th>Tiers</th><th>Last Workout</th><th>Last Sign-in</th><th>Last App Activity</th></tr></thead><tbody>'+items.map(x=>'<tr><td><b>'+esc(x.name||"Athlete")+'</b><br><small>'+esc((x.events||[]).join(", ")||x.experience_level||"")+'</small></td><td>'+esc((x.membership_source||"—")+" · "+(x.membership_status||"—"))+'</td><td>'+esc(x.coach_name||"—")+'</td><td>Week '+esc(x.current_week||"—")+' · '+esc(x.program_status||"—")+'</td><td>'+esc((x.track_tier||"—")+" / "+(x.strength_tier||"—"))+'</td><td>'+esc(x.last_workout_at?date(x.last_workout_at):"—")+'</td>'+activityCells(x)+'</tr>').join("")+'</tbody></table></div>';
+    '<div class="tableWrap"><table class="table accountDirectory"><thead><tr><th>Athlete</th><th class="accountActivityHeading">Last Sign-in</th><th class="accountActivityHeading">Last App Activity</th><th>Membership</th><th>Coach</th><th>Program</th><th>Tiers</th><th>Last Workout</th></tr></thead><tbody>'+items.map(x=>'<tr><td><b>'+esc(x.name||"Athlete")+'</b><br><small>'+esc((x.events||[]).join(", ")||x.experience_level||"")+'</small></td>'+activityCells(x)+'<td>'+esc((x.membership_source||"—")+" · "+(x.membership_status||"—"))+'</td><td>'+esc(x.coach_name||"—")+'</td><td>Week '+esc(x.current_week||"—")+' · '+esc(x.program_status||"—")+'</td><td>'+esc((x.track_tier||"—")+" / "+(x.strength_tier||"—"))+'</td><td>'+esc(x.last_workout_at?date(x.last_workout_at):"—")+'</td></tr>').join("")+'</tbody></table></div>';
+  labelAccountDirectory();
 }
 function appLabel(a){return a.verification_status==="auto_approved"?"Auto-Verified":a.verification_status==="approved"?"Verified":a.verification_status==="needs_review"?"Needs Review":a.verification_status==="denied"?"Denied":"Pending"}
 function appBadge(a){return ["auto_approved","approved"].includes(a.verification_status)?"good":a.verification_status==="denied"?"bad":"warn"}
