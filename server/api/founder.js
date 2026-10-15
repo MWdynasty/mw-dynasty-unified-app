@@ -88,6 +88,11 @@ module.exports=async function handler(req,res){
         data=await rpc(token,'mw_founder_kpi_history',{p_days:90});
       }else if(managementSections.has(section)) data=await rpc(token,'mw_founder_management_snapshot',{p_section:section});
       else data=await rpc(token,'mw_founder_os_snapshot',{p_section:section});
+      if(section==='coaches'||section==='athletes'){
+        const activity=await rpc(token,'mw_founder_account_activity',{});
+        const byUser=new Map((activity.items||[]).map(x=>[x.user_id,x]));
+        data={...data,generated_at:activity.generated_at,items:(data.items||[]).map(x=>({...x,...(byUser.get(x.user_id)||{})}))};
+      }
       if(section==='website'){
         const [site,app,projects]=await Promise.all([
           checkUrl('https://mwdynasty.com/'),
