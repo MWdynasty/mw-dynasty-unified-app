@@ -129,3 +129,20 @@ assert(
 const fridayHotfix=fs.readFileSync('supabase/migrations/20260925_v3_friday_workout_status_hotfix.sql','utf8');
 assert(fridayHotfix.includes('p_program_day > 5'),'Friday program_day 5 must be accepted by workout status RPC');
 console.log('MW V3 Friday interaction hotfix guards passed');
+
+
+const {buildPersonalPerformancePlan}=require('./server/lib/mw-season-intelligence');
+const personal=buildPersonalPerformancePlan({startDate:'2026-10-19'});
+assert.equal(personal.seasonLengthWeeks,41);
+assert.equal(personal.primaryPeakDate,null);
+assert.equal(personal.seasonStartDate,'2026-10-19');
+assert.equal(personal.seasonEndDate,'2027-08-01');
+assert.equal(Object.keys(personal.sourceWeekMap).length,41);
+assert.equal(personal.trackAndStrengthSynchronized,true);
+for(let week=1;week<=41;week++)assert.equal(personal.sourceWeekMap[String(week)].sourceWeek,week);
+assert.equal(personal.phasePlan.foundation.count,12);
+assert.equal(personal.phasePlan.pre_competition.count,12);
+assert.equal(personal.phasePlan.competition.count,13);
+assert.equal(personal.phasePlan.peak.count,4);
+assert.throws(()=>buildPersonalPerformancePlan({startDate:'invalid'}));
+console.log('MW Personal Performance 41-week continuity tests passed');
