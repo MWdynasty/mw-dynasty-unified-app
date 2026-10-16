@@ -1548,6 +1548,13 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <section class="view" id="entry">
 <div class="top"><div><div class="logo"><b>MW</b> ATHLETE EVALUATION</div><div class="sub">SEASON INTELLIGENCE • PERFORMANCE PLACEMENT</div></div><div class="online"><span class="dot">●</span> MW SYSTEM</div></div>
 <div class="entryHero"><h2>Train for the season you <strong>actually have</strong>.</h2><p>MW Season Intelligence uses your level, state, Indoor/Outdoor calendar, championship date, and Smart Entry readiness to build a condensed MW season from the 41-week master system. Track and strength stay synchronized to the same peak.</p><div class="phaseStrip" id="phaseStrip"><div class="phasePill" data-phase="1"><span>1</span>W1–8</div><div class="phasePill" data-phase="2"><span>2</span>W9–16</div><div class="phasePill" data-phase="3"><span>3</span>W17–24</div><div class="phasePill" data-phase="4"><span>4</span>W25–33</div><div class="phasePill" data-phase="5"><span>5</span>W34–41</div></div></div>
+<div class="question" style="margin:16px 0;padding:16px;border:1px solid #a88945;border-radius:14px">
+<label for="mwPersonalStartDate" style="font-weight:800">PERSONAL PERFORMANCE · FULL 41 WEEKS</label>
+<p class="lockNote">Train for speed and strength without a required indoor or outdoor championship peak. Sprint and lifting follow one continuous 41-week progression.</p>
+<label for="mwPersonalStartDate">TRAINING START DATE</label><input id="mwPersonalStartDate" type="date" style="width:100%;min-height:48px;color-scheme:dark">
+<button class="save" onclick="mwActivatePersonalPerformance()" style="margin-top:12px;width:100%">BUILD MY 41-WEEK PERSONAL PERFORMANCE PLAN</button>
+<p id="mwPersonalBuildFeedback" role="status" class="lockNote" style="margin-top:8px"></p>
+</div>
 <div class="assessment">
 <input id="entryFirstName" type="hidden">
 <input id="entryLastName" type="hidden">
@@ -1903,6 +1910,21 @@ function sync(){let n=$('#name').value.trim();$('#helloName').textContent=(n||'A
 $('#save').onclick=()=>{let d=getProfile();['name','coachType','p60','p100','p150','p200','p300','p400','p500','week','startDate','startWeek','maxPowerClean','maxFrontSquat','maxBackSquat','maxDeadlift'].forEach(k=>{if($('#'+k))d[k]=$('#'+k).value});window.MWAccountStorage.local.setItem('mwPremiumProfile',JSON.stringify(d));sync();renderEntryStatus();$('#save').textContent='✓ PROFILE SAVED';setTimeout(()=>$('#save').textContent='SAVE ATHLETE PROFILE',1200)};
 function mwFeatureEnabled(key){return window.mwFeatureAccess?.[key]===true}
 function mwFeatureLock(title,message){if(typeof window.o==='function')window.o(title,`<p>${message}</p><button class="save" onclick="document.querySelector('#mwUtilityClose')?.click()">GOT IT</button>`);else alert(message)}
+async function mwActivatePersonalPerformance(){
+ const out=document.getElementById('mwPersonalBuildFeedback'),start=document.getElementById('mwPersonalStartDate')?.value,btn=document.querySelector('button[onclick="mwActivatePersonalPerformance()"]');
+ if(!start){if(out)out.textContent='Choose a training start date first.';return}
+ const token=window.mwGetSessionToken?.()||'';
+ if(!token){if(out)out.textContent='Please sign in again, then retry.';return}
+ if(btn)btn.disabled=true;if(out)out.textContent='Building your 41-week sprint and strength plan…';
+ try{
+  const r=await fetch('/api/season-plan',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({goal:'personal_performance',startDate:start})});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok||!d.ok)throw new Error(d.error||'Could not create your training plan.');
+  if(out)out.textContent='Your 41-week Personal Performance plan is saved. Return to Train to see your Week 1 workouts.';
+  if(typeof window.mwReloadAthleteNotifications==='function')window.mwReloadAthleteNotifications();
+ }catch(e){if(out)out.textContent=e.message||'Season generation failed.'}
+ finally{if(btn)btn.disabled=false}
+}
 function mwMaxEligibleDob(){const d=new Date();d.setFullYear(d.getFullYear()-13);return d.toISOString().slice(0,10)}
 function mwPromptDobVerification(){
   if(!window.mwDobRequired)return;
