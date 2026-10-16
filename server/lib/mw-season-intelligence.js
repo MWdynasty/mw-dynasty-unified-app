@@ -213,6 +213,32 @@ function derivePlan({seasonType,competitionLevel,competitionState,competitionPat
     mappingVersion:'mw-season-map-v1',continuation,registry:registry||null
   };
 }
+
+// Personal Performance is one continuous 41-week training cycle.
+// Competition calendars are optional checkpoints, never phase reset triggers.
+function buildPersonalPerformancePlan({startDate}={}){
+  const start=dateOnly(startDate);
+  if(!start||iso(start)!==String(startDate||'').slice(0,10))throw Object.assign(new Error('A valid training start date is required.'),{status:400});
+  const spans=[
+    ['foundation',1,12,'Foundation'],
+    ['pre_competition',13,24,'Development'],
+    ['competition',25,37,'Performance'],
+    ['peak',38,41,'Performance Consolidation']
+  ];
+  const phasePlan={};
+  const weekMap={};
+  for(const [code,first,last,label] of spans){
+    phasePlan[code]={start:first,end:last,count:last-first+1,label};
+    for(let week=first;week<=last;week++)weekMap[String(week)]={sourceWeek:week,phase:code,phaseLabel:label};
+  }
+  return {goal:'personal_performance',seasonType:'personal_performance',
+    seasonStartDate:iso(start),seasonEndDate:iso(addDays(start,41*7-1)),
+    primaryPeakDate:null,firstMeetDate:null,secondaryPeakDate:null,
+    seasonLengthWeeks:41,phasePlan,sourceWeekMap:weekMap,
+    trackAndStrengthSynchronized:true,calendarSource:'personal_training_start',
+    mappingVersion:'mw-personal-performance-v1'};
+}
+
 async function reconcileSeasonPlan(token){
   try{return await rpc('mw_reconcile_own_season_plan',token,{})}catch{return null}
 }
@@ -233,5 +259,5 @@ async function listOwnSeasonPlans(token,athleteId){
 module.exports={
   MASTER_PHASE_SPANS,FALLBACK_TEMPLATES,normalizeLevel,normalizeState,normalizeSeasonType,normalizeSeasonPreference,
   normalizeCompetitionPath,levelGroup,phaseAllocation,sourceWeekMap,phaseAtWeek,uiPhaseForCode,positionForPlan,
-  loadTemplate,loadStateRegistry,estimatePlanningDates,derivePlan,reconcileSeasonPlan,upsertSeasonPlan,listOwnSeasonPlans,rest,rpc,dateOnly,iso,addDays,weeksBetween
+  loadTemplate,loadStateRegistry,estimatePlanningDates,derivePlan,buildPersonalPerformancePlan,reconcileSeasonPlan,upsertSeasonPlan,listOwnSeasonPlans,rest,rpc,dateOnly,iso,addDays,weeksBetween
 };
