@@ -54,6 +54,12 @@ module.exports=async function handler(req,res){
     if(req.method!=='POST')return res.status(405).json({error:'GET or POST only'});
 
     const b=bodyOf(req);
+    if(b.goal==='personal_performance'){
+      const startDate=String(b.startDate||'').slice(0,10);
+      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate))return res.status(400).json({error:'Choose a valid Personal Performance training start date.'});
+      const result=await rpc('mw_activate_personal_performance_41',token,{p_start_date:startDate});
+      return res.status(200).json({ok:true,goal:'personal_performance',plan:result?.plan||null,seasonLengthWeeks:41,seasonStartDate:startDate});
+    }
     const competitionLevel=normalizeLevel(b.competitionLevel);
     const competitionState=normalizeState(b.competitionState);
     const seasonPreference=normalizeSeasonPreference(b.seasonPreference);
