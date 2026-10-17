@@ -57,6 +57,7 @@ async function activate(){
  button.disabled=true;analyzeButton.disabled=true;
  try{
   const eligibility=await call('eligibility');
+  if(activeUserId!==uid)return;
   pilotEligible=eligibility.approved===true;
   button.disabled=!pilotEligible;analyzeButton.disabled=!pilotEligible;
   status.textContent=pilotEligible?
