@@ -274,7 +274,7 @@ button.onclick=async()=>{
    throw new Error('You must accept the adult staging pilot consent notice.');
   const file=document.getElementById('clip').files[0];
   const duration=await verifyVideo(file);
-  if(duration>30)throw new Error('Recordings must be 30 seconds or shorter.');
+  window.MWMotionUpload.assertDuration(duration);
   status.textContent='Preparing secure upload…';
   const prepared=await call('prepare',{
    movementType:document.getElementById('movement').value,
