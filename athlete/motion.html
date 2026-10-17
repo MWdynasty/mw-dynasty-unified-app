@@ -50,6 +50,13 @@ const loginForm=document.getElementById('pilot-login-form');
 const loginButton=document.getElementById('pilot-login-button');
 let activeUserId=null;
 let pilotEligible=false;
+function clearPrivatePlayback(){
+ // Removing a DOM node alone does not reliably stop HTMLMediaElement playback.
+ for(const video of history.querySelectorAll('video')){
+  try{video.pause();video.removeAttribute('src');video.load();}catch(_){}
+ }
+ history.replaceChildren();
+}
 let pendingFinalization=null;
 // Store only a non-secret assessment ID. Signed upload tokens and credentials
 // must never be persisted by the recovery mechanism.
@@ -91,7 +98,7 @@ async function activate(){
  const verified=await client.auth.getUser();
  if(verified.error||!verified.data?.user){showLogin();return;}
  const uid=verified.data.user.id;
- if(activeUserId && activeUserId!==uid)history.replaceChildren();
+ if(activeUserId && activeUserId!==uid)clearPrivatePlayback();
  activeUserId=uid;
  restorePending(uid);
  loginPanel.classList.add('hidden');loginStatus.textContent='';
@@ -117,8 +124,10 @@ async function activate(){
 function showLogin(){
  activeUserId=null;pilotEligible=false;pendingFinalization=null;
  updatePendingControls();
- history.replaceChildren();
+ clearPrivatePlayback();
  poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ document.getElementById('clip').value='';
+ poseStatus.textContent='Choose a side-view recording to see experimental measurements.';
  analyzeButton.disabled=true;
  loginPanel.classList.remove('hidden');
  loginStatus.textContent='Sign into an approved adult staging athlete account. Regular production credentials may not work here.';
@@ -212,7 +221,9 @@ async function loadHistory(){
      try{
       status.textContent='Opening private recording…';
       const signed=await call('playback',{assessmentId:record.id,assetId:asset.id});
-      const old=item.querySelector('video');if(old)old.remove();
+      if(activeUserId!==requestedFor || !item.isConnected)return;
+      const old=item.querySelector('video');
+      if(old){old.pause();old.removeAttribute('src');old.load();old.remove();}
       const video=document.createElement('video');
       video.controls=true;video.playsInline=true;video.src=signed.url;
       item.append(video);status.textContent='Private video ready. Link expires after 60 seconds.';
@@ -228,12 +239,15 @@ async function loadHistory(){
     remove.disabled=true;
     try{
      await call('delete',{assessmentId:record.id});
+     if(activeUserId!==requestedFor)return;
+     clearPrivatePlayback();
      status.textContent='Recording deleted.';await loadHistory();
     }catch(e){status.textContent=e.message||'Deletion failed.';remove.disabled=false}
    };
    item.append(remove);history.append(item);
   }
- }catch(e){history.textContent='Recording history could not be loaded: '+(e.message||'Unknown error')}
+ }catch(e){if(activeUserId===requestedFor)
+  history.textContent='Recording history could not be loaded: '+(e.message||'Unknown error')}
 }
 const LABELS=Object.freeze({
  trunk_tilt_2d:'Trunk tilt (2D)',knee_angle_2d:'Knee angle (2D)',shin_tilt_2d:'Shin tilt (2D)'
