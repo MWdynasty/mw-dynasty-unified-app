@@ -81,7 +81,11 @@ const {stripTypeScriptTypes}=require('node:module');
    .replace('MIME_EXT[mime as string]','MIME_EXT[mime]')
    .replace('(o:{name:string})','(o)')
    .replace('(r:{id:string})','(r)')
-   .replace('(r:{assessment_id:string})','(r)');
+   .replace('(r:{assessment_id:string})','(r)')
+   .replace('(a:{athlete_id:string})','(a)')
+   .replace('(a:{date_of_birth:string})','(a)')
+   .replace('(a:{id:string})','(a)')
+   .replace('(r:{athlete_id:string})','(r)');
  const context={__createClient:()=>admin,__validation:validation,__reviewValidation:reviewValidation,
   Deno:{env:{get:k=>k==='SUPABASE_URL'?'https://uuggbmccnyswiwkjgydo.supabase.co':
    k==='SUPABASE_SERVICE_ROLE_KEY'?'fake-server-only-secret':null},
