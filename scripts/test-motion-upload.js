@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const m=require('../lib/mw-motion-upload.js');
 assert.equal(m.assertUpload({type:'video/mp4',size:5000}),true);
 assert.equal(m.assertUpload({type:'video/quicktime',size:1000}),true);
-assert.equal(m.assertUpload({type:'video/webm',size:1000}),true);
+assert.throws(()=>m.assertUpload({type:'video/webm',size:1000}),/Unsupported/);
 assert.throws(()=>m.assertUpload({type:'image/png',size:100}),/Unsupported/);
 assert.throws(()=>m.assertUpload({type:'video/mp4',size:0}),/1–100MB/);
 assert.throws(()=>m.assertUpload({type:'video/mp4',size:100*1024*1024+1}),/1–100MB/);
