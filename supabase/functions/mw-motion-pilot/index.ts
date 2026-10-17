@@ -97,11 +97,11 @@ Deno.serve(async (req: Request) => {
       const mime = input.mimeType;
       const bytes = input.bytes;
       if (typeof mime !== "string" || !Object.hasOwn(MIME_EXT,mime) ||
-          !Number.isInteger(bytes) || Number(bytes) < 1 || Number(bytes) > MAX_BYTES) {
+          typeof bytes !== 'number' || !Number.isInteger(bytes) || bytes < 1 || bytes > MAX_BYTES) {
         return bad(422,"Unsupported recording type or size",origin);
       }
       const week = input.weekNumber;
-      if (week !== undefined && (!Number.isInteger(week) || Number(week)<1 || Number(week)>41)) {
+      if (week !== undefined && (typeof week !== 'number' || !Number.isInteger(week) || week<1 || week>41)) {
         return bad(422,"Invalid training week",origin);
       }
       const {count,error:countError} = await admin.from("motion_assessments")
