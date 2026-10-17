@@ -297,7 +297,8 @@ analyzeButton.onclick=async()=>{
  const analysisOwner=activeUserId;
  analyzeButton.disabled=true;button.disabled=true;
  poseResult.replaceChildren();
- poseAbort=new AbortController();
+ const analysisAbort=new AbortController();
+ poseAbort=analysisAbort;
  cancelButton.classList.remove('hidden');
  try{
   const eligibility=await call('eligibility');
@@ -313,8 +314,9 @@ analyzeButton.onclick=async()=>{
   poseStatus.textContent='Loading on-device pose model…';
   const output=await window.MWMotionLocalPose.run({
    file,movementType:document.getElementById('movement').value,
-   cameraView:document.getElementById('camera').value,signal:poseAbort.signal,
-   onProgress:p=>{poseStatus.textContent=p.stage==='model'?
+   cameraView:document.getElementById('camera').value,signal:analysisAbort.signal,
+   onProgress:p=>{if(activeUserId!==analysisOwner)return;
+    poseStatus.textContent=p.stage==='model'?
     'Downloading on-device model. Your video stays in this browser.':
     'Processing locally: '+p.done+' of '+p.total+' frames.';}
   });
@@ -326,8 +328,10 @@ analyzeButton.onclick=async()=>{
  }catch(e){if(activeUserId===analysisOwner)
   poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
  finally{
-  poseAbort=null;cancelButton.classList.add('hidden');
-  updatePendingControls();
+  if(poseAbort===analysisAbort){
+   poseAbort=null;cancelButton.classList.add('hidden');
+   updatePendingControls();
+  }
  }
 };
 retryButton.onclick=async()=>{
