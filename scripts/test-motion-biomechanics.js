@@ -10,15 +10,19 @@ function frame(i,visibility=.95){
  landmarks[23]=pt(.4,.5,visibility);
  landmarks[25]=pt(.5,.7,visibility);
  landmarks[27]=pt(.6,.9,visibility);
- return {timeMs:i*33,landmarks};
+ return {timeMs:i*33,width:1920,height:1080,landmarks};
 }
 const frames=Array.from({length:8},(_,i)=>frame(i));
 const good=b.analyze({movementType:'acceleration_30m',cameraView:'side',frames});
 assert.equal(good.status,'estimated_2d');
 assert.equal(good.metrics.length,2);
-assert.ok(good.metrics.every(m=>m.method==='estimated_2d'));
+assert.ok(good.metrics.every(m=>m.method==='estimated_2d_clip_median'));
 assert.ok(good.metrics.every(m=>m.sampleCount===8));
 assert.equal(b.analyze({movementType:'wickets',cameraView:'front',frames}).status,'insufficient_evidence');
+assert.equal(b.measureFrame({timeMs:0,landmarks:frames[0].landmarks}),null,'Unknown aspect ratio must abstain');
+const narrow=b.measureFrame({...frames[0],width:1080,height:1920});
+const wide=b.measureFrame({...frames[0],width:1920,height:1080});
+assert.ok(Math.abs(narrow.trunk_tilt_2d-wide.trunk_tilt_2d)>10,'Angles must account for pixel aspect ratio');
 assert.equal(b.analyze({movementType:'wickets',cameraView:'side',frames:frames.slice(0,3)}).status,'insufficient_evidence');
 assert.equal(b.analyze({movementType:'block_start',cameraView:'side',frames:Array.from({length:8},(_,i)=>frame(i,.4))}).status,'insufficient_evidence');
 assert.throws(()=>b.analyze({movementType:'unknown',cameraView:'side',frames}),/Unsupported/);
