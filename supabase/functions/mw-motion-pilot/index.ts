@@ -152,8 +152,13 @@ Deno.serve(async (req: Request) => {
       const {data:intent,error:intentError} = await admin.from("motion_upload_intents")
         .select("*").eq("assessment_id",record.id).eq("owner_user_id",user.id).maybeSingle();
       if(intentError || !intent) return bad(404,"Upload intent not found",origin);
-      if(intent.status==="finalized" && record.status==="uploaded")
-        return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:false},origin);
+      if(intent.status==="finalized" && record.status==="uploaded"){
+        const {data:existingAsset}=await admin.from("motion_assets")
+          .select("duration_ms").eq("assessment_id",record.id).maybeSingle();
+        return json(200,{assessmentId:record.id,status:"uploaded",
+          durationVerified:Number.isFinite(existingAsset?.duration_ms)&&existingAsset.duration_ms>0,
+          durationMs:existingAsset?.duration_ms??null},origin);
+      }
       if(record.status!=="draft" || intent.status!=="pending" ||
          new Date(intent.expires_at).getTime()<Date.now()) {
         return bad(409,"Upload authorization expired",origin);
@@ -202,7 +207,7 @@ Deno.serve(async (req: Request) => {
       if(!updated) return bad(409,"Recording was deleted or changed before finalization",origin);
       await admin.from("motion_upload_intents").update({status:"finalized",finalized_at:new Date().toISOString()}).eq("id",intent.id);
       await audit(record.id,"upload_finalized",{bytes:actualBytes,mime:actualMime,durationVerified:true,method:verified.method});
-      return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:true,durationMs:verified.durationMs,analysisAvailable:true},origin);
+      return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:true,durationMs:verified.durationMs,analysisAvailable:false},origin);
     }
     if(action==="list") {
       const {data,error} = await admin.from("motion_assessments")
