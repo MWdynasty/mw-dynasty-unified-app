@@ -48,6 +48,7 @@ const {stripTypeScriptTypes}=require('node:module');
     if(op==='insert'){
      const row={id:crypto.randomUUID(),created_at:new Date().toISOString(),
       status:table==='motion_upload_intents'?'pending':'draft',...payload};
+     if(table==='motion_season_observations')row.expires_at=new Date(Date.now()+330*86400000).toISOString();
      if(table==='motion_upload_intents'&&!row.expires_at)
       row.expires_at=new Date(Date.now()+7200000).toISOString();
      db[table].push(row);rows=[row];
