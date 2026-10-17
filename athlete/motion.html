@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Motion Intelligence — MW Dynasty</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script><script src="/lib/mw-motion-coach-review.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script><script src="/lib/mw-motion-coach-review.js"></script><script src="/lib/mw-motion-progress.js"></script>
 <style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}.review-card{margin-top:15px;padding:17px;border:1px solid #9a773c;border-radius:16px;background:linear-gradient(155deg,#132436,#080f19)}.review-card h2{margin:4px 0 10px;font-size:21px;color:#f5d47d}.review-card h3{font-size:14px;margin:18px 0 5px;color:#f5d47d;text-transform:uppercase;letter-spacing:.06em}.review-card p{margin:6px 0}.review-card ul{padding-left:20px;line-height:1.55}.review-card li{margin:7px 0}.review-card .eyebrow{font-size:11px;letter-spacing:.15em;color:#bfcbd7}.review-actions{display:flex;gap:8px;flex-wrap:wrap}.review-actions button{flex:1 1 170px;font-size:13px}.review-card .disclaimer{border-top:1px solid #394657;padding-top:12px;margin-top:15px;font-size:12px}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This adult staging pilot includes optional on-device pose estimates. Measurements are experimental, not validated coaching recommendations.</p>
 <div id="gate-status" role="status" aria-live="polite" class="status">Checking staging pilot availability…</div>
 <div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form><div id="pilot-login-status" role="status" aria-live="polite" class="status">Enter your authorized staging account credentials.</div></div>
@@ -28,7 +28,7 @@
  <div id="review-action-status" class="muted" role="status" aria-live="polite"></div>
 </section></div>
 <div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
-<div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
+<div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><section id="motion-progress" class="review-card hidden" aria-label="Recent motion observations"><h2>Recent Motion Observations</h2><p class="muted">Side-by-side comparisons from private reports within the 14-day recording window. This does not measure sprint performance or grade technique.</p><div id="motion-progress-content"></div></section><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
 <script>
 (async()=>{
 'use strict';
@@ -39,6 +39,27 @@ const button=document.getElementById('upload');
 const retryButton=document.getElementById('retry-finalize');
 const discardButton=document.getElementById('discard-pending');
 const history=document.getElementById('history');
+const progressPanel=document.getElementById('motion-progress');
+const progressContent=document.getElementById('motion-progress-content');
+function clearProgress(){progressContent.replaceChildren();progressPanel.classList.add('hidden');}
+function displayRecentProgress(reviews){
+ clearProgress();
+ const groups=window.MWMotionProgress.summarize(reviews);
+ if(!groups.length)return;
+ for(const group of groups){
+  const title=group.movementType.replace(/_/g,' ');
+  reviewParagraph(progressContent,title+' · '+group.recordings+' reports','h3');
+  if(group.firstWeek && group.lastWeek)
+   reviewParagraph(progressContent,'MW Week '+group.firstWeek+' to Week '+group.lastWeek);
+  for(const metric of group.metrics){
+   const direction=metric.difference>0?'higher':metric.difference<0?'lower':'unchanged';
+   reviewParagraph(progressContent,metric.label+': '+metric.earlier.toFixed(1)+'° → '+
+    metric.later.toFixed(1)+'° ('+Math.abs(metric.difference).toFixed(1)+'° '+direction+')');
+  }
+  reviewParagraph(progressContent,group.disclaimer).className='disclaimer';
+ }
+ progressPanel.classList.remove('hidden');
+}
 const analyzeButton=document.getElementById('analyze');
 const cancelButton=document.getElementById('cancel-analysis');
 const poseStatus=document.getElementById('pose-status');
@@ -176,7 +197,7 @@ function clearPrivatePlayback(){
  for(const video of history.querySelectorAll('video')){
   try{video.pause();video.removeAttribute('src');video.load();}catch(_){}
  }
- history.replaceChildren();
+ history.replaceChildren();clearProgress();
 }
 let pendingFinalization=null;
 // Store only a non-secret assessment ID. Signed upload tokens and credentials
@@ -330,6 +351,7 @@ async function loadHistory(){
   const data=await call('list');
   const saved=await call('reviews');
   const reviewById=new Map((saved.reviews||[]).map(r=>[r.assessment_id,r]));
+  if(activeUserId===requestedFor)displayRecentProgress(saved.reviews||[]);
   if(!requestedFor || activeUserId!==requestedFor)return;
   if(!data.assessments?.length){history.textContent='No recordings saved yet.';return;}
   for(const record of data.assessments){
