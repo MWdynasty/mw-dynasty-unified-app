@@ -29,3 +29,4 @@ jobs:
         with:
           node-version: '24'
       - run: npm run test:motion
+      - run: node --check supabase/functions/mw-motion-pilot/index.ts
