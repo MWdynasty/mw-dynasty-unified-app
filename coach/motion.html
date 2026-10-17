@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#02060b"><title>Coach Motion Intelligence — MW Dynasty</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script>
+<style>body{margin:0;background:radial-gradient(circle at top,#13243b,#03070c 65%);color:#f7f2e9;font:15px system-ui,-apple-system,sans-serif}main{max-width:650px;margin:auto;padding:24px 18px 80px}h1{font-size:27px}h2{color:#e7bd62;font-size:20px}h3{font-size:15px;color:#e7bd62}p{line-height:1.5;color:#aebbc9}.panel{border:1px solid #42516a;border-radius:17px;background:#0a1622;padding:18px;margin-top:16px}.muted{font-size:12px}.hidden{display:none}label{display:block;color:#eac05d;margin:12px 0 6px}input,button{box-sizing:border-box;width:100%;padding:13px;border:1px solid #45566b;border-radius:10px;background:#040b14;color:white;font:inherit}button{margin-top:12px;background:linear-gradient(120deg,#ffdd7a,#bb8b2f);color:#0b121a;font-weight:800;border:0}button:disabled{opacity:.5}a{color:#eac05d}.status{padding:12px;border:1px solid #526077;border-radius:10px;margin-top:15px}.report{padding:14px;margin-top:12px;border:1px solid #635438;border-radius:12px}</style></head>
+<body><main><a href="/coach/?motionPilot=1">← Back to coach platform</a><h1>MW <span style="color:#eac05d">MOTION INTELLIGENCE</span></h1><p>Coach view · authorized staging only. Only observations an adult athlete explicitly shares with their currently assigned coach are displayed. No videos or private unshared reports are accessible here.</p>
+<div id="status" role="status" aria-live="polite" class="status">Checking staging access…</div>
+<div id="login" class="panel hidden"><h2>Coach staging sign-in</h2><p class="muted">Staging credentials are separate from production.</p><form id="form"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required><button id="signin" type="submit">SIGN IN</button></form></div>
+<section id="dashboard" class="panel hidden"><button id="signout" type="button" style="background:#28384d;color:white">SIGN OUT</button><h2>Shared 41-week observations</h2><p class="muted">Experimental, uncalibrated 2D angles are not evidence of performance improvement, technique quality, or injury risk. Sharing can be revoked by the athlete.</p><button id="refresh" type="button">REFRESH SHARED REPORTS</button><div id="reports" aria-live="polite"></div></section>
+</main><script>
+(async()=>{
+'use strict';
+const status=document.getElementById('status'),login=document.getElementById('login');
+const dashboard=document.getElementById('dashboard'),reports=document.getElementById('reports');
+const pilot=/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname)&&new URLSearchParams(location.search).get('motionPilot')==='1';
+if(!pilot){status.textContent='Coach Motion Intelligence is only available in the authorized staging preview.';return;}
+if(!window.supabase){status.textContent='Staging sign-in is temporarily unavailable.';return;}
+const client=window.supabase.createClient('https://uuggbmccnyswiwkjgydo.supabase.co','sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw',{
+ auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'mw-motion-pilot-staging-session'}
+});
+let owner=null;
+function line(parent,value,tag='p'){const node=document.createElement(tag);node.textContent=value;parent.append(node);return node;}
+function clear(){reports.replaceChildren();}
+async function call(){
+ const {data:{session}}=await client.auth.getSession();
+ if(!session?.access_token)throw new Error('Sign in required.');
+ const response=await fetch('https://uuggbmccnyswiwkjgydo.supabase.co/functions/v1/mw-motion-pilot',{
+  method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw','Content-Type':'application/json'},
+  body:JSON.stringify({action:'coach_season'}),cache:'no-store'
+ });
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(data.error||'Could not load shared observations.');
+ return data;
+}
+async function load(){
+ const requestedFor=owner;clear();
+ try{
+  const data=await call();
+  if(!requestedFor||owner!==requestedFor)return;
+  const rows=data.observations||[];
+  if(!rows.length){line(reports,'No adult athlete has shared an observation with this coach.');status.textContent='No shared observations.';return;}
+  const aliases=new Map();
+  for(const r of rows){
+   if(!aliases.has(r.athlete_id))aliases.set(r.athlete_id,'Assigned athlete '+(aliases.size+1));
+   const card=document.createElement('div');card.className='report';
+   line(card,aliases.get(r.athlete_id)+' · MW Week '+r.week_number,'h3');
+   line(card,r.movement_type.replace(/_/g,' ')+' · '+String(r.created_at||'').slice(0,10));
+   for(const m of r.metrics||[]){
+    if(['knee_angle_2d','shin_tilt_2d','trunk_tilt_2d'].includes(m.name)&&Number.isFinite(m.medianDegrees))
+     line(card,m.name.replace(/_/g,' ')+': '+m.medianDegrees.toFixed(1)+'° estimated median');
+   }
+   line(card,'Unverified 2D camera estimate — no technique grade.').className='muted';
+   reports.append(card);
+  }
+  status.textContent=rows.length+' explicitly shared observations loaded.';
+ }catch(e){if(owner===requestedFor)status.textContent=e.message||'Shared reports unavailable.';}
+}
+async function session(){
+ const {data:{user}}=await client.auth.getUser();
+ owner=user?.id||null;clear();
+ login.classList.toggle('hidden',!!owner);dashboard.classList.toggle('hidden',!owner);
+ status.textContent=owner?'Signed in to staging coach view.':'Sign in to see authorized shared reports.';
+ if(owner)await load();
+}
+document.getElementById('form').onsubmit=async e=>{
+ e.preventDefault();const button=document.getElementById('signin');button.disabled=true;
+ try{
+  const {error}=await client.auth.signInWithPassword({email:document.getElementById('email').value.trim(),password:document.getElementById('password').value});
+  if(error)throw error;document.getElementById('password').value='';await session();
+ }catch(e){status.textContent=e.message||'Sign-in failed.';}finally{button.disabled=false;}
+};
+document.getElementById('refresh').onclick=()=>load();
+document.getElementById('signout').onclick=async()=>{owner=null;clear();await client.auth.signOut();await session();};
+client.auth.onAuthStateChange((_event,_session)=>{if(_event==='SIGNED_OUT'){owner=null;clear();login.classList.remove('hidden');dashboard.classList.add('hidden');}});
+await session();
+})();
+</script></body></html>
