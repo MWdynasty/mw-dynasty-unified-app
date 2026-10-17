@@ -83,7 +83,7 @@ Deno.serve(async (req: Request) => {
        new Date(approval.expires_at).getTime()<=Date.now()) return null;
     return athlete;
   };
-  const getSeasonContext=async(athleteId:string)=>{
+  const getSeasonContext=async(athleteId)=>{
     const {data:profile,error:profileError}=await admin.from("athletes")
       .select("program_start_date").eq("id",athleteId).eq("user_id",user.id).maybeSingle();
     if(profileError||!profile)return null;
