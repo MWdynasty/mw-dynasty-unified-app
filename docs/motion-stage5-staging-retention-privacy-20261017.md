@@ -37,6 +37,19 @@ Environment: **Phase 1 Staging** Supabase `uuggbmccnyswiwkjgydo`; GitHub branch 
 - Crash recovery for interrupted uploads now stores **only assessment IDs** under per-athlete session-storage keys. A slow upload retains the identity of its original staging athlete, even if a different athlete signs in while the upload is still finishing. No signed upload tokens are persisted.
 - The Motion Intelligence automated suite now covers these account-isolation requirements, including simulated reload recovery. A live multi-account mobile browser test remains required.
 
+## Stage 8 — Coach MW review, private reports and recent development comparisons
+
+- Implemented movement-specific, evidence-bounded Coach MW review cards for all seven sprint skills, including read-aloud and copy actions. Guidance is rule-based; there is **no live LLM coach conversation**, calibrated kinematics, technique grade or performance prediction.
+- Both a selected local recording and an athlete's saved private recording can run the same on-device pose pipeline. Saved-video review uses the owner-authorized signed playback URL.
+- Added optional MW training-week tagging (weeks 1–41) to the assessment and recording history.
+- Added an **optional, separate consent** for persisting client-estimated 2D measurements. Local analysis alone does not persist pose data. Only reports associated with uploaded, owner-controlled, unexpired assessments may be saved.
+- Created staging `public.motion_reviews` with owner-only RLS SELECT, no authenticated writes, foreign-key cascade on assessment deletion, and unverified provenance labeling. Schema migration `20261017220000_motion_private_reviews.sql` was applied to staging.
+- Staging `mw-motion-pilot` Edge **v8** supports `save_review` and `reviews`. It enforces current adult approval, ownership, explicit report consent, 14-day access cutoff, bounded metrics and audit entries. No coach access has been granted.
+- Added a recent motion observation comparison grouped by movement and optional training week. It reports only changes in estimated 2D angles and does **not** interpret them as improved or worse technique. Because reports are attached to short-lived assessments, **this is not yet season-long retention or 41-week trend storage**.
+- Latest development preview serves the report-saving controls and recent progression panel. Production remains unchanged.
+
+**Remaining feature development:** long-term measurement retention consent and privacy design, season-long report architecture, permissioned coach visibility, Season Intelligence integration, validated movement feedback and server-side media duration/content checks. Physical retention cleanup remains unscheduled. Do not present the experimental rule-based review as validated AI biomechanics.
+
 ## Live pilot acceptance test still required
 
 1. Confirm an existing staging athlete is **18 or older** and has explicitly consented. An authorized administrator must create a time-limited `motion_pilot_approvals` record; no self-approval or production account reuse.
