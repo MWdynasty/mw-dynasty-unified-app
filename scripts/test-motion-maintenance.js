@@ -49,5 +49,17 @@ const vm=require('node:vm');
  assert.ok(html.includes("call('eligibility')"),'Pilot controls must verify approval');
  assert.ok(html.includes('button.disabled=!pilotEligible'));
  assert.ok(html.includes('analyzeButton.disabled=!pilotEligible'));
+ assert.ok(html.includes("video.pause();video.removeAttribute('src');video.load();"),
+  'Private media playback must stop on signout or history refresh');
+ assert.ok(html.includes("document.getElementById('clip').value=''"),
+  'Signout must clear the locally selected private recording');
+ assert.ok(html.includes('if(activeUserId!==requestedFor || !item.isConnected)return;'),
+  'Late playback responses must never attach a video after account switch');
+ assert.ok(html.includes("const uploadOwner=activeUserId;"),
+  'In-flight uploads must retain their original account identity');
+ assert.ok(html.includes('pendingKey(value.userId)')&&html.includes('pendingKey(userId)'),
+  'Interrupted upload recovery must be isolated per staging account');
+ assert.ok(html.includes('if(activeUserId!==uploadOwner)return;'),
+  'In-flight uploads must not finalize under a different staging identity');
  console.log('Motion staging maintenance eligibility, path isolation, revocation and tombstone tests passed.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
