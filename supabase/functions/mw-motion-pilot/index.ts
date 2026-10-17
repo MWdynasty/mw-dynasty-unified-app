@@ -113,7 +113,7 @@ Deno.serve(async (req: Request) => {
       const canonical=canonicalWeek(profile.program_start_date);
       if(canonical!==null && input.weekNumber!==undefined && input.weekNumber!==canonical)
         return bad(422,"Training week differs from your MW Velocity program",origin);
-      const week=canonical??(input.weekNumber as number | undefined);
+      const week=canonical??input.weekNumber;
       const {count,error:countError} = await admin.from("motion_assessments")
         .select("id",{count:"exact",head:true}).eq("created_by",user.id)
         .gte("created_at",new Date(Date.now()-86400000).toISOString());
