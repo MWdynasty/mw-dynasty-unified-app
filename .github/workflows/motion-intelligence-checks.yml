@@ -59,5 +59,6 @@ jobs:
       - name: Install encoded-media verifier
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - run: npm run test:motion
+      - run: npm run test:motion:real
       - run: node --check supabase/functions/mw-motion-pilot/index.ts
       - run: node --check supabase/functions/mw-motion-maintenance/index.ts
