@@ -3,7 +3,7 @@
 <head><script src="/lib/mw-account-scope.js?v=1"></script><script src="/assets/mw-account-activity.js?v=1"></script>
 <meta charset="utf-8">
 <script>
-window.MW_MOTION_PILOT=location.hostname.endsWith('.vercel.app')&&/-git-feature-motion-intelligence/.test(location.hostname);
+window.MW_MOTION_PILOT=location.hostname.endsWith('.vercel.app')&&(/-git-feature-motion-intelligence/.test(location.hostname)||new URLSearchParams(location.search).get('motionPilot')==='1');
 window.MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
 window.MW_SUPABASE_URL=window.MW_MOTION_PILOT?'https://uuggbmccnyswiwkjgydo.supabase.co':(window.MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':'https://keqgunlfwhjgcsurynef.supabase.co');
 window.MW_SUPABASE_KEY=window.MW_MOTION_PILOT?'sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw':(window.MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm');
@@ -1615,10 +1615,10 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="card" id="mwMotionStage3Card" style="display:none;border-color:rgba(245,185,46,.55)" aria-label="Motion Intelligence recording pilot">
 <div class="cardHead"><span>MOTION INTELLIGENCE</span><span class="smalllink">VIDEO RECORDING PILOT</span></div>
 <p class="muted">Record a block start, acceleration or wicket drill for private technical review. AI biomechanics is not yet active.</p>
-<a href="/athlete/motion.html" class="entryAction" style="display:block;text-decoration:none;text-align:center">RECORD OR UPLOAD VIDEO →</a>
+<a href="/athlete/motion.html?motionPilot=1" class="entryAction" style="display:block;text-decoration:none;text-align:center">RECORD OR UPLOAD VIDEO →</a>
 </div>
 <script>
-(function(){var p=location.hostname.toLowerCase();if(p.endsWith('.vercel.app')&&(/-git-feature-motion-intelligence|motion-pilot/.test(p))){var e=document.getElementById('mwMotionStage3Card');if(e)e.style.display='block'}})();
+(function(){var p=location.hostname.toLowerCase();if(p.endsWith('.vercel.app')&&(/-git-feature-motion-intelligence|motion-pilot/.test(p)||new URLSearchParams(location.search).get('motionPilot')==='1')){var e=document.getElementById('mwMotionStage3Card');if(e)e.style.display='block'}})();
 </script>
 <div class="card" id="todayStrengthCard">
 <div class="cardHead">TODAY'S STRENGTH &amp; POWER <span id="strengthPhaseLabel" class="smalllink"></span></div>
