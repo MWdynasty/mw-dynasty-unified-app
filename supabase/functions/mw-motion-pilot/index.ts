@@ -169,7 +169,7 @@ Deno.serve(async (req: Request) => {
         .list(parts.slice(0,2).join("/"),{search:parts[2],limit:10});
       const object = objects?.find((o:{name:string})=>o.name===parts[2]);
       if(listError || !object) return bad(409,"Recording not yet uploaded",origin);
-      const rejectUploadedObject=async(reason:string)=>{
+      const rejectUploadedObject=async(reason)=>{
         await audit(record.id,"upload_validation_failed",{reason});
         const {error:removed}=await admin.storage.from(BUCKET).remove([intent.storage_path]);
         if(removed){
