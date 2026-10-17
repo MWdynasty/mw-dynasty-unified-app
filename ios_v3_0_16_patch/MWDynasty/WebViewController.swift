@@ -35,7 +35,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.scrollView.contentInsetAdjustmentBehavior = .never
-        webView.customUserAgent = "MWDynasty-iOS/3.0.16"
+        webView.customUserAgent = "MWDynasty-iOS/3.0.17"
         view.addSubview(webView)
         NSLayoutConstraint.activate([
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -75,11 +75,32 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         loadMWDynasty()
     }
 
+    // This private TestFlight build is deliberately pinned to a single staging
+    // preview. Normal MW Dynasty builds continue to accept only production.
+    private var isMotionPilotBuild: Bool {
+        Bundle.main.object(forInfoDictionaryKey: "MWMotionPilotTestFlight") as? Bool == true
+    }
+
+    private var motionPilotHost: String {
+        "mwdynastyunifiedappv31tiered13plusdeploy-dxd3n3qlw-mw-sprint.vercel.app"
+    }
+
+    private func isAuthorizedWebHost(_ url: URL) -> Bool {
+        guard url.scheme == "https" else { return false }
+        if isMotionPilotBuild {
+            return url.host == motionPilotHost
+        }
+        return url.host == "app.mwdynasty.com"
+    }
+
     private func loadMWDynasty() {
         guard let raw = Bundle.main.object(forInfoDictionaryKey: "MWProductionURL") as? String,
               !raw.contains("REPLACE-WITH"),
               let url = URL(string: raw),
-              url.scheme == "https", url.host == "app.mwdynasty.com" else {
+              isAuthorizedWebHost(url),
+              (!isMotionPilotBuild || (url.path == "/athlete/" &&
+                  URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                    .queryItems?.contains(where: { $0.name == "motionPilot" && $0.value == "1" }) == true)) else {
             showConfigurationMessage()
             return
         }
@@ -90,7 +111,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     private func showConfigurationMessage() {
         let html = """
-        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.16 · Build 13</p></body></html>
+        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.17 · Build 15</p></body></html>
         """
         webView.loadHTMLString(html, baseURL: nil)
     }
@@ -99,6 +120,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         guard message.frameInfo.isMainFrame,
               let origin = message.frameInfo.request.url,
               origin.scheme == "https", origin.host == "app.mwdynasty.com",
+              !isMotionPilotBuild,
               let body = message.body as? [String: Any] else { return }
         if message.name == "mwManageSubscriptions" {
             Task { @MainActor [weak self] in
@@ -270,7 +292,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else { decisionHandler(.cancel); return }
-        if url.scheme == "about" || (url.scheme == "https" && url.host == "app.mwdynasty.com") {
+        if url.scheme == "about" || isAuthorizedWebHost(url) {
             decisionHandler(.allow)
         } else {
             decisionHandler(.cancel)
