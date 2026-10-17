@@ -1,3 +1,12 @@
+## Stage 10 — Server-owned unified 41-week indexing
+
+- Added `season_context` to the staging Motion Edge function. When an adult athlete has an authoritative `athletes.program_start_date`, the server derives the current week 1–41 from that date, with no indoor/outdoor reset.
+- On the athlete Motion screen, the server-derived week is selected and locked. The `prepare` API independently rejects a conflicting browser-supplied week. The assessment records `week_source='athlete_program_start'`.
+- When the athlete has **no** configured program start date, the UI explicitly identifies the week as unassigned and permits a manual selection; the server marks it `week_source='manual'`. **Manual selection is not authoritative Season Intelligence synchronization.**
+- The staging `motion_assessments.week_source` migration is applied and the Motion Edge function v12 is deployed. The canonical-week unit checks and Motion foundation CI pass.
+- No existing staging athlete has a `program_start_date` configured as of this update. Thus this is wired for canonical week calculation, but end-to-end active-program integration is not yet established.
+- Outstanding blockers remain: trusted server video-content/duration checks, provisioning the staging service credential for actual automatic video deletion, authorized real-device acceptance and production release. Keep PR #191 in draft.
+
 ## Founder-approved retention policy — October 17, 2026
 
 The founder approved a **14-day raw-video retention limit** and **330-day separately consented 2D measurement-summary retention limit**. Athletes may delete either sooner, and coach sharing is disabled by default.
