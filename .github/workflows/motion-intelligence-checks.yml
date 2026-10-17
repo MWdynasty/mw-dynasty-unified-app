@@ -46,6 +46,8 @@ on:
   push:
     branches:
       - feature/motion-intelligence-foundation
+      - pilot-motion-testflight-prep
+      - testflight-motion-intelligence
 permissions:
   contents: read
 jobs:
