@@ -1,13 +1,14 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Motion Intelligence — MW Dynasty</title>
-<script src="/lib/mw-account-scope.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script>
-<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This is a secure recording pilot, <strong>not</strong> an active biomechanics analysis service.</p>
-<div class="panel"><strong>Record or upload your sprint</strong><p class="muted">One clip, maximum 100 MB. Your training session can still be completed without recording.</p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script>
+<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This is a secure recording pilot, <strong>not</strong> an active biomechanics analysis service.</p>
+<div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form></div>
+<div id="record-panel" class="panel hidden"><strong>Record or upload your sprint</strong><p class="muted">One clip, maximum 100 MB. Your training session can still be completed without recording.</p>
 <label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
 <label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
 <label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" capture="environment">
 <div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and agree to this staging recording pilot. Videos are private and can be deleted from my account. AI biomechanics analysis is not active. Automatic retention cleanup has not yet been enabled.</label></div>
 <button id="upload" disabled>UPLOAD SECURELY</button><div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
-<div class="panel"><strong>My recordings</strong><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
+<div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
 <script>
 (async()=>{
 'use strict';
@@ -21,25 +22,55 @@ const pilot=location.hostname.endsWith('.vercel.app')&&(
   new URLSearchParams(location.search).get('motionPilot')==='1'
 );
 if(!pilot){status.textContent='Motion recording is unavailable in this environment.';return;}
-if(!window.supabase || !window.MWAccountStorage){status.textContent='Secure recording dependencies are unavailable.';return;}
-const raw=window.MWAccountStorage.local.getItem('mwSupabaseSession')||
-          window.MWAccountStorage.session.getItem('mwSupabaseSession');
-let saved=null;
-try{saved=JSON.parse(raw||'null')}catch{}
-if(!saved?.access_token || !saved?.refresh_token){
- status.textContent='Sign into the staging athlete app to use the recording pilot.';return;
-}
+if(!window.supabase){status.textContent='Staging sign-in library unavailable.';return;}
 const client=window.supabase.createClient(stageUrl,key,{
- auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+ auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'mw-motion-pilot-staging-session'}
 });
-const restored=await client.auth.setSession({
- access_token:saved.access_token,refresh_token:saved.refresh_token
-});
-if(restored.error){status.textContent='Your staging session expired. Please sign in again.';return;}
-const verified=await client.auth.getUser();
-if(verified.error||!verified.data?.user){
- status.textContent='Your staging session could not be verified.';return;
+const loginPanel=document.getElementById('pilot-login');
+const recordPanel=document.getElementById('record-panel');
+const historyPanel=document.getElementById('history-panel');
+const loginForm=document.getElementById('pilot-login-form');
+const loginButton=document.getElementById('pilot-login-button');
+let activeUserId=null;
+async function activate(){
+ const verified=await client.auth.getUser();
+ if(verified.error||!verified.data?.user){showLogin();return;}
+ const uid=verified.data.user.id;
+ if(activeUserId && activeUserId!==uid)history.replaceChildren();
+ activeUserId=uid;
+ loginPanel.classList.add('hidden');
+ recordPanel.classList.remove('hidden');
+ historyPanel.classList.remove('hidden');
+ button.disabled=false;
+ status.textContent='Adult staging pilot ready. Recording and local pose estimation are experimental.';
+ await loadHistory();
 }
+function showLogin(){
+ activeUserId=null;
+ history.replaceChildren();
+ loginPanel.classList.remove('hidden');
+ recordPanel.classList.add('hidden');
+ historyPanel.classList.add('hidden');
+ button.disabled=true;
+ status.textContent='Sign into a separate authorized staging athlete account to continue.';
+}
+loginForm.onsubmit=async event=>{
+ event.preventDefault();loginButton.disabled=true;
+ try{
+  const email=document.getElementById('pilot-email').value.trim();
+  const password=document.getElementById('pilot-password').value;
+  const {error}=await client.auth.signInWithPassword({email,password});
+  document.getElementById('pilot-password').value='';
+  if(error)throw new Error('Staging sign-in failed. Check your pilot account credentials.');
+  await activate();
+ }catch(e){status.textContent=e.message||'Sign-in unavailable.';}
+ finally{loginButton.disabled=false;}
+};
+document.getElementById('pilot-signout').onclick=async()=>{
+ button.disabled=true;
+ await client.auth.signOut();
+ showLogin();
+};
 async function call(action,fields={}){
  const session=await client.auth.getSession();
  const token=session.data?.session?.access_token;
@@ -120,8 +151,6 @@ async function loadHistory(){
   }
  }catch(e){history.textContent='Recording history could not be loaded: '+(e.message||'Unknown error')}
 }
-button.disabled=false;
-status.textContent='Adult staging pilot ready. Upload and playback are private. AI analysis is not yet active.';
 button.onclick=async()=>{
  button.disabled=true;
  try{
@@ -149,6 +178,6 @@ button.onclick=async()=>{
  }catch(e){status.textContent=e.message||'Recording failed. Please try again.'}
  finally{button.disabled=false}
 };
-await loadHistory();
+await activate();
 })();
 </script></body></html>
