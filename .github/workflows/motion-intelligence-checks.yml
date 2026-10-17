@@ -16,6 +16,8 @@ on:
       - 'scripts/test-motion-private-reviews.js'
       - 'scripts/test-motion-progress.js'
       - 'scripts/test-motion-season.js'
+      - 'scripts/test-motion-retention-policy.js'
+      - 'supabase/migrations/20261018000000_motion_video_retention_cron.sql'
       - 'scripts/test-motion-biomechanics.js'
       - 'athlete/motion.html'
       - 'supabase/functions/mw-motion-pilot/**'
