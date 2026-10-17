@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const motion = require('../lib/mw-motion-intelligence.js');
+const a = motion.createTuesdayAssessment({weekNumber:1, athleteId:'athlete-1', workoutId:'w1'});
+assert.equal(a.optionalForWorkoutCompletion,true);
+assert.equal(a.standardizedReview,true);
+assert.equal(motion.createTuesdayAssessment({weekNumber:2,athleteId:'a',workoutId:'b'}).standardizedReview,false);
+assert.equal(motion.createTuesdayAssessment({weekNumber:5,athleteId:'a',workoutId:'b'}).standardizedReview,true);
+assert.throws(()=>motion.createTuesdayAssessment({weekNumber:42,athleteId:'a',workoutId:'b'}));
+assert.equal(motion.transitionAssessment('scheduled','skipped'),'skipped');
+assert.equal(motion.transitionAssessment('skipped','queued'),'queued');
+assert.throws(()=>motion.transitionAssessment('reviewed','queued'));
+assert.equal(motion.validateCaptureMetadata({movementType:'wickets',cameraView:'side',files:[{mimeType:'video/mp4',bytes:4000,durationSeconds:12}]}).valid,true);
+assert.equal(motion.validateCaptureMetadata({movementType:'wickets',cameraView:'side',files:[{mimeType:'image/png',bytes:4000,durationSeconds:12}]}).valid,false);
+console.log('Motion Intelligence foundation checks passed.');
