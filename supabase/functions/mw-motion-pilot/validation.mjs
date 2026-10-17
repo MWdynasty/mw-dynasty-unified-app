@@ -3,8 +3,7 @@ export const MAX_BYTES = 100 * 1024 * 1024;
 export const MAX_PER_DAY = 5;
 export const MIME_EXT = Object.freeze({
   "video/mp4": "mp4",
-  "video/quicktime": "mov",
-  "video/webm": "webm"
+  "video/quicktime": "mov"
 });
 export const MOVEMENTS = new Set([
   "block_start","two_point_start","three_point_start","four_point_start",
