@@ -13,6 +13,26 @@ Environment: **Phase 1 Staging** Supabase `uuggbmccnyswiwkjgydo`; GitHub branch 
 - Maintenance eligibility: pilot assessments older than **14 days**; abandoned draft uploads more than **one hour after** their two-hour upload token expiry; and deleted tombstones after that same token grace period. The code verifies that each object path belongs to the assessment owner before deletion, deletes storage objects before DB rows, and records audit events. Any failures are counted for retry.
 - Synthetic automated tests cover 14-day boundaries, token grace, owner-path isolation, tombstones, authorization guards and cancellation. Real cross-user browser/media testing remains pending.
 
+## Additional Stage 3 hardening (2026-10-17)
+
+- The mobile staging sign-in now has its **own visible error/status area**; users no longer receive invisible sign-in errors while the recording panel is hidden. The pilot gate also displays an explanation when opened outside an authorized MW Vercel preview.
+- The athlete preview only switches to the separate staging backend when the preview hostname matches the MW project family **and** `?motionPilot=1` is present. Production website domains are excluded.
+- A **full two-user synthetic Edge lifecycle test** now exercises prepare, signed upload authorization, actual storage metadata checks, finalize, private playback, cross-account denial, delete, invalid-path rejection, retry finalization and approval revocation. These tests use mocked storage and database calls, **not** a live media upload.
+- The browser has a centralized 30-second duration check, with tests for the exact 30-second boundary, too-long clips and invalid/infinite durations. This is **not server-side media verification**.
+- If upload succeeds but the final save fails, the staging UI now offers **Retry Saving Uploaded Video** without uploading a duplicate, plus **Discard Unfinished Video**. Failed uploads attempt best-effort tombstone cleanup.
+- Private video deletion checks every storage path against the assessment owner before removing any object. Staging `mw-motion-pilot` Edge deployment **v6** includes this guard.
+- The latest preview was fetched over the network and returned **HTTP 200** with the updated sign-in UI. This confirms the route is served; it is not proof of authenticated upload/playback.
+
+## Live pilot acceptance test still required
+
+1. Confirm an existing staging athlete is **18 or older** and has explicitly consented. An authorized administrator must create a time-limited `motion_pilot_approvals` record; no self-approval or production account reuse.
+2. Sign in to the staging preview on an actual iPhone and select a side-view sprint clip of **30 seconds or less**. Confirm the video uploads, finalizes, and appears in private history.
+3. Open private playback. Check that the signed link expires after 60 seconds. Confirm an unrelated signed-in athlete cannot see or play the recording.
+4. Interrupt the network after upload, then use **Retry Saving Uploaded Video** to complete the same assessment without duplicating it. Test **Discard Unfinished Video** and verify its storage object is removed.
+5. Upload a clip longer than 30 seconds and confirm the browser rejects it. Server-side video duration inspection remains a separate release gate.
+6. Revoke the pilot approval and confirm that no new signed playback links, uploads or finalizations can be created. Test account sign-out and switching.
+7. Run maintenance in **dry-run** mode with a trusted server-side credential; verify 14-day retention and expired upload cleanup with synthetic media. Only then approve a scheduled run.
+
 ## Not yet enabled
 
 **The maintenance function is deployed but has no automatic schedule or configured Vault credential. The 14-day retention policy is therefore NOT yet operational.** Do not claim automatic deletion is active. The UI explicitly discloses this. The staging database and storage bucket had no pilot video records at the last predeployment check.
