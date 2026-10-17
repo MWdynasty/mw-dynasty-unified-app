@@ -5,7 +5,7 @@
 <div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form><div id="pilot-login-status" role="status" aria-live="polite" class="status">Enter your authorized staging account credentials.</div></div>
 <div id="record-panel" class="panel hidden"><strong>Record or upload your sprint</strong><p class="muted">One clip, maximum 100 MB. Your training session can still be completed without recording.</p>
 <label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
-<label for="week">MW training week (optional)</label><select id="week"><option value="">Not assigned to a week</option></select>
+<label for="week">MW training week</label><p id="week-context" class="muted">Your current MW Velocity week is loaded from your athlete program when available.</p><select id="week"><option value="">Not assigned to a week</option></select>
 <label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
 <label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" capture="environment">
 <div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and consent to this staging pilot. Secure upload sends my video to private MW Dynasty staging storage; optional pose analysis runs on this device. MediaPipe may send usage/performance metrics to Google, but not my video. Pose estimates are unvalidated and are not automatically shared with coaches. Recordings are hidden from playback after 14 days. Automatic deletion is not yet enabled; staging files may remain until secure maintenance runs.</label></div>
@@ -126,6 +126,7 @@ const cancelButton=document.getElementById('cancel-analysis');
 const poseStatus=document.getElementById('pose-status');
 const poseResult=document.getElementById('pose-result');
 const weekSelect=document.getElementById('week');
+const weekContext=document.getElementById('week-context');
 for(let week=1;week<=41;week++){
  const option=document.createElement('option');option.value=String(week);
  option.textContent='Week '+week;weekSelect.append(option);
@@ -335,6 +336,19 @@ async function activate(){
   const eligibility=await call('eligibility');
   if(activeUserId!==uid)return;
   pilotEligible=eligibility.approved===true;
+  weekSelect.disabled=false;weekSelect.value='';
+  weekContext.textContent='Training week not assigned. You can select a week manually until your MW Velocity start date is available.';
+  if(pilotEligible){
+   try{
+    const context=await call('season_context');
+    if(activeUserId!==uid)return;
+    if(context.weekNumber){
+     weekSelect.value=String(context.weekNumber);weekSelect.disabled=true;
+     weekContext.textContent='MW Velocity Week '+context.weekNumber+
+      ' of 41 · automatically linked to your athlete training start date. Indoor and outdoor remain one progression.';
+    }
+   }catch(_){if(activeUserId!==uid)return;}
+  }
   updatePendingControls();
   status.textContent=pendingFinalization?
    'An earlier upload may need to finish saving. Choose Retry Saving or Discard before uploading another video.':
