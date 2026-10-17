@@ -22,7 +22,7 @@ const {stripTypeScriptTypes}=require('node:module');
     adult_verified_at:'2026-10-17T00:00:00Z',consent_policy_version:'pilot-v1'},
    {user_id:u2,status:'revoked',expires_at:'2099-01-01T00:00:00Z',
     adult_verified_at:'2026-10-17T00:00:00Z',consent_policy_version:'pilot-v1'}],
-  motion_assessments:[
+  athlete_season_plans:[],motion_assessments:[
    {id:a1,created_by:u1,status:'uploaded',movement_type:'wickets',
     camera_view:'side',created_at:'2026-10-17T00:00:00Z'},
    {id:a2,created_by:u2,status:'uploaded',movement_type:'wickets',
