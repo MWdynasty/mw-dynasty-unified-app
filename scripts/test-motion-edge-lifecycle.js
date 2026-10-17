@@ -179,6 +179,17 @@ const {stripTypeScriptTypes}=require('node:module');
  r=await call('token-two','list');
  assert.equal(r.status,200);
  assert.equal(r.data.assessments.length,0);
+ // Expired recordings are inaccessible immediately, even if scheduled
+ // deletion has not yet run.
+ const originalCreatedAt=db.motion_assessments[0].created_at;
+ db.motion_assessments[0].created_at=new Date(Date.now()-15*86400000).toISOString();
+ r=await call('token-one','playback',{assessmentId,assetId});
+ assert.equal(r.status,404,'Playback must deny video beyond retention');
+ r=await call('token-one','list');
+ assert.equal(r.data.assessments.length,0,'Expired recording must be hidden from history');
+ db.motion_assessments[0].created_at=originalCreatedAt;
+ r=await call('token-one','playback',{assessmentId,assetId});
+ assert.equal(r.status,200,'Unexpired completed recording still playable');
  r=await call('token-one','delete',{assessmentId});
  assert.equal(r.status,200,JSON.stringify(r));
  assert.equal(db.motion_assessments[0].status,'deleted');
@@ -199,6 +210,11 @@ const {stripTypeScriptTypes}=require('node:module');
  r=await call('token-one','finalize',{assessmentId:badId});
  assert.equal(r.status,422);
  assert.equal(db.motion_assessments.find(x=>x.id===badId).status,'draft');
+ // A partially written asset must never be playable before finalization.
+ const partialAssetId=crypto.randomUUID();
+ db.motion_assets.push({id:partialAssetId,assessment_id:badId,storage_path:badPath});
+ r=await call('token-one','playback',{assessmentId:badId,assetId:partialAssetId});
+ assert.equal(r.status,404,'Draft recordings must not be playable');
  // Corrupted metadata must not delete an unrelated athlete's storage object.
  const alien=u2+'/'+assessmentId+'/66666666-6666-4666-8666-666666666666.mp4';
  objects.set(alien,{size:50,mimetype:'video/mp4'});
