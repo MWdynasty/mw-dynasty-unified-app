@@ -10,6 +10,8 @@ on:
       - 'scripts/test-motion-biomechanics.js'
       - 'athlete/motion.html'
       - 'supabase/functions/mw-motion-pilot/**'
+      - 'supabase/functions/mw-motion-maintenance/**'
+      - 'scripts/test-motion-maintenance.js'
       - 'supabase/migrations/*motion*'
       - 'scripts/test-motion-upload.js'
       - 'scripts/test-motion-stage3.js'
@@ -34,3 +36,4 @@ jobs:
           node-version: '24'
       - run: npm run test:motion
       - run: node --check supabase/functions/mw-motion-pilot/index.ts
+      - run: node --check supabase/functions/mw-motion-maintenance/index.ts
