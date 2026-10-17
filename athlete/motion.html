@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Motion Intelligence — MW Dynasty</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script>
-<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This adult staging pilot includes optional on-device pose estimates. Measurements are experimental, not validated coaching recommendations.</p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script><script src="/lib/mw-motion-coach-review.js"></script>
+<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}.review-card{margin-top:15px;padding:17px;border:1px solid #9a773c;border-radius:16px;background:linear-gradient(155deg,#132436,#080f19)}.review-card h2{margin:4px 0 10px;font-size:21px;color:#f5d47d}.review-card h3{font-size:14px;margin:18px 0 5px;color:#f5d47d;text-transform:uppercase;letter-spacing:.06em}.review-card p{margin:6px 0}.review-card ul{padding-left:20px;line-height:1.55}.review-card li{margin:7px 0}.review-card .eyebrow{font-size:11px;letter-spacing:.15em;color:#bfcbd7}.review-actions{display:flex;gap:8px;flex-wrap:wrap}.review-actions button{flex:1 1 170px;font-size:13px}.review-card .disclaimer{border-top:1px solid #394657;padding-top:12px;margin-top:15px;font-size:12px}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This adult staging pilot includes optional on-device pose estimates. Measurements are experimental, not validated coaching recommendations.</p>
 <div id="gate-status" role="status" aria-live="polite" class="status">Checking staging pilot availability…</div>
 <div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form><div id="pilot-login-status" role="status" aria-live="polite" class="status">Enter your authorized staging account credentials.</div></div>
 <div id="record-panel" class="panel hidden"><strong>Record or upload your sprint</strong><p class="muted">One clip, maximum 100 MB. Your training session can still be completed without recording.</p>
@@ -15,7 +15,15 @@
 <button id="analyze" type="button" disabled>ANALYZE ON THIS DEVICE</button>
 <button id="cancel-analysis" type="button" class="hidden" style="background:#263446;color:#fff">CANCEL ANALYSIS</button>
 <div role="status" aria-live="polite" id="pose-status" class="status">Choose a side-view recording to see experimental measurements.</div>
-<div id="pose-result"></div></div>
+<div id="pose-result"></div>
+<section id="coach-review" class="review-card hidden" aria-label="Coach MW motion review">
+ <div class="eyebrow">MW DYNASTY / TECHNIQUE INTELLIGENCE</div>
+ <h2>Coach MW Motion Review</h2>
+ <p class="muted">An evidence-bounded, rule-based review of your local 2D pose measurements. This is not a live AI coaching conversation or a technique grade.</p>
+ <div id="coach-review-content" aria-live="polite"></div>
+ <div class="review-actions"><button id="read-review" type="button">HEAR REVIEW</button><button id="copy-review" type="button" style="background:#26384c;color:#fff">COPY REVIEW</button></div>
+ <div id="review-action-status" class="muted" role="status" aria-live="polite"></div>
+</section></div>
 <div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
 <div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
 <script>
@@ -32,6 +40,74 @@ const analyzeButton=document.getElementById('analyze');
 const cancelButton=document.getElementById('cancel-analysis');
 const poseStatus=document.getElementById('pose-status');
 const poseResult=document.getElementById('pose-result');
+const coachReview=document.getElementById('coach-review');
+const reviewContent=document.getElementById('coach-review-content');
+const reviewActionStatus=document.getElementById('review-action-status');
+const readReviewButton=document.getElementById('read-review');
+const copyReviewButton=document.getElementById('copy-review');
+let currentReview=null;
+function stopReviewSpeech(){
+ if('speechSynthesis' in window)try{window.speechSynthesis.cancel();}catch(_){}
+ readReviewButton.textContent='HEAR REVIEW';
+}
+function clearReview(){
+ stopReviewSpeech();
+ currentReview=null;reviewContent.replaceChildren();
+ coachReview.classList.add('hidden');reviewActionStatus.textContent='';
+}
+function reviewParagraph(parent,content,tag='p'){
+ const element=document.createElement(tag);
+ element.textContent=content;parent.append(element);return element;
+}
+function displayCoachReview(output,movementType){
+ clearReview();
+ const review=window.MWMotionCoachReview.review({
+  analysis:output.analysis,movementType,
+  attemptedFrames:output.attemptedFrames,poseFrames:output.poseFrames
+ });
+ currentReview=review;
+ reviewParagraph(reviewContent,review.skill,'h3');
+ reviewParagraph(reviewContent,review.evidenceSummary);
+ if(review.status==='observations_available'){
+  reviewParagraph(reviewContent,'What the camera observed','h3');
+  const list=document.createElement('ul');
+  for(const item of review.observations)reviewParagraph(list,item.summary,'li');
+  reviewContent.append(list);
+  reviewParagraph(reviewContent,'Next practice focus','h3');
+  reviewParagraph(reviewContent,review.focus);
+  reviewParagraph(reviewContent,'Coach MW cue','h3');
+  reviewParagraph(reviewContent,review.cue);
+ }else{
+  reviewParagraph(reviewContent,'Not enough clear evidence','h3');
+  reviewParagraph(reviewContent,review.reason);
+ }
+ reviewParagraph(reviewContent,review.nextStep);
+ reviewParagraph(reviewContent,review.disclaimer).className='disclaimer';
+ coachReview.classList.remove('hidden');
+}
+readReviewButton.onclick=()=>{
+ if(!currentReview)return;
+ if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){
+  reviewActionStatus.textContent='Read-aloud is not available on this device.';return;
+ }
+ if(window.speechSynthesis.speaking){stopReviewSpeech();return;}
+ const utterance=new SpeechSynthesisUtterance(window.MWMotionCoachReview.spokenText(currentReview));
+ utterance.rate=.95;utterance.pitch=1;
+ utterance.onend=()=>{readReviewButton.textContent='HEAR REVIEW';};
+ utterance.onerror=()=>{readReviewButton.textContent='HEAR REVIEW';reviewActionStatus.textContent='Read-aloud was interrupted.';};
+ window.speechSynthesis.cancel();
+ window.speechSynthesis.speak(utterance);
+ readReviewButton.textContent='STOP READING';
+};
+copyReviewButton.onclick=async()=>{
+ if(!currentReview)return;
+ const owner=activeUserId;
+ try{
+  if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable.');
+  await navigator.clipboard.writeText(window.MWMotionCoachReview.spokenText(currentReview));
+  if(activeUserId===owner)reviewActionStatus.textContent='Review copied to your clipboard.';
+ }catch(_){if(activeUserId===owner)reviewActionStatus.textContent='Copy unavailable. You can read the review above.';}
+};
 let poseAbort=null;
 const stageUrl='https://uuggbmccnyswiwkjgydo.supabase.co';
 const key='sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
@@ -126,7 +202,7 @@ function showLogin(){
  activeUserId=null;pilotEligible=false;pendingFinalization=null;
  updatePendingControls();
  clearPrivatePlayback();
- poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
  document.getElementById('clip').value='';
  poseStatus.textContent='Choose a side-view recording to see experimental measurements.';
  analyzeButton.disabled=true;
@@ -284,11 +360,11 @@ function showPoseResult(output){
  poseResult.append(limitations);
 }
 document.getElementById('clip').addEventListener('change',()=>{
- poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
  poseStatus.textContent='Recording changed. Previous estimates cleared.';
 });
 for(const id of ['movement','camera'])document.getElementById(id).addEventListener('change',()=>{
- poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
  poseStatus.textContent='Technical skill or camera view changed. Previous estimates cleared.';
 });
 cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
@@ -296,7 +372,7 @@ analyzeButton.onclick=async()=>{
  if(!pilotEligible){poseStatus.textContent='Adult staging pilot approval required.';return;}
  const analysisOwner=activeUserId;
  analyzeButton.disabled=true;button.disabled=true;
- poseResult.replaceChildren();
+ poseResult.replaceChildren();clearReview();
  const analysisAbort=new AbortController();
  poseAbort=analysisAbort;
  cancelButton.classList.remove('hidden');
@@ -322,6 +398,7 @@ analyzeButton.onclick=async()=>{
   });
   if(activeUserId!==analysisOwner)return;
   showPoseResult(output);
+  displayCoachReview(output,document.getElementById('movement').value);
   poseStatus.textContent=output.analysis.status==='estimated_2d'?
    'Experimental 2D estimates ready. Not validated for coaching.':
    'Analysis finished without sufficient evidence.';
