@@ -9,6 +9,8 @@
 <label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" capture="environment">
 <div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and consent to this staging pilot. Secure upload sends my video to private MW Dynasty staging storage; optional pose analysis runs on this device. MediaPipe may send usage/performance metrics to Google, but not my video. Pose estimates are unvalidated and are not automatically shared with coaches. Automatic video retention cleanup is not yet enabled.</label></div>
 <button id="upload" disabled>UPLOAD SECURELY</button>
+<button id="retry-finalize" type="button" class="hidden" style="background:#a7d3b5;color:#09131d">RETRY SAVING UPLOADED VIDEO</button>
+<button id="discard-pending" type="button" class="hidden" style="background:#273648;color:white">DISCARD UNFINISHED VIDEO</button>
 <div class="panel" style="background:#06131e"><strong>Experimental on-device motion analysis</strong><p class="muted">Side-view clips only. MediaPipe model files are downloaded when you choose to analyze. No video frames or pose findings are uploaded by this tool. Results are not saved to your account.</p>
 <button id="analyze" type="button" disabled>ANALYZE ON THIS DEVICE</button>
 <button id="cancel-analysis" type="button" class="hidden" style="background:#263446;color:#fff">CANCEL ANALYSIS</button>
@@ -23,6 +25,8 @@ const status=document.getElementById('status');
 const gateStatus=document.getElementById('gate-status');
 const loginStatus=document.getElementById('pilot-login-status');
 const button=document.getElementById('upload');
+const retryButton=document.getElementById('retry-finalize');
+const discardButton=document.getElementById('discard-pending');
 const history=document.getElementById('history');
 const analyzeButton=document.getElementById('analyze');
 const cancelButton=document.getElementById('cancel-analysis');
@@ -46,6 +50,14 @@ const loginForm=document.getElementById('pilot-login-form');
 const loginButton=document.getElementById('pilot-login-button');
 let activeUserId=null;
 let pilotEligible=false;
+let pendingFinalization=null;
+function updatePendingControls(){
+ const pending=!!pendingFinalization&&pendingFinalization.userId===activeUserId;
+ retryButton.classList.toggle('hidden',!pending);
+ discardButton.classList.toggle('hidden',!pending);
+ button.disabled=!pilotEligible||pending;
+ analyzeButton.disabled=!pilotEligible;
+}
 async function activate(){
  const verified=await client.auth.getUser();
  if(verified.error||!verified.data?.user){showLogin();return;}
@@ -61,7 +73,7 @@ async function activate(){
   const eligibility=await call('eligibility');
   if(activeUserId!==uid)return;
   pilotEligible=eligibility.approved===true;
-  button.disabled=!pilotEligible;analyzeButton.disabled=!pilotEligible;
+  updatePendingControls();
   status.textContent=pilotEligible?
    'Approved adult staging pilot ready. Recording and local pose estimation are experimental.':
    'Adult staging pilot approval is required. Upload and local analysis are disabled.';
@@ -71,7 +83,8 @@ async function activate(){
  await loadHistory();
 }
 function showLogin(){
- activeUserId=null;pilotEligible=false;
+ activeUserId=null;pilotEligible=false;pendingFinalization=null;
+ updatePendingControls();
  history.replaceChildren();
  poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
  analyzeButton.disabled=true;
@@ -263,12 +276,41 @@ analyzeButton.onclick=async()=>{
  }catch(e){poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
  finally{
   poseAbort=null;cancelButton.classList.add('hidden');
-  analyzeButton.disabled=!pilotEligible;button.disabled=!pilotEligible;
+  updatePendingControls();
  }
+};
+retryButton.onclick=async()=>{
+ const pending=pendingFinalization;
+ if(!pending||pending.userId!==activeUserId)return;
+ retryButton.disabled=true;
+ try{
+  status.textContent='Retrying secure save of the already-uploaded recording…';
+  const result=await call('finalize',{assessmentId:pending.assessmentId});
+  if(result.status!=='uploaded')throw new Error('Recording could not be finalized.');
+  pendingFinalization=null;
+  status.textContent='Previously uploaded video saved privately.';
+  await loadHistory();
+ }catch(e){status.textContent='Unable to finish saving. Retry or discard the unfinished recording: '+(e.message||'Unknown error');}
+ finally{retryButton.disabled=false;updatePendingControls();}
+};
+discardButton.onclick=async()=>{
+ const pending=pendingFinalization;
+ if(!pending||pending.userId!==activeUserId)return;
+ if(!confirm('Discard this unfinished private recording? You can upload a new clip afterward.'))return;
+ discardButton.disabled=true;
+ try{
+  await call('delete',{assessmentId:pending.assessmentId});
+  pendingFinalization=null;
+  status.textContent='Unfinished recording discarded.';
+  await loadHistory();
+ }catch(e){status.textContent='Could not discard unfinished recording: '+(e.message||'Unknown error');}
+ finally{discardButton.disabled=false;updatePendingControls();}
 };
 button.onclick=async()=>{
  if(!pilotEligible){status.textContent='Adult staging pilot approval required.';return;}
+ if(pendingFinalization){status.textContent='Finish saving or discard the previous upload before starting another.';return;}
  button.disabled=true;analyzeButton.disabled=true;
+ let prepared=null,uploaded=false;
  try{
   if(!document.getElementById('consent').checked)
    throw new Error('You must accept the adult staging pilot consent notice.');
@@ -276,7 +318,7 @@ button.onclick=async()=>{
   const duration=await verifyVideo(file);
   window.MWMotionUpload.assertDuration(duration);
   status.textContent='Preparing secure upload…';
-  const prepared=await call('prepare',{
+  prepared=await call('prepare',{
    movementType:document.getElementById('movement').value,
    cameraView:document.getElementById('camera').value,
    mimeType:file.type,bytes:file.size,
@@ -286,13 +328,26 @@ button.onclick=async()=>{
   const uploaded=await client.storage.from('motion-private')
    .uploadToSignedUrl(prepared.path,prepared.token,file,{contentType:file.type,upsert:false});
   if(uploaded.error)throw new Error('Video upload failed. Check your connection and retry.');
+  uploaded=true;
+  pendingFinalization={assessmentId:prepared.assessmentId,userId:activeUserId};
+  updatePendingControls();
   status.textContent='Saving video to your account…';
   const completed=await call('finalize',{assessmentId:prepared.assessmentId});
   if(completed.status!=='uploaded')throw new Error('Recording could not be finalized.');
+  pendingFinalization=null;
   status.textContent='Video saved privately! Coach MW biomechanics analysis is not active yet.';
   await loadHistory();
- }catch(e){status.textContent=e.message||'Recording failed. Please try again.'}
- finally{button.disabled=!pilotEligible;analyzeButton.disabled=!pilotEligible}
+ }catch(e){
+  if(prepared&&!uploaded){
+   // Best-effort cleanup of a failed upload. Signed tokens are kept behind a
+   // tombstone so late uploads cannot become visible or be finalized.
+   try{await call('delete',{assessmentId:prepared.assessmentId});}catch(_){}
+  }
+  status.textContent=pendingFinalization?
+   'Video uploaded, but final save is not confirmed. Choose Retry Saving or Discard. '+(e.message||''):
+   (e.message||'Recording failed. Please try again.');
+ }
+ finally{updatePendingControls();}
 };
 await activate();
 })();
