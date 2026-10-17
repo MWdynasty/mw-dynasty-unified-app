@@ -5,6 +5,8 @@ on:
       - 'lib/mw-motion-intelligence.js'
       - 'lib/mw-motion-upload.js'
       - 'lib/mw-motion-biomechanics.js'
+      - 'lib/mw-motion-local-pose.js'
+      - 'scripts/test-motion-local-pose.js'
       - 'scripts/test-motion-biomechanics.js'
       - 'athlete/motion.html'
       - 'supabase/functions/mw-motion-pilot/**'
