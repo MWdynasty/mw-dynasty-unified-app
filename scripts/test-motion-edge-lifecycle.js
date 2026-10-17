@@ -153,7 +153,7 @@ const {stripTypeScriptTypes}=require('node:module');
    verifyIsoVideo:mediaValidation.verifyIsoVideo,
    signedRangeReader:args=>mediaValidation.signedRangeReader({...args,fetchFn:async(url,opts)=>{
     assert.ok(url.startsWith('https://uuggbmccnyswiwkjgydo.supabase.co/'));
-    const match=/bytes=(\\d+)-(\\d+)/.exec(opts.headers.Range);
+    const match=/bytes=(\d+)-(\d+)/.exec(opts.headers.Range);
     const start=Number(match[1]),end=Number(match[2]);
     return new Response(media.subarray(start,end+1),{
      status:206,headers:{'Content-Range':'bytes '+start+'-'+end+'/'+media.length,
