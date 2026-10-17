@@ -1,3 +1,10 @@
+## Stage 13 — Live private Storage signed-range verification
+
+- An authenticated, staging-only diagnostic uploaded a real 1-second FFmpeg-generated MP4 into the private `motion-private` bucket, requested a 60-second signed URL, read its bytes using bounded HTTP Range requests through the **deployed Supabase Storage service**, and verified the video track and 1000 ms duration using the production Motion media parser.
+- The diagnostic then deleted the object through the Storage API. HTTP response: `200 {"verified":true,"durationMs":1000,"removed":true,"error":null}`. Subsequent SQL confirmed **zero** remaining diagnostic objects.
+- The temporary cron diagnostic was unscheduled, its Edge endpoint was redeployed as a disabled HTTP 410 endpoint with JWT verification enabled, and its temporary source was removed from the feature branch.
+- This verifies real private signed-range and object removal behavior. It **does not** establish a complete athlete mobile authentication, recording or coach-sharing flow. Those release gates remain open.
+
 ## Stage 12 — Staging retention verified and shared season anchor
 
 - **14-day raw-media retention is operational.** A new staging-only, 256-bit randomly generated Vault secret authenticates `mw-motion-maintenance` through a restricted service-role-only RPC. No service-role key is stored in cron or passed through HTTP. The Edge function uses `verify_jwt=false` because it authenticates every request with the Vault token before accessing data. An unauthorized invocation returned HTTP 403.
