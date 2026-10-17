@@ -235,6 +235,11 @@ analyzeButton.onclick=async()=>{
  poseAbort=new AbortController();
  cancelButton.classList.remove('hidden');
  try{
+  const eligibility=await call('eligibility');
+  if(eligibility.approved!==true){
+   pilotEligible=false;
+   throw new Error('Adult staging pilot approval has expired or been revoked.');
+  }
   if(!document.getElementById('consent').checked)throw new Error('Adult staging pilot consent is required.');
   if(document.getElementById('camera').value!=='side')throw new Error('Use a side-view recording for these experimental angle estimates.');
   const file=document.getElementById('clip').files[0];
