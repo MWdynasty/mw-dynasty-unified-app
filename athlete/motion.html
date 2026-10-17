@@ -202,9 +202,9 @@ async function verifyVideo(file){
  });
 }
 async function loadHistory(){
- history.replaceChildren();
+ const requestedFor=activeUserId;
+ clearPrivatePlayback();
  try{
-  const requestedFor=activeUserId;
   const data=await call('list');
   if(!requestedFor || activeUserId!==requestedFor)return;
   if(!data.assessments?.length){history.textContent='No recordings saved yet.';return;}
