@@ -47,7 +47,7 @@ function clearSeason(){seasonContent.replaceChildren();seasonPanel.classList.add
 async function loadSeason(){
  const owner=activeUserId;
  clearSeason();
- if(!owner||!pilotEligible)return;
+ if(!owner)return;
  try{
   const data=await call('season');
   if(activeUserId!==owner)return;
