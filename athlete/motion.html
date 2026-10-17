@@ -349,7 +349,7 @@ async function loadHistory(){
  clearPrivatePlayback();
  try{
   const data=await call('list');
-  const saved=await call('reviews');
+  const saved=pilotEligible?await call('reviews'):{reviews:[]};
   const reviewById=new Map((saved.reviews||[]).map(r=>[r.assessment_id,r]));
   if(activeUserId===requestedFor)displayRecentProgress(saved.reviews||[]);
   if(!requestedFor || activeUserId!==requestedFor)return;
