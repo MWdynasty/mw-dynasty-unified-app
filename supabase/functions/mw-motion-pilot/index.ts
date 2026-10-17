@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.79.0";
 import {MAX_BYTES,MAX_PER_DAY,MIME_EXT,ALLOWED_ORIGIN,validId,adult,pathOwned,validPrepare} from "./validation.mjs";
 import {sanitizedReview,validateReview} from "./review-validation.mjs";
+import {canonicalWeek} from "./season-week.mjs";
 
 const STAGING_REF = "uuggbmccnyswiwkjgydo";
 const BUCKET = "motion-private";
@@ -85,6 +86,20 @@ Deno.serve(async (req: Request) => {
     if (action === "eligibility") {
       return json(200,{approved:!!await pilotApproved(),adultPilotOnly:true},origin);
     }
+    if (action === "season_context") {
+      const athlete=await pilotApproved();
+      if(!athlete)return bad(403,"Adult staging pilot approval required",origin);
+      const {data:profile,error:profileError}=await admin.from("athletes")
+        .select("program_start_date").eq("id",athlete.id).eq("user_id",user.id).maybeSingle();
+      if(profileError||!profile)return bad(503,"Season context unavailable",origin);
+      const week=canonicalWeek(profile.program_start_date);
+      return json(200,{
+        weekNumber:week,weekSource:week===null?"unassigned":"athlete_program_start",
+        programStartDate:profile.program_start_date||null,
+        continuousWeeks:41,
+        indoorOutdoorReset:false
+      },origin);
+    }
     if (action === "prepare") {
       const athlete=await pilotApproved();
       if(!athlete) return bad(403,"Adult staging pilot approval required",origin);
@@ -92,7 +107,13 @@ Deno.serve(async (req: Request) => {
       if (validationError) return bad(422,validationError,origin);
       const mime = input.mimeType as string;
       const bytes = input.bytes as number;
-      const week = input.weekNumber as number | undefined;
+      const {data:profile,error:profileError}=await admin.from("athletes")
+        .select("program_start_date").eq("id",athlete.id).eq("user_id",user.id).maybeSingle();
+      if(profileError||!profile)return bad(503,"Season context unavailable",origin);
+      const canonical=canonicalWeek(profile.program_start_date);
+      if(canonical!==null && input.weekNumber!==undefined && input.weekNumber!==canonical)
+        return bad(422,"Training week differs from your MW Velocity program",origin);
+      const week=canonical??(input.weekNumber as number | undefined);
       const {count,error:countError} = await admin.from("motion_assessments")
         .select("id",{count:"exact",head:true}).eq("created_by",user.id)
         .gte("created_at",new Date(Date.now()-86400000).toISOString());
@@ -100,7 +121,8 @@ Deno.serve(async (req: Request) => {
       if ((count||0)>=MAX_PER_DAY) return bad(429,"Daily pilot limit reached",origin);
       const {data:assessment,error:assessmentError} = await admin.from("motion_assessments").insert({
         athlete_id:athlete.id,created_by:user.id,movement_type:input.movementType,
-        camera_view:input.cameraView,week_number:week??null,status:"draft",
+        camera_view:input.cameraView,week_number:week??null,
+        week_source:canonical!==null?"athlete_program_start":week===undefined?"unassigned":"manual",status:"draft",
         consent_recorded_at:new Date().toISOString()
       }).select("id").single();
       if (assessmentError || !assessment) return bad(503,"Could not create assessment",origin);
