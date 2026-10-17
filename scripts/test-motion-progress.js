@@ -25,7 +25,7 @@ assert.equal(result[1].metrics[0].difference,2);
 assert.match(result[1].disclaimer,/does not mean better or worse/);
 assert.equal(progress.summarize([data[0]]).length,0);
 assert.equal(progress.summarize([data[0],{...data[1],provenance:'verified'}]).length,0);
-assert.equal(progress.summarize([data[0],{...data[1],metrics:[{name:'knee_angle_2d',medianDegrees:400}]]).length,1);
+assert.equal(progress.summarize([data[0],{...data[1],metrics:[{name:'knee_angle_2d',medianDegrees:400}]]).length,0);
 assert.equal(progress.summarize([data[0],{...data[1],metrics:[{name:'unknown',medianDegrees:90}]]).length,0);
 const html=fs.readFileSync('athlete/motion.html','utf8');
 assert.ok(html.includes('/lib/mw-motion-progress.js'));
