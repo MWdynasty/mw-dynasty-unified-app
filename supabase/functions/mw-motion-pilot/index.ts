@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.79.0";
 import {MAX_BYTES,MAX_PER_DAY,MIME_EXT,ALLOWED_ORIGIN,validId,adult,pathOwned,validPrepare} from "./validation.mjs";
+import {sanitizedReview,validateReview} from "./review-validation.mjs";
 
 const STAGING_REF = "uuggbmccnyswiwkjgydo";
 const BUCKET = "motion-private";
@@ -170,6 +171,43 @@ Deno.serve(async (req: Request) => {
         .order("created_at",{ascending:false}).limit(30);
       if(error) return bad(503,"Recording history unavailable",origin);
       return json(200,{assessments:data||[]},origin);
+    }
+    if(action==="save_review") {
+      if(!await pilotApproved()) return bad(403,"Adult staging pilot approval required",origin);
+      if(input.consentToStoreMeasurements!==true || input.consentVersion!=="motion-review-v1")
+        return bad(422,"Private measurement storage consent required",origin);
+      const record=await own(input.assessmentId);
+      if(!record || record.status!=="uploaded" || !withinRetention(record.created_at))
+        return bad(404,"Recording not found",origin);
+      const validation=validateReview(input.review);
+      if(validation)return bad(422,validation,origin);
+      const {data:meta,error:metaError}=await admin.from("motion_assessments")
+        .select("movement_type,week_number").eq("id",record.id).eq("created_by",user.id).maybeSingle();
+      if(metaError || !meta)return bad(404,"Recording not found",origin);
+      const cleaned=sanitizedReview(input.review);
+      const {error:saveError}=await admin.from("motion_reviews").upsert({
+        assessment_id:record.id,owner_user_id:user.id,
+        movement_type:meta.movement_type,week_number:meta.week_number,
+        ...cleaned,updated_at:new Date().toISOString()
+      },{onConflict:"assessment_id"});
+      if(saveError)return bad(503,"Private review could not be saved",origin);
+      await audit(record.id,"private_review_saved",{method:cleaned.method,metricCount:cleaned.metrics.length});
+      return json(200,{saved:true,assessmentId:record.id,provenance:cleaned.provenance},origin);
+    }
+    if(action==="reviews") {
+      if(!await pilotApproved()) return bad(403,"Adult staging pilot approval required",origin);
+      const cutoff=new Date(Date.now()-RETENTION_MS).toISOString();
+      const {data:records,error:recordError}=await admin.from("motion_assessments")
+        .select("id").eq("created_by",user.id).eq("status","uploaded")
+        .gte("created_at",cutoff).limit(30);
+      if(recordError)return bad(503,"Review history unavailable",origin);
+      const ids=new Set((records||[]).map((r:{id:string})=>r.id));
+      if(!ids.size)return json(200,{reviews:[]},origin);
+      const {data:reviews,error:reviewError}=await admin.from("motion_reviews")
+        .select("assessment_id,movement_type,week_number,sampled_frames,pose_frames,metrics,method,provenance,created_at")
+        .eq("owner_user_id",user.id).gte("created_at",cutoff).limit(30);
+      if(reviewError)return bad(503,"Review history unavailable",origin);
+      return json(200,{reviews:(reviews||[]).filter((r:{assessment_id:string})=>ids.has(r.assessment_id))},origin);
     }
     if(action==="playback") {
       if(!await pilotApproved()) return bad(403,"Adult staging pilot approval required",origin);
