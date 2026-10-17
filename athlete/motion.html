@@ -12,7 +12,7 @@
 <button id="upload" disabled>UPLOAD SECURELY</button>
 <button id="retry-finalize" type="button" class="hidden" style="background:#a7d3b5;color:#09131d">RETRY SAVING UPLOADED VIDEO</button>
 <button id="discard-pending" type="button" class="hidden" style="background:#273648;color:white">DISCARD UNFINISHED VIDEO</button>
-<div class="panel" style="background:#06131e"><strong>Experimental on-device motion analysis</strong><p class="muted">Side-view clips only. MediaPipe model files are downloaded when you choose to analyze. No video frames or pose findings are uploaded by this tool. Results are not saved to your account.</p>
+<div class="panel" style="background:#06131e"><strong>Experimental on-device motion analysis</strong><p class="muted">Side-view clips only. MediaPipe model files are downloaded when you choose to analyze. Your video frames stay on this device during analysis. Technique measurements are not stored unless you separately choose to save them to your private account.</p>
 <button id="analyze" type="button" disabled>ANALYZE ON THIS DEVICE</button>
 <button id="cancel-analysis" type="button" class="hidden" style="background:#263446;color:#fff">CANCEL ANALYSIS</button>
 <div role="status" aria-live="polite" id="pose-status" class="status">Choose a side-view recording to see experimental measurements.</div>
@@ -22,6 +22,8 @@
  <h2>Coach MW Motion Review</h2>
  <p class="muted">An evidence-bounded, rule-based review of your local 2D pose measurements. This is not a live AI coaching conversation or a technique grade.</p>
  <div id="coach-review-content" aria-live="polite"></div>
+ <div class="row"><input id="review-storage-consent" type="checkbox"><label for="review-storage-consent">Optional: I agree to store this recording's experimental 2D measurements privately with the recording. These measurements are unverified and are hidden after 14 days or when I delete the recording; physical deletion depends on secure cleanup.</label></div>
+ <button id="save-review" type="button" class="hidden" style="background:#26384c;color:#fff">SAVE PRIVATE TECHNIQUE REPORT</button>
  <div class="review-actions"><button id="read-review" type="button">HEAR REVIEW</button><button id="copy-review" type="button" style="background:#26384c;color:#fff">COPY REVIEW</button></div>
  <div id="review-action-status" class="muted" role="status" aria-live="polite"></div>
 </section></div>
@@ -51,27 +53,44 @@ const reviewContent=document.getElementById('coach-review-content');
 const reviewActionStatus=document.getElementById('review-action-status');
 const readReviewButton=document.getElementById('read-review');
 const copyReviewButton=document.getElementById('copy-review');
+const saveReviewButton=document.getElementById('save-review');
+const reviewStorageConsent=document.getElementById('review-storage-consent');
 let currentReview=null;
+let currentReviewData=null;
+let currentReviewAssessmentId=null;
 function stopReviewSpeech(){
  if('speechSynthesis' in window)try{window.speechSynthesis.cancel();}catch(_){}
  readReviewButton.textContent='HEAR REVIEW';
 }
 function clearReview(){
  stopReviewSpeech();
- currentReview=null;reviewContent.replaceChildren();
+ currentReview=null;currentReviewData=null;currentReviewAssessmentId=null;
+ reviewStorageConsent.checked=false;saveReviewButton.classList.add('hidden');
+ reviewContent.replaceChildren();
  coachReview.classList.add('hidden');reviewActionStatus.textContent='';
 }
 function reviewParagraph(parent,content,tag='p'){
  const element=document.createElement(tag);
  element.textContent=content;parent.append(element);return element;
 }
-function displayCoachReview(output,movementType){
+function displayCoachReview(output,movementType,assessmentId=null){
  clearReview();
  const review=window.MWMotionCoachReview.review({
   analysis:output.analysis,movementType,
   attemptedFrames:output.attemptedFrames,poseFrames:output.poseFrames
  });
  currentReview=review;
+ if(assessmentId && review.status==='observations_available'){
+  currentReviewAssessmentId=assessmentId;
+  currentReviewData={
+   sampledFrames:output.attemptedFrames,poseFrames:output.poseFrames,
+   metrics:review.observations.map(o=>({
+    name:o.name,samples:o.samples,medianDegrees:o.medianDegrees,
+    earlyDegrees:o.earlyDegrees,lateDegrees:o.lateDegrees
+   }))
+  };
+  saveReviewButton.classList.remove('hidden');
+ }
  reviewParagraph(reviewContent,review.skill,'h3');
  reviewParagraph(reviewContent,review.evidenceSummary);
  if(review.status==='observations_available'){
@@ -91,6 +110,26 @@ function displayCoachReview(output,movementType){
  reviewParagraph(reviewContent,review.disclaimer).className='disclaimer';
  coachReview.classList.remove('hidden');
 }
+saveReviewButton.onclick=async()=>{
+ if(!currentReviewAssessmentId||!currentReviewData)return;
+ if(!reviewStorageConsent.checked){
+  reviewActionStatus.textContent='Select the optional private measurement storage consent first.';return;
+ }
+ const owner=activeUserId;
+ const id=currentReviewAssessmentId;
+ saveReviewButton.disabled=true;
+ try{
+  await call('save_review',{
+   assessmentId:id,review:currentReviewData,
+   consentToStoreMeasurements:true,consentVersion:'motion-review-v1'
+  });
+  if(activeUserId!==owner || currentReviewAssessmentId!==id)return;
+  reviewActionStatus.textContent='Private technique report saved with this recording.';
+  await loadHistory();
+ }catch(e){
+  if(activeUserId===owner)reviewActionStatus.textContent=e.message||'Could not save the private report.';
+ }finally{saveReviewButton.disabled=false;}
+};
 readReviewButton.onclick=()=>{
  if(!currentReview)return;
  if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){
@@ -289,6 +328,8 @@ async function loadHistory(){
  clearPrivatePlayback();
  try{
   const data=await call('list');
+  const saved=await call('reviews');
+  const reviewById=new Map((saved.reviews||[]).map(r=>[r.assessment_id,r]));
   if(!requestedFor || activeUserId!==requestedFor)return;
   if(!data.assessments?.length){history.textContent='No recordings saved yet.';return;}
   for(const record of data.assessments){
@@ -299,6 +340,18 @@ async function loadHistory(){
     (record.week_number?' · MW Week '+record.week_number:'')+
     ' ('+record.status+')';
    item.append(heading);
+   const prior=reviewById.get(record.id);
+   if(prior){
+    const report=document.createElement('div');report.className='review-card';
+    reviewParagraph(report,'Saved private technique report','h3');
+    reviewParagraph(report,'Experimental, unverified 2D angles — not a technique grade.');
+    for(const metric of prior.metrics||[]){
+     const label=({trunk_tilt_2d:'Trunk tilt',knee_angle_2d:'Knee angle',shin_tilt_2d:'Shin tilt'})[metric.name];
+     if(label && Number.isFinite(metric.medianDegrees))
+      reviewParagraph(report,label+': '+metric.medianDegrees.toFixed(1)+'° median');
+    }
+    item.append(report);
+   }
    for(const asset of record.motion_assets||[]){
     const play=document.createElement('button');play.textContent='PLAY PRIVATE VIDEO';
     play.onclick=async()=>{
@@ -325,7 +378,7 @@ async function loadHistory(){
      try{
       await runLocalReview(
        (signal,owner)=>resolveSavedRecording(record,asset,signal,owner),
-       record.movement_type,record.camera_view
+       record.movement_type,record.camera_view,record.id
       );
      }finally{reviewSaved.disabled=false;}
     };
@@ -390,7 +443,7 @@ for(const id of ['movement','camera'])document.getElementById(id).addEventListen
  poseStatus.textContent='Technical skill or camera view changed. Previous estimates cleared.';
 });
 cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
-async function runLocalReview(resolveRecording,movementType,cameraView){
+async function runLocalReview(resolveRecording,movementType,cameraView,assessmentId=null){
  if(!pilotEligible){poseStatus.textContent='Adult staging pilot approval required.';return;}
  if(poseAbort){poseStatus.textContent='An analysis is already in progress.';return;}
  const analysisOwner=activeUserId;
@@ -424,7 +477,7 @@ async function runLocalReview(resolveRecording,movementType,cameraView){
   });
   if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
   showPoseResult(output);
-  displayCoachReview(output,movementType);
+  displayCoachReview(output,movementType,assessmentId);
   poseStatus.textContent=output.analysis.status==='estimated_2d'?
    'Coach MW experimental technique review ready.':
    'Review finished without sufficient pose evidence.';
