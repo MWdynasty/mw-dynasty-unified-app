@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Motion Intelligence — MW Dynasty</title>
+<script src="/lib/mw-account-scope.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script>
+<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}</style></head><body><main><a href="/athlete/">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This is a secure recording pilot, <strong>not</strong> an active biomechanics analysis service.</p>
+<div class="panel"><strong>Record or upload your sprint</strong><p class="muted">One clip, maximum 100 MB. Your training session can still be completed without recording.</p>
+<label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
+<label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
+<label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" capture="environment">
+<div class="row"><input id="consent" type="checkbox"><label for="consent">I understand this video is stored privately for technical review and that no AI biomechanics analysis is available in this pilot. I confirm that any required parent or guardian permission has been obtained.</label></div>
+<button id="upload" disabled>UPLOAD SECURELY</button><div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
+<div class="panel"><strong>My recordings</strong><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
+<script>
+(async()=>{
+'use strict';const status=document.getElementById('status'),btn=document.getElementById('upload'),history=document.getElementById('history');
+const stageUrl='https://uuggbmccnyswiwkjgydo.supabase.co';
+const pilot=/(-git-feature-motion-intelligence|motion-pilot)/i.test(location.hostname)&&location.hostname.endsWith('.vercel.app');
+if(!pilot){status.textContent='Motion Intelligence recording is not enabled on this environment.';return;}
+if(!window.supabase||!window.MWMotionUpload){status.textContent='Secure recording dependencies unavailable.';return;}
+const raw=window.MWAccountStorage?.local?.getItem('mwSupabaseSession')||window.MWAccountStorage?.session?.getItem('mwSupabaseSession');let saved=null;try{saved=JSON.parse(raw||'null')}catch{}
+if(!saved?.access_token){status.textContent='Please sign into your pilot athlete account first.';return;}
+const key='sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99';
+const client=window.supabase.createClient(stageUrl,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const verified=await client.auth.getUser(saved.access_token);
+if(verified.error||!verified.data?.user){status.textContent='The current session does not belong to the Motion Intelligence staging environment. Please use a staging athlete account.';return;}
+client.auth.getUser=async()=>({data:{user:verified.data.user},error:null});
+const user=verified.data.user;
+const own=await client.from('athletes').select('id').eq('user_id',user.id).maybeSingle();
+if(own.error||!own.data?.id){status.textContent='An athlete profile is required for this pilot.';return;}
+const athleteId=own.data.id,controller=window.MWMotionUpload.createController(client,{enabled:true});
+btn.disabled=false;status.textContent='Pilot recording available. Uploads are private. AI analysis is not connected.';
+async function loadHistory(){
+const {data,error}=await client.from('motion_assessments').select('id,movement_type,training_date,status,motion_assets(storage_path)').eq('athlete_id',athleteId).order('created_at',{ascending:false}).limit(20);
+if(error){history.textContent='History could not be loaded.';return;}
+history.replaceChildren();
+for(const record of data||[]){const p=document.createElement('p');p.textContent=record.training_date+' — '+record.movement_type+' ('+record.status+')';history.append(p);
+for(const asset of record.motion_assets||[]){const button=document.createElement('button');button.textContent='VIEW PRIVATE RECORDING';button.onclick=async()=>{try{const url=await controller.signedPlayback({assessmentId:record.id,path:asset.storage_path});const video=document.createElement('video');video.controls=true;video.src=url;p.after(video)}catch(e){status.textContent=e.message}};history.append(button)}
+}
+if(!data?.length)history.textContent='No recordings yet.';
+}
+btn.onclick=async()=>{
+btn.disabled=true;try{
+if(!document.getElementById('consent').checked)throw new Error('Recording consent is required.');
+const file=document.getElementById('clip').files[0];window.MWMotionUpload.assertUpload(file);
+const movementType=document.getElementById('movement').value,cameraView=document.getElementById('camera').value;
+status.textContent='Creating private assessment…';
+const {data:assessment,error}=await client.from('motion_assessments').insert({athlete_id:athleteId,movement_type:movementType,camera_view:cameraView,consent_recorded_at:new Date().toISOString(),status:'draft'}).select('id').single();
+if(error||!assessment?.id)throw new Error('Assessment creation failed. Check account permissions.');
+status.textContent='Uploading encrypted private video…';
+await controller.upload({assessmentId:assessment.id,file});
+status.textContent='Recording uploaded and saved privately. AI analysis is not yet available.';
+await loadHistory();
+}catch(e){status.textContent=e.message||'Upload failed. Please try again.'}finally{btn.disabled=false}
+};await loadHistory();
+})();
+</script></body></html>
