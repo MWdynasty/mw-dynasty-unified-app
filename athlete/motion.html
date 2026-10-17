@@ -294,12 +294,14 @@ for(const id of ['movement','camera'])document.getElementById(id).addEventListen
 cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
 analyzeButton.onclick=async()=>{
  if(!pilotEligible){poseStatus.textContent='Adult staging pilot approval required.';return;}
+ const analysisOwner=activeUserId;
  analyzeButton.disabled=true;button.disabled=true;
  poseResult.replaceChildren();
  poseAbort=new AbortController();
  cancelButton.classList.remove('hidden');
  try{
   const eligibility=await call('eligibility');
+  if(activeUserId!==analysisOwner)return;
   if(eligibility.approved!==true){
    pilotEligible=false;
    throw new Error('Adult staging pilot approval has expired or been revoked.');
@@ -316,11 +318,13 @@ analyzeButton.onclick=async()=>{
     'Downloading on-device model. Your video stays in this browser.':
     'Processing locally: '+p.done+' of '+p.total+' frames.';}
   });
+  if(activeUserId!==analysisOwner)return;
   showPoseResult(output);
   poseStatus.textContent=output.analysis.status==='estimated_2d'?
    'Experimental 2D estimates ready. Not validated for coaching.':
    'Analysis finished without sufficient evidence.';
- }catch(e){poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
+ }catch(e){if(activeUserId===analysisOwner)
+  poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
  finally{
   poseAbort=null;cancelButton.classList.add('hidden');
   updatePendingControls();
@@ -333,6 +337,7 @@ retryButton.onclick=async()=>{
  try{
   status.textContent='Retrying secure save of the already-uploaded recording…';
   const result=await call('finalize',{assessmentId:pending.assessmentId});
+  if(activeUserId!==pending.userId)return;
   if(result.status!=='uploaded')throw new Error('Recording could not be finalized.');
   savePending(null);
   status.textContent='Previously uploaded video saved privately.';
@@ -347,6 +352,7 @@ discardButton.onclick=async()=>{
  discardButton.disabled=true;
  try{
   await call('delete',{assessmentId:pending.assessmentId});
+  if(activeUserId!==pending.userId)return;
   savePending(null);
   status.textContent='Unfinished recording discarded.';
   await loadHistory();
