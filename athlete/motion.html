@@ -308,6 +308,20 @@ async function loadHistory(){
      finally{play.disabled=false}
     };
     item.append(play);
+    const reviewSaved=document.createElement('button');
+    reviewSaved.textContent='COACH MW REVIEW OF SAVED VIDEO';
+    reviewSaved.style.background='#26384c';reviewSaved.style.color='#fff';
+    reviewSaved.onclick=async()=>{
+     if(activeUserId!==requestedFor)return;
+     reviewSaved.disabled=true;
+     try{
+      await runLocalReview(
+       (signal,owner)=>resolveSavedRecording(record,asset,signal,owner),
+       record.movement_type,record.camera_view
+      );
+     }finally{reviewSaved.disabled=false;}
+    };
+    item.append(reviewSaved);
    }
    const remove=document.createElement('button');remove.textContent='DELETE RECORDING';
    remove.style.background='#253142';remove.style.color='#fff';
@@ -368,8 +382,9 @@ for(const id of ['movement','camera'])document.getElementById(id).addEventListen
  poseStatus.textContent='Technical skill or camera view changed. Previous estimates cleared.';
 });
 cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
-analyzeButton.onclick=async()=>{
+async function runLocalReview(resolveRecording,movementType,cameraView){
  if(!pilotEligible){poseStatus.textContent='Adult staging pilot approval required.';return;}
+ if(poseAbort){poseStatus.textContent='An analysis is already in progress.';return;}
  const analysisOwner=activeUserId;
  analyzeButton.disabled=true;button.disabled=true;
  poseResult.replaceChildren();clearReview();
@@ -378,30 +393,33 @@ analyzeButton.onclick=async()=>{
  cancelButton.classList.remove('hidden');
  try{
   const eligibility=await call('eligibility');
-  if(activeUserId!==analysisOwner)return;
+  if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
   if(eligibility.approved!==true){
    pilotEligible=false;
    throw new Error('Adult staging pilot approval has expired or been revoked.');
   }
-  if(!document.getElementById('consent').checked)throw new Error('Adult staging pilot consent is required.');
-  if(document.getElementById('camera').value!=='side')throw new Error('Use a side-view recording for these experimental angle estimates.');
-  const file=document.getElementById('clip').files[0];
+  if(!document.getElementById('consent').checked)
+   throw new Error('Adult staging pilot consent is required.');
+  if(cameraView!=='side')
+   throw new Error('Use a side-view recording for these experimental angle estimates.');
+  const file=await resolveRecording(analysisAbort.signal,analysisOwner);
+  if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
   if(!file)throw new Error('Select a video first.');
+  window.MWMotionUpload.assertUpload(file);
   poseStatus.textContent='Loading on-device pose model…';
   const output=await window.MWMotionLocalPose.run({
-   file,movementType:document.getElementById('movement').value,
-   cameraView:document.getElementById('camera').value,signal:analysisAbort.signal,
-   onProgress:p=>{if(activeUserId!==analysisOwner)return;
+   file,movementType,cameraView,signal:analysisAbort.signal,
+   onProgress:p=>{if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
     poseStatus.textContent=p.stage==='model'?
-    'Downloading on-device model. Your video stays in this browser.':
-    'Processing locally: '+p.done+' of '+p.total+' frames.';}
+     'Downloading on-device model. Your video stays in this browser.':
+     'Processing locally: '+p.done+' of '+p.total+' frames.';}
   });
-  if(activeUserId!==analysisOwner)return;
+  if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
   showPoseResult(output);
-  displayCoachReview(output,document.getElementById('movement').value);
+  displayCoachReview(output,movementType);
   poseStatus.textContent=output.analysis.status==='estimated_2d'?
-   'Experimental 2D estimates ready. Not validated for coaching.':
-   'Analysis finished without sufficient evidence.';
+   'Coach MW experimental technique review ready.':
+   'Review finished without sufficient pose evidence.';
  }catch(e){if(activeUserId===analysisOwner)
   poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
  finally{
@@ -410,7 +428,27 @@ analyzeButton.onclick=async()=>{
    updatePendingControls();
   }
  }
-};
+}
+analyzeButton.onclick=()=>runLocalReview(
+ async()=>document.getElementById('clip').files[0],
+ document.getElementById('movement').value,
+ document.getElementById('camera').value
+);
+async function resolveSavedRecording(record,asset,signal,owner){
+ poseStatus.textContent='Opening saved recording for private on-device analysis…';
+ const signed=await call('playback',{assessmentId:record.id,assetId:asset.id});
+ if(signal.aborted||activeUserId!==owner)throw new Error('Analysis cancelled.');
+ const response=await fetch(signed.url,{signal,cache:'no-store'});
+ if(!response.ok)throw new Error('Could not open your saved recording.');
+ const blob=await response.blob();
+ if(signal.aborted||activeUserId!==owner)throw new Error('Analysis cancelled.');
+ if(Number.isFinite(asset.bytes)&&blob.size!==asset.bytes)
+  throw new Error('Saved recording size did not match.');
+ const mime=asset.mime_type;
+ const file=new File([blob],'private-sprint-recording',{type:mime});
+ window.MWMotionUpload.assertUpload(file);
+ return file;
+}
 retryButton.onclick=async()=>{
  const pending=pendingFinalization;
  if(!pending||pending.userId!==activeUserId)return;
