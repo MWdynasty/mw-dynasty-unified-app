@@ -65,6 +65,7 @@ const {stripTypeScriptTypes}=require('node:module');
    .replace('function bad(status: number, message: string, origin: string | null): Response {',
     'function bad(status, message, origin) {')
    .replace('function safeError(e: unknown): string {','function safeError(e) {')
+   .replace('function withinRetention(createdAt: unknown): boolean {','function withinRetention(createdAt) {')
    .replace('const headers: Record<string,string> = {','const headers = {')
    .replace('Deno.serve(async (req: Request) => {','Deno.serve(async (req) => {')
    .replace('let input: Record<string,unknown>;','let input;')
