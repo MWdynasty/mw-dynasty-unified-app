@@ -17,11 +17,14 @@ if(!pilot){status.textContent='Motion Intelligence recording is not enabled on t
 if(!window.supabase||!window.MWMotionUpload){status.textContent='Secure recording dependencies unavailable.';return;}
 const raw=window.MWAccountStorage?.local?.getItem('mwSupabaseSession')||window.MWAccountStorage?.session?.getItem('mwSupabaseSession');let saved=null;try{saved=JSON.parse(raw||'null')}catch{}
 if(!saved?.access_token){status.textContent='Please sign into your pilot athlete account first.';return;}
-const key='sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99';
+const key='sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
 const client=window.supabase.createClient(stageUrl,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-const verified=await client.auth.getUser(saved.access_token);
+if(!saved.refresh_token){status.textContent='Pilot session refresh information unavailable. Sign in to the staging athlete account.';return;}
+const sessionResult=await client.auth.setSession({access_token:saved.access_token,refresh_token:saved.refresh_token});
+if(sessionResult.error){status.textContent='This session is not valid for Motion Intelligence staging.';return;}
+const verified=await client.auth.getUser();
 if(verified.error||!verified.data?.user){status.textContent='The current session does not belong to the Motion Intelligence staging environment. Please use a staging athlete account.';return;}
-client.auth.getUser=async()=>({data:{user:verified.data.user},error:null});
+
 const user=verified.data.user;
 const own=await client.from('athletes').select('id').eq('user_id',user.id).maybeSingle();
 if(own.error||!own.data?.id){status.textContent='An athlete profile is required for this pilot.';return;}
