@@ -1,3 +1,16 @@
+## Stage 9 — 41-week opt-in motion history and coach sharing (2026-10-17)
+
+- Added `motion_season_observations` as a separate **330-day maximum** consented summary store. Raw recordings remain subject to the separate **14-day** policy. Video deletion does not erase a separately consented season observation; the athlete can delete either independently.
+- Each observation records one 1–41 MW training week and a movement skill; client 2D measurements remain **unverified**. Saving requires a previously uploaded, unexpired adult-pilot recording, an assigned week, a separate explicit `motion-season-v1` consent and server validation of angle bounds.
+- Coach sharing is OFF by default for every observation. Only active assigned coaches can read shared adult observations, never the video. The athlete can revoke sharing or permanently delete the summary, including after their pilot approval has been revoked. Staging SQL RLS is enabled and authenticated clients have SELECT only.
+- Added a staging-only coach Motion Intelligence page and a preview-only coach dashboard link. The athlete page includes 41-week summaries, per-observation sharing and deletion.
+- Staging `mw-motion-pilot` Edge v10 implements `save_season`, `season`, `share_season`, `delete_season`, and `coach_season`; `mw-motion-maintenance` v2 can purge expired season summaries when service-authorized.
+- Installed staging Supabase Cron `mw-motion-season-retention` (03:00 UTC daily) to physically delete expired 330-day summary rows. This does **not** schedule raw-video cleanup. No staging adult pilot approval or real recording has been created for the release acceptance test.
+- CI synthetic Edge lifecycle covers separate consent, duplicate save, cross-account denial, active assignment, revocation, video deletion independence, and season erasure. Browser syntax and schema guard tests also run.
+
+**Not yet release-ready:** Trusted server-side duration/media-content inspection, automatic physical raw-video cleanup, full 41-week authoritative Season Intelligence plan synchronization (existing staging season plans include shorter legacy periods), authenticated real adult pilot account and iPhone capture/upload/playback testing, biomechanics validation, and app-wide production integration. Preview HTTP 200 and mocked tests do not establish real-device readiness.
+
+
 # MW Motion Intelligence — Stage 5 staging privacy, revocation and retention
 
 Date: 2026-10-17
