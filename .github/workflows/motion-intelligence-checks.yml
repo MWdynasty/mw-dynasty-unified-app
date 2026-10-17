@@ -13,6 +13,7 @@ on:
       - 'supabase/functions/mw-motion-maintenance/**'
       - 'scripts/test-motion-maintenance.js'
       - 'scripts/test-motion-edge-isolation.js'
+      - 'scripts/test-motion-edge-lifecycle.js'
       - 'supabase/migrations/*motion*'
       - 'scripts/test-motion-upload.js'
       - 'scripts/test-motion-stage3.js'
