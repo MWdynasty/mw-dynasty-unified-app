@@ -3,9 +3,10 @@
 <head><script src="/lib/mw-account-scope.js?v=1"></script><script src="/assets/mw-account-activity.js?v=1"></script>
 <meta charset="utf-8">
 <script>
+window.MW_MOTION_PILOT=(location.hostname==='motion-staging.mwdynasty.com'||/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname))&&new URLSearchParams(location.search).get('motionPilot')==='1';
 window.MW_QA_PREVIEW=location.hostname.includes('-git-f-bc0584-');
-window.MW_SUPABASE_URL=window.MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':'https://keqgunlfwhjgcsurynef.supabase.co';
-window.MW_SUPABASE_KEY=window.MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+window.MW_SUPABASE_URL=window.MW_MOTION_PILOT?'https://uuggbmccnyswiwkjgydo.supabase.co':(window.MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':'https://keqgunlfwhjgcsurynef.supabase.co');
+window.MW_SUPABASE_KEY=window.MW_MOTION_PILOT?'sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw':(window.MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm');
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#02060b">
@@ -1611,6 +1612,14 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div>
 <span id="completionWeek" style="display:none">1</span>
 </div>
+<div class="card" id="mwMotionStage3Card" style="display:none;border-color:rgba(245,185,46,.55)" aria-label="Motion Intelligence recording pilot">
+<div class="cardHead"><span>MOTION INTELLIGENCE</span><span class="smalllink">ADULT STAGING PILOT</span></div>
+<p class="muted">Capture sprint mechanics, receive an experimental Coach MW technique review with movement-specific practice cues, and hear your review read aloud. Connect recordings to any of your 41 training weeks. Adult staging pilot only.</p>
+<a href="/athlete/motion.html?motionPilot=1" class="entryAction" style="display:block;text-decoration:none;text-align:center">OPEN MOTION INTELLIGENCE →</a>
+</div>
+<script>
+(function(){if(window.MW_MOTION_PILOT){var e=document.getElementById('mwMotionStage3Card');if(e)e.style.display='block'}})();
+</script>
 <div class="card" id="todayStrengthCard">
 <div class="cardHead">TODAY'S STRENGTH &amp; POWER <span id="strengthPhaseLabel" class="smalllink"></span></div>
 <div class="weekChooser" style="display:none"><label>MW WEEK</label><select id="strengthWeek"></select></div>

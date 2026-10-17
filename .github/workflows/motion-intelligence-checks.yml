@@ -1,0 +1,69 @@
+name: Motion Intelligence Foundation Checks
+on:
+  pull_request:
+    paths:
+      - 'vercel.json'
+      - 'scripts/test-motion-founder-access.js'
+      - 'scripts/test-motion-release-access.js'
+      - 'supabase/functions/mw-motion-founder-access/**'
+      - 'lib/mw-motion-intelligence.js'
+      - 'lib/mw-motion-upload.js'
+      - 'lib/mw-motion-biomechanics.js'
+      - 'lib/mw-motion-local-pose.js'
+      - 'lib/mw-motion-coach-review.js'
+      - 'lib/mw-motion-progress.js'
+      - 'coach/motion.html'
+      - 'coach/index.html'
+      - 'supabase/migrations/20261017150000_motion_season_observations.sql'
+      - 'scripts/test-motion-local-pose.js'
+      - 'scripts/test-motion-coach-review.js'
+      - 'scripts/test-motion-private-reviews.js'
+      - 'scripts/test-motion-progress.js'
+      - 'scripts/test-motion-season.js'
+      - 'scripts/test-motion-retention-policy.js'
+      - 'scripts/test-motion-canonical-week.js'
+      - 'scripts/test-motion-media-validation.js'
+      - 'scripts/test-motion-real-video-container.js'
+      - 'scripts/motion-media-fixture.js'
+      - 'supabase/functions/mw-motion-pilot/media-validation.mjs'
+      - 'supabase/functions/mw-motion-pilot/season-week.mjs'
+      - 'supabase/migrations/20261018020000_motion_canonical_week_source.sql'
+      - 'supabase/migrations/20261018000000_motion_video_retention_cron.sql'
+      - 'scripts/test-motion-biomechanics.js'
+      - 'athlete/motion.html'
+      - 'supabase/functions/mw-motion-pilot/**'
+      - 'supabase/functions/mw-motion-maintenance/**'
+      - 'scripts/test-motion-maintenance.js'
+      - 'scripts/test-motion-edge-isolation.js'
+      - 'scripts/test-motion-edge-lifecycle.js'
+      - 'scripts/test-motion-preview-gate.js'
+      - 'scripts/test-motion-upload-recovery.js'
+      - 'supabase/migrations/*motion*'
+      - 'scripts/test-motion-upload.js'
+      - 'scripts/test-motion-stage3.js'
+      - 'scripts/test-motion-intelligence.js'
+      - 'package.json'
+      - '.github/workflows/motion-intelligence-checks.yml'
+  push:
+    branches:
+      - feature/motion-intelligence-foundation
+permissions:
+  contents: read
+jobs:
+  motion-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - name: Install encoded-media verifier
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: npm run test:motion
+      - run: npm run test:motion:real
+      - run: node --check supabase/functions/mw-motion-pilot/index.ts
+      - run: node --check supabase/functions/mw-motion-maintenance/index.ts
+      - run: node --check supabase/functions/mw-motion-founder-access/index.ts

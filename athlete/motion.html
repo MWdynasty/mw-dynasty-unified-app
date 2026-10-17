@@ -1,0 +1,764 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Motion Intelligence — MW Dynasty</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script><script src="/lib/mw-motion-coach-review.js"></script><script src="/lib/mw-motion-progress.js"></script>
+<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}.review-card{margin-top:15px;padding:17px;border:1px solid #9a773c;border-radius:16px;background:linear-gradient(155deg,#132436,#080f19)}.review-card h2{margin:4px 0 10px;font-size:21px;color:#f5d47d}.review-card h3{font-size:14px;margin:18px 0 5px;color:#f5d47d;text-transform:uppercase;letter-spacing:.06em}.review-card p{margin:6px 0}.review-card ul{padding-left:20px;line-height:1.55}.review-card li{margin:7px 0}.review-card .eyebrow{font-size:11px;letter-spacing:.15em;color:#bfcbd7}.review-actions{display:flex;gap:8px;flex-wrap:wrap}.review-actions button{flex:1 1 170px;font-size:13px}.review-card .disclaimer{border-top:1px solid #394657;padding-top:12px;margin-top:15px;font-size:12px}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This adult staging pilot includes optional on-device pose estimates. Measurements are experimental, not validated coaching recommendations.</p>
+<div id="gate-status" role="status" aria-live="polite" class="status">Checking staging pilot availability…</div>
+<div id="pilot-login" class="panel hidden"><strong>Private Motion pilot</strong><p class="muted">Sign in with your MW Dynasty founder account. Your videos and summaries stay in the separate pilot environment.</p><form id="pilot-login-form"><label for="pilot-mode">Account</label><select id="pilot-mode"><option value="founder">MW Dynasty founder account</option><option value="staging">Authorized staging account</option></select><label for="pilot-email">MW Dynasty email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><div id="founder-consent-row" class="row"><input id="founder-consent" type="checkbox"><label for="founder-consent">I agree to the private adult Motion pilot and to use a separate pilot profile linked to my MW Velocity start date. Video upload requires separate consent below.</label></div><button id="pilot-login-button" type="submit">OPEN PRIVATE MOTION</button></form><div id="pilot-login-status" role="status" aria-live="polite" class="status">Use your existing founder email and password.</div></div>
+<div id="record-panel" class="panel hidden"><strong>Record or upload your sprint</strong><p class="muted">One MP4/MOV clip, maximum 100 MB and 30 seconds. Your training session can still be completed without recording.</p>
+<label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
+<label for="week">MW training week</label><p id="week-context" class="muted">Your current MW Velocity week is loaded from your athlete program when available.</p><select id="week"><option value="">Not assigned to a week</option></select>
+<label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
+<button id="record-clip" type="button">RECORD A SPRINT</button><input id="camera-clip" type="file" accept="video/mp4,video/quicktime" capture="environment" class="hidden"><label for="clip">Or upload a saved sprint</label><input id="clip" type="file" accept="video/mp4,video/quicktime"><p id="selected-clip" class="muted"></p>
+<div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and consent to this staging pilot. Secure upload sends my video to private MW Dynasty staging storage; optional pose analysis runs on this device. MediaPipe may send usage/performance metrics to Google, but not my video. Pose estimates are unvalidated and are not automatically shared with coaches. Recordings are hidden from playback after 14 days. Private video removal is scheduled hourly after the 14-day limit; temporary storage failures are retried.</label></div>
+<div class="row"><input id="feedback-on-upload" type="checkbox" checked><label for="feedback-on-upload">Generate Coach MW feedback on this device after upload. Side-view footage is required.</label></div><button id="upload" disabled>UPLOAD SECURELY</button>
+<button id="retry-finalize" type="button" class="hidden" style="background:#a7d3b5;color:#09131d">RETRY SAVING UPLOADED VIDEO</button>
+<button id="discard-pending" type="button" class="hidden" style="background:#273648;color:white">DISCARD UNFINISHED VIDEO</button>
+<div class="panel" style="background:#06131e"><strong>Experimental on-device motion analysis</strong><p class="muted">Side-view clips only. MediaPipe model files are downloaded when you choose to analyze. Your video frames stay on this device during analysis. Technique measurements are not stored unless you separately choose to save them to your private account.</p>
+<button id="analyze" type="button" disabled>GET COACH MW FEEDBACK</button>
+<button id="cancel-analysis" type="button" class="hidden" style="background:#263446;color:#fff">CANCEL ANALYSIS</button>
+<div role="status" aria-live="polite" id="pose-status" class="status">Choose a side-view recording to see experimental measurements.</div>
+<div id="pose-result"></div>
+<section id="coach-review" class="review-card hidden" aria-label="Coach MW motion review">
+ <div class="eyebrow">MW DYNASTY / TECHNIQUE INTELLIGENCE</div>
+ <h2>Coach MW Motion Review</h2>
+ <p class="muted">An evidence-bounded, rule-based review of your local 2D pose measurements. This is not a live AI coaching conversation or a technique grade.</p>
+ <div id="coach-review-content" aria-live="polite"></div>
+ <div class="row"><input id="review-storage-consent" type="checkbox"><label for="review-storage-consent">Optional: I agree to store this recording's experimental 2D measurements privately with the recording. These measurements are unverified and are hidden after 14 days or when I delete the recording; physical deletion depends on secure cleanup.</label></div>
+ <div class="row"><input id="season-consent" type="checkbox"><label for="season-consent">Optional 41-week history: Save these unverified angle estimates for up to 330 days, even after the video expires or is deleted. Coach sharing is OFF by default. You can delete this history separately.</label></div>
+ <button id="save-season" type="button" class="hidden" style="background:#d7b36b;color:#09131d">SAVE TO 41-WEEK PROGRESSION</button>
+ <button id="save-review" type="button" class="hidden" style="background:#26384c;color:#fff">SAVE PRIVATE TECHNIQUE REPORT</button>
+ <div class="review-actions"><button id="read-review" type="button">HEAR REVIEW</button><button id="copy-review" type="button" style="background:#26384c;color:#fff">COPY REVIEW</button></div>
+ <div id="review-action-status" class="muted" role="status" aria-live="polite"></div>
+</section></div>
+<div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
+<div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><section id="motion-season" class="review-card hidden" aria-label="41-week motion history"><h2>41-Week Motion History</h2><p class="muted">Private opt-in 2D estimates, retained up to 330 days. These are camera observations, not a validated performance score. Sharing with your assigned coach is optional and controlled per report.</p><div id="motion-season-content"></div></section><section id="motion-progress" class="review-card hidden" aria-label="Recent motion observations"><h2>Recent Motion Observations</h2><p class="muted">Side-by-side comparisons from private reports within the 14-day recording window. This does not measure sprint performance or grade technique.</p><div id="motion-progress-content"></div></section><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
+<script>
+(async()=>{
+'use strict';
+const status=document.getElementById('status');
+const gateStatus=document.getElementById('gate-status');
+const loginStatus=document.getElementById('pilot-login-status');
+const button=document.getElementById('upload');
+const retryButton=document.getElementById('retry-finalize');
+const discardButton=document.getElementById('discard-pending');
+const history=document.getElementById('history');
+const seasonPanel=document.getElementById('motion-season');
+const seasonContent=document.getElementById('motion-season-content');
+function clearSeason(){seasonContent.replaceChildren();seasonPanel.classList.add('hidden');}
+async function loadSeason(){
+ const owner=activeUserId;
+ clearSeason();
+ if(!owner)return;
+ try{
+  const data=await call('season');
+  if(activeUserId!==owner)return;
+  const observations=data.observations||[];
+  if(!observations.length)return;
+  const groups=window.MWMotionProgress.summarize(observations);
+  const heading=document.createElement('p');
+  heading.textContent=observations.length+' saved experimental observations across MW training weeks.';
+  seasonContent.append(heading);
+  for(const group of groups){
+   reviewParagraph(seasonContent,group.movementType.replace(/_/g,' '),'h3');
+   for(const metric of group.metrics){
+    reviewParagraph(seasonContent,'Week '+group.firstWeek+' → '+group.lastWeek+': '+metric.label+
+     ' '+metric.earlier.toFixed(1)+'° → '+metric.later.toFixed(1)+'°');
+   }
+   reviewParagraph(seasonContent,group.disclaimer).className='disclaimer';
+  }
+  for(const observation of observations){
+   const entry=document.createElement('div');entry.className='panel';
+   reviewParagraph(entry,'Week '+observation.week_number+' · '+observation.movement_type.replace(/_/g,' '));
+   for(const metric of observation.metrics||[]){
+    if(Number.isFinite(metric.medianDegrees))
+     reviewParagraph(entry,metric.name.replace(/_/g,' ')+': '+metric.medianDegrees.toFixed(1)+'°');
+   }
+   const share=document.createElement('button');
+   share.textContent=observation.share_with_assigned_coach?'STOP SHARING WITH COACH':'SHARE WITH ASSIGNED COACH';
+   share.onclick=async()=>{
+    const ownerAtClick=activeUserId;share.disabled=true;
+    try{
+     await call('share_season',{observationId:observation.id,share:!observation.share_with_assigned_coach});
+     if(activeUserId===ownerAtClick)await loadSeason();
+    }catch(e){if(activeUserId===ownerAtClick)status.textContent=e.message||'Sharing update failed.';}
+    finally{share.disabled=false;}
+   };
+   entry.append(share);
+   const remove=document.createElement('button');
+   remove.style.background='#26384c';remove.style.color='#fff';
+   remove.textContent='DELETE SEASON OBSERVATION';
+   remove.onclick=async()=>{
+    if(!confirm('Permanently delete this saved motion observation? This does not delete the original video.'))return;
+    const ownerAtClick=activeUserId;remove.disabled=true;
+    try{
+     await call('delete_season',{observationId:observation.id});
+     if(activeUserId===ownerAtClick)await loadSeason();
+    }catch(e){if(activeUserId===ownerAtClick)status.textContent=e.message||'Could not delete observation.';}
+    finally{remove.disabled=false;}
+   };
+   entry.append(remove);seasonContent.append(entry);
+  }
+  seasonPanel.classList.remove('hidden');
+ }catch(e){if(activeUserId===owner)status.textContent=e.message||'Season history unavailable.';}
+}
+const progressPanel=document.getElementById('motion-progress');
+const progressContent=document.getElementById('motion-progress-content');
+function clearProgress(){progressContent.replaceChildren();progressPanel.classList.add('hidden');}
+function displayRecentProgress(reviews){
+ clearProgress();
+ const groups=window.MWMotionProgress.summarize(reviews);
+ if(!groups.length)return;
+ for(const group of groups){
+  const title=group.movementType.replace(/_/g,' ');
+  reviewParagraph(progressContent,title+' · '+group.recordings+' reports','h3');
+  if(group.firstWeek && group.lastWeek)
+   reviewParagraph(progressContent,'MW Week '+group.firstWeek+' to Week '+group.lastWeek);
+  for(const metric of group.metrics){
+   const direction=metric.difference>0?'higher':metric.difference<0?'lower':'unchanged';
+   reviewParagraph(progressContent,metric.label+': '+metric.earlier.toFixed(1)+'° → '+
+    metric.later.toFixed(1)+'° ('+Math.abs(metric.difference).toFixed(1)+'° '+direction+')');
+  }
+  reviewParagraph(progressContent,group.disclaimer).className='disclaimer';
+ }
+ progressPanel.classList.remove('hidden');
+}
+const analyzeButton=document.getElementById('analyze');
+const cancelButton=document.getElementById('cancel-analysis');
+const poseStatus=document.getElementById('pose-status');
+const poseResult=document.getElementById('pose-result');
+const weekSelect=document.getElementById('week');
+const weekContext=document.getElementById('week-context');
+for(let week=1;week<=41;week++){
+ const option=document.createElement('option');option.value=String(week);
+ option.textContent='Week '+week;weekSelect.append(option);
+}
+const coachReview=document.getElementById('coach-review');
+const reviewContent=document.getElementById('coach-review-content');
+const reviewActionStatus=document.getElementById('review-action-status');
+const readReviewButton=document.getElementById('read-review');
+const copyReviewButton=document.getElementById('copy-review');
+const saveReviewButton=document.getElementById('save-review');
+const saveSeasonButton=document.getElementById('save-season');
+const seasonConsent=document.getElementById('season-consent');
+const reviewStorageConsent=document.getElementById('review-storage-consent');
+let currentReview=null;
+let currentReviewData=null;
+let currentReviewAssessmentId=null;
+function stopReviewSpeech(){
+ if('speechSynthesis' in window)try{window.speechSynthesis.cancel();}catch(_){}
+ readReviewButton.textContent='HEAR REVIEW';
+}
+function clearReview(){
+ stopReviewSpeech();
+ currentReview=null;currentReviewData=null;currentReviewAssessmentId=null;
+ reviewStorageConsent.checked=false;saveReviewButton.classList.add('hidden');
+ seasonConsent.checked=false;saveSeasonButton.classList.add('hidden');
+ reviewContent.replaceChildren();
+ coachReview.classList.add('hidden');reviewActionStatus.textContent='';
+}
+function reviewParagraph(parent,content,tag='p'){
+ const element=document.createElement(tag);
+ element.textContent=content;parent.append(element);return element;
+}
+function displayCoachReview(output,movementType,assessmentId=null,recordWeek=null){
+ clearReview();
+ const review=window.MWMotionCoachReview.review({
+  analysis:output.analysis,movementType,
+  attemptedFrames:output.attemptedFrames,poseFrames:output.poseFrames,
+  trainingContext:recordWeek?{weekNumber:recordWeek,programState:'active'}:trainingContext
+ });
+ currentReview=review;
+ if(assessmentId && review.status==='observations_available'){
+  currentReviewAssessmentId=assessmentId;
+  currentReviewData={
+   sampledFrames:output.attemptedFrames,poseFrames:output.poseFrames,
+   metrics:review.observations.map(o=>({
+    name:o.name,samples:o.samples,medianDegrees:o.medianDegrees,
+    earlyDegrees:o.earlyDegrees,lateDegrees:o.lateDegrees
+   }))
+  };
+  saveReviewButton.classList.remove('hidden');
+  saveSeasonButton.classList.remove('hidden');
+ }
+ reviewParagraph(reviewContent,review.skill,'h3');
+ reviewParagraph(reviewContent,review.evidenceSummary);
+ if(review.trainingContext)reviewParagraph(reviewContent,review.trainingContext);
+ if(review.trainingFocus)reviewParagraph(reviewContent,review.trainingFocus);
+ if(review.status==='observations_available'){
+  reviewParagraph(reviewContent,'What the camera observed','h3');
+  const list=document.createElement('ul');
+  for(const item of review.observations)reviewParagraph(list,item.summary,'li');
+  reviewContent.append(list);
+  reviewParagraph(reviewContent,'Next practice focus','h3');
+  reviewParagraph(reviewContent,review.focus);
+  reviewParagraph(reviewContent,'Coach MW cue','h3');
+  reviewParagraph(reviewContent,review.cue);
+ }else{
+  reviewParagraph(reviewContent,'Not enough clear evidence','h3');
+  reviewParagraph(reviewContent,review.reason);
+ }
+ reviewParagraph(reviewContent,review.nextStep);
+ reviewParagraph(reviewContent,review.disclaimer).className='disclaimer';
+ coachReview.classList.remove('hidden');
+}
+saveSeasonButton.onclick=async()=>{
+ if(!currentReviewAssessmentId||!currentReviewData)return;
+ if(!seasonConsent.checked){
+  reviewActionStatus.textContent='Select the separate 41-week measurement storage consent first.';return;
+ }
+ const owner=activeUserId,id=currentReviewAssessmentId;
+ saveSeasonButton.disabled=true;
+ try{
+  const saved=await call('save_season',{assessmentId:id,review:currentReviewData,
+   consentToSeasonHistory:true,consentVersion:'motion-season-v1'});
+  if(activeUserId!==owner||currentReviewAssessmentId!==id)return;
+  reviewActionStatus.textContent=saved.alreadySaved?'Already saved to 41-week history.':
+   'Saved to private 41-week history. Coach sharing is off.';
+  await loadSeason();
+ }catch(e){if(activeUserId===owner)reviewActionStatus.textContent=e.message||'Could not save season history.';}
+ finally{saveSeasonButton.disabled=false;}
+};
+saveReviewButton.onclick=async()=>{
+ if(!currentReviewAssessmentId||!currentReviewData)return;
+ if(!reviewStorageConsent.checked){
+  reviewActionStatus.textContent='Select the optional private measurement storage consent first.';return;
+ }
+ const owner=activeUserId;
+ const id=currentReviewAssessmentId;
+ saveReviewButton.disabled=true;
+ try{
+  await call('save_review',{
+   assessmentId:id,review:currentReviewData,
+   consentToStoreMeasurements:true,consentVersion:'motion-review-v1'
+  });
+  if(activeUserId!==owner || currentReviewAssessmentId!==id)return;
+  reviewActionStatus.textContent='Private technique report saved with this recording.';
+  await loadHistory();
+ }catch(e){
+  if(activeUserId===owner)reviewActionStatus.textContent=e.message||'Could not save the private report.';
+ }finally{saveReviewButton.disabled=false;}
+};
+readReviewButton.onclick=()=>{
+ if(!currentReview)return;
+ if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){
+  reviewActionStatus.textContent='Read-aloud is not available on this device.';return;
+ }
+ if(window.speechSynthesis.speaking){stopReviewSpeech();return;}
+ const utterance=new SpeechSynthesisUtterance(window.MWMotionCoachReview.spokenText(currentReview));
+ utterance.rate=.95;utterance.pitch=1;
+ utterance.onend=()=>{readReviewButton.textContent='HEAR REVIEW';};
+ utterance.onerror=()=>{readReviewButton.textContent='HEAR REVIEW';reviewActionStatus.textContent='Read-aloud was interrupted.';};
+ window.speechSynthesis.cancel();
+ window.speechSynthesis.speak(utterance);
+ readReviewButton.textContent='STOP READING';
+};
+copyReviewButton.onclick=async()=>{
+ if(!currentReview)return;
+ const owner=activeUserId;
+ try{
+  if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable.');
+  await navigator.clipboard.writeText(window.MWMotionCoachReview.spokenText(currentReview));
+  if(activeUserId===owner)reviewActionStatus.textContent='Review copied to your clipboard.';
+ }catch(_){if(activeUserId===owner)reviewActionStatus.textContent='Copy unavailable. You can read the review above.';}
+};
+let poseAbort=null;
+const stageUrl='https://uuggbmccnyswiwkjgydo.supabase.co';
+const key='sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
+const pilot=(location.hostname==='motion-staging.mwdynasty.com'||/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname))&&
+  new URLSearchParams(location.search).get('motionPilot')==='1';
+if(!pilot){gateStatus.textContent='Motion recording is available only on the authorized staging preview.';return;}
+if(!window.supabase){gateStatus.textContent='Staging sign-in library unavailable. Please reload this page.';return;}
+gateStatus.textContent='PRIVATE FOUNDER PILOT · STAGING';
+const client=window.supabase.createClient(stageUrl,key,{
+ auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'mw-motion-pilot-staging-session'}
+});
+const loginPanel=document.getElementById('pilot-login');
+const recordPanel=document.getElementById('record-panel');
+const historyPanel=document.getElementById('history-panel');
+const loginForm=document.getElementById('pilot-login-form');
+const loginButton=document.getElementById('pilot-login-button');
+let activeUserId=null;
+let trainingContext=null;
+let cameraRecording=null;
+function selectedClip(){return cameraRecording||document.getElementById('clip').files[0];}
+let pilotEligible=false;
+function clearPrivatePlayback(){
+ // Removing a DOM node alone does not reliably stop HTMLMediaElement playback.
+ for(const video of history.querySelectorAll('video')){
+  try{video.pause();video.removeAttribute('src');video.load();}catch(_){}
+ }
+ history.replaceChildren();clearProgress();clearSeason();
+}
+let pendingFinalization=null;
+// Store only a non-secret assessment ID. Signed upload tokens and credentials
+// must never be persisted by the recovery mechanism.
+const PENDING_KEY='mw-motion-pilot-pending-v1';
+function pendingKey(userId){return PENDING_KEY+'-'+userId;}
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function savePending(value){
+ pendingFinalization=value;
+ try{
+  if(value&&UUID.test(value.userId))sessionStorage.setItem(pendingKey(value.userId),JSON.stringify({
+   assessmentId:value.assessmentId,userId:value.userId,savedAt:Date.now()
+  }));
+  else if(activeUserId)sessionStorage.removeItem(pendingKey(activeUserId));
+ }catch(_){}
+ updatePendingControls();
+}
+function restorePending(userId){
+ pendingFinalization=null;
+ try{
+  const raw=sessionStorage.getItem(pendingKey(userId));
+  if(!raw)return;
+  const saved=JSON.parse(raw);
+  if(saved.userId!==userId)return;
+  if(!UUID.test(saved.userId)||!UUID.test(saved.assessmentId)||
+    !Number.isFinite(saved.savedAt)||saved.savedAt>Date.now()||
+    Date.now()-saved.savedAt>24*60*60*1000){
+   sessionStorage.removeItem(pendingKey(userId));return;
+  }
+  pendingFinalization={assessmentId:saved.assessmentId,userId};
+ }catch(_){try{sessionStorage.removeItem(pendingKey(userId))}catch(_){}}
+}
+function updatePendingControls(){
+ const pending=!!pendingFinalization&&pendingFinalization.userId===activeUserId;
+ retryButton.classList.toggle('hidden',!pending);
+ discardButton.classList.toggle('hidden',!pending);
+ button.disabled=!pilotEligible||pending;
+ analyzeButton.disabled=!pilotEligible;
+}
+async function activate(){
+ const verified=await client.auth.getUser();
+ if(verified.error||!verified.data?.user){showLogin();return;}
+ const uid=verified.data.user.id;
+ if(activeUserId && activeUserId!==uid)clearPrivatePlayback();
+ activeUserId=uid;
+ restorePending(uid);
+ loginPanel.classList.add('hidden');loginStatus.textContent='';
+ recordPanel.classList.remove('hidden');
+ historyPanel.classList.remove('hidden');
+ pilotEligible=false;
+ button.disabled=true;analyzeButton.disabled=true;
+ try{
+  const eligibility=await call('eligibility');
+  if(activeUserId!==uid)return;
+  pilotEligible=eligibility.approved===true;
+  weekSelect.disabled=false;weekSelect.value='';
+  weekContext.textContent='Training week not assigned. Select a week manually until your MW Velocity season plan or training start date is available.';
+  if(pilotEligible){
+   try{
+    const context=await call('season_context');
+    if(activeUserId!==uid)return;
+    trainingContext=context;
+    if(context.weekNumber){
+     weekSelect.value=String(context.weekNumber);weekSelect.disabled=true;
+     weekContext.textContent='MW Velocity Week '+context.weekNumber+
+      ' of 41 · linked to '+(context.weekSource==='active_season_plan'?'your active Season Intelligence plan':'your athlete training start date')+'. Indoor and outdoor remain one progression.';
+    }else if(context.programStartDate){
+     weekSelect.disabled=true;
+     weekContext.textContent=context.programState==='scheduled'?
+      'Your 41-week MW Velocity progression begins '+context.programStartDate+'. This recording is before Week 1.':
+      'Your 41-week progression has ended. This recording is outside the active cycle.';
+    }
+   }catch(_){if(activeUserId!==uid)return;trainingContext=null;weekSelect.disabled=true;weekContext.textContent='Season context is temporarily unavailable. Refresh before recording.';pilotEligible=false;}
+  }
+  updatePendingControls();
+  status.textContent=pendingFinalization?
+   'An earlier upload may need to finish saving. Choose Retry Saving or Discard before uploading another video.':
+   (pilotEligible?
+    'Your private Motion pilot is ready. Record a sprint or choose a saved video.':
+    'Adult staging pilot approval is required. Upload and local analysis are disabled.');
+ }catch(e){
+  status.textContent='Could not verify adult pilot approval. Upload and local analysis remain disabled.';
+ }
+ await loadHistory();
+}
+function showLogin(){
+ activeUserId=null;pilotEligible=false;pendingFinalization=null;trainingContext=null;cameraRecording=null;
+ updatePendingControls();
+ clearPrivatePlayback();
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
+ document.getElementById('clip').value='';
+ document.getElementById('camera-clip').value='';document.getElementById('selected-clip').textContent='';
+ poseStatus.textContent='Choose a side-view recording to see experimental measurements.';
+ analyzeButton.disabled=true;
+ loginPanel.classList.remove('hidden');
+ loginStatus.textContent='Sign in with your founder account, or select an authorized staging account.';
+ recordPanel.classList.add('hidden');
+ historyPanel.classList.add('hidden');
+ button.disabled=true;
+ status.textContent='Sign in to open your private Motion pilot.';
+}
+loginForm.onsubmit=async event=>{
+ event.preventDefault();loginButton.disabled=true;
+ try{
+  const email=document.getElementById('pilot-email').value.trim();
+  const password=document.getElementById('pilot-password').value;
+  if(document.getElementById('pilot-mode').value==='founder'){
+   if(!document.getElementById('founder-consent').checked)throw new Error('Accept the private founder pilot consent first.');
+   const production=window.supabase.createClient('https://keqgunlfwhjgcsurynef.supabase.co',
+    'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',{
+     auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+    });
+   try{
+    const {data,error}=await production.auth.signInWithPassword({email,password});
+    if(error||!data.session)throw new Error('MW Dynasty sign-in failed. Check your founder email and password.');
+    const response=await fetch(stageUrl+'/functions/v1/mw-motion-founder-access',{
+     method:'POST',cache:'no-store',signal:AbortSignal.timeout(25000),
+     headers:{Authorization:'Bearer '+data.session.access_token,apikey:key,'Content-Type':'application/json'},
+     body:JSON.stringify({consentAccepted:true,consentVersion:'pilot-v1'})
+    });
+    const session=await response.json();
+    if(!response.ok)throw new Error(session.error||'Private founder access is unavailable.');
+    const result=await client.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});
+    if(result.error)throw new Error('Could not open your private pilot session.');
+   }finally{await production.auth.signOut({scope:'local'}).catch(()=>{});}
+  }else{
+   const {error}=await client.auth.signInWithPassword({email,password});
+   if(error)throw new Error('Staging sign-in failed. Check your pilot account credentials.');
+  }
+  document.getElementById('pilot-password').value='';
+  loginStatus.textContent='Checking your pilot authorization…';
+  await activate();
+ }catch(e){loginStatus.textContent=e.message||'Sign-in unavailable.';}
+ finally{document.getElementById('pilot-password').value='';loginButton.disabled=false;}
+};
+document.getElementById('pilot-mode').onchange=()=>{
+ document.getElementById('founder-consent-row').classList.toggle('hidden',document.getElementById('pilot-mode').value!=='founder');
+};
+document.getElementById('pilot-signout').onclick=async()=>{
+ button.disabled=true;
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ await client.auth.signOut();
+ showLogin();
+};
+// Immediately hide another athlete's history when staging identity changes.
+client.auth.onAuthStateChange((event,session)=>{
+ if(event==='SIGNED_OUT' || (activeUserId && session?.user?.id!==activeUserId)){
+  showLogin();
+ }
+});
+async function call(action,fields={}){
+ const session=await client.auth.getSession();
+ const token=session.data?.session?.access_token;
+ if(!token)throw new Error('Your staging session expired. Please sign in again.');
+ const abort=new AbortController();
+ const timeout=setTimeout(()=>abort.abort(),25000);
+ try{
+  const response=await fetch(stageUrl+'/functions/v1/mw-motion-pilot',{
+   method:'POST',signal:abort.signal,
+   headers:{'Content-Type':'application/json',apikey:key,Authorization:'Bearer '+token},
+   body:JSON.stringify({action,...fields})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||'Secure recording service unavailable.');
+  return result;
+ }finally{clearTimeout(timeout)}
+}
+async function verifyVideo(file){
+ if(!file)throw new Error('Select a recording first.');
+ window.MWMotionUpload.assertUpload(file);
+ return await new Promise((resolve,reject)=>{
+  const video=document.createElement('video');video.preload='metadata';video.muted=true;
+  const url=URL.createObjectURL(file);
+  let done=false;
+  const timer=setTimeout(()=>finish(new Error('Recording duration check timed out.')),12000);
+  function finish(error,value){
+   if(done)return;done=true;clearTimeout(timer);
+   video.onloadedmetadata=null;video.onerror=null;
+   video.removeAttribute('src');video.load();URL.revokeObjectURL(url);
+   if(error)reject(error);else resolve(value);
+  }
+  video.onloadedmetadata=()=>{
+   if(!Number.isFinite(video.duration)||video.duration<=0)
+    finish(new Error('Recording duration could not be verified.'));
+   else finish(null,video.duration);
+  };
+  video.onerror=()=>finish(new Error('Unsupported recording. Try exporting an MP4 video.'));
+  video.src=url;
+ });
+}
+async function loadHistory(){
+ const requestedFor=activeUserId;
+ clearPrivatePlayback();
+ try{
+  const data=await call('list');
+  const saved=pilotEligible?await call('reviews'):{reviews:[]};
+  const reviewById=new Map((saved.reviews||[]).map(r=>[r.assessment_id,r]));
+  if(activeUserId===requestedFor){
+   displayRecentProgress(saved.reviews||[]);
+   await loadSeason();
+  }
+  if(!requestedFor || activeUserId!==requestedFor)return;
+  if(!data.assessments?.length){history.textContent='No recordings saved yet.';return;}
+  for(const record of data.assessments){
+   const item=document.createElement('div');item.className='panel';
+   const heading=document.createElement('p');
+   heading.textContent=(record.training_date||String(record.created_at||'').slice(0,10))+
+    ' — '+record.movement_type.replace(/_/g,' ')+
+    (record.week_number?' · MW Week '+record.week_number:'')+
+    ' ('+record.status+')';
+   item.append(heading);
+   const prior=reviewById.get(record.id);
+   if(prior){
+    const report=document.createElement('div');report.className='review-card';
+    reviewParagraph(report,'Saved private technique report','h3');
+    reviewParagraph(report,'Experimental, unverified 2D angles — not a technique grade.');
+    for(const metric of prior.metrics||[]){
+     const label=({trunk_tilt_2d:'Trunk tilt',knee_angle_2d:'Knee angle',shin_tilt_2d:'Shin tilt'})[metric.name];
+     if(label && Number.isFinite(metric.medianDegrees))
+      reviewParagraph(report,label+': '+metric.medianDegrees.toFixed(1)+'° median');
+    }
+    item.append(report);
+   }
+   for(const asset of record.motion_assets||[]){
+    const play=document.createElement('button');play.textContent='PLAY PRIVATE VIDEO';
+    play.onclick=async()=>{
+     play.disabled=true;
+     try{
+      status.textContent='Opening private recording…';
+      const signed=await call('playback',{assessmentId:record.id,assetId:asset.id});
+      if(activeUserId!==requestedFor || !item.isConnected)return;
+      const old=item.querySelector('video');
+      if(old){old.pause();old.removeAttribute('src');old.load();old.remove();}
+      const video=document.createElement('video');
+      video.controls=true;video.playsInline=true;video.src=signed.url;
+      item.append(video);status.textContent='Private video ready. Link expires after 60 seconds.';
+     }catch(e){status.textContent=e.message||'Playback unavailable.'}
+     finally{play.disabled=false}
+    };
+    item.append(play);
+    const reviewSaved=document.createElement('button');
+    reviewSaved.textContent='COACH MW REVIEW OF SAVED VIDEO';
+    reviewSaved.style.background='#26384c';reviewSaved.style.color='#fff';
+    reviewSaved.onclick=async()=>{
+     if(activeUserId!==requestedFor)return;
+     reviewSaved.disabled=true;
+     try{
+      await runLocalReview(
+       (signal,owner)=>resolveSavedRecording(record,asset,signal,owner),
+       record.movement_type,record.camera_view,record.id,record.week_number
+      );
+     }finally{reviewSaved.disabled=false;}
+    };
+    item.append(reviewSaved);
+   }
+   const remove=document.createElement('button');remove.textContent='DELETE RECORDING';
+   remove.style.background='#253142';remove.style.color='#fff';
+   remove.onclick=async()=>{
+    if(!confirm('Delete this private recording? New playback requests are blocked immediately. Minimal deletion metadata remains until secure maintenance cleanup.'))return;
+    remove.disabled=true;
+    try{
+     await call('delete',{assessmentId:record.id});
+     if(activeUserId!==requestedFor)return;
+     clearPrivatePlayback();
+     status.textContent='Recording deleted.';await loadHistory();
+    }catch(e){status.textContent=e.message||'Deletion failed.';remove.disabled=false}
+   };
+   item.append(remove);history.append(item);
+  }
+ }catch(e){if(activeUserId===requestedFor)
+  history.textContent='Recording history could not be loaded: '+(e.message||'Unknown error')}
+}
+const LABELS=Object.freeze({
+ trunk_tilt_2d:'Trunk tilt (2D)',knee_angle_2d:'Knee angle (2D)',shin_tilt_2d:'Shin tilt (2D)'
+});
+function showPoseResult(output){
+ poseResult.replaceChildren();
+ const result=output.analysis;
+ const summary=document.createElement('p');
+ summary.textContent='Pose detected in '+output.poseFrames+' of '+output.attemptedFrames+' sampled frames.';
+ poseResult.append(summary);
+ if(result.status!=='estimated_2d'){
+  const warning=document.createElement('p');
+  warning.textContent='No reliable estimate: '+(result.reason||'Insufficient evidence.');
+  poseResult.append(warning);
+ }else{
+  const heading=document.createElement('p');
+  heading.textContent='Experimental clip-wide medians (not movement-phase measurements):';
+  poseResult.append(heading);
+  for(const metric of result.metrics){
+   const line=document.createElement('p');
+   line.textContent=(LABELS[metric.name]||metric.name)+': '+metric.value.toFixed(1)+'° — '+metric.sampleCount+' usable frames';
+   poseResult.append(line);
+  }
+ }
+ if(output.preview){
+  const title=document.createElement('p');title.textContent='One sampled pose overlay (experimental):';
+  output.preview.style.width='100%';output.preview.style.borderRadius='10px';
+  poseResult.append(title,output.preview);
+ }
+ const limitations=document.createElement('p');
+ limitations.className='muted';
+ limitations.textContent='Limitations: '+result.limitations.join(' ');
+ poseResult.append(limitations);
+}
+document.getElementById('record-clip').onclick=()=>document.getElementById('camera-clip').click();
+document.getElementById('camera-clip').addEventListener('change',()=>{
+ cameraRecording=document.getElementById('camera-clip').files[0]||null;
+ document.getElementById('clip').value='';
+ document.getElementById('selected-clip').textContent=cameraRecording?'Camera recording selected.':'';
+ poseAbort?.abort();poseResult.replaceChildren();clearReview();
+});
+document.getElementById('clip').addEventListener('change',()=>{
+ cameraRecording=null;document.getElementById('selected-clip').textContent='';
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
+ poseStatus.textContent='Recording changed. Previous estimates cleared.';
+});
+for(const id of ['movement','camera'])document.getElementById(id).addEventListener('change',()=>{
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
+ poseStatus.textContent='Technical skill or camera view changed. Previous estimates cleared.';
+});
+cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
+async function runLocalReview(resolveRecording,movementType,cameraView,assessmentId=null,recordWeek=null){
+ if(!pilotEligible){poseStatus.textContent='Adult staging pilot approval required.';return;}
+ if(poseAbort){poseStatus.textContent='An analysis is already in progress.';return;}
+ const analysisOwner=activeUserId;
+ analyzeButton.disabled=true;button.disabled=true;
+ poseResult.replaceChildren();clearReview();
+ const analysisAbort=new AbortController();
+ poseAbort=analysisAbort;
+ cancelButton.classList.remove('hidden');
+ try{
+  const eligibility=await call('eligibility');
+  if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
+  if(eligibility.approved!==true){
+   pilotEligible=false;
+   throw new Error('Adult staging pilot approval has expired or been revoked.');
+  }
+  if(!document.getElementById('consent').checked)
+   throw new Error('Adult staging pilot consent is required.');
+  if(cameraView!=='side')
+   throw new Error('Use a side-view recording for these experimental angle estimates.');
+  const file=await resolveRecording(analysisAbort.signal,analysisOwner);
+  if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
+  if(!file)throw new Error('Select a video first.');
+  window.MWMotionUpload.assertUpload(file);
+  poseStatus.textContent='Loading on-device pose model…';
+  const output=await window.MWMotionLocalPose.run({
+   file,movementType,cameraView,signal:analysisAbort.signal,
+   onProgress:p=>{if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
+    poseStatus.textContent=p.stage==='model'?
+     'Downloading on-device model. Your video stays in this browser.':
+     'Processing locally: '+p.done+' of '+p.total+' frames.';}
+  });
+  if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
+  showPoseResult(output);
+  displayCoachReview(output,movementType,assessmentId,recordWeek);
+  poseStatus.textContent=output.analysis.status==='estimated_2d'?
+   'Coach MW experimental technique review ready.':
+   'Review finished without sufficient pose evidence.';
+ }catch(e){if(activeUserId===analysisOwner)
+  poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
+ finally{
+  if(poseAbort===analysisAbort){
+   poseAbort=null;cancelButton.classList.add('hidden');
+   updatePendingControls();
+  }
+ }
+}
+analyzeButton.onclick=()=>runLocalReview(
+ async()=>selectedClip(),
+ document.getElementById('movement').value,
+ document.getElementById('camera').value
+);
+async function resolveSavedRecording(record,asset,signal,owner){
+ poseStatus.textContent='Opening saved recording for private on-device analysis…';
+ const signed=await call('playback',{assessmentId:record.id,assetId:asset.id});
+ if(signal.aborted||activeUserId!==owner)throw new Error('Analysis cancelled.');
+ const response=await fetch(signed.url,{signal,cache:'no-store'});
+ if(!response.ok)throw new Error('Could not open your saved recording.');
+ const blob=await response.blob();
+ if(signal.aborted||activeUserId!==owner)throw new Error('Analysis cancelled.');
+ if(Number.isFinite(asset.bytes)&&blob.size!==asset.bytes)
+  throw new Error('Saved recording size did not match.');
+ const mime=asset.mime_type;
+ const file=new File([blob],'private-sprint-recording',{type:mime});
+ window.MWMotionUpload.assertUpload(file);
+ return file;
+}
+retryButton.onclick=async()=>{
+ const pending=pendingFinalization;
+ if(!pending||pending.userId!==activeUserId)return;
+ retryButton.disabled=true;
+ try{
+  status.textContent='Retrying secure save of the already-uploaded recording…';
+  const result=await call('finalize',{assessmentId:pending.assessmentId});
+  if(activeUserId!==pending.userId)return;
+  if(result.status!=='uploaded')throw new Error('Recording could not be finalized.');
+  savePending(null);
+  status.textContent='Previously uploaded video saved privately.';
+  await loadHistory();
+ }catch(e){status.textContent='Unable to finish saving. Retry or discard the unfinished recording: '+(e.message||'Unknown error');}
+ finally{retryButton.disabled=false;updatePendingControls();}
+};
+discardButton.onclick=async()=>{
+ const pending=pendingFinalization;
+ if(!pending||pending.userId!==activeUserId)return;
+ if(!confirm('Discard this unfinished private recording? You can upload a new clip afterward.'))return;
+ discardButton.disabled=true;
+ try{
+  await call('delete',{assessmentId:pending.assessmentId});
+  if(activeUserId!==pending.userId)return;
+  savePending(null);
+  status.textContent='Unfinished recording discarded.';
+  await loadHistory();
+ }catch(e){status.textContent='Could not discard unfinished recording: '+(e.message||'Unknown error');}
+ finally{discardButton.disabled=false;updatePendingControls();}
+};
+button.onclick=async()=>{
+ if(!pilotEligible){status.textContent='Adult staging pilot approval required.';return;}
+ if(pendingFinalization){status.textContent='Finish saving or discard the previous upload before starting another.';return;}
+ button.disabled=true;analyzeButton.disabled=true;
+ const uploadOwner=activeUserId;
+ let prepared=null,uploaded=false;
+ try{
+  if(!document.getElementById('consent').checked)
+   throw new Error('You must accept the adult staging pilot consent notice.');
+  const file=selectedClip();
+  const movementType=document.getElementById('movement').value;
+  const cameraView=document.getElementById('camera').value;
+  const feedbackAfterUpload=document.getElementById('feedback-on-upload').checked;
+  const duration=await verifyVideo(file);
+  window.MWMotionUpload.assertDuration(duration);
+  status.textContent='Preparing secure upload…';
+  prepared=await call('prepare',{
+   movementType,
+   cameraView,
+   mimeType:file.type,bytes:file.size,
+   ...(weekSelect.value?{weekNumber:Number(weekSelect.value)}:{}),
+   consentAccepted:true,consentVersion:'pilot-v1'
+  });
+  status.textContent='Uploading private video…';
+  const uploadResult=await client.storage.from('motion-private')
+   .uploadToSignedUrl(prepared.path,prepared.token,file,{contentType:file.type,upsert:false});
+  if(uploadResult.error)throw new Error('Video upload failed. Check your connection and retry.');
+  uploaded=true;
+  // The original owner must be able to recover a completed upload even if
+  // they signed out or switched accounts during a slow mobile upload.
+  savePending({assessmentId:prepared.assessmentId,userId:uploadOwner});
+  if(activeUserId!==uploadOwner)return;
+  status.textContent='Saving video to your account…';
+  const completed=await call('finalize',{assessmentId:prepared.assessmentId});
+  if(completed.status!=='uploaded')throw new Error('Recording could not be finalized.');
+  if(activeUserId!==uploadOwner)return;
+  savePending(null);
+  status.textContent='Video saved privately.';
+  await loadHistory();
+  if(activeUserId===uploadOwner&&feedbackAfterUpload)
+   await runLocalReview(async()=>file,movementType,cameraView,prepared.assessmentId);
+ }catch(e){
+  if(prepared&&!uploaded){
+   // Best-effort cleanup of a failed upload. Signed tokens are kept behind a
+   // tombstone so late uploads cannot become visible or be finalized.
+   try{await call('delete',{assessmentId:prepared.assessmentId});}catch(_){}
+  }
+  if(activeUserId!==uploadOwner)return;
+  status.textContent=pendingFinalization?
+   'Video uploaded, but final save is not confirmed. Choose Retry Saving or Discard. '+(e.message||''):
+   (e.message||'Recording failed. Please try again.');
+ }
+ finally{updatePendingControls();}
+};
+await activate();
+})();
+</script></body></html>
