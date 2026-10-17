@@ -325,9 +325,9 @@ button.onclick=async()=>{
    consentAccepted:true,consentVersion:'pilot-v1'
   });
   status.textContent='Uploading private video…';
-  const uploaded=await client.storage.from('motion-private')
+  const uploadResult=await client.storage.from('motion-private')
    .uploadToSignedUrl(prepared.path,prepared.token,file,{contentType:file.type,upsert:false});
-  if(uploaded.error)throw new Error('Video upload failed. Check your connection and retry.');
+  if(uploadResult.error)throw new Error('Video upload failed. Check your connection and retry.');
   uploaded=true;
   pendingFinalization={assessmentId:prepared.assessmentId,userId:activeUserId};
   updatePendingControls();
