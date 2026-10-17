@@ -15,6 +15,7 @@ on:
       - 'scripts/test-motion-edge-isolation.js'
       - 'scripts/test-motion-edge-lifecycle.js'
       - 'scripts/test-motion-preview-gate.js'
+      - 'scripts/test-motion-upload-recovery.js'
       - 'supabase/migrations/*motion*'
       - 'scripts/test-motion-upload.js'
       - 'scripts/test-motion-stage3.js'
