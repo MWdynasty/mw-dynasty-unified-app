@@ -36,6 +36,9 @@ assert.equal(coach.review({analysis:spoofed,attemptedFrames:12,poseFrames:12}).s
 assert.throws(()=>coach.review({analysis:null}),/required/);
 const html=fs.readFileSync('athlete/motion.html','utf8');
 assert.ok(html.includes('/lib/mw-motion-coach-review.js'));
+assert.ok(html.includes('for(let week=1;week<=41;week++)'),'All 41 training weeks must be selectable');
+assert.ok(html.includes('weekNumber:Number(weekSelect.value)'),'Uploaded assessments must preserve optional training week');
+assert.ok(html.includes("record.week_number?' · MW Week '"),'Saved recordings must display training week');
 assert.ok(html.includes('displayCoachReview(output,'));
 assert.ok(html.includes('COACH MW REVIEW OF SAVED VIDEO'),'Saved recordings must be reviewable without reselecting a local file');
 assert.ok(html.includes("call('playback',{assessmentId:record.id,assetId:asset.id})"),'Saved review must request owner-scoped private playback');
