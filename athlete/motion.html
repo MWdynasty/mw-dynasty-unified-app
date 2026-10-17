@@ -5,64 +5,150 @@
 <label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
 <label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
 <label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" capture="environment">
-<div class="row"><input id="consent" type="checkbox"><label for="consent">I understand this video is stored privately for technical review and that no AI biomechanics analysis is available in this pilot. I confirm that any required parent or guardian permission has been obtained.</label></div>
+<div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and agree to this staging recording pilot. Videos are private and can be deleted from my account. AI biomechanics analysis is not active. Automatic retention cleanup has not yet been enabled.</label></div>
 <button id="upload" disabled>UPLOAD SECURELY</button><div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
 <div class="panel"><strong>My recordings</strong><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
 <script>
 (async()=>{
-'use strict';const status=document.getElementById('status'),btn=document.getElementById('upload'),history=document.getElementById('history');
+'use strict';
+const status=document.getElementById('status');
+const button=document.getElementById('upload');
+const history=document.getElementById('history');
 const stageUrl='https://uuggbmccnyswiwkjgydo.supabase.co';
-const pilot=location.hostname.endsWith('.vercel.app')&&(/(-git-feature-motion-intelligence|motion-pilot)/i.test(location.hostname)||new URLSearchParams(location.search).get('motionPilot')==='1');
-if(!pilot){status.textContent='Motion Intelligence recording is not enabled on this environment.';return;}
-if(!window.supabase||!window.MWMotionUpload){status.textContent='Secure recording dependencies unavailable.';return;}
-const raw=window.MWAccountStorage?.local?.getItem('mwSupabaseSession')||window.MWAccountStorage?.session?.getItem('mwSupabaseSession');let saved=null;try{saved=JSON.parse(raw||'null')}catch{}
-if(!saved?.access_token){status.textContent='Please sign into your pilot athlete account first.';return;}
 const key='sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
-const client=window.supabase.createClient(stageUrl,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-if(!saved.refresh_token){status.textContent='Pilot session refresh information unavailable. Sign in to the staging athlete account.';return;}
-const sessionResult=await client.auth.setSession({access_token:saved.access_token,refresh_token:saved.refresh_token});
-if(sessionResult.error){status.textContent='This session is not valid for Motion Intelligence staging.';return;}
-const verified=await client.auth.getUser();
-if(verified.error||!verified.data?.user){status.textContent='The current session does not belong to the Motion Intelligence staging environment. Please use a staging athlete account.';return;}
-
-const user=verified.data.user;
-const own=await client.from('athletes').select('id,date_of_birth').eq('user_id',user.id).maybeSingle();
-if(own.error||!own.data?.id){status.textContent='An athlete profile is required for this pilot.';return;}
-if(!own.data.date_of_birth||new Date(own.data.date_of_birth)>new Date(new Date().setFullYear(new Date().getFullYear()-18))){status.textContent='This recording pilot currently supports adult staging athletes only. Guardian consent must be reviewed before minors are enabled.';return;}
-const athleteId=own.data.id,controller=window.MWMotionUpload.createController(client,{enabled:true});
-btn.disabled=false;status.textContent='Pilot recording available. Uploads are private. AI analysis is not connected.';
-async function loadHistory(){
-const {data,error}=await client.from('motion_assessments').select('id,movement_type,training_date,status,motion_assets(storage_path)').eq('athlete_id',athleteId).order('created_at',{ascending:false}).limit(20);
-if(error){history.textContent='History could not be loaded.';return;}
-history.replaceChildren();
-for(const record of data||[]){const p=document.createElement('p');p.textContent=record.training_date+' — '+record.movement_type+' ('+record.status+')';history.append(p);
-for(const asset of record.motion_assets||[]){const button=document.createElement('button');button.textContent='VIEW PRIVATE RECORDING';button.onclick=async()=>{try{const url=await controller.signedPlayback({assessmentId:record.id,path:asset.storage_path});const video=document.createElement('video');video.controls=true;video.src=url;p.after(video)}catch(e){status.textContent=e.message}};history.append(button)}
+const pilot=location.hostname.endsWith('.vercel.app')&&(
+  /(-git-feature-motion-intelligence|motion-pilot)/i.test(location.hostname) ||
+  new URLSearchParams(location.search).get('motionPilot')==='1'
+);
+if(!pilot){status.textContent='Motion recording is unavailable in this environment.';return;}
+if(!window.supabase || !window.MWAccountStorage){status.textContent='Secure recording dependencies are unavailable.';return;}
+const raw=window.MWAccountStorage.local.getItem('mwSupabaseSession')||
+          window.MWAccountStorage.session.getItem('mwSupabaseSession');
+let saved=null;
+try{saved=JSON.parse(raw||'null')}catch{}
+if(!saved?.access_token || !saved?.refresh_token){
+ status.textContent='Sign into the staging athlete app to use the recording pilot.';return;
 }
-if(!data?.length)history.textContent='No recordings yet.';
-}
-btn.onclick=async()=>{
-btn.disabled=true;try{
-if(!document.getElementById('consent').checked)throw new Error('Recording consent is required.');
-const file=document.getElementById('clip').files[0];window.MWMotionUpload.assertUpload(file);
-const duration=await new Promise((resolve,reject)=>{
- const v=document.createElement('video');v.preload='metadata';v.muted=true;
- const url=URL.createObjectURL(file);
- const timer=setTimeout(()=>finish(new Error('Video duration check timed out')),12000);
- let finished=false;function finish(err,value){if(finished)return;finished=true;clearTimeout(timer);v.onloadedmetadata=null;v.onerror=null;v.removeAttribute('src');v.load();URL.revokeObjectURL(url);if(err)reject(err);else resolve(value)}
- v.onloadedmetadata=()=>Number.isFinite(v.duration)&&v.duration>0?finish(null,v.duration):finish(new Error('Could not verify video duration'));
- v.onerror=()=>finish(new Error('This video format cannot be verified on this device. Export as MP4 and retry.'));
- v.src=url;
+const client=window.supabase.createClient(stageUrl,key,{
+ auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
 });
-if(duration>30)throw new Error('Maximum recording length is 30 seconds. Trim your recording and retry.');
-const movementType=document.getElementById('movement').value,cameraView=document.getElementById('camera').value;
-status.textContent='Creating private assessment…';
-const {data:assessment,error}=await client.from('motion_assessments').insert({athlete_id:athleteId,movement_type:movementType,camera_view:cameraView,consent_recorded_at:new Date().toISOString(),status:'draft'}).select('id').single();
-if(error||!assessment?.id)throw new Error('Assessment creation failed. Check account permissions.');
-status.textContent='Uploading encrypted private video…';
-await controller.upload({assessmentId:assessment.id,file});
-status.textContent='Recording uploaded and saved privately. AI analysis is not yet available.';
+const restored=await client.auth.setSession({
+ access_token:saved.access_token,refresh_token:saved.refresh_token
+});
+if(restored.error){status.textContent='Your staging session expired. Please sign in again.';return;}
+const verified=await client.auth.getUser();
+if(verified.error||!verified.data?.user){
+ status.textContent='Your staging session could not be verified.';return;
+}
+async function call(action,fields={}){
+ const session=await client.auth.getSession();
+ const token=session.data?.session?.access_token;
+ if(!token)throw new Error('Your staging session expired. Please sign in again.');
+ const abort=new AbortController();
+ const timeout=setTimeout(()=>abort.abort(),25000);
+ try{
+  const response=await fetch(stageUrl+'/functions/v1/mw-motion-pilot',{
+   method:'POST',signal:abort.signal,
+   headers:{'Content-Type':'application/json',apikey:key,Authorization:'Bearer '+token},
+   body:JSON.stringify({action,...fields})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||'Secure recording service unavailable.');
+  return result;
+ }finally{clearTimeout(timeout)}
+}
+async function verifyVideo(file){
+ if(!file)throw new Error('Select a recording first.');
+ window.MWMotionUpload.assertUpload(file);
+ return await new Promise((resolve,reject)=>{
+  const video=document.createElement('video');video.preload='metadata';video.muted=true;
+  const url=URL.createObjectURL(file);
+  let done=false;
+  const timer=setTimeout(()=>finish(new Error('Recording duration check timed out.')),12000);
+  function finish(error,value){
+   if(done)return;done=true;clearTimeout(timer);
+   video.onloadedmetadata=null;video.onerror=null;
+   video.removeAttribute('src');video.load();URL.revokeObjectURL(url);
+   if(error)reject(error);else resolve(value);
+  }
+  video.onloadedmetadata=()=>{
+   if(!Number.isFinite(video.duration)||video.duration<=0)
+    finish(new Error('Recording duration could not be verified.'));
+   else finish(null,video.duration);
+  };
+  video.onerror=()=>finish(new Error('Unsupported recording. Try exporting an MP4 video.'));
+  video.src=url;
+ });
+}
+async function loadHistory(){
+ history.replaceChildren();
+ try{
+  const data=await call('list');
+  if(!data.assessments?.length){history.textContent='No recordings saved yet.';return;}
+  for(const record of data.assessments){
+   const item=document.createElement('div');item.className='panel';
+   const heading=document.createElement('p');
+   heading.textContent=record.training_date+' — '+record.movement_type+' ('+record.status+')';
+   item.append(heading);
+   for(const asset of record.motion_assets||[]){
+    const play=document.createElement('button');play.textContent='PLAY PRIVATE VIDEO';
+    play.onclick=async()=>{
+     play.disabled=true;
+     try{
+      status.textContent='Opening private recording…';
+      const signed=await call('playback',{assessmentId:record.id,assetId:asset.id});
+      const old=item.querySelector('video');if(old)old.remove();
+      const video=document.createElement('video');
+      video.controls=true;video.playsInline=true;video.src=signed.url;
+      item.append(video);status.textContent='Private video ready. Link expires after 60 seconds.';
+     }catch(e){status.textContent=e.message||'Playback unavailable.'}
+     finally{play.disabled=false}
+    };
+    item.append(play);
+   }
+   const remove=document.createElement('button');remove.textContent='DELETE RECORDING';
+   remove.style.background='#253142';remove.style.color='#fff';
+   remove.onclick=async()=>{
+    if(!confirm('Permanently delete this recording and assessment?'))return;
+    remove.disabled=true;
+    try{
+     await call('delete',{assessmentId:record.id});
+     status.textContent='Recording deleted.';await loadHistory();
+    }catch(e){status.textContent=e.message||'Deletion failed.';remove.disabled=false}
+   };
+   item.append(remove);history.append(item);
+  }
+ }catch(e){history.textContent='Recording history could not be loaded: '+(e.message||'Unknown error')}
+}
+button.disabled=false;
+status.textContent='Adult staging pilot ready. Upload and playback are private. AI analysis is not yet active.';
+button.onclick=async()=>{
+ button.disabled=true;
+ try{
+  if(!document.getElementById('consent').checked)
+   throw new Error('You must accept the adult staging pilot consent notice.');
+  const file=document.getElementById('clip').files[0];
+  const duration=await verifyVideo(file);
+  if(duration>30)throw new Error('Recordings must be 30 seconds or shorter.');
+  status.textContent='Preparing secure upload…';
+  const prepared=await call('prepare',{
+   movementType:document.getElementById('movement').value,
+   cameraView:document.getElementById('camera').value,
+   mimeType:file.type,bytes:file.size,
+   consentAccepted:true,consentVersion:'pilot-v1'
+  });
+  status.textContent='Uploading private video…';
+  const uploaded=await client.storage.from('motion-private')
+   .uploadToSignedUrl(prepared.path,prepared.token,file,{contentType:file.type,upsert:false});
+  if(uploaded.error)throw new Error('Video upload failed. Check your connection and retry.');
+  status.textContent='Saving video to your account…';
+  const completed=await call('finalize',{assessmentId:prepared.assessmentId});
+  if(completed.status!=='uploaded')throw new Error('Recording could not be finalized.');
+  status.textContent='Video saved privately! Coach MW biomechanics analysis is not active yet.';
+  await loadHistory();
+ }catch(e){status.textContent=e.message||'Recording failed. Please try again.'}
+ finally{button.disabled=false}
+};
 await loadHistory();
-}catch(e){status.textContent=e.message||'Upload failed. Please try again.'}finally{btn.disabled=false}
-};await loadHistory();
 })();
 </script></body></html>
