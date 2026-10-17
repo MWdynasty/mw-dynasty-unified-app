@@ -12,10 +12,16 @@ ok(pkg.version==='3.0.16','package.json version must be 3.0.16');
 includes('manifest.webmanifest','App 3.0.16','manifest description must match 3.0.16');
 includes('assets/mw-native.js',"MW_APP_VERSION='3.0.16'",'web native bridge version mismatch');
 includes('athlete/index.html','MW Dynasty 3.0.16 · iOS Build 14','athlete visible app version mismatch');
-includes('ios_v3_0_16_patch/Config/Release.xcconfig','MARKETING_VERSION = 3.0.16','iOS marketing version mismatch');
-includes('ios_v3_0_16_patch/Config/Release.xcconfig','CURRENT_PROJECT_VERSION = 14','iOS build number mismatch');
-includes('ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj','CURRENT_PROJECT_VERSION = 14;','effective Xcode build number mismatch');
-includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','MWDynasty-iOS/3.0.16','iOS user agent version mismatch');
+const motionPilot=/<key>MWMotionPilotTestFlight<\/key>\s*<true\/>/.test(read('ios_v3_0_16_patch/MWDynasty/Info.plist'));
+const nativeVersion=motionPilot?'3.0.17':'3.0.16',nativeBuild=motionPilot?'16':'14';
+includes('ios_v3_0_16_patch/Config/Release.xcconfig','MARKETING_VERSION = '+nativeVersion,'iOS marketing version mismatch');
+includes('ios_v3_0_16_patch/Config/Release.xcconfig','CURRENT_PROJECT_VERSION = '+nativeBuild,'iOS build number mismatch');
+includes('ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj','CURRENT_PROJECT_VERSION = '+nativeBuild+';','effective Xcode build number mismatch');
+includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','MWDynasty-iOS/'+nativeVersion,'iOS user agent version mismatch');
+if(motionPilot){
+ includes('ios_v3_0_16_patch/MWDynasty/Info.plist','https://motion-staging.mwdynasty.com/athlete/motion?motionPilot=1','Motion pilot URL mismatch');
+ includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','!isMotionPilotBuild','Pilot must disable StoreKit bridging');
+}
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.athlete.monthly','Athlete App Store product ID missing');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.coach.core.monthly','Coach Core App Store product ID missing');
 includes('ios_v3_0_16_patch/MWDynasty/WebViewController.swift','com.mwdynasty.app.coach.intelligence.monthly','Coach Intelligence App Store product ID missing');

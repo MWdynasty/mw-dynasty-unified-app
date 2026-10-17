@@ -23,7 +23,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MWProductionURL</key>
-	<string>https://mwdynastyunifiedappv31tiered13plusdeploy-dxd3n3qlw-mw-sprint.vercel.app/athlete/?motionPilot=1</string>
+	<string>https://motion-staging.mwdynasty.com/athlete/motion?motionPilot=1</string>
 	<key>MWMotionPilotTestFlight</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
@@ -31,7 +31,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>MW Dynasty uses your location only when you choose Distance Marker to measure workout distances.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>MW Dynasty uses your microphone only when you choose voice input for Coach MW.</string>
+	<string>MW Dynasty uses your microphone when you choose voice input for Coach MW or record a sprint with sound.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>MW Dynasty accesses your photo library only when you choose a training video or image.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

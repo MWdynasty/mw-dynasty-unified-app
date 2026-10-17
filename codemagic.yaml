@@ -25,7 +25,9 @@ workflows:
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/Info.plist" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist"
           install -m 0644 "$CM_BUILD_DIR/ios_v3_0_16_patch/MWDynasty/MWLaunch.png" "$CM_BUILD_DIR/ios_build/MWDynasty/MWLaunch.png"
           grep -q 'MARKETING_VERSION = 3.0.17' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          grep -q 'CURRENT_PROJECT_VERSION = 15' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 16' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 16;' "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
+          grep -q 'MARKETING_VERSION = 3.0.17;' "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
 
       - name: Show Xcode version
         script: xcodebuild -version
@@ -90,7 +92,7 @@ workflows:
           # This block runs only in the signed workflow; normal production builds
           # always point to app.mwdynasty.com and have the pilot flag disabled.
           if [ "${CM_BRANCH:-}" = "testflight-motion-intelligence" ]; then
-            MW_APP_URL="https://mwdynastyunifiedappv31tiered13plusdeploy-dxd3n3qlw-mw-sprint.vercel.app/athlete/?motionPilot=1"
+            MW_APP_URL="https://motion-staging.mwdynasty.com/athlete/motion?motionPilot=1"
             MW_PILOT="true"
           else
             MW_APP_URL="https://app.mwdynasty.com/"
@@ -112,7 +114,9 @@ workflows:
           /usr/libexec/PlistBuddy -c "Print :ITSAppUsesNonExemptEncryption" "$CM_BUILD_DIR/ios_build/MWDynasty/Info.plist" | grep -qi false
 
           grep -q 'MARKETING_VERSION = 3.0.17' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
-          grep -q 'CURRENT_PROJECT_VERSION = 15' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 16' "$CM_BUILD_DIR/ios_build/Config/Release.xcconfig"
+          grep -q 'CURRENT_PROJECT_VERSION = 16;' "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
+          grep -q 'MARKETING_VERSION = 3.0.17;' "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj/project.pbxproj"
 
           # Build 14 native purchase contract
           grep -q 'com.mwdynasty.app.athlete.monthly' "$CM_BUILD_DIR/ios_build/MWDynasty/WebViewController.swift"

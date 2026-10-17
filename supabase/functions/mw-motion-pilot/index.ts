@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.79.0";
 import {MAX_BYTES,MAX_PER_DAY,MIME_EXT,ALLOWED_ORIGIN,validId,adult,pathOwned,validPrepare} from "./validation.mjs";
 import {sanitizedReview,validateReview} from "./review-validation.mjs";
-import {motionSeasonAnchor} from "./season-week.mjs";
+import {motionSeasonAnchor,motionProgramState} from "./season-week.mjs";
 import {verifyIsoVideo,signedRangeReader} from "./media-validation.mjs";
 
 const STAGING_REF = "uuggbmccnyswiwkjgydo";
@@ -108,6 +108,7 @@ Deno.serve(async (req: Request) => {
       return json(200,{
         weekNumber:season.weekNumber,weekSource:season.weekSource,
         programStartDate:season.programStartDate,
+        programState:motionProgramState(season),
         continuousWeeks:41,
         indoorOutdoorReset:false
       },origin);
@@ -123,6 +124,8 @@ Deno.serve(async (req: Request) => {
       if(!season)return bad(503,"Season context unavailable",origin);
       if(season.issue)return bad(409,"Conflicting active season plans; resolve the schedule first",origin);
       const canonical=season.weekNumber;
+      if(canonical===null && season.programStartDate && input.weekNumber!==undefined)
+        return bad(422,"Your MW Velocity program is not currently in an active training week",origin);
       if(canonical!==null && input.weekNumber!==undefined && input.weekNumber!==canonical)
         return bad(422,"Training week differs from your MW Velocity program",origin);
       const week=canonical??input.weekNumber;

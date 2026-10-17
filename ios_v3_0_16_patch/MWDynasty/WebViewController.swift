@@ -84,7 +84,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     }
 
     private var motionPilotHost: String {
-        "mwdynastyunifiedappv31tiered13plusdeploy-dxd3n3qlw-mw-sprint.vercel.app"
+        "motion-staging.mwdynasty.com"
     }
 
     private func isAuthorizedWebHost(_ url: URL) -> Bool {
@@ -100,7 +100,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
               !raw.contains("REPLACE-WITH"),
               let url = URL(string: raw),
               isAuthorizedWebHost(url),
-              (!isMotionPilotBuild || (url.path == "/athlete/" &&
+              (!isMotionPilotBuild || (url.path == "/athlete/motion" &&
                   URLComponents(url: url, resolvingAgainstBaseURL: false)?
                     .queryItems?.contains(where: { $0.name == "motionPilot" && $0.value == "1" }) == true)) else {
             showConfigurationMessage()
@@ -113,7 +113,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     private func showConfigurationMessage() {
         let html = """
-        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.17 · Build 15</p></body></html>
+        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.17 · Build 16</p></body></html>
         """
         webView.loadHTMLString(html, baseURL: nil)
     }

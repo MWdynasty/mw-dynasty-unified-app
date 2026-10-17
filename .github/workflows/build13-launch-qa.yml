@@ -2,7 +2,7 @@ name: MW Dynasty Build 14 Launch QA
 
 on:
   push:
-    branches: [main]
+    branches: [main, testflight-motion-intelligence]
     paths:
       - 'ios_v3_0_16_patch/**'
       - 'codemagic.yaml'
@@ -90,9 +90,16 @@ jobs:
         run: |
           set -euo pipefail
           plutil -lint ios_build/MWDynasty/Info.plist
-          grep -q 'MARKETING_VERSION = 3.0.16' ios_build/Config/Release.xcconfig
-          grep -q 'CURRENT_PROJECT_VERSION = 14' ios_build/Config/Release.xcconfig
-          grep -q 'CURRENT_PROJECT_VERSION = 14;' ios_build/MWDynasty.xcodeproj/project.pbxproj
+          if /usr/libexec/PlistBuddy -c 'Print :MWMotionPilotTestFlight' ios_build/MWDynasty/Info.plist 2>/dev/null | grep -qi true; then
+            native_version='3.0.17'
+            native_build='16'
+          else
+            native_version='3.0.16'
+            native_build='14'
+          fi
+          grep -q "MARKETING_VERSION = $native_version" ios_build/Config/Release.xcconfig
+          grep -q "CURRENT_PROJECT_VERSION = $native_build" ios_build/Config/Release.xcconfig
+          grep -q "CURRENT_PROJECT_VERSION = $native_build;" ios_build/MWDynasty.xcodeproj/project.pbxproj
           grep -q 'PRODUCT_BUNDLE_IDENTIFIER = com.mwdynasty.app' ios_build/Config/Release.xcconfig
           grep -q 'com.mwdynasty.app.athlete.monthly' ios_build/MWDynasty/WebViewController.swift
           grep -q 'com.mwdynasty.app.coach.core.monthly' ios_build/MWDynasty/WebViewController.swift

@@ -2,18 +2,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script><script src="/lib/mw-motion-coach-review.js"></script><script src="/lib/mw-motion-progress.js"></script>
 <style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}.review-card{margin-top:15px;padding:17px;border:1px solid #9a773c;border-radius:16px;background:linear-gradient(155deg,#132436,#080f19)}.review-card h2{margin:4px 0 10px;font-size:21px;color:#f5d47d}.review-card h3{font-size:14px;margin:18px 0 5px;color:#f5d47d;text-transform:uppercase;letter-spacing:.06em}.review-card p{margin:6px 0}.review-card ul{padding-left:20px;line-height:1.55}.review-card li{margin:7px 0}.review-card .eyebrow{font-size:11px;letter-spacing:.15em;color:#bfcbd7}.review-actions{display:flex;gap:8px;flex-wrap:wrap}.review-actions button{flex:1 1 170px;font-size:13px}.review-card .disclaimer{border-top:1px solid #394657;padding-top:12px;margin-top:15px;font-size:12px}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This adult staging pilot includes optional on-device pose estimates. Measurements are experimental, not validated coaching recommendations.</p>
 <div id="gate-status" role="status" aria-live="polite" class="status">Checking staging pilot availability…</div>
-<div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form><div id="pilot-login-status" role="status" aria-live="polite" class="status">Enter your authorized staging account credentials.</div></div>
+<div id="pilot-login" class="panel hidden"><strong>Private Motion pilot</strong><p class="muted">Sign in with your MW Dynasty founder account. Your videos and summaries stay in the separate pilot environment.</p><form id="pilot-login-form"><label for="pilot-mode">Account</label><select id="pilot-mode"><option value="founder">MW Dynasty founder account</option><option value="staging">Authorized staging account</option></select><label for="pilot-email">MW Dynasty email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><div id="founder-consent-row" class="row"><input id="founder-consent" type="checkbox"><label for="founder-consent">I agree to the private adult Motion pilot and to use a separate pilot profile linked to my MW Velocity start date. Video upload requires separate consent below.</label></div><button id="pilot-login-button" type="submit">OPEN PRIVATE MOTION</button></form><div id="pilot-login-status" role="status" aria-live="polite" class="status">Use your existing founder email and password.</div></div>
 <div id="record-panel" class="panel hidden"><strong>Record or upload your sprint</strong><p class="muted">One MP4/MOV clip, maximum 100 MB and 30 seconds. Your training session can still be completed without recording.</p>
 <label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
 <label for="week">MW training week</label><p id="week-context" class="muted">Your current MW Velocity week is loaded from your athlete program when available.</p><select id="week"><option value="">Not assigned to a week</option></select>
 <label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
-<label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime" capture="environment">
+<button id="record-clip" type="button">RECORD A SPRINT</button><input id="camera-clip" type="file" accept="video/mp4,video/quicktime" capture="environment" class="hidden"><label for="clip">Or upload a saved sprint</label><input id="clip" type="file" accept="video/mp4,video/quicktime"><p id="selected-clip" class="muted"></p>
 <div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and consent to this staging pilot. Secure upload sends my video to private MW Dynasty staging storage; optional pose analysis runs on this device. MediaPipe may send usage/performance metrics to Google, but not my video. Pose estimates are unvalidated and are not automatically shared with coaches. Recordings are hidden from playback after 14 days. Private video removal is scheduled hourly after the 14-day limit; temporary storage failures are retried.</label></div>
-<button id="upload" disabled>UPLOAD SECURELY</button>
+<div class="row"><input id="feedback-on-upload" type="checkbox" checked><label for="feedback-on-upload">Generate Coach MW feedback on this device after upload. Side-view footage is required.</label></div><button id="upload" disabled>UPLOAD SECURELY</button>
 <button id="retry-finalize" type="button" class="hidden" style="background:#a7d3b5;color:#09131d">RETRY SAVING UPLOADED VIDEO</button>
 <button id="discard-pending" type="button" class="hidden" style="background:#273648;color:white">DISCARD UNFINISHED VIDEO</button>
 <div class="panel" style="background:#06131e"><strong>Experimental on-device motion analysis</strong><p class="muted">Side-view clips only. MediaPipe model files are downloaded when you choose to analyze. Your video frames stay on this device during analysis. Technique measurements are not stored unless you separately choose to save them to your private account.</p>
-<button id="analyze" type="button" disabled>ANALYZE ON THIS DEVICE</button>
+<button id="analyze" type="button" disabled>GET COACH MW FEEDBACK</button>
 <button id="cancel-analysis" type="button" class="hidden" style="background:#263446;color:#fff">CANCEL ANALYSIS</button>
 <div role="status" aria-live="polite" id="pose-status" class="status">Choose a side-view recording to see experimental measurements.</div>
 <div id="pose-result"></div>
@@ -159,11 +159,12 @@ function reviewParagraph(parent,content,tag='p'){
  const element=document.createElement(tag);
  element.textContent=content;parent.append(element);return element;
 }
-function displayCoachReview(output,movementType,assessmentId=null){
+function displayCoachReview(output,movementType,assessmentId=null,recordWeek=null){
  clearReview();
  const review=window.MWMotionCoachReview.review({
   analysis:output.analysis,movementType,
-  attemptedFrames:output.attemptedFrames,poseFrames:output.poseFrames
+  attemptedFrames:output.attemptedFrames,poseFrames:output.poseFrames,
+  trainingContext:recordWeek?{weekNumber:recordWeek,programState:'active'}:trainingContext
  });
  currentReview=review;
  if(assessmentId && review.status==='observations_available'){
@@ -180,6 +181,8 @@ function displayCoachReview(output,movementType,assessmentId=null){
  }
  reviewParagraph(reviewContent,review.skill,'h3');
  reviewParagraph(reviewContent,review.evidenceSummary);
+ if(review.trainingContext)reviewParagraph(reviewContent,review.trainingContext);
+ if(review.trainingFocus)reviewParagraph(reviewContent,review.trainingFocus);
  if(review.status==='observations_available'){
   reviewParagraph(reviewContent,'What the camera observed','h3');
   const list=document.createElement('ul');
@@ -260,11 +263,11 @@ copyReviewButton.onclick=async()=>{
 let poseAbort=null;
 const stageUrl='https://uuggbmccnyswiwkjgydo.supabase.co';
 const key='sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
-const pilot=/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname)&&
+const pilot=(location.hostname==='motion-staging.mwdynasty.com'||/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname))&&
   new URLSearchParams(location.search).get('motionPilot')==='1';
 if(!pilot){gateStatus.textContent='Motion recording is available only on the authorized staging preview.';return;}
 if(!window.supabase){gateStatus.textContent='Staging sign-in library unavailable. Please reload this page.';return;}
-gateStatus.classList.add('hidden');
+gateStatus.textContent='PRIVATE FOUNDER PILOT · STAGING';
 const client=window.supabase.createClient(stageUrl,key,{
  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'mw-motion-pilot-staging-session'}
 });
@@ -274,6 +277,9 @@ const historyPanel=document.getElementById('history-panel');
 const loginForm=document.getElementById('pilot-login-form');
 const loginButton=document.getElementById('pilot-login-button');
 let activeUserId=null;
+let trainingContext=null;
+let cameraRecording=null;
+function selectedClip(){return cameraRecording||document.getElementById('clip').files[0];}
 let pilotEligible=false;
 function clearPrivatePlayback(){
  // Removing a DOM node alone does not reliably stop HTMLMediaElement playback.
@@ -342,18 +348,24 @@ async function activate(){
    try{
     const context=await call('season_context');
     if(activeUserId!==uid)return;
+    trainingContext=context;
     if(context.weekNumber){
      weekSelect.value=String(context.weekNumber);weekSelect.disabled=true;
      weekContext.textContent='MW Velocity Week '+context.weekNumber+
       ' of 41 · linked to '+(context.weekSource==='active_season_plan'?'your active Season Intelligence plan':'your athlete training start date')+'. Indoor and outdoor remain one progression.';
+    }else if(context.programStartDate){
+     weekSelect.disabled=true;
+     weekContext.textContent=context.programState==='scheduled'?
+      'Your 41-week MW Velocity progression begins '+context.programStartDate+'. This recording is before Week 1.':
+      'Your 41-week progression has ended. This recording is outside the active cycle.';
     }
-   }catch(_){if(activeUserId!==uid)return;}
+   }catch(_){if(activeUserId!==uid)return;trainingContext=null;weekSelect.disabled=true;weekContext.textContent='Season context is temporarily unavailable. Refresh before recording.';pilotEligible=false;}
   }
   updatePendingControls();
   status.textContent=pendingFinalization?
    'An earlier upload may need to finish saving. Choose Retry Saving or Discard before uploading another video.':
    (pilotEligible?
-    'Approved adult staging pilot ready. Recording and local pose estimation are experimental.':
+    'Your private Motion pilot is ready. Record a sprint or choose a saved video.':
     'Adult staging pilot approval is required. Upload and local analysis are disabled.');
  }catch(e){
   status.textContent='Could not verify adult pilot approval. Upload and local analysis remain disabled.';
@@ -361,32 +373,57 @@ async function activate(){
  await loadHistory();
 }
 function showLogin(){
- activeUserId=null;pilotEligible=false;pendingFinalization=null;
+ activeUserId=null;pilotEligible=false;pendingFinalization=null;trainingContext=null;cameraRecording=null;
  updatePendingControls();
  clearPrivatePlayback();
  poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
  document.getElementById('clip').value='';
+ document.getElementById('camera-clip').value='';document.getElementById('selected-clip').textContent='';
  poseStatus.textContent='Choose a side-view recording to see experimental measurements.';
  analyzeButton.disabled=true;
  loginPanel.classList.remove('hidden');
- loginStatus.textContent='Sign into an approved adult staging athlete account. Regular production credentials may not work here.';
+ loginStatus.textContent='Sign in with your founder account, or select an authorized staging account.';
  recordPanel.classList.add('hidden');
  historyPanel.classList.add('hidden');
  button.disabled=true;
- status.textContent='Sign into a separate authorized staging athlete account to continue.';
+ status.textContent='Sign in to open your private Motion pilot.';
 }
 loginForm.onsubmit=async event=>{
  event.preventDefault();loginButton.disabled=true;
  try{
   const email=document.getElementById('pilot-email').value.trim();
   const password=document.getElementById('pilot-password').value;
-  const {error}=await client.auth.signInWithPassword({email,password});
+  if(document.getElementById('pilot-mode').value==='founder'){
+   if(!document.getElementById('founder-consent').checked)throw new Error('Accept the private founder pilot consent first.');
+   const production=window.supabase.createClient('https://keqgunlfwhjgcsurynef.supabase.co',
+    'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm',{
+     auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+    });
+   try{
+    const {data,error}=await production.auth.signInWithPassword({email,password});
+    if(error||!data.session)throw new Error('MW Dynasty sign-in failed. Check your founder email and password.');
+    const response=await fetch(stageUrl+'/functions/v1/mw-motion-founder-access',{
+     method:'POST',cache:'no-store',signal:AbortSignal.timeout(25000),
+     headers:{Authorization:'Bearer '+data.session.access_token,apikey:key,'Content-Type':'application/json'},
+     body:JSON.stringify({consentAccepted:true,consentVersion:'pilot-v1'})
+    });
+    const session=await response.json();
+    if(!response.ok)throw new Error(session.error||'Private founder access is unavailable.');
+    const result=await client.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});
+    if(result.error)throw new Error('Could not open your private pilot session.');
+   }finally{await production.auth.signOut({scope:'local'}).catch(()=>{});}
+  }else{
+   const {error}=await client.auth.signInWithPassword({email,password});
+   if(error)throw new Error('Staging sign-in failed. Check your pilot account credentials.');
+  }
   document.getElementById('pilot-password').value='';
-  if(error)throw new Error('Staging sign-in failed. Check your pilot account credentials.');
   loginStatus.textContent='Checking your pilot authorization…';
   await activate();
  }catch(e){loginStatus.textContent=e.message||'Sign-in unavailable.';}
- finally{loginButton.disabled=false;}
+ finally{document.getElementById('pilot-password').value='';loginButton.disabled=false;}
+};
+document.getElementById('pilot-mode').onchange=()=>{
+ document.getElementById('founder-consent-row').classList.toggle('hidden',document.getElementById('pilot-mode').value!=='founder');
 };
 document.getElementById('pilot-signout').onclick=async()=>{
  button.disabled=true;
@@ -499,7 +536,7 @@ async function loadHistory(){
      try{
       await runLocalReview(
        (signal,owner)=>resolveSavedRecording(record,asset,signal,owner),
-       record.movement_type,record.camera_view,record.id
+       record.movement_type,record.camera_view,record.id,record.week_number
       );
      }finally{reviewSaved.disabled=false;}
     };
@@ -555,7 +592,15 @@ function showPoseResult(output){
  limitations.textContent='Limitations: '+result.limitations.join(' ');
  poseResult.append(limitations);
 }
+document.getElementById('record-clip').onclick=()=>document.getElementById('camera-clip').click();
+document.getElementById('camera-clip').addEventListener('change',()=>{
+ cameraRecording=document.getElementById('camera-clip').files[0]||null;
+ document.getElementById('clip').value='';
+ document.getElementById('selected-clip').textContent=cameraRecording?'Camera recording selected.':'';
+ poseAbort?.abort();poseResult.replaceChildren();clearReview();
+});
 document.getElementById('clip').addEventListener('change',()=>{
+ cameraRecording=null;document.getElementById('selected-clip').textContent='';
  poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();clearReview();
  poseStatus.textContent='Recording changed. Previous estimates cleared.';
 });
@@ -564,7 +609,7 @@ for(const id of ['movement','camera'])document.getElementById(id).addEventListen
  poseStatus.textContent='Technical skill or camera view changed. Previous estimates cleared.';
 });
 cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
-async function runLocalReview(resolveRecording,movementType,cameraView,assessmentId=null){
+async function runLocalReview(resolveRecording,movementType,cameraView,assessmentId=null,recordWeek=null){
  if(!pilotEligible){poseStatus.textContent='Adult staging pilot approval required.';return;}
  if(poseAbort){poseStatus.textContent='An analysis is already in progress.';return;}
  const analysisOwner=activeUserId;
@@ -598,7 +643,7 @@ async function runLocalReview(resolveRecording,movementType,cameraView,assessmen
   });
   if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;
   showPoseResult(output);
-  displayCoachReview(output,movementType,assessmentId);
+  displayCoachReview(output,movementType,assessmentId,recordWeek);
   poseStatus.textContent=output.analysis.status==='estimated_2d'?
    'Coach MW experimental technique review ready.':
    'Review finished without sufficient pose evidence.';
@@ -612,7 +657,7 @@ async function runLocalReview(resolveRecording,movementType,cameraView,assessmen
  }
 }
 analyzeButton.onclick=()=>runLocalReview(
- async()=>document.getElementById('clip').files[0],
+ async()=>selectedClip(),
  document.getElementById('movement').value,
  document.getElementById('camera').value
 );
@@ -669,13 +714,16 @@ button.onclick=async()=>{
  try{
   if(!document.getElementById('consent').checked)
    throw new Error('You must accept the adult staging pilot consent notice.');
-  const file=document.getElementById('clip').files[0];
+  const file=selectedClip();
+  const movementType=document.getElementById('movement').value;
+  const cameraView=document.getElementById('camera').value;
+  const feedbackAfterUpload=document.getElementById('feedback-on-upload').checked;
   const duration=await verifyVideo(file);
   window.MWMotionUpload.assertDuration(duration);
   status.textContent='Preparing secure upload…';
   prepared=await call('prepare',{
-   movementType:document.getElementById('movement').value,
-   cameraView:document.getElementById('camera').value,
+   movementType,
+   cameraView,
    mimeType:file.type,bytes:file.size,
    ...(weekSelect.value?{weekNumber:Number(weekSelect.value)}:{}),
    consentAccepted:true,consentVersion:'pilot-v1'
@@ -694,8 +742,10 @@ button.onclick=async()=>{
   if(completed.status!=='uploaded')throw new Error('Recording could not be finalized.');
   if(activeUserId!==uploadOwner)return;
   savePending(null);
-  status.textContent='Video saved privately! Coach MW biomechanics analysis is not active yet.';
+  status.textContent='Video saved privately.';
   await loadHistory();
+  if(activeUserId===uploadOwner&&feedbackAfterUpload)
+   await runLocalReview(async()=>file,movementType,cameraView,prepared.assessmentId);
  }catch(e){
   if(prepared&&!uploaded){
    // Best-effort cleanup of a failed upload. Signed tokens are kept behind a

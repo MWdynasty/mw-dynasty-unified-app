@@ -11,7 +11,7 @@ export const MOVEMENTS = new Set([
 ]);
 export const VIEWS = new Set(["side","front","rear"]);
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-export const ALLOWED_ORIGIN = /^https:\/\/mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i;
+export const ALLOWED_ORIGIN = /^https:\/\/(?:motion-staging\.mwdynasty\.com|mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app)$/i;
 export function validId(value) {
   return typeof value === "string" && UUID.test(value);
 }
