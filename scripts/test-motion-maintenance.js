@@ -61,7 +61,7 @@ const vm=require('node:vm');
   'Interrupted upload recovery must be isolated per staging account');
  assert.ok(html.includes('if(activeUserId!==uploadOwner)return;'),
   'In-flight uploads must not finalize under a different staging identity');
- assert.ok(html.includes('if(activeUserId!==analysisOwner)return;'),
+ assert.ok(html.includes('if(activeUserId!==analysisOwner||analysisAbort.signal.aborted)return;'),
   'Local pose results must not reappear after a staging account switch');
  assert.ok(html.includes('if(activeUserId!==pending.userId)return;'),
   'Late recovery responses must not change a different athlete account');
