@@ -19,8 +19,17 @@ assert.match(season,/mw-motion-season-retention/);
 assert.match(season,/expires_at <= now\(\)/);
 assert.match(seasonSchema,/330 days/);
 assert.match(policy,/RETENTION_DAYS=14/);
-assert.match(maintenance,/serviceAuthorized\(req\.headers\.get\("authorization"\),secret\)/);
+assert.match(maintenance,/x-mw-maintenance-key/);
+assert.match(maintenance,/mw_motion_staging_cleanup_authorized/);
 assert.match(maintenance,/storage\.from\(BUCKET\)\.remove\(job\.paths\)/);
 assert.match(maintenance,/const execute=options\.execute===true && options\.dryRun===false/);
 assert.match(maintenance,/if\(!execute\)continue/);
+
+const scoped=fs.readFileSync('supabase/migrations/20261018060000_motion_cleanup_vault_scoped_token.sql','utf8');
+assert.match(scoped,/mw_motion_staging_cleanup_token_v1/);
+assert.match(scoped,/extensions\.gen_random_bytes\(32\)/);
+assert.match(scoped,/X-MW-Maintenance-Key/);
+assert.match(scoped,/revoke all on function/);
+assert.match(scoped,/grant execute on function .* to service_role/);
+assert.ok(!scoped.includes('Bearer '),'Cron must not send service-role JWT');
 console.log('Approved 14-day video / 330-day season policy, guarded scheduler, server authorization and deletion safeguards present.');
