@@ -1,7 +1,8 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Motion Intelligence — MW Dynasty</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script>
 <style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This adult staging pilot includes optional on-device pose estimates. Measurements are experimental, not validated coaching recommendations.</p>
-<div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form></div>
+<div id="gate-status" role="status" aria-live="polite" class="status">Checking staging pilot availability…</div>
+<div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form><div id="pilot-login-status" role="status" aria-live="polite" class="status">Enter your authorized staging account credentials.</div></div>
 <div id="record-panel" class="panel hidden"><strong>Record or upload your sprint</strong><p class="muted">One clip, maximum 100 MB. Your training session can still be completed without recording.</p>
 <label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
 <label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
@@ -19,6 +20,8 @@
 (async()=>{
 'use strict';
 const status=document.getElementById('status');
+const gateStatus=document.getElementById('gate-status');
+const loginStatus=document.getElementById('pilot-login-status');
 const button=document.getElementById('upload');
 const history=document.getElementById('history');
 const analyzeButton=document.getElementById('analyze');
@@ -28,12 +31,11 @@ const poseResult=document.getElementById('pose-result');
 let poseAbort=null;
 const stageUrl='https://uuggbmccnyswiwkjgydo.supabase.co';
 const key='sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
-const pilot=location.hostname.endsWith('.vercel.app')&&(
-  /(-git-feature-motion-intelligence|motion-pilot)/i.test(location.hostname) ||
-  new URLSearchParams(location.search).get('motionPilot')==='1'
-);
-if(!pilot){status.textContent='Motion recording is unavailable in this environment.';return;}
-if(!window.supabase){status.textContent='Staging sign-in library unavailable.';return;}
+const pilot=/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname)&&
+  new URLSearchParams(location.search).get('motionPilot')==='1';
+if(!pilot){gateStatus.textContent='Motion recording is available only on the authorized staging preview.';return;}
+if(!window.supabase){gateStatus.textContent='Staging sign-in library unavailable. Please reload this page.';return;}
+gateStatus.classList.add('hidden');
 const client=window.supabase.createClient(stageUrl,key,{
  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'mw-motion-pilot-staging-session'}
 });
@@ -50,7 +52,7 @@ async function activate(){
  const uid=verified.data.user.id;
  if(activeUserId && activeUserId!==uid)history.replaceChildren();
  activeUserId=uid;
- loginPanel.classList.add('hidden');
+ loginPanel.classList.add('hidden');loginStatus.textContent='';
  recordPanel.classList.remove('hidden');
  historyPanel.classList.remove('hidden');
  pilotEligible=false;
@@ -74,6 +76,7 @@ function showLogin(){
  poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
  analyzeButton.disabled=true;
  loginPanel.classList.remove('hidden');
+ loginStatus.textContent='Sign into an approved adult staging athlete account. Regular production credentials may not work here.';
  recordPanel.classList.add('hidden');
  historyPanel.classList.add('hidden');
  button.disabled=true;
@@ -87,8 +90,9 @@ loginForm.onsubmit=async event=>{
   const {error}=await client.auth.signInWithPassword({email,password});
   document.getElementById('pilot-password').value='';
   if(error)throw new Error('Staging sign-in failed. Check your pilot account credentials.');
+  loginStatus.textContent='Checking your pilot authorization…';
   await activate();
- }catch(e){status.textContent=e.message||'Sign-in unavailable.';}
+ }catch(e){loginStatus.textContent=e.message||'Sign-in unavailable.';}
  finally{loginButton.disabled=false;}
 };
 document.getElementById('pilot-signout').onclick=async()=>{
