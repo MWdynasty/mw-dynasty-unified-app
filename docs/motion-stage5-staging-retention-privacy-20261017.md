@@ -20,8 +20,15 @@ Environment: **Phase 1 Staging** Supabase `uuggbmccnyswiwkjgydo`; GitHub branch 
 - A **full two-user synthetic Edge lifecycle test** now exercises prepare, signed upload authorization, actual storage metadata checks, finalize, private playback, cross-account denial, delete, invalid-path rejection, retry finalization and approval revocation. These tests use mocked storage and database calls, **not** a live media upload.
 - The browser has a centralized 30-second duration check, with tests for the exact 30-second boundary, too-long clips and invalid/infinite durations. This is **not server-side media verification**.
 - If upload succeeds but the final save fails, the staging UI now offers **Retry Saving Uploaded Video** without uploading a duplicate, plus **Discard Unfinished Video**. Failed uploads attempt best-effort tombstone cleanup.
-- Private video deletion checks every storage path against the assessment owner before removing any object. Staging `mw-motion-pilot` Edge deployment **v6** includes this guard.
+- Private video deletion checks every storage path against the assessment owner before removing any object. Staging `mw-motion-pilot` Edge deployment **v7** includes this guard and the additional playback-retention checks.
 - The latest preview was fetched over the network and returned **HTTP 200** with the updated sign-in UI. This confirms the route is served; it is not proof of authenticated upload/playback.
+
+## Stage 6 — Access expiration independently of cleanup
+
+- The server now refuses to issue new playback links for recordings older than **14 days**, even if automatic file deletion has not yet run. History also excludes expired recordings. This is an **access restriction**, not evidence of physical file deletion.
+- Recordings in `draft` state cannot be played, including when an asset row was partially created before finalization.
+- The tests cover 15-day-old uploads, history exclusion, still-valid recordings and draft assets using the real Edge handler with synthetic database/storage mocks.
+- Deployed to **staging Edge v7**. Live signed playback on a real device is still unverified. The pilot UI now discloses that physical cleanup is not automated.
 
 ## Live pilot acceptance test still required
 
@@ -35,7 +42,7 @@ Environment: **Phase 1 Staging** Supabase `uuggbmccnyswiwkjgydo`; GitHub branch 
 
 ## Not yet enabled
 
-**The maintenance function is deployed but has no automatic schedule or configured Vault credential. The 14-day retention policy is therefore NOT yet operational.** Do not claim automatic deletion is active. The UI explicitly discloses this. The staging database and storage bucket had no pilot video records at the last predeployment check.
+**The maintenance function is deployed but has no automatic schedule or configured Vault credential. Automatic **physical deletion** after 14 days is therefore NOT yet operational. A separate server-side access cutoff now prevents new playback links for expired recordings.** Do not claim automatic deletion is active. The UI explicitly discloses this. The staging database and storage bucket had no pilot video records at the last predeployment check.
 
 ## Before activating automatic deletion
 
