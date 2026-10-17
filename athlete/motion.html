@@ -175,7 +175,7 @@ async function loadHistory(){
    const remove=document.createElement('button');remove.textContent='DELETE RECORDING';
    remove.style.background='#253142';remove.style.color='#fff';
    remove.onclick=async()=>{
-    if(!confirm('Delete this private recording? Playback is blocked immediately. Minimal deletion metadata remains until secure maintenance cleanup.'))return;
+    if(!confirm('Delete this private recording? New playback requests are blocked immediately. Minimal deletion metadata remains until secure maintenance cleanup.'))return;
     remove.disabled=true;
     try{
      await call('delete',{assessmentId:record.id});
