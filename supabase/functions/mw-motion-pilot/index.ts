@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.79.0";
 import {MAX_BYTES,MAX_PER_DAY,MIME_EXT,ALLOWED_ORIGIN,validId,adult,pathOwned,validPrepare} from "./validation.mjs";
 import {sanitizedReview,validateReview} from "./review-validation.mjs";
-import {canonicalWeek} from "./season-week.mjs";
+import {motionSeasonAnchor} from "./season-week.mjs";
 import {verifyIsoVideo,signedRangeReader} from "./media-validation.mjs";
 
 const STAGING_REF = "uuggbmccnyswiwkjgydo";
@@ -83,6 +83,18 @@ Deno.serve(async (req: Request) => {
        new Date(approval.expires_at).getTime()<=Date.now()) return null;
     return athlete;
   };
+  const getSeasonContext=async(athleteId:string)=>{
+    const {data:profile,error:profileError}=await admin.from("athletes")
+      .select("program_start_date").eq("id",athleteId).eq("user_id",user.id).maybeSingle();
+    if(profileError||!profile)return null;
+    // This active plan is shared with the coach/athlete Season Intelligence surfaces.
+    // Ignore legacy 13/16-week length when computing the continuous 41-week index.
+    const {data:activePlans,error:plansError}=await admin.from("athlete_season_plans")
+      .select("season_start_date").eq("athlete_id",athleteId)
+      .eq("plan_status","active").limit(10);
+    if(plansError||!activePlans)return null;
+    return motionSeasonAnchor(profile,activePlans);
+  };
   try {
     if (action === "eligibility") {
       return json(200,{approved:!!await pilotApproved(),adultPilotOnly:true},origin);
@@ -90,13 +102,12 @@ Deno.serve(async (req: Request) => {
     if (action === "season_context") {
       const athlete=await pilotApproved();
       if(!athlete)return bad(403,"Adult staging pilot approval required",origin);
-      const {data:profile,error:profileError}=await admin.from("athletes")
-        .select("program_start_date").eq("id",athlete.id).eq("user_id",user.id).maybeSingle();
-      if(profileError||!profile)return bad(503,"Season context unavailable",origin);
-      const week=canonicalWeek(profile.program_start_date);
+      const season=await getSeasonContext(athlete.id);
+      if(!season)return bad(503,"Season context unavailable",origin);
+      if(season.issue)return bad(409,"Conflicting active season plans; resolve the schedule first",origin);
       return json(200,{
-        weekNumber:week,weekSource:week===null?"unassigned":"athlete_program_start",
-        programStartDate:profile.program_start_date||null,
+        weekNumber:season.weekNumber,weekSource:season.weekSource,
+        programStartDate:season.programStartDate,
         continuousWeeks:41,
         indoorOutdoorReset:false
       },origin);
@@ -108,10 +119,10 @@ Deno.serve(async (req: Request) => {
       if (validationError) return bad(422,validationError,origin);
       const mime = input.mimeType as string;
       const bytes = input.bytes as number;
-      const {data:profile,error:profileError}=await admin.from("athletes")
-        .select("program_start_date").eq("id",athlete.id).eq("user_id",user.id).maybeSingle();
-      if(profileError||!profile)return bad(503,"Season context unavailable",origin);
-      const canonical=canonicalWeek(profile.program_start_date);
+      const season=await getSeasonContext(athlete.id);
+      if(!season)return bad(503,"Season context unavailable",origin);
+      if(season.issue)return bad(409,"Conflicting active season plans; resolve the schedule first",origin);
+      const canonical=season.weekNumber;
       if(canonical!==null && input.weekNumber!==undefined && input.weekNumber!==canonical)
         return bad(422,"Training week differs from your MW Velocity program",origin);
       const week=canonical??input.weekNumber;
@@ -123,7 +134,7 @@ Deno.serve(async (req: Request) => {
       const {data:assessment,error:assessmentError} = await admin.from("motion_assessments").insert({
         athlete_id:athlete.id,created_by:user.id,movement_type:input.movementType,
         camera_view:input.cameraView,week_number:week??null,
-        week_source:canonical!==null?"athlete_program_start":week===undefined?"unassigned":"manual",status:"draft",
+        week_source:canonical!==null?season.weekSource:week===undefined?"unassigned":"manual",status:"draft",
         consent_recorded_at:new Date().toISOString()
       }).select("id").single();
       if (assessmentError || !assessment) return bad(503,"Could not create assessment",origin);
