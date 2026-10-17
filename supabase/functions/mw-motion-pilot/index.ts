@@ -58,21 +58,25 @@ Deno.serve(async (req: Request) => {
       .select("id,created_by,status").eq("id",id).eq("created_by",user.id).maybeSingle();
     return error ? null : data;
   };
+  // Approval is server-controlled. Revocation must take effect on finalize and playback,
+  // not only when a signed upload token is first issued.
+  const pilotApproved = async () => {
+    const {data:athlete,error:athleteError} = await admin.from("athletes")
+      .select("id,date_of_birth").eq("user_id",user.id).maybeSingle();
+    if(athleteError || !athlete || !adult(athlete.date_of_birth)) return null;
+    const {data:approval,error:approvalError} = await admin.from("motion_pilot_approvals")
+      .select("status,expires_at,adult_verified_at,consent_policy_version")
+      .eq("user_id",user.id).maybeSingle();
+    if(approvalError || !approval || approval.status!=="active" ||
+       !approval.adult_verified_at || approval.consent_policy_version!=="pilot-v1" ||
+       !Number.isFinite(new Date(approval.expires_at).getTime()) ||
+       new Date(approval.expires_at).getTime()<=Date.now()) return null;
+    return athlete;
+  };
   try {
     if (action === "prepare") {
-      const {data:athlete,error:athleteError} = await admin.from("athletes")
-        .select("id,date_of_birth").eq("user_id",user.id).maybeSingle();
-      if (athleteError || !athlete || !adult(athlete.date_of_birth)) {
-        return bad(403,"Adult athlete pilot access required",origin);
-      }
-      const {data:approval,error:approvalError} = await admin.from("motion_pilot_approvals")
-        .select("status,expires_at,adult_verified_at,consent_policy_version")
-        .eq("user_id",user.id).maybeSingle();
-      if(approvalError || !approval || approval.status!=="active" ||
-         !approval.adult_verified_at || approval.consent_policy_version!=="pilot-v1" ||
-         new Date(approval.expires_at).getTime()<=Date.now()) {
-        return bad(403,"Adult staging pilot approval required",origin);
-      }
+      const athlete=await pilotApproved();
+      if(!athlete) return bad(403,"Adult staging pilot approval required",origin);
       const validationError = validPrepare(input);
       if (validationError) return bad(422,validationError,origin);
       const mime = input.mimeType as string;
@@ -108,13 +112,16 @@ Deno.serve(async (req: Request) => {
       return json(200,{assessmentId,path,token:signed.token,maxBytes:MAX_BYTES,expiresInSeconds:7200},origin);
     }
     if (action === "finalize") {
+      if(!await pilotApproved()) return bad(403,"Adult staging pilot approval required",origin);
       const record = await own(input.assessmentId);
-      if(!record) return bad(404,"Assessment not found",origin);
+      if(!record || record.status==="deleted") return bad(404,"Assessment not found",origin);
       const {data:intent,error:intentError} = await admin.from("motion_upload_intents")
         .select("*").eq("assessment_id",record.id).eq("owner_user_id",user.id).maybeSingle();
       if(intentError || !intent) return bad(404,"Upload intent not found",origin);
-      if(intent.status==="finalized") return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:false},origin);
-      if(intent.status!=="pending" || new Date(intent.expires_at).getTime()<Date.now()) {
+      if(intent.status==="finalized" && record.status==="uploaded")
+        return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:false},origin);
+      if(record.status!=="draft" || intent.status!=="pending" ||
+         new Date(intent.expires_at).getTime()<Date.now()) {
         return bad(409,"Upload authorization expired",origin);
       }
       if(!pathOwned(intent.storage_path,user.id,record.id)) return bad(403,"Invalid upload path",origin);
@@ -135,8 +142,12 @@ Deno.serve(async (req: Request) => {
         mime_type:actualMime,bytes:actualBytes,duration_ms:null
       },{onConflict:"storage_path",ignoreDuplicates:true});
       if(assetError) return bad(503,"Could not save recording metadata",origin);
-      const {error:stateError} = await admin.from("motion_assessments").update({status:"uploaded",updated_at:new Date().toISOString()}).eq("id",record.id).eq("created_by",user.id);
+      const {data:updated,error:stateError} = await admin.from("motion_assessments")
+        .update({status:"uploaded",updated_at:new Date().toISOString()})
+        .eq("id",record.id).eq("created_by",user.id).eq("status","draft")
+        .select("id").maybeSingle();
       if(stateError) return bad(503,"Could not finalize recording",origin);
+      if(!updated) return bad(409,"Recording was deleted or changed before finalization",origin);
       await admin.from("motion_upload_intents").update({status:"finalized",finalized_at:new Date().toISOString()}).eq("id",intent.id);
       await audit(record.id,"upload_finalized",{bytes:actualBytes,mime:actualMime,durationVerified:false});
       return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:false,analysisAvailable:false},origin);
@@ -144,11 +155,13 @@ Deno.serve(async (req: Request) => {
     if(action==="list") {
       const {data,error} = await admin.from("motion_assessments")
         .select("id,movement_type,camera_view,training_date,week_number,status,created_at,motion_assets(id,mime_type,bytes)")
-        .eq("created_by",user.id).order("created_at",{ascending:false}).limit(30);
+        .eq("created_by",user.id).neq("status","deleted")
+        .order("created_at",{ascending:false}).limit(30);
       if(error) return bad(503,"Recording history unavailable",origin);
       return json(200,{assessments:data||[]},origin);
     }
     if(action==="playback") {
+      if(!await pilotApproved()) return bad(403,"Adult staging pilot approval required",origin);
       const record=await own(input.assessmentId);
       if(!record || record.status==="deleted") return bad(404,"Recording not found",origin);
       if(!validId(input.assetId)) return bad(422,"Invalid recording",origin);
@@ -163,6 +176,11 @@ Deno.serve(async (req: Request) => {
     if(action==="delete") {
       const record=await own(input.assessmentId);
       if(!record) return bad(404,"Assessment not found",origin);
+      // Tombstone first: this blocks playback and finalization even if object deletion fails.
+      const {error:tombstoneError}=await admin.from("motion_assessments")
+        .update({status:"deleted",updated_at:new Date().toISOString()})
+        .eq("id",record.id).eq("created_by",user.id);
+      if(tombstoneError) return bad(503,"Could not protect deleted recording",origin);
       const {data:assets,error:assetError} = await admin.from("motion_assets")
         .select("storage_path").eq("assessment_id",record.id);
       const {data:intent,error:intentError} = await admin.from("motion_upload_intents")
@@ -173,10 +191,13 @@ Deno.serve(async (req: Request) => {
         const {error:removeError}=await admin.storage.from(BUCKET).remove(paths);
         if(removeError) return bad(503,"Private recording deletion failed",origin);
       }
-      const {error:deleteError}=await admin.from("motion_assessments").delete().eq("id",record.id).eq("created_by",user.id);
-      if(deleteError) return bad(503,"Assessment deletion failed",origin);
-      await audit(record.id,"assessment_deleted");
-      return json(200,{deleted:true},origin);
+      // Keep the tombstone and upload intent until signed upload tokens have expired.
+      // Maintenance will remove a late orphan upload and then delete the assessment.
+      const {error:assetDeleteError}=await admin.from("motion_assets")
+        .delete().eq("assessment_id",record.id);
+      if(assetDeleteError) return bad(503,"Recording metadata cleanup failed",origin);
+      await audit(record.id,"assessment_deleted",{retainedTombstone:true});
+      return json(200,{deleted:true,pendingTokenExpiry:true},origin);
     }
     return bad(400,"Unsupported action",origin);
   } catch(e) {
