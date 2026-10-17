@@ -48,7 +48,7 @@ const duration=await new Promise((resolve,reject)=>{
  const v=document.createElement('video');v.preload='metadata';v.muted=true;
  const url=URL.createObjectURL(file);
  const timer=setTimeout(()=>finish(new Error('Video duration check timed out')),12000);
- function finish(err,value){clearTimeout(timer);v.removeAttribute('src');v.load();URL.revokeObjectURL(url);if(err)reject(err);else resolve(value)}
+ let finished=false;function finish(err,value){if(finished)return;finished=true;clearTimeout(timer);v.onloadedmetadata=null;v.onerror=null;v.removeAttribute('src');v.load();URL.revokeObjectURL(url);if(err)reject(err);else resolve(value)}
  v.onloadedmetadata=()=>Number.isFinite(v.duration)&&v.duration>0?finish(null,v.duration):finish(new Error('Could not verify video duration'));
  v.onerror=()=>finish(new Error('This video format cannot be verified on this device. Export as MP4 and retry.'));
  v.src=url;
