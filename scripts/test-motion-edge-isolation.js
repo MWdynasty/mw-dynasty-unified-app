@@ -55,7 +55,7 @@ const {stripTypeScriptTypes}=require('node:module');
  let handler;
  const source=fs.readFileSync('supabase/functions/mw-motion-pilot/index.ts','utf8')
   .replace(/^import \{ createClient \} from "[^"]+";\n/,'const createClient=globalThis.__createClient;\n')
-  .replace(/^import \{([^}]+)\} from "\.\/validation\.mjs";\n/,'const {$1}=globalThis.__validation;\n');
+  .replace(/^import \{([^}]+)\} from "\.\/validation\.mjs";\n/m,'const {$1}=globalThis.__validation;\n');
  const stripped=stripTypeScriptTypes(source,{mode:'strip'});
  const context={__createClient:()=>admin,__validation:validation,
   Deno:{env:{get:k=>k==='SUPABASE_URL'?'https://uuggbmccnyswiwkjgydo.supabase.co':
