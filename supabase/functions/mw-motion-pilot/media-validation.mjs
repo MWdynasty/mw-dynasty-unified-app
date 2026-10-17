@@ -74,24 +74,28 @@ export async function verifyIsoVideo({bytes,mime,readRange}){
  if(typeof readRange!=='function')throw Error('Media reader unavailable');
  const first=await readRange(0,31);
  if(!(first instanceof Uint8Array)||first.length!==32)throw Error('Video header unavailable');
- const initial=box(first,0,first.length);
- if(initial.type!=='ftyp'||initial.size<16)throw Error('Missing ISO video signature');
+ const firstSize=u32(first,0);
+ if(text(first,4)!=='ftyp'||firstSize<16||firstSize>bytes)throw Error('Missing ISO video signature');
  const brand=text(first,8);
  if(!['isom','iso2','iso6','mp41','mp42','qt  ','M4V ','avc1'].includes(brand))
   throw Error('Unsupported ISO video brand');
  let pos=0,seenMoov=false,seenMdat=false,ms=null,steps=0;
  while(pos<bytes){
   if(++steps>MAX_BOXES)throw Error('Too many top-level video boxes');
-  const last=Math.min(pos+15,bytes-1);
-  if(last-pos+1<16)throw Error('Incomplete top-level media header');
-  const head=await readRange(pos,last);
-  if(!(head instanceof Uint8Array)||head.length!==16)throw Error('Media range unavailable');
-  let size=u32(head,0),header=8;
-  if(size===1){size=u32(head,8)*4294967296+u32(head,12);header=16;}
+  if(bytes-pos<8)throw Error('Incomplete top-level media header');
+  const firstHeader=await readRange(pos,pos+7);
+  if(!(firstHeader instanceof Uint8Array)||firstHeader.length!==8)throw Error('Media range unavailable');
+  let size=u32(firstHeader,0),header=8;
+  const type=text(firstHeader,4);
+  if(size===1){
+   if(bytes-pos<16)throw Error('Incomplete extended media header');
+   const extended=await readRange(pos+8,pos+15);
+   if(!(extended instanceof Uint8Array)||extended.length!==8)throw Error('Media range unavailable');
+   size=u32(extended,0)*4294967296+u32(extended,4);header=16;
+  }
   if(size===0)size=bytes-pos;
   if(!Number.isSafeInteger(size)||size<header||size>bytes-pos)
    throw Error('Invalid top-level video box');
-  const type=text(head,4);
   if(pos===0&&type!=='ftyp')throw Error('Invalid video signature');
   if(type==='mdat'){if(size<=header)throw Error('Empty video data');seenMdat=true;}
   if(type==='moov'){
