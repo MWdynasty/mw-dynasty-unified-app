@@ -4,6 +4,8 @@ on:
     paths:
       - 'lib/mw-motion-intelligence.js'
       - 'lib/mw-motion-upload.js'
+      - 'lib/mw-motion-biomechanics.js'
+      - 'scripts/test-motion-biomechanics.js'
       - 'athlete/motion.html'
       - 'supabase/functions/mw-motion-pilot/**'
       - 'supabase/migrations/*motion*'
