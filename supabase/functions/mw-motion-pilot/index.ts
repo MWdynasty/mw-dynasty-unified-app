@@ -241,7 +241,7 @@ Deno.serve(async (req: Request) => {
       return json(200,{saved:true,assessmentId:record.id,retentionDays:330,coachShared:false},origin);
     }
     if(action==="season") {
-      if(!await pilotApproved())return bad(403,"Adult staging pilot approval required",origin);
+      // Data access/deletion remains available after pilot approval is revoked.
       const {data,error}=await admin.from("motion_season_observations")
         .select("id,assessment_id,movement_type,week_number,metrics,provenance,observed_at,created_at,expires_at,share_with_assigned_coach")
         .eq("owner_user_id",user.id).gt("expires_at",new Date().toISOString())
@@ -250,7 +250,9 @@ Deno.serve(async (req: Request) => {
       return json(200,{observations:data||[],experimental:true},origin);
     }
     if(action==="share_season") {
-      if(!await pilotApproved())return bad(403,"Adult staging pilot approval required",origin);
+      // Revocation always allowed. New sharing still requires current approval.
+      if(input.share===true && !await pilotApproved())
+        return bad(403,"Adult staging pilot approval required",origin);
       if(!validId(input.observationId)||typeof input.share!=="boolean")
         return bad(422,"Invalid sharing request",origin);
       const {data:record,error:readError}=await admin.from("motion_season_observations")
@@ -265,7 +267,7 @@ Deno.serve(async (req: Request) => {
       return json(200,{updated:true,shared:input.share},origin);
     }
     if(action==="delete_season") {
-      if(!await pilotApproved())return bad(403,"Adult staging pilot approval required",origin);
+      // Privacy deletion is never conditional on continued pilot enrollment.
       if(!validId(input.observationId))return bad(422,"Invalid observation",origin);
       const {data:record,error:readError}=await admin.from("motion_season_observations")
         .select("id,assessment_id").eq("id",input.observationId)
