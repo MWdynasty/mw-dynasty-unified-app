@@ -102,9 +102,25 @@ Deno.serve(async(req:Request)=>{
    }catch(e){failed++;console.error("Motion maintenance item failed",
      e instanceof Error?e.message:"unknown");}
   }
+  // Independent opt-in season observations expire after 330 days, even when
+  // source video/assessment metadata was already removed.
+  const {data:expiredSeason,error:seasonLookupError}=await admin.from("motion_season_observations")
+   .select("id").lte("expires_at",new Date(now).toISOString())
+   .order("expires_at",{ascending:true}).limit(limit);
+  if(seasonLookupError)throw new Error("season_retention_lookup");
+  const seasonEligible=(expiredSeason||[]).length;
+  let seasonRemoved=0;
+  if(execute && seasonEligible){
+   const ids=(expiredSeason||[]).map((x:{id:string})=>x.id);
+   const {data:removedRows,error:seasonDeleteError}=await admin.from("motion_season_observations")
+    .delete().in("id",ids).lte("expires_at",new Date(now).toISOString()).select("id");
+   if(seasonDeleteError){failed++;console.error("Motion season retention deletion failed",seasonDeleteError.code);}
+   else seasonRemoved=(removedRows||[]).length;
+  }
   return reply(failed?207:200,{
    dryRun:!execute,retentionDays:RETENTION_DAYS,tokenGraceMinutes:TOKEN_GRACE_MS/60000,
-   candidates:candidates.size,eligible,removed,failed,skipped,reasons
+   candidates:candidates.size,eligible,removed,failed,skipped,reasons,
+   seasonEligible,seasonRemoved
   });
  }catch(e){
   console.error("Motion maintenance failed",e instanceof Error?e.message:"unknown");
