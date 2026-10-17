@@ -61,31 +61,32 @@ let pendingFinalization=null;
 // Store only a non-secret assessment ID. Signed upload tokens and credentials
 // must never be persisted by the recovery mechanism.
 const PENDING_KEY='mw-motion-pilot-pending-v1';
+function pendingKey(userId){return PENDING_KEY+'-'+userId;}
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function savePending(value){
  pendingFinalization=value;
  try{
-  if(value)sessionStorage.setItem(PENDING_KEY,JSON.stringify({
+  if(value&&UUID.test(value.userId))sessionStorage.setItem(pendingKey(value.userId),JSON.stringify({
    assessmentId:value.assessmentId,userId:value.userId,savedAt:Date.now()
   }));
-  else sessionStorage.removeItem(PENDING_KEY);
+  else if(activeUserId)sessionStorage.removeItem(pendingKey(activeUserId));
  }catch(_){}
  updatePendingControls();
 }
 function restorePending(userId){
  pendingFinalization=null;
  try{
-  const raw=sessionStorage.getItem(PENDING_KEY);
+  const raw=sessionStorage.getItem(pendingKey(userId));
   if(!raw)return;
   const saved=JSON.parse(raw);
   if(saved.userId!==userId)return;
   if(!UUID.test(saved.userId)||!UUID.test(saved.assessmentId)||
     !Number.isFinite(saved.savedAt)||saved.savedAt>Date.now()||
     Date.now()-saved.savedAt>24*60*60*1000){
-   sessionStorage.removeItem(PENDING_KEY);return;
+   sessionStorage.removeItem(pendingKey(userId));return;
   }
   pendingFinalization={assessmentId:saved.assessmentId,userId};
- }catch(_){try{sessionStorage.removeItem(PENDING_KEY)}catch(_){}}
+ }catch(_){try{sessionStorage.removeItem(pendingKey(userId))}catch(_){}}
 }
 function updatePendingControls(){
  const pending=!!pendingFinalization&&pendingFinalization.userId===activeUserId;
@@ -356,6 +357,7 @@ button.onclick=async()=>{
  if(!pilotEligible){status.textContent='Adult staging pilot approval required.';return;}
  if(pendingFinalization){status.textContent='Finish saving or discard the previous upload before starting another.';return;}
  button.disabled=true;analyzeButton.disabled=true;
+ const uploadOwner=activeUserId;
  let prepared=null,uploaded=false;
  try{
   if(!document.getElementById('consent').checked)
@@ -375,10 +377,14 @@ button.onclick=async()=>{
    .uploadToSignedUrl(prepared.path,prepared.token,file,{contentType:file.type,upsert:false});
   if(uploadResult.error)throw new Error('Video upload failed. Check your connection and retry.');
   uploaded=true;
-  savePending({assessmentId:prepared.assessmentId,userId:activeUserId});
+  // The original owner must be able to recover a completed upload even if
+  // they signed out or switched accounts during a slow mobile upload.
+  savePending({assessmentId:prepared.assessmentId,userId:uploadOwner});
+  if(activeUserId!==uploadOwner)return;
   status.textContent='Saving video to your account…';
   const completed=await call('finalize',{assessmentId:prepared.assessmentId});
   if(completed.status!=='uploaded')throw new Error('Recording could not be finalized.');
+  if(activeUserId!==uploadOwner)return;
   savePending(null);
   status.textContent='Video saved privately! Coach MW biomechanics analysis is not active yet.';
   await loadHistory();
@@ -388,6 +394,7 @@ button.onclick=async()=>{
    // tombstone so late uploads cannot become visible or be finalized.
    try{await call('delete',{assessmentId:prepared.assessmentId});}catch(_){}
   }
+  if(activeUserId!==uploadOwner)return;
   status.textContent=pendingFinalization?
    'Video uploaded, but final save is not confirmed. Choose Retry Saving or Discard. '+(e.message||''):
    (e.message||'Recording failed. Please try again.');
