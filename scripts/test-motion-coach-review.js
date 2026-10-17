@@ -1,0 +1,47 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const coach=require('../lib/mw-motion-coach-review.js');
+const biomechanics=require('../lib/mw-motion-biomechanics.js');
+const landmarks=()=>{const p=Array(33).fill(null);for(const [i,x,y] of [[11,.3,.3],[23,.4,.5],[25,.5,.7],[27,.6,.9]])p[i]={x,y,visibility:.96};return p;};
+const frames=Array.from({length:12},(_,i)=>({timeMs:i*120,width:1920,height:1080,landmarks:landmarks()}));
+const analysis=biomechanics.analyze({movementType:'acceleration_30m',cameraView:'side',frames});
+const review=coach.review({analysis,attemptedFrames:12,poseFrames:12});
+assert.equal(review.status,'observations_available');
+assert.equal(review.skill,'First 30m acceleration');
+assert.equal(review.observations.length,2);
+assert.ok(review.observations.every(x=>x.samples===12));
+assert.ok(review.observations.every(x=>Number.isFinite(x.earlyDegrees)&&Number.isFinite(x.lateDegrees)));
+assert.ok(review.cue.includes('progressive steps'));
+assert.ok(!JSON.stringify(review).includes('perfect technique'));
+assert.ok(!JSON.stringify(review).includes('performance score'));
+assert.match(coach.spokenText(review),/Coach MW motion review/);
+assert.match(coach.spokenText(review),/Practice focus/);
+assert.ok(Object.keys(coach.SKILLS).length===7);
+for(const movementType of Object.keys(coach.SKILLS)){
+ const result=biomechanics.analyze({movementType,cameraView:'side',frames});
+ const r=coach.review({analysis:result,attemptedFrames:12,poseFrames:12});
+ assert.equal(r.status,'observations_available');
+ assert.ok(r.cue);
+}
+const noEvidence=biomechanics.analyze({movementType:'wickets',cameraView:'front',frames});
+const insufficient=coach.review({analysis:noEvidence,movementType:'wickets',attemptedFrames:12,poseFrames:0});
+assert.equal(insufficient.status,'not_assessed');
+assert.equal(insufficient.observations.length,0);
+assert.equal(insufficient.cue,null,'Never prescribe technique from absent measurements');
+assert.match(insufficient.nextStep,/Retake/);
+const spoofed={...analysis,metrics:[{name:'unknown_metric',value:100,evidence:[]},
+ {name:'knee_angle_2d',value:200,evidence:[{timeMs:0,value:200}]}]};
+assert.equal(coach.review({analysis:spoofed,attemptedFrames:12,poseFrames:12}).status,'not_assessed');
+assert.throws(()=>coach.review({analysis:null}),/required/);
+const html=fs.readFileSync('athlete/motion.html','utf8');
+assert.ok(html.includes('/lib/mw-motion-coach-review.js'));
+assert.ok(html.includes('displayCoachReview(output,'));
+assert.ok(html.includes("clearReview();"),'Previous athlete review must clear');
+assert.ok(html.includes("stopReviewSpeech()"),'Voice playback must be stoppable');
+assert.ok(html.includes("speechSynthesis.cancel()"),'Voice must stop on account switch');
+assert.ok(html.includes('SpeechSynthesisUtterance('),'Read-aloud must be user-triggered');
+assert.ok(html.includes("navigator.clipboard.writeText("),'Athlete can copy review');
+const start=html.lastIndexOf('<script>'),end=html.indexOf('</script>',start);
+assert.doesNotThrow(()=>new vm.Script(html.slice(start+8,end),{filename:'motion-inline.js'}));
+console.log('Coach MW motion review: seven skills, evidence gating, spoken cues and browser integration passed.');
