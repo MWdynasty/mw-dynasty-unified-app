@@ -190,6 +190,11 @@ Deno.serve(async (req: Request) => {
         .select("storage_path").eq("assessment_id",record.id).maybeSingle();
       if(assetError || intentError) return bad(503,"Could not locate recording files",origin);
       const paths=[...new Set([...(assets||[]).map(a=>a.storage_path),...(intent?[intent.storage_path]:[])])];
+      // Never allow a corrupted metadata row to delete another athlete's file.
+      if(paths.some(path=>!pathOwned(path,user.id,record.id))){
+        await audit(record.id,"delete_path_rejected");
+        return bad(409,"Recording ownership verification failed",origin);
+      }
       if(paths.length){
         const {error:removeError}=await admin.storage.from(BUCKET).remove(paths);
         if(removeError) return bad(503,"Private recording deletion failed",origin);
