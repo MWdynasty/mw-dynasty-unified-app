@@ -23,12 +23,14 @@
  <p class="muted">An evidence-bounded, rule-based review of your local 2D pose measurements. This is not a live AI coaching conversation or a technique grade.</p>
  <div id="coach-review-content" aria-live="polite"></div>
  <div class="row"><input id="review-storage-consent" type="checkbox"><label for="review-storage-consent">Optional: I agree to store this recording's experimental 2D measurements privately with the recording. These measurements are unverified and are hidden after 14 days or when I delete the recording; physical deletion depends on secure cleanup.</label></div>
+ <div class="row"><input id="season-consent" type="checkbox"><label for="season-consent">Optional 41-week history: Save these unverified angle estimates for up to 330 days, even after the video expires or is deleted. Coach sharing is OFF by default. You can delete this history separately.</label></div>
+ <button id="save-season" type="button" class="hidden" style="background:#d7b36b;color:#09131d">SAVE TO 41-WEEK PROGRESSION</button>
  <button id="save-review" type="button" class="hidden" style="background:#26384c;color:#fff">SAVE PRIVATE TECHNIQUE REPORT</button>
  <div class="review-actions"><button id="read-review" type="button">HEAR REVIEW</button><button id="copy-review" type="button" style="background:#26384c;color:#fff">COPY REVIEW</button></div>
  <div id="review-action-status" class="muted" role="status" aria-live="polite"></div>
 </section></div>
 <div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
-<div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><section id="motion-progress" class="review-card hidden" aria-label="Recent motion observations"><h2>Recent Motion Observations</h2><p class="muted">Side-by-side comparisons from private reports within the 14-day recording window. This does not measure sprint performance or grade technique.</p><div id="motion-progress-content"></div></section><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
+<div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><section id="motion-season" class="review-card hidden" aria-label="41-week motion history"><h2>41-Week Motion History</h2><p class="muted">Private opt-in 2D estimates, retained up to 330 days. These are camera observations, not a validated performance score. Sharing with your assigned coach is optional and controlled per report.</p><div id="motion-season-content"></div></section><section id="motion-progress" class="review-card hidden" aria-label="Recent motion observations"><h2>Recent Motion Observations</h2><p class="muted">Side-by-side comparisons from private reports within the 14-day recording window. This does not measure sprint performance or grade technique.</p><div id="motion-progress-content"></div></section><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
 <script>
 (async()=>{
 'use strict';
@@ -39,6 +41,65 @@ const button=document.getElementById('upload');
 const retryButton=document.getElementById('retry-finalize');
 const discardButton=document.getElementById('discard-pending');
 const history=document.getElementById('history');
+const seasonPanel=document.getElementById('motion-season');
+const seasonContent=document.getElementById('motion-season-content');
+function clearSeason(){seasonContent.replaceChildren();seasonPanel.classList.add('hidden');}
+async function loadSeason(){
+ const owner=activeUserId;
+ clearSeason();
+ if(!owner||!pilotEligible)return;
+ try{
+  const data=await call('season');
+  if(activeUserId!==owner)return;
+  const observations=data.observations||[];
+  if(!observations.length)return;
+  const groups=window.MWMotionProgress.summarize(observations);
+  const heading=document.createElement('p');
+  heading.textContent=observations.length+' saved experimental observations across MW training weeks.';
+  seasonContent.append(heading);
+  for(const group of groups){
+   reviewParagraph(seasonContent,group.movementType.replace(/_/g,' '),'h3');
+   for(const metric of group.metrics){
+    reviewParagraph(seasonContent,'Week '+group.firstWeek+' → '+group.lastWeek+': '+metric.label+
+     ' '+metric.earlier.toFixed(1)+'° → '+metric.later.toFixed(1)+'°');
+   }
+   reviewParagraph(seasonContent,group.disclaimer).className='disclaimer';
+  }
+  for(const observation of observations){
+   const entry=document.createElement('div');entry.className='panel';
+   reviewParagraph(entry,'Week '+observation.week_number+' · '+observation.movement_type.replace(/_/g,' '));
+   for(const metric of observation.metrics||[]){
+    if(Number.isFinite(metric.medianDegrees))
+     reviewParagraph(entry,metric.name.replace(/_/g,' ')+': '+metric.medianDegrees.toFixed(1)+'°');
+   }
+   const share=document.createElement('button');
+   share.textContent=observation.share_with_assigned_coach?'STOP SHARING WITH COACH':'SHARE WITH ASSIGNED COACH';
+   share.onclick=async()=>{
+    const ownerAtClick=activeUserId;share.disabled=true;
+    try{
+     await call('share_season',{observationId:observation.id,share:!observation.share_with_assigned_coach});
+     if(activeUserId===ownerAtClick)await loadSeason();
+    }catch(e){if(activeUserId===ownerAtClick)status.textContent=e.message||'Sharing update failed.';}
+    finally{share.disabled=false;}
+   };
+   entry.append(share);
+   const remove=document.createElement('button');
+   remove.style.background='#26384c';remove.style.color='#fff';
+   remove.textContent='DELETE SEASON OBSERVATION';
+   remove.onclick=async()=>{
+    if(!confirm('Permanently delete this saved motion observation? This does not delete the original video.'))return;
+    const ownerAtClick=activeUserId;remove.disabled=true;
+    try{
+     await call('delete_season',{observationId:observation.id});
+     if(activeUserId===ownerAtClick)await loadSeason();
+    }catch(e){if(activeUserId===ownerAtClick)status.textContent=e.message||'Could not delete observation.';}
+    finally{remove.disabled=false;}
+   };
+   entry.append(remove);seasonContent.append(entry);
+  }
+  seasonPanel.classList.remove('hidden');
+ }catch(e){if(activeUserId===owner)status.textContent=e.message||'Season history unavailable.';}
+}
 const progressPanel=document.getElementById('motion-progress');
 const progressContent=document.getElementById('motion-progress-content');
 function clearProgress(){progressContent.replaceChildren();progressPanel.classList.add('hidden');}
@@ -75,6 +136,8 @@ const reviewActionStatus=document.getElementById('review-action-status');
 const readReviewButton=document.getElementById('read-review');
 const copyReviewButton=document.getElementById('copy-review');
 const saveReviewButton=document.getElementById('save-review');
+const saveSeasonButton=document.getElementById('save-season');
+const seasonConsent=document.getElementById('season-consent');
 const reviewStorageConsent=document.getElementById('review-storage-consent');
 let currentReview=null;
 let currentReviewData=null;
@@ -87,6 +150,7 @@ function clearReview(){
  stopReviewSpeech();
  currentReview=null;currentReviewData=null;currentReviewAssessmentId=null;
  reviewStorageConsent.checked=false;saveReviewButton.classList.add('hidden');
+ seasonConsent.checked=false;saveSeasonButton.classList.add('hidden');
  reviewContent.replaceChildren();
  coachReview.classList.add('hidden');reviewActionStatus.textContent='';
 }
@@ -111,6 +175,7 @@ function displayCoachReview(output,movementType,assessmentId=null){
    }))
   };
   saveReviewButton.classList.remove('hidden');
+  saveSeasonButton.classList.remove('hidden');
  }
  reviewParagraph(reviewContent,review.skill,'h3');
  reviewParagraph(reviewContent,review.evidenceSummary);
@@ -131,6 +196,23 @@ function displayCoachReview(output,movementType,assessmentId=null){
  reviewParagraph(reviewContent,review.disclaimer).className='disclaimer';
  coachReview.classList.remove('hidden');
 }
+saveSeasonButton.onclick=async()=>{
+ if(!currentReviewAssessmentId||!currentReviewData)return;
+ if(!seasonConsent.checked){
+  reviewActionStatus.textContent='Select the separate 41-week measurement storage consent first.';return;
+ }
+ const owner=activeUserId,id=currentReviewAssessmentId;
+ saveSeasonButton.disabled=true;
+ try{
+  const saved=await call('save_season',{assessmentId:id,review:currentReviewData,
+   consentToSeasonHistory:true,consentVersion:'motion-season-v1'});
+  if(activeUserId!==owner||currentReviewAssessmentId!==id)return;
+  reviewActionStatus.textContent=saved.alreadySaved?'Already saved to 41-week history.':
+   'Saved to private 41-week history. Coach sharing is off.';
+  await loadSeason();
+ }catch(e){if(activeUserId===owner)reviewActionStatus.textContent=e.message||'Could not save season history.';}
+ finally{saveSeasonButton.disabled=false;}
+};
 saveReviewButton.onclick=async()=>{
  if(!currentReviewAssessmentId||!currentReviewData)return;
  if(!reviewStorageConsent.checked){
@@ -197,7 +279,7 @@ function clearPrivatePlayback(){
  for(const video of history.querySelectorAll('video')){
   try{video.pause();video.removeAttribute('src');video.load();}catch(_){}
  }
- history.replaceChildren();clearProgress();
+ history.replaceChildren();clearProgress();clearSeason();
 }
 let pendingFinalization=null;
 // Store only a non-secret assessment ID. Signed upload tokens and credentials
@@ -351,7 +433,10 @@ async function loadHistory(){
   const data=await call('list');
   const saved=pilotEligible?await call('reviews'):{reviews:[]};
   const reviewById=new Map((saved.reviews||[]).map(r=>[r.assessment_id,r]));
-  if(activeUserId===requestedFor)displayRecentProgress(saved.reviews||[]);
+  if(activeUserId===requestedFor){
+   displayRecentProgress(saved.reviews||[]);
+   await loadSeason();
+  }
   if(!requestedFor || activeUserId!==requestedFor)return;
   if(!data.assessments?.length){history.textContent='No recordings saved yet.';return;}
   for(const record of data.assessments){
