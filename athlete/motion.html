@@ -8,7 +8,7 @@
 <label for="week">MW training week</label><p id="week-context" class="muted">Your current MW Velocity week is loaded from your athlete program when available.</p><select id="week"><option value="">Not assigned to a week</option></select>
 <label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
 <label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime" capture="environment">
-<div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and consent to this staging pilot. Secure upload sends my video to private MW Dynasty staging storage; optional pose analysis runs on this device. MediaPipe may send usage/performance metrics to Google, but not my video. Pose estimates are unvalidated and are not automatically shared with coaches. Recordings are hidden from playback after 14 days. Automatic deletion is not yet enabled; staging files may remain until secure maintenance runs.</label></div>
+<div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and consent to this staging pilot. Secure upload sends my video to private MW Dynasty staging storage; optional pose analysis runs on this device. MediaPipe may send usage/performance metrics to Google, but not my video. Pose estimates are unvalidated and are not automatically shared with coaches. Recordings are hidden from playback after 14 days. Private video removal is scheduled hourly after the 14-day limit; temporary storage failures are retried.</label></div>
 <button id="upload" disabled>UPLOAD SECURELY</button>
 <button id="retry-finalize" type="button" class="hidden" style="background:#a7d3b5;color:#09131d">RETRY SAVING UPLOADED VIDEO</button>
 <button id="discard-pending" type="button" class="hidden" style="background:#273648;color:white">DISCARD UNFINISHED VIDEO</button>
@@ -337,7 +337,7 @@ async function activate(){
   if(activeUserId!==uid)return;
   pilotEligible=eligibility.approved===true;
   weekSelect.disabled=false;weekSelect.value='';
-  weekContext.textContent='Training week not assigned. You can select a week manually until your MW Velocity start date is available.';
+  weekContext.textContent='Training week not assigned. Select a week manually until your MW Velocity season plan or training start date is available.';
   if(pilotEligible){
    try{
     const context=await call('season_context');
@@ -345,7 +345,7 @@ async function activate(){
     if(context.weekNumber){
      weekSelect.value=String(context.weekNumber);weekSelect.disabled=true;
      weekContext.textContent='MW Velocity Week '+context.weekNumber+
-      ' of 41 · automatically linked to your athlete training start date. Indoor and outdoor remain one progression.';
+      ' of 41 · linked to '+(context.weekSource==='active_season_plan'?'your active Season Intelligence plan':'your athlete training start date')+'. Indoor and outdoor remain one progression.';
     }
    }catch(_){if(activeUserId!==uid)return;}
   }
