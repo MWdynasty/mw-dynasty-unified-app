@@ -13,14 +13,14 @@ const FOUNDER_ID="73ef4c5f-41da-4108-8572-a80b6a83c990";
 const RELEASE_UNTIL="2026-11-16T23:59:59Z";
 const options={auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}};
 
-Deno.serve(async(req: Request)=>{
+Deno.serve(async(req)=>{
  const origin=req.headers.get("origin");
- const headers: Record<string,string>={"Content-Type":"application/json","Cache-Control":"no-store",
+ const headers={"Content-Type":"application/json","Cache-Control":"no-store",
   "Vary":"Origin","X-Content-Type-Options":"nosniff"};
  if(origin && ALLOWED_ORIGIN.test(origin))Object.assign(headers,{
   "Access-Control-Allow-Origin":origin,"Access-Control-Allow-Methods":"POST, OPTIONS",
   "Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info"});
- const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers});
+ const reply=(status,data)=>new Response(JSON.stringify(data),{status,headers});
  if(origin&&!ALLOWED_ORIGIN.test(origin))return reply(403,{error:"Origin not allowed"});
  if(req.method==="OPTIONS")return reply(200,{ok:true});
  if(req.method!=="POST")return reply(405,{error:"Method not allowed"});
@@ -56,7 +56,7 @@ Deno.serve(async(req: Request)=>{
   if(starts.length>1||(starts.length===1&&!starts[0]))
    return reply(409,{error:"Conflicting active season starts require correction"});
   const start=starts[0]||athlete.program_start_date||null;
-  const admin=createClient(STAGE_URL,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,options);
+  const admin=createClient(STAGE_URL,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),options);
   // Opaque internal address: no password copied, no email sent, no public signup.
   const email=FOUNDER_ID+"@motion-pilot.mwdynasty.com";
   const {error:createError}=await admin.auth.admin.createUser({email,email_confirm:true,

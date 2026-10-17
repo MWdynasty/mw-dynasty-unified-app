@@ -1,7 +1,6 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const {stripTypeScriptTypes}=require('node:module');
 (async()=>{
  const validation=await import('../supabase/functions/mw-motion-pilot/validation.mjs');
  const founder='73ef4c5f-41da-4108-8572-a80b6a83c990';
@@ -36,7 +35,7 @@ const {stripTypeScriptTypes}=require('node:module');
  const source=fs.readFileSync('supabase/functions/mw-motion-founder-access/index.ts','utf8')
   .replace(/import \{createClient\}[^\n]+\n/,'const createClient=__createClient;\n')
   .replace(/import \{ALLOWED_ORIGIN,adult\}[^\n]+\n/,'const {ALLOWED_ORIGIN,adult}=__validation;\n');
- vm.runInNewContext(stripTypeScriptTypes(source),{
+ vm.runInNewContext(source,{
   __validation:validation,__createClient:(url,key)=>url.includes('keqgun')?production:key==='server-secret'?admin:stagePublic,
   Deno:{env:{get:key=>key==='SUPABASE_URL'?(wrongProject?'https://production.invalid':'https://uuggbmccnyswiwkjgydo.supabase.co'):'server-secret'},serve:fn=>{handler=fn;}},
   Request,Response,Date,JSON,console
