@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.79.0";
 import {MAX_BYTES,MAX_PER_DAY,MIME_EXT,ALLOWED_ORIGIN,validId,adult,pathOwned,validPrepare} from "./validation.mjs";
 import {sanitizedReview,validateReview} from "./review-validation.mjs";
 import {canonicalWeek} from "./season-week.mjs";
+import {verifyIsoVideo,signedRangeReader} from "./media-validation.mjs";
 
 const STAGING_REF = "uuggbmccnyswiwkjgydo";
 const BUCKET = "motion-private";
@@ -170,9 +171,27 @@ Deno.serve(async (req: Request) => {
         await audit(record.id,"upload_validation_failed",{reason:"metadata_mismatch"});
         return bad(422,"Uploaded recording did not match expected file metadata",origin);
       }
+      // Metadata MIME and byte counts are insufficient: inspect the actual
+      // private object, ISO BMFF signature, video track and server-derived duration.
+      // Reject unsupported or uninspectable recordings without finalizing them.
+      const {data:validationUrl,error:validationUrlError}=await admin.storage
+        .from(BUCKET).createSignedUrl(intent.storage_path,60);
+      if(validationUrlError||!validationUrl?.signedUrl)
+        return bad(503,"Private recording verification unavailable",origin);
+      let verified;
+      try {
+        const reader=signedRangeReader({
+          url:validationUrl.signedUrl,bytes:actualBytes,
+          expectedOrigin:"https://"+STAGING_REF+".supabase.co"
+        });
+        verified=await verifyIsoVideo({bytes:actualBytes,mime:actualMime,readRange:reader});
+      } catch(e) {
+        await audit(record.id,"upload_validation_failed",{reason:"media_container_or_duration"});
+        return bad(422,"Recording format or 30-second duration could not be verified",origin);
+      }
       const {error:assetError} = await admin.from("motion_assets").upsert({
         assessment_id:record.id,storage_path:intent.storage_path,
-        mime_type:actualMime,bytes:actualBytes,duration_ms:null
+        mime_type:actualMime,bytes:actualBytes,duration_ms:verified.durationMs
       },{onConflict:"storage_path",ignoreDuplicates:true});
       if(assetError) return bad(503,"Could not save recording metadata",origin);
       const {data:updated,error:stateError} = await admin.from("motion_assessments")
@@ -182,8 +201,8 @@ Deno.serve(async (req: Request) => {
       if(stateError) return bad(503,"Could not finalize recording",origin);
       if(!updated) return bad(409,"Recording was deleted or changed before finalization",origin);
       await admin.from("motion_upload_intents").update({status:"finalized",finalized_at:new Date().toISOString()}).eq("id",intent.id);
-      await audit(record.id,"upload_finalized",{bytes:actualBytes,mime:actualMime,durationVerified:false});
-      return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:false,analysisAvailable:false},origin);
+      await audit(record.id,"upload_finalized",{bytes:actualBytes,mime:actualMime,durationVerified:true,method:verified.method});
+      return json(200,{assessmentId:record.id,status:"uploaded",durationVerified:true,durationMs:verified.durationMs,analysisAvailable:true},origin);
     }
     if(action==="list") {
       const {data,error} = await admin.from("motion_assessments")
