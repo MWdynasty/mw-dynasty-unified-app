@@ -23,7 +23,7 @@ const {stripTypeScriptTypes}=require('node:module');
     user_id,status:'active',adult_verified_at:'2026-10-17T00:00:00Z',
     consent_policy_version:'pilot-v1',expires_at:'2099-01-01T00:00:00Z'
   })),
-  motion_assessments:[],motion_upload_intents:[],motion_assets:[],motion_audit_events:[],motion_reviews:[],motion_season_observations:[],coach_assignments:[]
+  athlete_season_plans:[],athlete_season_plans:[],motion_assessments:[],motion_upload_intents:[],motion_assets:[],motion_audit_events:[],motion_reviews:[],motion_season_observations:[],coach_assignments:[]
  };
  const objects=new Map();
  let signCount=0,removeCount=0,playbackCount=0;
