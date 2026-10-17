@@ -169,11 +169,23 @@ Deno.serve(async (req: Request) => {
         .list(parts.slice(0,2).join("/"),{search:parts[2],limit:10});
       const object = objects?.find((o:{name:string})=>o.name===parts[2]);
       if(listError || !object) return bad(409,"Recording not yet uploaded",origin);
+      const rejectUploadedObject=async(reason:string)=>{
+        await audit(record.id,"upload_validation_failed",{reason});
+        const {error:removed}=await admin.storage.from(BUCKET).remove([intent.storage_path]);
+        if(removed){
+          console.error("Rejected Motion recording cleanup failed",removed.code);
+          return;
+        }
+        await admin.from("motion_upload_intents").update({status:"failed"})
+          .eq("id",intent.id).eq("owner_user_id",user.id);
+        await admin.from("motion_assessments").update({status:"deleted"})
+          .eq("id",record.id).eq("created_by",user.id).eq("status","draft");
+      };
       const actualBytes=Number(object.metadata?.size);
       const actualMime=String(object.metadata?.mimetype||"").toLowerCase();
       if(!Number.isFinite(actualBytes) || actualBytes<1 || actualBytes>MAX_BYTES ||
          actualBytes!==Number(intent.declared_bytes) || actualMime!==intent.declared_mime) {
-        await audit(record.id,"upload_validation_failed",{reason:"metadata_mismatch"});
+        await rejectUploadedObject("metadata_mismatch");
         return bad(422,"Uploaded recording did not match expected file metadata",origin);
       }
       // Metadata MIME and byte counts are insufficient: inspect the actual
@@ -191,7 +203,7 @@ Deno.serve(async (req: Request) => {
         });
         verified=await verifyIsoVideo({bytes:actualBytes,mime:actualMime,readRange:reader});
       } catch(e) {
-        await audit(record.id,"upload_validation_failed",{reason:"media_container_or_duration"});
+        await rejectUploadedObject("media_container_or_duration");
         return bad(422,"Recording format or 30-second duration could not be verified",origin);
       }
       const {error:assetError} = await admin.from("motion_assets").upsert({
