@@ -56,7 +56,26 @@ const {stripTypeScriptTypes}=require('node:module');
  const source=fs.readFileSync('supabase/functions/mw-motion-pilot/index.ts','utf8')
   .replace(/^import \{ createClient \} from "[^"]+";\n/,'const createClient=globalThis.__createClient;\n')
   .replace(/^import \{([^}]+)\} from "\.\/validation\.mjs";\n/m,'const {$1}=globalThis.__validation;\n');
- const stripped=stripTypeScriptTypes(source,{mode:'strip'});
+ const stripped=typeof stripTypeScriptTypes==='function'?
+  stripTypeScriptTypes(source,{mode:'strip'}):
+  source
+   .replace('function json(status: number, body: unknown, origin: string | null = null): Response {',
+    'function json(status, body, origin = null) {')
+   .replace('function bad(status: number, message: string, origin: string | null): Response {',
+    'function bad(status, message, origin) {')
+   .replace('function safeError(e: unknown): string {','function safeError(e) {')
+   .replace('const headers: Record<string,string> = {','const headers = {')
+   .replace('Deno.serve(async (req: Request) => {','Deno.serve(async (req) => {')
+   .replace('let input: Record<string,unknown>;','let input;')
+   .replace('const audit = async (assessmentId: string|null,event: string, details: Record<string,unknown>={}) => {',
+    'const audit = async (assessmentId,event,details={}) => {')
+   .replace('const own = async (id: unknown) => {','const own = async (id) => {')
+   .replace('const mime = input.mimeType as string;','const mime = input.mimeType;')
+   .replace('const bytes = input.bytes as number;','const bytes = input.bytes;')
+   .replace('const week = input.weekNumber as number | undefined;','const week = input.weekNumber;')
+   .replace('const assessmentId = assessment.id as string;','const assessmentId = assessment.id;')
+   .replace('MIME_EXT[mime as string]','MIME_EXT[mime]')
+   .replace('(o:{name:string})','(o)');
  const context={__createClient:()=>admin,__validation:validation,
   Deno:{env:{get:k=>k==='SUPABASE_URL'?'https://uuggbmccnyswiwkjgydo.supabase.co':
    k==='SUPABASE_SERVICE_ROLE_KEY'?'fake-server-only-secret':null},
