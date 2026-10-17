@@ -53,7 +53,7 @@ const {stripTypeScriptTypes}=require('node:module');
      const conflict=opts.onConflict||'id';
      let existing=db[table].find(row=>row[conflict]===payload[conflict]);
      if(existing){if(!opts.ignoreDuplicates)Object.assign(existing,payload);rows=[existing];}
-     else{existing={id:crypto.randomUUID(),...payload};db[table].push(existing);rows=[existing];}
+     else{existing={id:crypto.randomUUID(),created_at:new Date().toISOString(),...payload};db[table].push(existing);rows=[existing];}
     }else if(op==='update'){
      rows.forEach(row=>Object.assign(row,payload));
     }else if(op==='delete'){
