@@ -74,6 +74,9 @@ Deno.serve(async (req: Request) => {
     return athlete;
   };
   try {
+    if (action === "eligibility") {
+      return json(200,{approved:!!await pilotApproved(),adultPilotOnly:true},origin);
+    }
     if (action === "prepare") {
       const athlete=await pilotApproved();
       if(!athlete) return bad(403,"Adult staging pilot approval required",origin);
