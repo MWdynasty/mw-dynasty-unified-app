@@ -57,10 +57,23 @@ assert.ok(times.every((v,i)=>i===0||v>times[i-1]));
  assert.ok(result.preview);
  assert.ok(closed,'Model resources must close');
  assert.ok(events.includes('revoke'),'Object URL must be revoked');
+ const low=await local.run({file:{type:'video/mp4',size:1000},
+  movementType:'wickets',cameraView:'side',
+  detectorFactory:async()=>({detectForVideo(){return {landmarks:[landmarks.map(p=>({...p,visibility:.3}))]};},close(){}})});
+ assert.equal(low.analysis.status,'insufficient_evidence','Unclear landmarks must not produce measurements');
  const ctrl=new AbortController();ctrl.abort();
  await assert.rejects(local.run({file:{type:'video/mp4',size:1000},
   movementType:'wickets',cameraView:'side',signal:ctrl.signal,
   detectorFactory:async()=>detector}),/cancelled/);
+ const during=new AbortController();
+ let cancelledClosed=false;
+ const previousRevokes=events.filter(x=>x==='revoke').length;
+ await assert.rejects(local.run({file:{type:'video/mp4',size:1000},
+  movementType:'wickets',cameraView:'side',signal:during.signal,
+  onProgress:p=>{if(p.stage==='frames'&&p.done===1)during.abort();},
+  detectorFactory:async()=>({detectForVideo(){return {landmarks:[landmarks]};},close(){cancelledClosed=true;}})}),/cancelled/);
+ assert.ok(cancelledClosed,'Cancelled inference must release model resources');
+ assert.equal(events.filter(x=>x==='revoke').length,previousRevokes+1,'Cancelled inference must revoke the video URL');
  const html=fs.readFileSync('athlete/motion.html','utf8');
  assert.ok(html.includes('window.MWMotionLocalPose.run('));
  assert.ok(html.includes('mw-motion-pilot-staging-session'),'Pilot must have independent staging auth');
