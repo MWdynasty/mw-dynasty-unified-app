@@ -65,6 +65,14 @@ Deno.serve(async (req: Request) => {
       if (athleteError || !athlete || !adult(athlete.date_of_birth)) {
         return bad(403,"Adult athlete pilot access required",origin);
       }
+      const {data:approval,error:approvalError} = await admin.from("motion_pilot_approvals")
+        .select("status,expires_at,adult_verified_at,consent_policy_version")
+        .eq("user_id",user.id).maybeSingle();
+      if(approvalError || !approval || approval.status!=="active" ||
+         !approval.adult_verified_at || approval.consent_policy_version!=="pilot-v1" ||
+         new Date(approval.expires_at).getTime()<=Date.now()) {
+        return bad(403,"Adult staging pilot approval required",origin);
+      }
       const validationError = validPrepare(input);
       if (validationError) return bad(422,validationError,origin);
       const mime = input.mimeType as string;
