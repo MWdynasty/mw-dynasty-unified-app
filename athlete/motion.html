@@ -86,6 +86,12 @@ document.getElementById('pilot-signout').onclick=async()=>{
  await client.auth.signOut();
  showLogin();
 };
+// Immediately hide another athlete's history when staging identity changes.
+client.auth.onAuthStateChange((event,session)=>{
+ if(event==='SIGNED_OUT' || (activeUserId && session?.user?.id!==activeUserId)){
+  showLogin();
+ }
+});
 async function call(action,fields={}){
  const session=await client.auth.getSession();
  const token=session.data?.session?.access_token;
@@ -129,12 +135,15 @@ async function verifyVideo(file){
 async function loadHistory(){
  history.replaceChildren();
  try{
+  const requestedFor=activeUserId;
   const data=await call('list');
+  if(!requestedFor || activeUserId!==requestedFor)return;
   if(!data.assessments?.length){history.textContent='No recordings saved yet.';return;}
   for(const record of data.assessments){
    const item=document.createElement('div');item.className='panel';
    const heading=document.createElement('p');
-   heading.textContent=record.training_date+' — '+record.movement_type+' ('+record.status+')';
+   heading.textContent=(record.training_date||String(record.created_at||'').slice(0,10))+
+    ' — '+record.movement_type.replace(/_/g,' ')+' ('+record.status+')';
    item.append(heading);
    for(const asset of record.motion_assets||[]){
     const play=document.createElement('button');play.textContent='PLAY PRIVATE VIDEO';
