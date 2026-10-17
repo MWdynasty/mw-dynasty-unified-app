@@ -328,6 +328,21 @@ const {stripTypeScriptTypes}=require('node:module');
  assert.equal(removeCount,removalsBefore);
  assert.equal(objects.has(alien),true);
  assert.equal(db.motion_assessments.find(x=>x.id===badId).status,'deleted');
+ // Active Season Intelligence plan drives the same continuous week on the
+ // athlete and coach sides, regardless of legacy 13-week plan length.
+ db.athlete_season_plans.push({athlete_id:athlete1,plan_status:'active',
+  season_start_date:'2026-09-14',season_length_weeks:13});
+ r=await call('token-one','season_context');
+ assert.equal(r.status,200,JSON.stringify(r));
+ assert.equal(r.data.weekNumber,5);
+ assert.equal(r.data.weekSource,'active_season_plan');
+ assert.equal(r.data.continuousWeeks,41);
+ r=await call('token-one','prepare',valid);
+ assert.equal(r.status,422,'Client cannot override shared Season Intelligence week');
+ r=await call('token-one','prepare',{...valid,weekNumber:5});
+ assert.equal(r.status,200,JSON.stringify(r));
+ assert.equal(db.motion_assessments.find(x=>x.id===r.data.assessmentId).week_source,
+  'active_season_plan');
  // Revocation denies any new signed upload, finalize, or playback requests.
  db.motion_pilot_approvals[0].status='revoked';
  r=await call('token-one','season');
