@@ -310,12 +310,14 @@ const {stripTypeScriptTypes}=require('node:module');
  objects.set(badPath,{size:1235,mimetype:'video/mp4'});
  r=await call('token-one','finalize',{assessmentId:badId});
  assert.equal(r.status,422);
- assert.equal(db.motion_assessments.find(x=>x.id===badId).status,'draft');
+ assert.equal(db.motion_assessments.find(x=>x.id===badId).status,'deleted');
+ assert.equal(objects.has(badPath),false,'Rejected video bytes removed immediately');
+ assert.equal(db.motion_upload_intents.find(x=>x.assessment_id===badId).status,'failed');
  // A partially written asset must never be playable before finalization.
  const partialAssetId=crypto.randomUUID();
  db.motion_assets.push({id:partialAssetId,assessment_id:badId,storage_path:badPath});
  r=await call('token-one','playback',{assessmentId:badId,assetId:partialAssetId});
- assert.equal(r.status,404,'Draft recordings must not be playable');
+ assert.equal(r.status,404,'Rejected recordings must not be playable');
  // Corrupted metadata must not delete an unrelated athlete's storage object.
  const alien=u2+'/'+assessmentId+'/66666666-6666-4666-8666-666666666666.mp4';
  objects.set(alien,{size:50,mimetype:'video/mp4'});
