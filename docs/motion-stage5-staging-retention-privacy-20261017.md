@@ -30,6 +30,13 @@ Environment: **Phase 1 Staging** Supabase `uuggbmccnyswiwkjgydo`; GitHub branch 
 - The tests cover 15-day-old uploads, history exclusion, still-valid recordings and draft assets using the real Edge handler with synthetic database/storage mocks.
 - Deployed to **staging Edge v7**. Live signed playback on a real device is still unverified. The pilot UI now discloses that physical cleanup is not automated.
 
+## Stage 7 — Account-switching and media privacy (2026-10-17)
+
+- When a staging athlete signs out or changes accounts, the browser now **pauses every private video, clears its signed playback source, removes the player, clears the selected local video file, and cancels local pose processing**. Merely hiding a video element is insufficient to stop playback.
+- Late private playback responses cannot append a video to an account's old, detached history after a user switch. Late history responses are ignored when their request owner no longer matches the active staging account.
+- Crash recovery for interrupted uploads now stores **only assessment IDs** under per-athlete session-storage keys. A slow upload retains the identity of its original staging athlete, even if a different athlete signs in while the upload is still finishing. No signed upload tokens are persisted.
+- The Motion Intelligence automated suite now covers these account-isolation requirements, including simulated reload recovery. A live multi-account mobile browser test remains required.
+
 ## Live pilot acceptance test still required
 
 1. Confirm an existing staging athlete is **18 or older** and has explicitly consented. An authorized administrator must create a time-limited `motion_pilot_approvals` record; no self-approval or production account reuse.
