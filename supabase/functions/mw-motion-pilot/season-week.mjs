@@ -9,3 +9,21 @@ export function canonicalWeek(startDate, today=new Date()){
  if(delta<0||delta>=41*7)return null;
  return Math.floor(delta/7)+1;
 }
+
+export function motionSeasonAnchor(profile,activePlans=[],today=new Date()){
+ if(!Array.isArray(activePlans))return {weekNumber:null,weekSource:'unassigned',programStartDate:null};
+ if(activePlans.length){
+  const dates=[...new Set(activePlans.map(p=>p?.season_start_date).filter(Boolean))];
+  if(dates.length!==1 || activePlans.some(p=>!p?.season_start_date))
+   return {weekNumber:null,weekSource:'unassigned',programStartDate:null,
+    issue:'conflicting_active_season_plans'};
+  const start=dates[0];
+  const week=canonicalWeek(start,today);
+  return {weekNumber:week,weekSource:week===null?'unassigned':'active_season_plan',
+   programStartDate:start};
+ }
+ const start=profile?.program_start_date||null;
+ const week=canonicalWeek(start,today);
+ return {weekNumber:week,weekSource:week===null?'unassigned':'athlete_program_start',
+  programStartDate:start};
+}
