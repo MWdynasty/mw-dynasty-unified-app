@@ -112,3 +112,31 @@ export async function verifyIsoVideo({bytes,mime,readRange}){
   throw Error('Incomplete video container');
  return {durationMs:ms,verifiedContainer:true,brand,method:'iso_bmff_bounded_range_v1'};
 }
+
+export function signedRangeReader({url,bytes,fetchFn=fetch,expectedOrigin}){
+ const parsed=new URL(url);
+ if(parsed.origin!==expectedOrigin||!parsed.pathname.startsWith('/storage/v1/object/sign/motion-private/'))
+  throw Error('Unexpected private media endpoint');
+ return async(start,end)=>{
+  if(!Number.isInteger(start)||!Number.isInteger(end)||start<0||end<start||
+     end>=bytes||end-start+1>MAX_MOOV_BYTES)
+   throw Error('Invalid media read range');
+  const response=await fetchFn(url,{
+   method:'GET',headers:{Range:'bytes='+start+'-'+end},
+   signal:AbortSignal.timeout(10000),redirect:'follow'
+  });
+  if(response.status!==206){await response.body?.cancel();throw Error('Private storage does not support bounded media reads');}
+  const range=response.headers.get('content-range')||'';
+  if(range!==('bytes '+start+'-'+end+'/'+bytes)){
+   await response.body?.cancel();throw Error('Unexpected media response range');
+  }
+  const size=end-start+1;
+  const length=response.headers.get('content-length');
+  if(length!==null&&Number(length)!==size){
+   await response.body?.cancel();throw Error('Unexpected media response size');
+  }
+  const data=new Uint8Array(await response.arrayBuffer());
+  if(data.length!==size)throw Error('Incomplete media read');
+  return data;
+ };
+}
