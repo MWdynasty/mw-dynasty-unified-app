@@ -5,7 +5,7 @@
 - URL: https://motion-staging.mwdynasty.com/athlete/motion?motionPilot=1
 - Vercel project: `prj_3bEGMsV7nYjLX07b2EoeKvQS2zqe`, team `team_xt3ayo8JXP192rKs6wbvKzLz`.
 - The dedicated alias tracks `feature/motion-intelligence-foundation`. Its alias-only hosting exception removes the Vercel login wall; application authentication and adult approval still apply. Other aliases retain their existing hosting protection.
-- Supabase: **Phase 1 Staging**, `uuggbmccnyswiwkjgydo`. Motion API v16; founder access bridge v1. Nothing in this release writes to the production project.
+- Supabase: **Phase 1 Staging**, `uuggbmccnyswiwkjgydo`. Motion API v16; founder access bridge v2. Nothing in this release writes to the production project.
 - The existing founder_owner identity is the sole production identity accepted by the bridge. A verified owner session and explicit pilot consent provision a separate staging athlete/session, expiring November 16, 2026. No password is copied and no email is sent. Revoked approvals cannot be reactivated by signing in.
 - The bridge reads only the owner's adult eligibility and active season/program start through the owner's existing production permissions. Staging receives that limited training context. No production workouts, subscription records or coach assignments are copied.
 
@@ -32,7 +32,7 @@ Confirmed against deployed Auth, Storage, Postgres and Edge services:
 
 Afterward: zero disposable auth accounts, zero remaining private videos, zero remaining observations; both retention jobs remain enabled. The temporary release-check endpoint was retired with JWT verification enabled and an HTTP 410 handler. No recurring diagnostic was installed.
 
-All Motion unit/security checks and real MP4/MOV parser checks passed locally. A browser opened the deployed sign-in screen at the URL above. This does **not** establish physical iPhone camera/pose behavior or a successful founder sign-in.
+The complete existing `npm test` regression suite, all Motion security checks, and real MP4/MOV parser checks passed locally. A browser opened the deployed sign-in screen at the URL above. This does **not** establish physical iPhone camera/pose behavior or a successful founder sign-in.
 
 ## Native distribution status
 
@@ -40,7 +40,7 @@ The prepared `testflight-motion-intelligence` source targets version **3.0.17 (1
 
 At this checkpoint, an actual signed IPA, Apple upload/processing, tester assignment and installation are **not confirmed**. The build-service browser is at its sign-in screen. GitHub/Vercel success must not be described as TestFlight availability.
 
-PR #191 remains a controlled staging release; it is not merged into `main`. A public production release remains pending founder use and resolution of any resulting defects.
+PR #191 remains a controlled staging release; it is not merged into `main`. Both the target Xcode project and xcconfig now agree on build 16; the older project had overridden the prepared build number with build 14. A public production release remains pending founder use and resolution of any resulting defects.
 
 ## Rollback
 

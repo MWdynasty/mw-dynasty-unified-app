@@ -22,14 +22,16 @@ function headers(path){
 }
 for(const path of ['/athlete/motion','/athlete/motion.html','/coach/motion','/coach/motion.html']){
  const h=headers(path);
- assert.equal(h['Content-Security-Policy'].length,1,'CSP policies must not intersect and block Motion');
+ assert.equal(h['Content-Security-Policy'].filter(p=>p.includes('default-src')).length,1,'Only one full CSP can govern Motion resources');
+ assert.ok(h['Content-Security-Policy'].every(p=>p.includes("object-src 'none'")&&p.includes("frame-ancestors 'none'")));
+ h['Content-Security-Policy']=h['Content-Security-Policy'].filter(p=>p.includes('default-src'));
  assert.match(h['Content-Security-Policy'][0],/wasm-unsafe-eval/);
  assert.match(h['Content-Security-Policy'][0],/media-src[^;]+uuggbmccnyswiwkjgydo/);
  assert.match(h['Content-Security-Policy'][0],/script-src[^;]+@supabase/);
  assert.match(h['Permissions-Policy'][0],/camera=\(self\)/);
 }
 for(const path of ['/athlete','/athlete/','/coach/','/founder/','/api/mw']){
- const h=headers(path);assert.equal(h['Content-Security-Policy'].length,1);
+ const h=headers(path);h['Content-Security-Policy']=h['Content-Security-Policy'].filter(p=>p.includes('default-src'));assert.equal(h['Content-Security-Policy'].length,1);
  assert.ok(!h['Content-Security-Policy'][0].includes('wasm-unsafe-eval'));
  assert.match(h['Permissions-Policy'][0],/camera=\(\)/);
 }
