@@ -8,6 +8,9 @@ const {stripTypeScriptTypes}=require('node:module');
  const validation=await import('../supabase/functions/mw-motion-pilot/validation.mjs');
  const reviewValidation=await import('../supabase/functions/mw-motion-pilot/review-validation.mjs');
  const seasonWeek=await import('../supabase/functions/mw-motion-pilot/season-week.mjs');
+ const mediaValidation=await import('../supabase/functions/mw-motion-pilot/media-validation.mjs');
+ const {makeMedia}=require('./motion-media-fixture.js');
+ const media=makeMedia(12000);
  const u1='11111111-1111-4111-8111-111111111111';
  const u2='22222222-2222-4222-8222-222222222222';
  const athlete1='33333333-3333-4333-8333-333333333333';
@@ -96,9 +99,11 @@ const {stripTypeScriptTypes}=require('node:module');
      return {data,error:null};
     },
     createSignedUrl:async(path,seconds)=>{
-     playbackCount++;assert.equal(seconds,60);
+     assert.equal(seconds,60);
+     const row=db.motion_assessments.find(r=>r.id===path.split('/')[1]);
+     if(row?.status==='uploaded')playbackCount++;
      return objects.has(path)?
-      {data:{signedUrl:'https://private.invalid/signed?token=redacted'},error:null}:
+      {data:{signedUrl:'https://uuggbmccnyswiwkjgydo.supabase.co/storage/v1/object/sign/motion-private/'+path+'?token=redacted'},error:null}:
       {data:null,error:{message:'Not found'}};
     },
     remove:async(paths)=>{
@@ -113,7 +118,8 @@ const {stripTypeScriptTypes}=require('node:module');
   .replace(/^import \{ createClient \} from "[^"]+";\n/,'const createClient=globalThis.__createClient;\n')
   .replace(/^import \{([^}]+)\} from "\.\/validation\.mjs";\n/m,'const {$1}=globalThis.__validation;\n')
   .replace(/^import \{([^}]+)\} from "\.\/review-validation\.mjs";\n/m,'const {$1}=globalThis.__reviewValidation;\n')
-  .replace(/^import \{([^}]+)\} from "\.\/season-week\.mjs";\n/m,'const {$1}=globalThis.__seasonWeek;\n');
+  .replace(/^import \{([^}]+)\} from "\.\/season-week\.mjs";\n/m,'const {$1}=globalThis.__seasonWeek;\n')
+  .replace(/^import \{([^}]+)\} from "\.\/media-validation\.mjs";\n/m,'const {$1}=globalThis.__mediaValidation;\n');
  const stripped=typeof stripTypeScriptTypes==='function'?
   stripTypeScriptTypes(source,{mode:'strip'}):
   source.replace('function json(status: number, body: unknown, origin: string | null = null): Response {',
@@ -143,6 +149,18 @@ const {stripTypeScriptTypes}=require('node:module');
  let handler;
  vm.runInNewContext(stripped,{
   __createClient:()=>admin,__validation:validation,__reviewValidation:reviewValidation,__seasonWeek:seasonWeek,
+  __mediaValidation:{
+   verifyIsoVideo:mediaValidation.verifyIsoVideo,
+   signedRangeReader:args=>mediaValidation.signedRangeReader({...args,fetchFn:async(url,opts)=>{
+    assert.ok(url.startsWith('https://uuggbmccnyswiwkjgydo.supabase.co/'));
+    const match=/bytes=(\\d+)-(\\d+)/.exec(opts.headers.Range);
+    const start=Number(match[1]),end=Number(match[2]);
+    return new Response(media.subarray(start,end+1),{
+     status:206,headers:{'Content-Range':'bytes '+start+'-'+end+'/'+media.length,
+      'Content-Length':String(end-start+1)}
+    });
+   }})
+  },
   Deno:{env:{get:k=>k==='SUPABASE_URL'?
    'https://uuggbmccnyswiwkjgydo.supabase.co':
    k==='SUPABASE_SERVICE_ROLE_KEY'?'synthetic-secret':null},
@@ -159,7 +177,7 @@ const {stripTypeScriptTypes}=require('node:module');
   return {status:response.status,data:await response.json()};
  }
  const valid={
-  movementType:'wickets',cameraView:'side',mimeType:'video/mp4',bytes:1234,
+  movementType:'wickets',cameraView:'side',mimeType:'video/mp4',bytes:media.length,
   consentAccepted:true,consentVersion:'pilot-v1',weekNumber:8
  };
  let r=await call('token-one','prepare',valid);
@@ -173,10 +191,12 @@ const {stripTypeScriptTypes}=require('node:module');
  assert.equal(r.status,404,'Cross-user finalization denied');
  r=await call('token-one','finalize',{assessmentId});
  assert.equal(r.status,409,'Cannot finalize a missing video');
- objects.set(path,{size:1234,mimetype:'video/mp4'});
+ objects.set(path,{size:media.length,mimetype:'video/mp4'});
  r=await call('token-one','finalize',{assessmentId});
  assert.equal(r.status,200,JSON.stringify(r));
  assert.equal(r.data.status,'uploaded');
+ assert.equal(r.data.durationVerified,true);
+ assert.equal(r.data.durationMs,12000);
  assert.equal(db.motion_assessments[0].status,'uploaded');
  assert.equal(db.motion_upload_intents[0].status,'finalized');
  assert.equal(db.motion_assets.length,1);
