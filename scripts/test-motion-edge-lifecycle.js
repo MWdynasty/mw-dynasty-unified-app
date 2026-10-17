@@ -19,7 +19,7 @@ const {stripTypeScriptTypes}=require('node:module');
     user_id,status:'active',adult_verified_at:'2026-10-17T00:00:00Z',
     consent_policy_version:'pilot-v1',expires_at:'2099-01-01T00:00:00Z'
   })),
-  motion_assessments:[],motion_upload_intents:[],motion_assets:[],motion_audit_events:[],motion_reviews:[]
+  motion_assessments:[],motion_upload_intents:[],motion_assets:[],motion_audit_events:[],motion_reviews:[],motion_season_observations:[],coach_assignments:[]
  };
  const objects=new Map();
  let signCount=0,removeCount=0,playbackCount=0;
@@ -34,6 +34,8 @@ const {stripTypeScriptTypes}=require('node:module');
    eq(k,v){filters.push(row=>row[k]===v);return query;},
    neq(k,v){filters.push(row=>row[k]!==v);return query;},
    gte(k,v){filters.push(row=>row[k]>=v);return query;},
+   gt(k,v){filters.push(row=>row[k]>v);return query;},
+   in(k,values){filters.push(row=>values.includes(row[k]));return query;},
    lte(k,v){filters.push(row=>row[k]<=v);return query;},
    order(k,o){order={key:k,ascending:o?.ascending===true};return query;},
    limit(n){limit=n;return query;},
@@ -130,7 +132,11 @@ const {stripTypeScriptTypes}=require('node:module');
    .replace('MIME_EXT[mime as string]','MIME_EXT[mime]')
    .replace('(o:{name:string})','(o)')
    .replace('(r:{id:string})','(r)')
-   .replace('(r:{assessment_id:string})','(r)');
+   .replace('(r:{assessment_id:string})','(r)')
+   .replace('(a:{athlete_id:string})','(a)')
+   .replace('(a:{date_of_birth:string})','(a)')
+   .replace('(a:{id:string})','(a)')
+   .replace('(r:{athlete_id:string})','(r)');
  let handler;
  vm.runInNewContext(stripped,{
   __createClient:()=>admin,__validation:validation,__reviewValidation:reviewValidation,
@@ -151,7 +157,7 @@ const {stripTypeScriptTypes}=require('node:module');
  }
  const valid={
   movementType:'wickets',cameraView:'side',mimeType:'video/mp4',bytes:1234,
-  consentAccepted:true,consentVersion:'pilot-v1'
+  consentAccepted:true,consentVersion:'pilot-v1',weekNumber:8
  };
  let r=await call('token-one','prepare',valid);
  assert.equal(r.status,200,JSON.stringify(r));
@@ -200,6 +206,43 @@ const {stripTypeScriptTypes}=require('node:module');
  r=await call('token-one','save_review',{assessmentId,review,consentToStoreMeasurements:true,consentVersion:'motion-review-v1'});
  assert.equal(r.status,200);
  assert.equal(db.motion_reviews.length,1,'Review saves must be idempotent');
+ // Separate 330-day season consent, opt-in coach sharing, owner revocation.
+ r=await call('token-one','save_season',{assessmentId,review});
+ assert.equal(r.status,422,'Long-term observations need separate explicit consent');
+ r=await call('token-two','save_season',{assessmentId,review,consentToSeasonHistory:true,consentVersion:'motion-season-v1'});
+ assert.equal(r.status,404,'Another athlete cannot save a season observation');
+ r=await call('token-one','save_season',{assessmentId,review,consentToSeasonHistory:true,consentVersion:'motion-season-v1'});
+ assert.equal(r.status,200,JSON.stringify(r));
+ assert.equal(db.motion_season_observations.length,1);
+ assert.equal(db.motion_season_observations[0].week_number,8);
+ assert.equal(db.motion_season_observations[0].share_with_assigned_coach,false);
+ const observationId=db.motion_season_observations[0].id;
+ r=await call('token-one','save_season',{assessmentId,review,consentToSeasonHistory:true,consentVersion:'motion-season-v1'});
+ assert.equal(r.data.alreadySaved,true);
+ assert.equal(db.motion_season_observations.length,1);
+ r=await call('token-one','season');
+ assert.equal(r.data.observations.length,1);
+ r=await call('token-two','season');
+ assert.equal(r.data.observations.length,0);
+ r=await call('token-two','coach_season');
+ assert.equal(r.data.observations.length,0);
+ db.coach_assignments.push({athlete_id:athlete1,coach_user_id:u2,status:'active'});
+ r=await call('token-two','coach_season');
+ assert.equal(r.data.observations.length,0,'Coach must not see unshared observation');
+ r=await call('token-one','share_season',{observationId,share:true});
+ assert.equal(r.status,200);
+ r=await call('token-two','coach_season');
+ assert.equal(r.data.observations.length,1,'Active assigned coach sees consented observation');
+ db.coach_assignments[0].status='ended';
+ r=await call('token-two','coach_season');
+ assert.equal(r.data.observations.length,0,'Ended assignment must revoke coach access');
+ db.coach_assignments[0].status='active';
+ r=await call('token-one','share_season',{observationId,share:false});
+ assert.equal(r.status,200);
+ r=await call('token-two','coach_season');
+ assert.equal(r.data.observations.length,0,'Sharing revocation must take effect');
+ r=await call('token-two','share_season',{observationId,share:true});
+ assert.equal(r.status,404,'Another user cannot change sharing');
  r=await call('token-two','playback',{assessmentId,assetId});
  assert.equal(r.status,404);
  assert.equal(playbackCount,1);
@@ -219,9 +262,17 @@ const {stripTypeScriptTypes}=require('node:module');
  db.motion_assessments[0].created_at=originalCreatedAt;
  r=await call('token-one','playback',{assessmentId,assetId});
  assert.equal(r.status,200,'Unexpired completed recording still playable');
+ // Long-term opt-in observations are independent from the 14-day video lifecycle.
  r=await call('token-one','delete',{assessmentId});
  assert.equal(r.status,200,JSON.stringify(r));
  assert.equal(db.motion_assessments[0].status,'deleted');
+ r=await call('token-one','season');
+ assert.equal(r.data.observations.length,1,'Consented season observation survives video deletion');
+ r=await call('token-one','delete_season',{observationId});
+ assert.equal(r.status,200);
+ assert.equal(db.motion_season_observations.length,0);
+ r=await call('token-one','season');
+ assert.equal(r.data.observations.length,0);
  r=await call('token-one','reviews');
  assert.equal(r.data.reviews.length,0,'Deleted recording reviews must be hidden');
  assert.equal(objects.has(path),false);
