@@ -65,11 +65,13 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             pulse.repeatCount = .infinity
             launchIcon.layer.add(pulse, forKey: "mwPulse")
         }
-        transactionUpdatesTask = Task { @MainActor [weak self] in
-            for await result in Transaction.updates {
-                guard !Task.isCancelled else { break }
-                guard case .verified(let transaction) = result else { continue }
-                await self?.deliverPendingTransaction(transaction)
+        if !isMotionPilotBuild {
+            transactionUpdatesTask = Task { @MainActor [weak self] in
+                for await result in Transaction.updates {
+                    guard !Task.isCancelled else { break }
+                    guard case .verified(let transaction) = result else { continue }
+                    await self?.deliverPendingTransaction(transaction)
+                }
             }
         }
         loadMWDynasty()
@@ -250,10 +252,12 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         launchIcon.isHidden = true
         launchIcon.layer.removeAnimation(forKey: "mwPulse")
-        Task { @MainActor [weak self] in
-            for await result in Transaction.unfinished {
-                guard case .verified(let transaction) = result else { continue }
-                await self?.deliverPendingTransaction(transaction)
+        if !isMotionPilotBuild {
+            Task { @MainActor [weak self] in
+                for await result in Transaction.unfinished {
+                    guard case .verified(let transaction) = result else { continue }
+                    await self?.deliverPendingTransaction(transaction)
+                }
             }
         }
     }
