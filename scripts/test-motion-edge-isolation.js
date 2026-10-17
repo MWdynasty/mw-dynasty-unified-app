@@ -33,6 +33,7 @@ const {stripTypeScriptTypes}=require('node:module');
   const q={
    select(){return q;},eq(k,v){filters.push(row=>row[k]===v);return q;},
    neq(k,v){filters.push(row=>row[k]!==v);return q;},
+   gte(k,v){filters.push(row=>row[k]>=v);return q;},
    order(){return q;},limit(n){limit=n;return q;},
    maybeSingle(){return Promise.resolve({data:db[table].filter(r=>filters.every(f=>f(r)))[0]||null,error:null});},
    single(){return q.maybeSingle();},
