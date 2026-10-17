@@ -209,6 +209,92 @@ Deno.serve(async (req: Request) => {
       if(reviewError)return bad(503,"Review history unavailable",origin);
       return json(200,{reviews:(reviews||[]).filter((r:{assessment_id:string})=>ids.has(r.assessment_id))},origin);
     }
+    // 41-week progression keeps only opt-in angle summaries, not video frames.
+    if(action==="save_season") {
+      const athlete=await pilotApproved();
+      if(!athlete)return bad(403,"Adult staging pilot approval required",origin);
+      if(input.consentToSeasonHistory!==true || input.consentVersion!=="motion-season-v1")
+        return bad(422,"Separate season history consent required",origin);
+      const record=await own(input.assessmentId);
+      if(!record || record.status!=="uploaded" || !withinRetention(record.created_at))
+        return bad(404,"Recording not found",origin);
+      const {data:meta,error:metaError}=await admin.from("motion_assessments")
+        .select("movement_type,week_number").eq("id",record.id).eq("created_by",user.id).maybeSingle();
+      if(metaError||!meta||!Number.isInteger(meta.week_number)||meta.week_number<1||meta.week_number>41)
+        return bad(422,"Assign a valid MW training week before saving season history",origin);
+      const validation=validateReview(input.review);
+      if(validation)return bad(422,validation,origin);
+      const cleaned=sanitizedReview(input.review);
+      // Never let a repeat save silently extend the consent-based expiry.
+      const {data:existing,error:existingError}=await admin.from("motion_season_observations")
+        .select("id").eq("assessment_id",record.id).eq("owner_user_id",user.id).maybeSingle();
+      if(existingError)return bad(503,"Season history unavailable",origin);
+      if(existing)return json(200,{saved:true,alreadySaved:true,assessmentId:record.id},origin);
+      const {error:saveError}=await admin.from("motion_season_observations").insert({
+        assessment_id:record.id,athlete_id:athlete.id,owner_user_id:user.id,
+        movement_type:meta.movement_type,week_number:meta.week_number,
+        ...cleaned,consent_version:"motion-season-v1",
+        share_with_assigned_coach:false
+      });
+      if(saveError)return bad(503,"Season observation could not be saved",origin);
+      await audit(record.id,"season_observation_saved",{week:meta.week_number,shared:false});
+      return json(200,{saved:true,assessmentId:record.id,retentionDays:330,coachShared:false},origin);
+    }
+    if(action==="season") {
+      if(!await pilotApproved())return bad(403,"Adult staging pilot approval required",origin);
+      const {data,error}=await admin.from("motion_season_observations")
+        .select("id,assessment_id,movement_type,week_number,metrics,provenance,observed_at,created_at,expires_at,share_with_assigned_coach")
+        .eq("owner_user_id",user.id).gt("expires_at",new Date().toISOString())
+        .order("created_at",{ascending:false}).limit(250);
+      if(error)return bad(503,"Season history unavailable",origin);
+      return json(200,{observations:data||[],experimental:true},origin);
+    }
+    if(action==="share_season") {
+      if(!await pilotApproved())return bad(403,"Adult staging pilot approval required",origin);
+      if(!validId(input.observationId)||typeof input.share!=="boolean")
+        return bad(422,"Invalid sharing request",origin);
+      const {data:record,error:readError}=await admin.from("motion_season_observations")
+        .select("id,assessment_id").eq("id",input.observationId)
+        .eq("owner_user_id",user.id).gt("expires_at",new Date().toISOString()).maybeSingle();
+      if(readError||!record)return bad(404,"Observation not found",origin);
+      const {error}=await admin.from("motion_season_observations")
+        .update({share_with_assigned_coach:input.share,updated_at:new Date().toISOString()})
+        .eq("id",record.id).eq("owner_user_id",user.id);
+      if(error)return bad(503,"Sharing change could not be saved",origin);
+      await audit(record.assessment_id,"season_sharing_changed",{shared:input.share});
+      return json(200,{updated:true,shared:input.share},origin);
+    }
+    if(action==="delete_season") {
+      if(!await pilotApproved())return bad(403,"Adult staging pilot approval required",origin);
+      if(!validId(input.observationId))return bad(422,"Invalid observation",origin);
+      const {data:record,error:readError}=await admin.from("motion_season_observations")
+        .select("id,assessment_id").eq("id",input.observationId)
+        .eq("owner_user_id",user.id).maybeSingle();
+      if(readError||!record)return bad(404,"Observation not found",origin);
+      const {error}=await admin.from("motion_season_observations")
+        .delete().eq("id",record.id).eq("owner_user_id",user.id);
+      if(error)return bad(503,"Could not delete season observation",origin);
+      await audit(record.assessment_id,"season_observation_deleted");
+      return json(200,{deleted:true},origin);
+    }
+    if(action==="coach_season") {
+      // Assignment must be active. Sharing is per-observation and off by default.
+      const {data:assignments,error:assignmentError}=await admin.from("coach_assignments")
+        .select("athlete_id").eq("coach_user_id",user.id).eq("status","active").limit(100);
+      if(assignmentError)return bad(503,"Coach assignments unavailable",origin);
+      const athleteIds=(assignments||[]).map((a:{athlete_id:string})=>a.athlete_id);
+      if(!athleteIds.length)return json(200,{observations:[]},origin);
+      const {data:records,error:recordError}=await admin.from("motion_season_observations")
+        .select("id,athlete_id,movement_type,week_number,metrics,provenance,observed_at,created_at")
+        .in("athlete_id",athleteIds).eq("share_with_assigned_coach",true)
+        .gt("expires_at",new Date().toISOString()).order("created_at",{ascending:false}).limit(250);
+      if(recordError)return bad(503,"Shared observations unavailable",origin);
+      const {data:adults,error:adultError}=await admin.from("athletes")
+        .select("id,date_of_birth").in("id",athleteIds);
+      if(adultError)return bad(503,"Athlete eligibility unavailable",origin);
+      const adultIds=new Set((adults||[]).filter((a:{date_of_birth:string})=>adult(a.date_of_birth)).map((a:{id:string})=>a.id));
+      return json(200,{observations:(records||[]).filter((r:{athlete_id:string})=>adultIds.has(r.athlete_id)),experimental:true},origin);
+    }
     if(action==="playback") {
       if(!await pilotApproved()) return bad(403,"Adult staging pilot approval required",origin);
       const record=await own(input.assessmentId);
