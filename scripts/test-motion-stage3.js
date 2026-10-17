@@ -35,7 +35,7 @@ const vm=require('node:vm');
  assert.ok(html.includes('uploadToSignedUrl('));
  assert.ok(html.includes('retry-finalize'),'Interrupted finalization must be recoverable');
  assert.ok(html.includes('discard-pending'),'Unfinished uploads must be safely discardable');
- assert.ok(html.includes('pendingFinalization={assessmentId:prepared.assessmentId,userId:activeUserId}'),'Pending upload must be bound to the authenticated account');
+ assert.ok(html.includes('savePending({assessmentId:prepared.assessmentId,userId:activeUserId})'),'Pending upload must be bound to the authenticated account');
  assert.ok(html.includes("await call('delete',{assessmentId:prepared.assessmentId})"),'Failed uploads must be cleaned up');
  assert.ok(html.includes("await call('finalize',{assessmentId:pending.assessmentId})"),'Retry must finalize existing upload rather than duplicating it');
  assert.ok(html.includes('pilot-login-status'),'Sign-in errors must be visible outside the hidden recording panel');
