@@ -10,7 +10,7 @@
 'use strict';
 const status=document.getElementById('status'),login=document.getElementById('login');
 const dashboard=document.getElementById('dashboard'),reports=document.getElementById('reports');
-const pilot=/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname)&&new URLSearchParams(location.search).get('motionPilot')==='1';
+const pilot=(location.hostname==='motion-staging.mwdynasty.com'||/^mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i.test(location.hostname))&&new URLSearchParams(location.search).get('motionPilot')==='1';
 if(!pilot){status.textContent='Coach Motion Intelligence is only available in the authorized staging preview.';return;}
 if(!window.supabase){status.textContent='Staging sign-in is temporarily unavailable.';return;}
 const client=window.supabase.createClient('https://uuggbmccnyswiwkjgydo.supabase.co','sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw',{

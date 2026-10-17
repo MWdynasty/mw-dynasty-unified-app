@@ -22,6 +22,10 @@ for(const host of ['mwdynasty.com','app.mwdynasty.com','founder.mwdynasty.com',
  assert.equal(result.MW_MOTION_PILOT,false,host+' must never switch to staging');
  assert.equal(result.MW_SUPABASE_URL,production,host+' must retain production backend');
 }
+for(const h of [valid,'motion-staging.mwdynasty.com']){
+ assert.equal(preview(h,'?motionPilot=1').MW_MOTION_PILOT,true);
+ assert.equal(preview(h,'').MW_MOTION_PILOT,false);
+}
 const allowed=preview(valid,'?motionPilot=1');
 assert.equal(allowed.MW_MOTION_PILOT,true);
 assert.equal(allowed.MW_SUPABASE_URL,staging);

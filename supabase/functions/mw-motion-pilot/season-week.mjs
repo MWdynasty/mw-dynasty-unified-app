@@ -27,3 +27,10 @@ export function motionSeasonAnchor(profile,activePlans=[],today=new Date()){
  return {weekNumber:week,weekSource:week===null?'unassigned':'athlete_program_start',
   programStartDate:start};
 }
+
+export function motionProgramState(context,today=new Date()){
+ if(!context?.programStartDate)return 'unassigned';
+ if(context.weekNumber!==null)return 'active';
+ const date=today.toISOString().slice(0,10);
+ return context.programStartDate>date?'scheduled':'complete';
+}

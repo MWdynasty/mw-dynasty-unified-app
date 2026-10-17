@@ -80,7 +80,10 @@
     }
   ],
   "rewrites": [
-    {"source":"/api/coach/custom-program","destination":"/api/mw?route=coach/custom-program"},
+    {
+      "source": "/api/coach/custom-program",
+      "destination": "/api/mw?route=coach/custom-program"
+    },
     {
       "source": "/api/ai-sharing",
       "destination": "/api/mw?route=ai-sharing"
@@ -268,19 +271,28 @@
     {
       "source": "/athlete",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/athlete/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/coach/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0, must-revalidate" },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        },
         {
           "key": "Pragma",
           "value": "no-cache"
@@ -320,16 +332,8 @@
           "value": "strict-origin-when-cross-origin"
         },
         {
-          "key": "Permissions-Policy",
-          "value": "camera=(), geolocation=(self), microphone=(self)"
-        },
-        {
           "key": "X-Frame-Options",
           "value": "DENY"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co; media-src 'self' data: blob:; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co; object-src 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
         },
         {
           "key": "Strict-Transport-Security",
@@ -342,6 +346,71 @@
         {
           "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin-allow-popups"
+        }
+      ]
+    },
+    {
+      "source": "/((?!athlete/motion(?:\\.html)?/?$|coach/motion(?:\\.html)?/?$).*)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), geolocation=(self), microphone=(self)"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co; media-src 'self' data: blob:; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co; object-src 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+        }
+      ]
+    },
+    {
+      "source": "/athlete/motion.html",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/ https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/; connect-src 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/ https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/; media-src 'self' blob: https://uuggbmccnyswiwkjgydo.supabase.co; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/coach/motion.html",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/ https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/; connect-src 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/ https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/; media-src 'self' blob: https://uuggbmccnyswiwkjgydo.supabase.co; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/athlete/motion",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/ https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/; connect-src 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/ https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/; media-src 'self' blob: https://uuggbmccnyswiwkjgydo.supabase.co; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/coach/motion",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/ https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/; connect-src 'self' https://keqgunlfwhjgcsurynef.supabase.co https://uuggbmccnyswiwkjgydo.supabase.co https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/ https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/; media-src 'self' blob: https://uuggbmccnyswiwkjgydo.supabase.co; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=()"
         }
       ]
     }

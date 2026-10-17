@@ -2,6 +2,10 @@ name: Motion Intelligence Foundation Checks
 on:
   pull_request:
     paths:
+      - 'vercel.json'
+      - 'scripts/test-motion-founder-access.js'
+      - 'scripts/test-motion-release-access.js'
+      - 'supabase/functions/mw-motion-founder-access/**'
       - 'lib/mw-motion-intelligence.js'
       - 'lib/mw-motion-upload.js'
       - 'lib/mw-motion-biomechanics.js'
@@ -62,3 +66,4 @@ jobs:
       - run: npm run test:motion:real
       - run: node --check supabase/functions/mw-motion-pilot/index.ts
       - run: node --check supabase/functions/mw-motion-maintenance/index.ts
+      - run: node --check supabase/functions/mw-motion-founder-access/index.ts
