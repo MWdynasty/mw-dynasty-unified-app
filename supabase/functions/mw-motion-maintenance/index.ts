@@ -8,21 +8,20 @@ function reply(status:number,body:unknown){
   "Content-Type":"application/json","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"
  }});
 }
-function serviceAuthorized(header:string|null,secret:string){
- const expected="Bearer "+secret;
- if(!secret || !header || header.length!==expected.length)return false;
- let mismatch=0;
- for(let i=0;i<expected.length;i++)mismatch|=header.charCodeAt(i)^expected.charCodeAt(i);
- return mismatch===0;
-}
 Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return reply(405,{error:"Method not allowed"});
  const url=Deno.env.get("SUPABASE_URL")||"";
  const secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
  if(url!==STAGING_URL||!secret)return reply(503,{error:"Staging maintenance unavailable"});
- // Only a server-side scheduler with the service key may invoke this.
- // No browser origin, publishable key, or athlete JWT grants maintenance rights.
- if(!serviceAuthorized(req.headers.get("authorization"),secret))
+ // A separate 256-bit Vault token authenticates the staging scheduler.
+ // Never transmit the Supabase service-role key in cron, HTTP, or client code.
+ const token=req.headers.get("x-mw-maintenance-key")||"";
+ if(!/^[a-f0-9]{64}$/.test(token))
+  return reply(403,{error:"Maintenance access denied"});
+ const admin=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
+ const {data:authorized,error:authorizationError}=await admin
+  .rpc("mw_motion_staging_cleanup_authorized",{candidate:token});
+ if(authorizationError||authorized!==true)
   return reply(403,{error:"Maintenance access denied"});
  if(Number(req.headers.get("content-length")||0)>4096)
   return reply(413,{error:"Request too large"});
@@ -37,7 +36,6 @@ Deno.serve(async(req:Request)=>{
  const now=Date.now();
  const cutoff=new Date(now-RETENTION_DAYS*86400000).toISOString();
  const expiredCutoff=new Date(now-TOKEN_GRACE_MS).toISOString();
- const admin=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
  const candidates=new Map<string,any>();
  const take=(records:any[])=>{
   for(const record of records||[]){
