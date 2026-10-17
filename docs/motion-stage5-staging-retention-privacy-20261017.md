@@ -1,3 +1,12 @@
+## Stage 11 — Server-verified recording container and duration
+
+- Staging Edge `mw-motion-pilot` v14 now inspects the **actual uploaded private MP4/MOV bytes** before changing an assessment to `uploaded`. Bounded HTTP Range reads require the exact signed Supabase Storage endpoint, exact `Content-Range`, a recognized ISO BMFF/QuickTime `ftyp`, `mdat`, `moov`, a `vide` track, and nonzero movie/video durations no longer than 30 seconds. The signed upload's declared MIME/size alone are not accepted as verification.
+- The new `media-validation.mjs` rejects missing/corrupt metadata, unsupported formats (WebM uploads now disabled), excessively large movie metadata, and overlong videos. It never processes arbitrary third-party URLs. The Edge function stores `motion_assets.duration_ms` only after verification and reports verified duration to the client.
+- Invalid uploads are rejected and their private objects are immediately removed when Storage deletion succeeds; the assessment and intent are marked deleted/failed. Storage failures remain eligible for the maintenance retry process.
+- Added `test-motion-media-validation.js` (malformed files, overlong durations, audio-only containers, bounded signed range) and `test-motion-real-video-container.js` (actual ffmpeg-encoded MP4/MOV files). Real encoded media checks run in the Motion CI workflow with ffmpeg installed; general `test:motion` remains lightweight for other workflows.
+- **Scope of verification:** This verifies container structure, declared video track and duration metadata, **not full frame decoding, anti-tamper authenticity, video safety screening or biomechanical accuracy**. The real-device end-to-end path and live signed Storage Range support have not been verified with an authorized recording. It is incorrect to call this production ready yet.
+- **Remaining hard blocker:** automatic physical 14-day deletion requires a staging service-role credential in Vault; no such secret has been provisioned. The Cron remains guarded and no-ops rather than leaking or bypassing credentials. Production unchanged.
+
 ## Stage 10 — Server-owned unified 41-week indexing
 
 - Added `season_context` to the staging Motion Edge function. When an adult athlete has an authoritative `athletes.program_start_date`, the server derives the current week 1–41 from that date, with no indoor/outdoor reset.
