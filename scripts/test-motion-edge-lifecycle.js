@@ -19,7 +19,7 @@ const {stripTypeScriptTypes}=require('node:module');
     user_id,status:'active',adult_verified_at:'2026-10-17T00:00:00Z',
     consent_policy_version:'pilot-v1',expires_at:'2099-01-01T00:00:00Z'
   })),
-  motion_assessments:[],motion_upload_intents:[],motion_assets:[],motion_audit_events:[]
+  motion_assessments:[],motion_upload_intents:[],motion_assets:[],motion_audit_events:[],motion_reviews:[]
  };
  const objects=new Map();
  let signCount=0,removeCount=0,playbackCount=0;
@@ -178,6 +178,28 @@ const {stripTypeScriptTypes}=require('node:module');
  r=await call('token-one','playback',{assessmentId,assetId});
  assert.equal(r.status,200);
  assert.equal(playbackCount,1);
+ const review={sampledFrames:12,poseFrames:10,metrics:[
+  {name:'knee_angle_2d',samples:8,medianDegrees:92.3,earlyDegrees:90,lateDegrees:95}
+ ]};
+ r=await call('token-one','save_review',{assessmentId,review});
+ assert.equal(r.status,422,'Measurement persistence must require separate consent');
+ r=await call('token-two','save_review',{assessmentId,review,consentToStoreMeasurements:true,consentVersion:'motion-review-v1'});
+ assert.equal(r.status,404,'Other athletes cannot store measurements on this recording');
+ r=await call('token-one','save_review',{assessmentId,review:{...review,metrics:[{...review.metrics[0],medianDegrees:999}]},consentToStoreMeasurements:true,consentVersion:'motion-review-v1'});
+ assert.equal(r.status,422,'Impossible angles must be rejected');
+ r=await call('token-one','save_review',{assessmentId,review,consentToStoreMeasurements:true,consentVersion:'motion-review-v1'});
+ assert.equal(r.status,200,JSON.stringify(r));
+ assert.equal(db.motion_reviews.length,1);
+ assert.equal(db.motion_reviews[0].provenance,'unverified_client_2d');
+ r=await call('token-one','reviews');
+ assert.equal(r.status,200);
+ assert.equal(r.data.reviews.length,1);
+ r=await call('token-two','reviews');
+ assert.equal(r.status,200);
+ assert.equal(r.data.reviews.length,0);
+ r=await call('token-one','save_review',{assessmentId,review,consentToStoreMeasurements:true,consentVersion:'motion-review-v1'});
+ assert.equal(r.status,200);
+ assert.equal(db.motion_reviews.length,1,'Review saves must be idempotent');
  r=await call('token-two','playback',{assessmentId,assetId});
  assert.equal(r.status,404);
  assert.equal(playbackCount,1);
@@ -192,12 +214,16 @@ const {stripTypeScriptTypes}=require('node:module');
  assert.equal(r.status,404,'Playback must deny video beyond retention');
  r=await call('token-one','list');
  assert.equal(r.data.assessments.length,0,'Expired recording must be hidden from history');
+ r=await call('token-one','reviews');
+ assert.equal(r.data.reviews.length,0,'Expired recording reviews must be hidden');
  db.motion_assessments[0].created_at=originalCreatedAt;
  r=await call('token-one','playback',{assessmentId,assetId});
  assert.equal(r.status,200,'Unexpired completed recording still playable');
  r=await call('token-one','delete',{assessmentId});
  assert.equal(r.status,200,JSON.stringify(r));
  assert.equal(db.motion_assessments[0].status,'deleted');
+ r=await call('token-one','reviews');
+ assert.equal(r.data.reviews.length,0,'Deleted recording reviews must be hidden');
  assert.equal(objects.has(path),false);
  assert.equal(removeCount,1);
  r=await call('token-one','playback',{assessmentId,assetId});
