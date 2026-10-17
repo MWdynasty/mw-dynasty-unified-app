@@ -1,3 +1,19 @@
+## Founder-approved retention policy — October 17, 2026
+
+The founder approved a **14-day raw-video retention limit** and **330-day separately consented 2D measurement-summary retention limit**. Athletes may delete either sooner, and coach sharing is disabled by default.
+
+**Staging implementation**
+- Server denies fresh playback after 14 days; signed playback links may remain valid for their original 60-second lifetime.
+- The 330-day consented-summary deletion Cron is installed and active (`mw-motion-season-retention`, daily 03:00 UTC).
+- The raw-video cleanup Cron is installed (`mw-motion-video-retention`, hourly at minute 12), using `pg_net` to invoke `mw-motion-maintenance` with `{"execute":true,"dryRun":false,"limit":20}`.
+- **Credential prerequisite not yet satisfied:** the scheduler intentionally sends **no request** unless the *staging* service-role JWT has been securely provisioned in Supabase Vault as `mw_motion_staging_service_role_jwt`. As of implementation, that Vault entry was absent. Do not insert secrets into repository files or client code. This means **automatic physical video deletion is not yet running** even though the Cron job is active.
+- The maintenance function enforces the staging project URL, service-role authorization, owner/path validation and storage-object deletion before metadata deletion. It is bounded to 20 candidates per run.
+- The migration and CI checks are committed under `20261018000000_motion_video_retention_cron.sql` and `scripts/test-motion-retention-policy.js`.
+- Provision the credential through an authorized secret-management flow, then verify the first scheduled invocation and physical deletion behavior before claiming the retention guarantee is fully operational.
+
+Production remains unchanged; this approval does **not** authorize merging the draft PR or deploying the unfinished Motion Intelligence feature to production.
+
+
 ## Stage 9 — 41-week opt-in motion history and coach sharing (2026-10-17)
 
 - Added `motion_season_observations` as a separate **330-day maximum** consented summary store. Raw recordings remain subject to the separate **14-day** policy. Video deletion does not erase a separately consented season observation; the athlete can delete either independently.
