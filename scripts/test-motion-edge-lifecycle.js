@@ -6,6 +6,7 @@ const vm=require('node:vm');
 const {stripTypeScriptTypes}=require('node:module');
 (async()=>{
  const validation=await import('../supabase/functions/mw-motion-pilot/validation.mjs');
+ const reviewValidation=await import('../supabase/functions/mw-motion-pilot/review-validation.mjs');
  const u1='11111111-1111-4111-8111-111111111111';
  const u2='22222222-2222-4222-8222-222222222222';
  const athlete1='33333333-3333-4333-8333-333333333333';
@@ -106,7 +107,8 @@ const {stripTypeScriptTypes}=require('node:module');
  };
  const source=fs.readFileSync('supabase/functions/mw-motion-pilot/index.ts','utf8')
   .replace(/^import \{ createClient \} from "[^"]+";\n/,'const createClient=globalThis.__createClient;\n')
-  .replace(/^import \{([^}]+)\} from "\.\/validation\.mjs";\n/m,'const {$1}=globalThis.__validation;\n');
+  .replace(/^import \{([^}]+)\} from "\.\/validation\.mjs";\n/m,'const {$1}=globalThis.__validation;\n')
+  .replace(/^import \{([^}]+)\} from "\.\/review-validation\.mjs";\n/m,'const {$1}=globalThis.__reviewValidation;\n');
  const stripped=typeof stripTypeScriptTypes==='function'?
   stripTypeScriptTypes(source,{mode:'strip'}):
   source.replace('function json(status: number, body: unknown, origin: string | null = null): Response {',
@@ -126,10 +128,12 @@ const {stripTypeScriptTypes}=require('node:module');
    .replace('const week = input.weekNumber as number | undefined;','const week = input.weekNumber;')
    .replace('const assessmentId = assessment.id as string;','const assessmentId = assessment.id;')
    .replace('MIME_EXT[mime as string]','MIME_EXT[mime]')
-   .replace('(o:{name:string})','(o)');
+   .replace('(o:{name:string})','(o)')
+   .replace('(r:{id:string})','(r)')
+   .replace('(r:{assessment_id:string})','(r)');
  let handler;
  vm.runInNewContext(stripped,{
-  __createClient:()=>admin,__validation:validation,
+  __createClient:()=>admin,__validation:validation,__reviewValidation:reviewValidation,
   Deno:{env:{get:k=>k==='SUPABASE_URL'?
    'https://uuggbmccnyswiwkjgydo.supabase.co':
    k==='SUPABASE_SERVICE_ROLE_KEY'?'synthetic-secret':null},
