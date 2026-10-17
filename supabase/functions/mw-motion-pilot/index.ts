@@ -1,17 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.79.0";
+import {MAX_BYTES,MAX_PER_DAY,MIME_EXT,ALLOWED_ORIGIN,validId,adult,pathOwned,validPrepare} from "./validation.mjs";
 
 const STAGING_REF = "uuggbmccnyswiwkjgydo";
 const BUCKET = "motion-private";
-const MAX_BYTES = 100 * 1024 * 1024;
-const MAX_PER_DAY = 5;
-const MIME_EXT: Record<string, string> = {
-  "video/mp4": "mp4", "video/quicktime": "mov", "video/webm": "webm"
-};
-const MOVEMENTS = new Set(["block_start","two_point_start","three_point_start","four_point_start","acceleration_30m","front_side","wickets"]);
-const VIEWS = new Set(["side","front","rear"]);
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ALLOWED_ORIGIN = /^https:\/\/mwdynastyunifiedappv31tiered13plusdeploy-[a-z0-9]+-mw-sprint\.vercel\.app$/i;
-
 function json(status: number, body: unknown, origin: string | null = null): Response {
   const headers: Record<string,string> = {
     "Content-Type": "application/json", "Cache-Control": "no-store",
@@ -26,19 +17,6 @@ function json(status: number, body: unknown, origin: string | null = null): Resp
 }
 function bad(status: number, message: string, origin: string | null): Response {
   return json(status, {error:message}, origin);
-}
-function validId(x: unknown): x is string { return typeof x === "string" && UUID.test(x); }
-function adult(dob: unknown): boolean {
-  if (typeof dob !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) return false;
-  const date = new Date(dob + "T00:00:00Z");
-  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0,10) !== dob) return false;
-  const now = new Date();
-  const cutoff = new Date(Date.UTC(now.getUTCFullYear()-18,now.getUTCMonth(),now.getUTCDate()));
-  return date <= cutoff;
-}
-function pathOwned(path: unknown, uid: string, assessmentId: string): path is string {
-  return typeof path === "string" && path.startsWith(uid+"/"+assessmentId+"/") &&
-    /^[0-9a-f-]{36}\.(mp4|mov|webm)$/i.test(path.slice((uid+"/"+assessmentId+"/").length));
 }
 function safeError(e: unknown): string {
   return e instanceof Error ? e.message.slice(0,120) : "unknown";
@@ -87,23 +65,11 @@ Deno.serve(async (req: Request) => {
       if (athleteError || !athlete || !adult(athlete.date_of_birth)) {
         return bad(403,"Adult athlete pilot access required",origin);
       }
-      if (input.consentAccepted !== true || input.consentVersion !== "pilot-v1") {
-        return bad(422,"Recording consent must be accepted",origin);
-      }
-      if (typeof input.movementType !== "string" || !MOVEMENTS.has(input.movementType) ||
-          typeof input.cameraView !== "string" || !VIEWS.has(input.cameraView)) {
-        return bad(422,"Select a supported sprint movement and camera view",origin);
-      }
-      const mime = input.mimeType;
-      const bytes = input.bytes;
-      if (typeof mime !== "string" || !Object.hasOwn(MIME_EXT,mime) ||
-          typeof bytes !== 'number' || !Number.isInteger(bytes) || bytes < 1 || bytes > MAX_BYTES) {
-        return bad(422,"Unsupported recording type or size",origin);
-      }
-      const week = input.weekNumber;
-      if (week !== undefined && (typeof week !== 'number' || !Number.isInteger(week) || week<1 || week>41)) {
-        return bad(422,"Invalid training week",origin);
-      }
+      const validationError = validPrepare(input);
+      if (validationError) return bad(422,validationError,origin);
+      const mime = input.mimeType as string;
+      const bytes = input.bytes as number;
+      const week = input.weekNumber as number | undefined;
       const {count,error:countError} = await admin.from("motion_assessments")
         .select("id",{count:"exact",head:true}).eq("created_by",user.id)
         .gte("created_at",new Date(Date.now()-86400000).toISOString());
