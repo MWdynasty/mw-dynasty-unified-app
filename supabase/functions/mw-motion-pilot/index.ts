@@ -3,6 +3,13 @@ import {MAX_BYTES,MAX_PER_DAY,MIME_EXT,ALLOWED_ORIGIN,validId,adult,pathOwned,va
 
 const STAGING_REF = "uuggbmccnyswiwkjgydo";
 const BUCKET = "motion-private";
+// Defense in depth: block expired recordings even if the cleanup scheduler is delayed.
+const RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
+function withinRetention(createdAt: unknown): boolean {
+  if(typeof createdAt !== "string") return false;
+  const time = new Date(createdAt).getTime();
+  return Number.isFinite(time) && time <= Date.now() && time > Date.now() - RETENTION_MS;
+}
 function json(status: number, body: unknown, origin: string | null = null): Response {
   const headers: Record<string,string> = {
     "Content-Type": "application/json", "Cache-Control": "no-store",
@@ -55,7 +62,7 @@ Deno.serve(async (req: Request) => {
   const own = async (id: unknown) => {
     if(!validId(id)) return null;
     const {data,error} = await admin.from("motion_assessments")
-      .select("id,created_by,status").eq("id",id).eq("created_by",user.id).maybeSingle();
+      .select("id,created_by,status,created_at").eq("id",id).eq("created_by",user.id).maybeSingle();
     return error ? null : data;
   };
   // Approval is server-controlled. Revocation must take effect on finalize and playback,
@@ -159,6 +166,7 @@ Deno.serve(async (req: Request) => {
       const {data,error} = await admin.from("motion_assessments")
         .select("id,movement_type,camera_view,training_date,week_number,status,created_at,motion_assets(id,mime_type,bytes)")
         .eq("created_by",user.id).neq("status","deleted")
+        .gte("created_at",new Date(Date.now()-RETENTION_MS).toISOString())
         .order("created_at",{ascending:false}).limit(30);
       if(error) return bad(503,"Recording history unavailable",origin);
       return json(200,{assessments:data||[]},origin);
@@ -166,7 +174,8 @@ Deno.serve(async (req: Request) => {
     if(action==="playback") {
       if(!await pilotApproved()) return bad(403,"Adult staging pilot approval required",origin);
       const record=await own(input.assessmentId);
-      if(!record || record.status==="deleted") return bad(404,"Recording not found",origin);
+      if(!record || record.status!=="uploaded" || !withinRetention(record.created_at))
+        return bad(404,"Recording not found",origin);
       if(!validId(input.assetId)) return bad(422,"Invalid recording",origin);
       const {data:asset,error} = await admin.from("motion_assets")
         .select("storage_path").eq("id",input.assetId).eq("assessment_id",record.id).maybeSingle();
