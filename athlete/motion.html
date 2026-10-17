@@ -26,8 +26,9 @@ const verified=await client.auth.getUser();
 if(verified.error||!verified.data?.user){status.textContent='The current session does not belong to the Motion Intelligence staging environment. Please use a staging athlete account.';return;}
 
 const user=verified.data.user;
-const own=await client.from('athletes').select('id').eq('user_id',user.id).maybeSingle();
+const own=await client.from('athletes').select('id,date_of_birth').eq('user_id',user.id).maybeSingle();
 if(own.error||!own.data?.id){status.textContent='An athlete profile is required for this pilot.';return;}
+if(!own.data.date_of_birth||new Date(own.data.date_of_birth)>new Date(new Date().setFullYear(new Date().getFullYear()-18))){status.textContent='This recording pilot currently supports adult staging athletes only. Guardian consent must be reviewed before minors are enabled.';return;}
 const athleteId=own.data.id,controller=window.MWMotionUpload.createController(client,{enabled:true});
 btn.disabled=false;status.textContent='Pilot recording available. Uploads are private. AI analysis is not connected.';
 async function loadHistory(){
