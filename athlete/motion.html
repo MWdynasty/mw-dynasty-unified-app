@@ -43,6 +43,7 @@ const historyPanel=document.getElementById('history-panel');
 const loginForm=document.getElementById('pilot-login-form');
 const loginButton=document.getElementById('pilot-login-button');
 let activeUserId=null;
+let pilotEligible=false;
 async function activate(){
  const verified=await client.auth.getUser();
  if(verified.error||!verified.data?.user){showLogin();return;}
@@ -52,13 +53,22 @@ async function activate(){
  loginPanel.classList.add('hidden');
  recordPanel.classList.remove('hidden');
  historyPanel.classList.remove('hidden');
- button.disabled=false;
- analyzeButton.disabled=false;
- status.textContent='Adult staging pilot ready. Recording and local pose estimation are experimental.';
+ pilotEligible=false;
+ button.disabled=true;analyzeButton.disabled=true;
+ try{
+  const eligibility=await call('eligibility');
+  pilotEligible=eligibility.approved===true;
+  button.disabled=!pilotEligible;analyzeButton.disabled=!pilotEligible;
+  status.textContent=pilotEligible?
+   'Approved adult staging pilot ready. Recording and local pose estimation are experimental.':
+   'Adult staging pilot approval is required. Upload and local analysis are disabled.';
+ }catch(e){
+  status.textContent='Could not verify adult pilot approval. Upload and local analysis remain disabled.';
+ }
  await loadHistory();
 }
 function showLogin(){
- activeUserId=null;
+ activeUserId=null;pilotEligible=false;
  history.replaceChildren();
  poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
  analyzeButton.disabled=true;
@@ -164,7 +174,7 @@ async function loadHistory(){
    const remove=document.createElement('button');remove.textContent='DELETE RECORDING';
    remove.style.background='#253142';remove.style.color='#fff';
    remove.onclick=async()=>{
-    if(!confirm('Permanently delete this recording and assessment?'))return;
+    if(!confirm('Delete this private recording? Playback is blocked immediately. Minimal deletion metadata remains until secure maintenance cleanup.'))return;
     remove.disabled=true;
     try{
      await call('delete',{assessmentId:record.id});
@@ -218,6 +228,7 @@ for(const id of ['movement','camera'])document.getElementById(id).addEventListen
 });
 cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
 analyzeButton.onclick=async()=>{
+ if(!pilotEligible){poseStatus.textContent='Adult staging pilot approval required.';return;}
  analyzeButton.disabled=true;button.disabled=true;
  poseResult.replaceChildren();
  poseAbort=new AbortController();
@@ -242,10 +253,11 @@ analyzeButton.onclick=async()=>{
  }catch(e){poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
  finally{
   poseAbort=null;cancelButton.classList.add('hidden');
-  analyzeButton.disabled=!activeUserId;button.disabled=!activeUserId;
+  analyzeButton.disabled=!pilotEligible;button.disabled=!pilotEligible;
  }
 };
 button.onclick=async()=>{
+ if(!pilotEligible){status.textContent='Adult staging pilot approval required.';return;}
  button.disabled=true;analyzeButton.disabled=true;
  try{
   if(!document.getElementById('consent').checked)
@@ -270,7 +282,7 @@ button.onclick=async()=>{
   status.textContent='Video saved privately! Coach MW biomechanics analysis is not active yet.';
   await loadHistory();
  }catch(e){status.textContent=e.message||'Recording failed. Please try again.'}
- finally{button.disabled=!activeUserId;analyzeButton.disabled=!activeUserId}
+ finally{button.disabled=!pilotEligible;analyzeButton.disabled=!pilotEligible}
 };
 await activate();
 })();
