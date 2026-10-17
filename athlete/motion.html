@@ -1,13 +1,19 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02060b"><title>Motion Intelligence — MW Dynasty</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script>
-<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This is a secure recording pilot, <strong>not</strong> an active biomechanics analysis service.</p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.min.js"></script><script src="/lib/mw-motion-upload.js"></script><script src="/lib/mw-motion-biomechanics.js"></script><script src="/lib/mw-motion-local-pose.js"></script>
+<style>body{margin:0;background:radial-gradient(circle at top,#102238,#02060b 65%);color:#f7f4eb;font:15px system-ui,-apple-system,sans-serif}main{margin:0 auto;max-width:510px;padding:25px 17px 90px}.gold{color:#eac05d}h1{margin:16px 0 7px;font-size:28px}p{line-height:1.55;color:#adbac8}.panel{background:#09131d;border:1px solid #344152;border-radius:18px;padding:18px;margin-top:16px}label{display:block;margin:14px 0 6px;color:#eac05d;font-weight:650}select,input[type=file],input[type=email],input[type=password],button{width:100%;box-sizing:border-box;border:1px solid #435166;border-radius:11px;background:#020911;color:#fff;padding:12px;font:inherit}button{border:0;background:linear-gradient(135deg,#ffdb77,#c7922b);color:#111;font-weight:800;margin-top:18px;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}.muted{font-size:12px}.status{padding:10px;border:1px solid #435166;border-radius:9px;margin-top:14px;white-space:pre-wrap}video{width:100%;margin-top:12px;border-radius:12px}a{color:#eac05d}input[type=checkbox]{width:auto;margin-right:8px}.row{display:flex;align-items:flex-start;gap:6px;margin-top:16px}.row label{margin:0;font-weight:400;color:#f7f4eb}.hidden{display:none}</style></head><body><main><a href="/athlete/?motionPilot=1">← Back to training</a><h1>MW <span class="gold">MOTION INTELLIGENCE</span></h1><p>Record from the side using a stable camera. Ensure your entire body stays visible. This adult staging pilot includes optional on-device pose estimates. Measurements are experimental, not validated coaching recommendations.</p>
 <div id="pilot-login" class="panel hidden"><strong>Staging pilot sign-in</strong><p class="muted">This test environment has separate accounts. Your regular MW Dynasty sign-in is not automatically shared here.</p><form id="pilot-login-form"><label for="pilot-email">Staging account email</label><input id="pilot-email" type="email" autocomplete="username" required><label for="pilot-password">Password</label><input id="pilot-password" type="password" autocomplete="current-password" required><button id="pilot-login-button" type="submit">SIGN IN TO STAGING</button></form></div>
 <div id="record-panel" class="panel hidden"><strong>Record or upload your sprint</strong><p class="muted">One clip, maximum 100 MB. Your training session can still be completed without recording.</p>
 <label for="movement">Technical skill</label><select id="movement"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">First 30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wicket drill</option></select>
 <label for="camera">Camera viewpoint</label><select id="camera"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select>
 <label for="clip">Sprint recording</label><input id="clip" type="file" accept="video/mp4,video/quicktime,video/webm,video/*" capture="environment">
-<div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and agree to this staging recording pilot. Videos are private and can be deleted from my account. AI biomechanics analysis is not active. Automatic retention cleanup has not yet been enabled.</label></div>
-<button id="upload" disabled>UPLOAD SECURELY</button><div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
+<div class="row"><input id="consent" type="checkbox"><label for="consent">I am at least 18 and consent to this staging pilot. Secure upload sends my video to private MW Dynasty staging storage; optional pose analysis runs on this device. MediaPipe may send usage/performance metrics to Google, but not my video. Pose estimates are unvalidated and are not automatically shared with coaches. Automatic video retention cleanup is not yet enabled.</label></div>
+<button id="upload" disabled>UPLOAD SECURELY</button>
+<div class="panel" style="background:#06131e"><strong>Experimental on-device motion analysis</strong><p class="muted">Side-view clips only. MediaPipe model files are downloaded when you choose to analyze. No video frames or pose findings are uploaded by this tool. Results are not saved to your account.</p>
+<button id="analyze" type="button" disabled>ANALYZE ON THIS DEVICE</button>
+<button id="cancel-analysis" type="button" class="hidden" style="background:#263446;color:#fff">CANCEL ANALYSIS</button>
+<div role="status" aria-live="polite" id="pose-status" class="status">Choose a side-view recording to see experimental measurements.</div>
+<div id="pose-result"></div></div>
+<div role="status" aria-live="polite" id="status" class="status">Checking pilot access…</div></div>
 <div id="history-panel" class="panel hidden"><button id="pilot-signout" type="button" style="background:#273648;color:white;margin-top:0">SIGN OUT OF STAGING</button><strong>My recordings</strong><div id="history"><p class="muted">Sign in to load your recordings.</p></div></div></main>
 <script>
 (async()=>{
@@ -15,6 +21,11 @@
 const status=document.getElementById('status');
 const button=document.getElementById('upload');
 const history=document.getElementById('history');
+const analyzeButton=document.getElementById('analyze');
+const cancelButton=document.getElementById('cancel-analysis');
+const poseStatus=document.getElementById('pose-status');
+const poseResult=document.getElementById('pose-result');
+let poseAbort=null;
 const stageUrl='https://uuggbmccnyswiwkjgydo.supabase.co';
 const key='sb_publishable_zTe0B3KiUp1bEY0u_FcRFQ_gUtxB3zw';
 const pilot=location.hostname.endsWith('.vercel.app')&&(
@@ -42,12 +53,15 @@ async function activate(){
  recordPanel.classList.remove('hidden');
  historyPanel.classList.remove('hidden');
  button.disabled=false;
+ analyzeButton.disabled=false;
  status.textContent='Adult staging pilot ready. Recording and local pose estimation are experimental.';
  await loadHistory();
 }
 function showLogin(){
  activeUserId=null;
  history.replaceChildren();
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ analyzeButton.disabled=true;
  loginPanel.classList.remove('hidden');
  recordPanel.classList.add('hidden');
  historyPanel.classList.add('hidden');
@@ -68,6 +82,7 @@ loginForm.onsubmit=async event=>{
 };
 document.getElementById('pilot-signout').onclick=async()=>{
  button.disabled=true;
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
  await client.auth.signOut();
  showLogin();
 };
@@ -151,8 +166,78 @@ async function loadHistory(){
   }
  }catch(e){history.textContent='Recording history could not be loaded: '+(e.message||'Unknown error')}
 }
+const LABELS=Object.freeze({
+ trunk_tilt_2d:'Trunk tilt (2D)',knee_angle_2d:'Knee angle (2D)',shin_tilt_2d:'Shin tilt (2D)'
+});
+function showPoseResult(output){
+ poseResult.replaceChildren();
+ const result=output.analysis;
+ const summary=document.createElement('p');
+ summary.textContent='Pose detected in '+output.poseFrames+' of '+output.attemptedFrames+' sampled frames.';
+ poseResult.append(summary);
+ if(result.status!=='estimated_2d'){
+  const warning=document.createElement('p');
+  warning.textContent='No reliable estimate: '+(result.reason||'Insufficient evidence.');
+  poseResult.append(warning);
+ }else{
+  const heading=document.createElement('p');
+  heading.textContent='Experimental clip-wide medians (not movement-phase measurements):';
+  poseResult.append(heading);
+  for(const metric of result.metrics){
+   const line=document.createElement('p');
+   line.textContent=(LABELS[metric.name]||metric.name)+': '+metric.value.toFixed(1)+'° — '+metric.sampleCount+' usable frames';
+   poseResult.append(line);
+  }
+ }
+ if(output.preview){
+  const title=document.createElement('p');title.textContent='One sampled pose overlay (experimental):';
+  output.preview.style.width='100%';output.preview.style.borderRadius='10px';
+  poseResult.append(title,output.preview);
+ }
+ const limitations=document.createElement('p');
+ limitations.className='muted';
+ limitations.textContent='Limitations: '+result.limitations.join(' ');
+ poseResult.append(limitations);
+}
+document.getElementById('clip').addEventListener('change',()=>{
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ poseStatus.textContent='Recording changed. Previous estimates cleared.';
+});
+for(const id of ['movement','camera'])document.getElementById(id).addEventListener('change',()=>{
+ poseAbort?.abort();poseAbort=null;poseResult.replaceChildren();
+ poseStatus.textContent='Technical skill or camera view changed. Previous estimates cleared.';
+});
+cancelButton.onclick=()=>{poseAbort?.abort();poseStatus.textContent='Cancelling local analysis…';};
+analyzeButton.onclick=async()=>{
+ analyzeButton.disabled=true;button.disabled=true;
+ poseResult.replaceChildren();
+ poseAbort=new AbortController();
+ cancelButton.classList.remove('hidden');
+ try{
+  if(!document.getElementById('consent').checked)throw new Error('Adult staging pilot consent is required.');
+  if(document.getElementById('camera').value!=='side')throw new Error('Use a side-view recording for these experimental angle estimates.');
+  const file=document.getElementById('clip').files[0];
+  if(!file)throw new Error('Select a video first.');
+  poseStatus.textContent='Loading on-device pose model…';
+  const output=await window.MWMotionLocalPose.run({
+   file,movementType:document.getElementById('movement').value,
+   cameraView:document.getElementById('camera').value,signal:poseAbort.signal,
+   onProgress:p=>{poseStatus.textContent=p.stage==='model'?
+    'Downloading on-device model. Your video stays in this browser.':
+    'Processing locally: '+p.done+' of '+p.total+' frames.';}
+  });
+  showPoseResult(output);
+  poseStatus.textContent=output.analysis.status==='estimated_2d'?
+   'Experimental 2D estimates ready. Not validated for coaching.':
+   'Analysis finished without sufficient evidence.';
+ }catch(e){poseStatus.textContent=e.message||'On-device pose analysis unavailable.';}
+ finally{
+  poseAbort=null;cancelButton.classList.add('hidden');
+  analyzeButton.disabled=!activeUserId;button.disabled=!activeUserId;
+ }
+};
 button.onclick=async()=>{
- button.disabled=true;
+ button.disabled=true;analyzeButton.disabled=true;
  try{
   if(!document.getElementById('consent').checked)
    throw new Error('You must accept the adult staging pilot consent notice.');
@@ -176,7 +261,7 @@ button.onclick=async()=>{
   status.textContent='Video saved privately! Coach MW biomechanics analysis is not active yet.';
   await loadHistory();
  }catch(e){status.textContent=e.message||'Recording failed. Please try again.'}
- finally{button.disabled=false}
+ finally{button.disabled=!activeUserId;analyzeButton.disabled=!activeUserId}
 };
 await activate();
 })();
