@@ -1928,6 +1928,12 @@ async function athletesPage(){
       <div class="team-filter-buttons"><button class="back active" data-team-filter="all">ALL</button><button class="back" data-team-filter="attention">NEEDS ATTENTION</button><button class="back" data-team-filter="sponsored">SPONSORED</button></div>
     </div>
     <div id="teamSummary" class="team-summary-strip"><div><b>—</b><span>Athletes</span></div><div><b>—</b><span>Need Attention</span></div><div><b>—</b><span>Sponsored</span></div></div>
+    <section class="mwCoachVelocity" id="mwCoachVelocity" aria-label="Team progression overview">
+      <div class="mwCoachVelocityHead"><div><small>MW COACH INTELLIGENCE</small><h3>Team Development</h3></div><span>LIVE ROSTER</span></div>
+      <div id="mwCoachVelocityStats" class="mwCoachVelocityStats"><div>Loading progression…</div></div>
+      <div id="mwCoachVelocityBars" class="mwCoachVelocityBars"></div>
+      <p>Training-week position and coaching status use your connected roster. These indicators are not speed rankings or performance predictions.</p>
+    </section>
     <div id="athleteList" class="team-athlete-grid"><div class="tile">Loading your team…</div></div>
     <div id="pendingInviteWrap" style="margin-top:18px"></div>`);
   bindPageNavigation(document);
@@ -1942,11 +1948,24 @@ async function athletesPage(){
     if(stalePending.length){fetch('/api/coach/invite',{method:'DELETE',headers:{Authorization:'Bearer '+mwSessionToken(),'Content-Type':'application/json'},body:JSON.stringify({emails:stalePending.map(i=>i.athlete_email)})}).catch(()=>{});}
     const pending=[];
     const enriched=()=>athletes.map(a=>{const status=athleteStatusClassify({...a,performance:performanceMap.get(a.id)||null}),sponsored=a.sponsorship?.billing_type==='coach_sponsored'||a.billing_type==='coach_sponsored';return {...a,_coachStatus:status,_sponsored:sponsored}});
+    const paintVelocity=()=>{
+      const rows=enriched(),root=document.getElementById('mwCoachVelocity'),stats=document.getElementById('mwCoachVelocityStats'),bars=document.getElementById('mwCoachVelocityBars');
+      if(!root||!stats||!bars)return;
+      const attention=rows.filter(a=>a._coachStatus.level==='attention').length;
+      const onTrack=rows.length-attention;
+      const average=rows.length?Math.round(rows.reduce((sum,a)=>sum+Math.max(1,Math.min(41,Number(a.current_week)||1)),0)/rows.length):0;
+      stats.innerHTML='<div><strong>'+rows.length+'</strong><span>CONNECTED</span></div><div><strong>'+onTrack+'</strong><span>NO ACTIVE FLAGS</span></div><div><strong>'+attention+'</strong><span>NEED ATTENTION</span></div>';
+      bars.innerHTML=rows.length?rows.slice(0,8).map(a=>{
+        const week=Math.max(1,Math.min(41,Number(a.current_week)||1));
+        return '<button type="button" class="mwCoachVelocityRow" data-velocity-athlete="'+escapeHtml(a.id)+'"><span>'+escapeHtml(a.name||'Athlete')+'</span><div class="mwCoachVelocityTrack"><i style="width:'+(week/41*100)+'%"></i></div><b>W'+week+'</b><em class="'+(a._coachStatus.level==='attention'?'mwVelocityAttention':'')+'">'+(a._coachStatus.level==='attention'?'Review':'On track')+'</em></button>';
+      }).join(''):'<div class="mwCoachVelocityEmpty">Invite athletes to begin seeing team progression.</div>';
+      bars.querySelectorAll('[data-velocity-athlete]').forEach(b=>b.onclick=()=>athleteDetail(b.dataset.velocityAthlete));
+    };
     const paintSummary=()=>{const rows=enriched(),attention=rows.filter(a=>a._coachStatus.level==='attention').length,sponsored=rows.filter(a=>a._sponsored).length;summary.innerHTML=`<div><b>${rows.length}</b><span>Athletes</span></div><div><b>${attention}</b><span>Need Attention</span></div><div><b>${sponsored}</b><span>Sponsored</span></div>`};
     const paint=()=>{const q=String(search.value||'').trim().toLowerCase();let rows=enriched().filter(a=>!q||(`${a.name||''} ${a.event||''}`).toLowerCase().includes(q));if(filter==='attention')rows=rows.filter(a=>a._coachStatus.level==='attention');if(filter==='sponsored')rows=rows.filter(a=>a._sponsored);list.innerHTML=rows.length?rows.map(a=>`<button class="team-athlete-card" data-athlete-id="${escapeHtml(a.id)}"><div class="team-athlete-card-top"><span class="status-pill ${a._coachStatus.level}"><span class="status-dot"></span>${athleteStatusLabel(a._coachStatus.level)}</span><span class="team-athlete-week">WEEK ${Number(a.current_week||1)}</span></div><h3>${escapeHtml(a.name)}</h3><p>${escapeHtml(a.event||'Events not set')}</p><small>${escapeHtml(a._coachStatus.reasons[0]||'Open athlete profile')}</small><div class="team-athlete-card-foot"><span>${a._sponsored?'COACH SPONSORED':'ATHLETE MEMBERSHIP'}</span><b>OPEN →</b></div></button>`).join(''):'<div class="tile"><h3>No athletes match this view</h3><p>Try another filter or invite an athlete.</p></div>';list.querySelectorAll('[data-athlete-id]').forEach(b=>b.onclick=()=>athleteDetail(b.dataset.athleteId))};
     search.oninput=paint;document.querySelectorAll('[data-team-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.teamFilter;document.querySelectorAll('[data-team-filter]').forEach(x=>x.classList.toggle('active',x===b));paint()});
     if(exportBtn){exportBtn.disabled=!athletes.length;exportBtn.onclick=()=>exportCoachRoster(athletes)}
-    paintSummary();paint();
+    paintSummary();paintVelocity();paint();
   }catch(e){list.innerHTML=`<div class="tile"><h3>Team unavailable</h3><p>${escapeHtml(e.message)}</p><button class="back" id="retryRoster">Try Again</button></div>`;document.getElementById('retryRoster').onclick=athletesPage}
 }
 function teamWorkspace(name){mwModal(name,`<div class="panel-grid"><div class="tile"><h3>Roster</h3><p>Manage assigned athletes and pending invitations.</p><button class="action" id="teamRoster">View Athletes</button></div><div class="tile"><h3>Team Communication</h3><p>Open the team message composer.</p><button class="action" id="teamMessage">Message Team</button></div></div>`);document.getElementById('teamRoster').onclick=()=>{document.getElementById('mwModal')?.remove();athletesPage()};document.getElementById('teamMessage').onclick=()=>{document.getElementById('mwModal')?.remove();messagesPage()}}
