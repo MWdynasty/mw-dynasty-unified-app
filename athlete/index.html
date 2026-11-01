@@ -2586,10 +2586,13 @@ async function renderCompletion(){
   if(hint)hint.style.display='block';
   if(details){
     const priorDays=Object.entries(mwWorkoutStatusCache||{}).flatMap(([week,days])=>Object.entries(days||{}).map(([day,row])=>({week:Number(week),day:Number(String(day).replace('s','')),row})))
-      .filter(x=>x.week===w&&x.day<sessionNumber&&x.row?.completion_status!=='completed'&&x.row?.completion_status!=='in_progress');
+      .filter(x=>x.week===w&&x.day<sessionNumber&&['absent','incomplete'].includes(String(x.row?.completion_status||'')));
     const recentMisses=priorDays.length;
-    const previousDay=priorDays[priorDays.length-1];
-    const missedNotice=recentMisses?'<div class="mwMissedTrainingNotice"><b>MW ADAPTIVE TRAINING · '+recentMisses+' MISSED SESSION'+(recentMisses===1?'':'S')+'</b><p>Your program continues on its scheduled day. Do not stack missed sessions or add sprint volume to catch up. '+(recentMisses>=3?'After several missed sessions, review your return-to-training readiness with your coach before high-intensity work.':'Check readiness before today’s workout and consult your coach if a missed hard session affects your recovery.')+'</p><small>Missed workouts are tracked separately. This notice does not change your prescribed sets, pace, or lifting loads.</small></div>':'';
+    const lastMiss=priorDays[priorDays.length-1];
+    const focus=String(session?.focus||session?.title||'').toLowerCase();
+    const speedDay=/accel|velocity|speed|sprint|competition/.test(focus);
+    const tempoDay=/tempo|recovery|extensive|technical/.test(focus);
+    const missedNotice=recentMisses?'<div class="mwMissedTrainingNotice"><b>MW ADAPTIVE TRAINING · '+recentMisses+' MISSED SESSION'+(recentMisses===1?'':'S')+'</b><p>Today stays on the calendar. '+(recentMisses>=3?'Multiple missed sessions: pause high-intensity progression until readiness is reviewed with your coach.':speedDay?'Speed session: return with a conservative warm-up and check readiness before any fast reps.':tempoDay?'Controlled session: follow today’s target effort; do not add missed volume.':'Follow today’s planned intent without making up missed volume.')+'</p><small>Missed: Week '+lastMiss.week+', session '+lastMiss.day+'. No automatic catch-up or load increase. Your coach should approve changes to sets, intensity or lifting loads.</small></div>':'';
     details.dataset.mwMissedNotice=missedNotice;
   }
   if(details){
