@@ -1409,6 +1409,11 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 .mwVelocityWeekHistory{display:flex;gap:9px;align-items:end;justify-content:space-around;min-height:126px}.mwVelocityWeekColumn{flex:1;max-width:55px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}.mwVelocityWeekColumn b{font-size:11px}.mwVelocityWeekColumn small{color:#a5b2bf;font-size:10px}.mwVelocityWeekPillar{width:100%;height:78px;border-radius:7px;background:#20303c;display:flex;align-items:end;overflow:hidden}.mwVelocityWeekPillar i{display:block;width:100%;background:linear-gradient(#f3c86d,#9a7129);border-radius:6px 6px 0 0}
 .mwVelocityFootnote{font-size:10px;color:#9caab6;line-height:1.6;margin:14px 0 0}
 </style>
+<style id="mw-development-guide-v1">
+.mwDevelopmentGuide{margin:16px 0;padding:16px;border:1px solid rgba(245,185,46,.38);border-radius:18px;background:linear-gradient(140deg,#172b38,#071019);color:#f6f8fb}
+.mwDevelopmentTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.mwDevelopmentTabs button{padding:12px 7px;border-radius:9px;background:#172633;color:#b5c5d0;border:1px solid #32434e;font-size:10px;font-weight:800}.mwDevelopmentTabs button.active{background:#d7ab55;color:#071019;border-color:#d7ab55}
+.mwDevelopmentMetrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.mwDevelopmentMetrics>div{background:#0b1822;padding:12px;border-radius:10px}.mwDevelopmentMetrics small{display:block;color:#a6b7c3;font-size:9px}.mwDevelopmentMetrics strong{display:block;font-size:23px;margin-top:6px}.mwDevelopmentResult{color:#e8c47e;font-size:19px;font-weight:900;margin:10px 0}.mwDevelopmentBars{display:flex;align-items:end;justify-content:space-around;gap:7px;margin:14px 0}.mwDevelopmentBar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}.mwDevelopmentBar b,.mwDevelopmentBar small{font-size:9px}.mwDevelopmentBar>div{height:75px;width:100%;max-width:45px;background:#263a47;display:flex;align-items:end;border-radius:6px;overflow:hidden}.mwDevelopmentBar i{display:block;width:100%;background:#d7ab55;border-radius:5px 5px 0 0}.mwDevelopmentGuide p{color:#b3c1cc;font-size:11px;line-height:1.6}
+</style>
 <style id="mw-home-stationary-v1">
 /* Smart Entry must scroll on the first authenticated paint, even when a
    stale Home viewport-lock class remains from the sign-in transition. */
@@ -1767,6 +1772,12 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div><strong id="progressCompleted">0</strong><span>WORKOUTS</span></div>
   <div><strong id="progressWeeks">0</strong><span>WEEKS</span></div>
   <div><strong id="progressStart">—</strong><span>STARTED</span></div>
+</div>
+<div class="mwDevelopmentGuide" id="mwDevelopmentGuide">
+ <div class="mwVelocityInsightsHeading"><b>AM I GETTING BETTER?</b><span>YOUR SAVED RESULTS</span></div>
+ <div class="mwDevelopmentTabs"><button type="button" class="active" data-mw-development="speed">MY SPEED</button><button type="button" data-mw-development="execution">MY EXECUTION</button></div>
+ <div id="mwDevelopmentRead" aria-live="polite"><p class="mwVelocityFootnote">Loading your saved timed sessions…</p></div>
+ <p class="mwVelocityFootnote">Speed compares only matching distances and speed-focused sessions. Tempo and technical work are evaluated against the workout's prescribed target, not ranked by fastest time.</p>
 </div>
 <div class="mwVelocityInsights" id="mwVelocityInsights" aria-label="Training progression insights">
   <div class="mwVelocityInsightsHeading"><b>YOUR DEVELOPMENT AT A GLANCE</b><span id="mwVelocityPhase">MW VELOCITY</span></div>
@@ -2406,8 +2417,43 @@ async function loadPracticeProgress(){
   mwPracticeHistoryCache=list.filter(row=>!current.includes(row));
   mwPracticeProgressCache=await mwPracticeNormalizeProgressTargets(current);
   renderPracticeProgress();
+  renderDevelopmentGuide();
   try{renderWeightRoomProgressUI()}catch{}
 }
+let mwDevelopmentMode='speed';
+function mwDevelopmentSpeedEligible(r){
+ const intent=String(r.mw_intent||'').toLowerCase();
+ const interpretation=String(r.mw_interpretation||'').toLowerCase();
+ if(/tempo|recovery|technical|rhythm|controlled|submax|sub-max|wicket/.test(intent+' '+interpretation))return false;
+ return /max.vel|max velocity|acceleration|speed test|time trial|fly|flying|sprint test/.test(intent+' '+interpretation);
+}
+function renderDevelopmentGuide(){
+ const box=document.getElementById('mwDevelopmentRead');if(!box)return;
+ const rows=[...(mwPracticeProgressCache||[]),...(mwPracticeHistoryCache||[])].filter(r=>r.result_status!=='dnf'&&Number(r.time_seconds)>0);
+ const valid=rows.filter(r=>Number(r.distance_m)>0);
+ if(mwDevelopmentMode==='execution'){
+  const targeted=valid.filter(r=>Number(r.target_seconds)>0&&r.pace_status);
+  const hits=targeted.filter(r=>r.pace_status==='on_pace').length;
+  box.innerHTML=targeted.length?'<div class="mwDevelopmentMetrics"><div><small>ON TARGET</small><strong>'+hits+' / '+targeted.length+'</strong></div><div><small>EXECUTION</small><strong>'+Math.round(hits/targeted.length*100)+'%</strong></div></div><p>MW checks whether you executed the assigned pace. Faster than target is not automatically better.</p>':'<p>No target-based rep results yet. Save a prescribed workout in Practice Mode to start tracking execution.</p>';
+  return;
+ }
+ const eligible=valid.filter(mwDevelopmentSpeedEligible);
+ const groups=new Map();
+ for(const r of eligible){const key=Number(r.distance_m);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r)}
+ const options=[...groups.entries()].filter(([,list])=>list.length>=2).sort((a,b)=>b[1].length-a[1].length);
+ if(!options.length){box.innerHTML='<p>No comparable speed-test history yet. Record at least two speed-focused tests at the same distance to see your improvement. Tempo and technical reps are still counted in execution.</p>';return}
+ const [distance,items]=options[0];items.sort((a,b)=>new Date(a.recorded_at||0)-new Date(b.recorded_at||0));
+ const first=items[0],last=items[items.length-1],delta=Number(first.time_seconds)-Number(last.time_seconds);
+ const label=delta>0.005?delta.toFixed(2)+'s faster':delta< -0.005?Math.abs(delta).toFixed(2)+'s slower':'Holding steady';
+ const vals=items.slice(-8),min=Math.min(...vals.map(x=>Number(x.time_seconds))),max=Math.max(...vals.map(x=>Number(x.time_seconds))),span=Math.max(.01,max-min);
+ const bars=vals.map(r=>'<div class="mwDevelopmentBar"><b>'+Number(r.time_seconds).toFixed(2)+'s</b><div><i style="height:'+(25+(max-Number(r.time_seconds))/span*75)+'%"></i></div><small>W'+(Number(r.program_week)||'—')+'</small></div>').join('');
+ box.innerHTML='<div class="mwDevelopmentMetrics"><div><small>STARTING · '+distance+'M</small><strong>'+Number(first.time_seconds).toFixed(2)+'s</strong></div><div><small>LATEST · '+distance+'M</small><strong>'+Number(last.time_seconds).toFixed(2)+'s</strong></div></div><div class="mwDevelopmentResult">'+label+'</div><div class="mwDevelopmentBars">'+bars+'</div><p>Comparing saved '+distance+'m speed-focused reps. Conditions and timing methods may vary; review consistency before drawing conclusions.</p>';
+}
+document.querySelectorAll('[data-mw-development]').forEach(button=>button.addEventListener('click',()=>{
+ mwDevelopmentMode=button.dataset.mwDevelopment;
+ document.querySelectorAll('[data-mw-development]').forEach(x=>x.classList.toggle('active',x===button));
+ renderDevelopmentGuide();
+}));
 function renderPracticeProgress(){
   const box=document.getElementById('mwPracticeProgressResults');if(!box)return;
   const rows=[...(mwPracticeProgressCache||[]),...(mwPracticeHistoryCache||[])];if(!rows.length){box.innerHTML='<div class="muted">Your timed Practice Mode reps will appear here after they are logged.</div>';return}
