@@ -9,7 +9,7 @@ var fields=['inactivity_reminders','adaptive_updates','progress_summaries','quie
 var defaults={push_enabled:false,inactivity_reminders:true,adaptive_updates:true,progress_summaries:false,quiet_hours_enabled:true,reminder_hour:18,timezone:'America/Chicago'};
 function session(){try{var s=window.MWAccountStorage||{local:localStorage,session:sessionStorage};return JSON.parse(s.local.getItem(sessionKey)||s.session.getItem(sessionKey)||'null')}catch{return null}}
 function auth(){var s=session();return s&&s.user&&s.user.id&&s.access_token?s:null}
-function request(path,method,data){var s=auth();if(!s)return Promise.reject(new Error('Sign in to manage your settings.'));return fetch((window.MW_SUPABASE_URL||base)+'/rest/v1/'+path,{method:method||'GET',headers:{apikey:window.MW_SUPABASE_KEY||key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Prefer:'return=representation'},body:data?JSON.stringify(data):undefined}).then(async function(r){if(!r.ok)throw new Error('Unable to save notification preferences ('+r.status+').');return r.json()})}
+function request(path,method,data){var s=auth();if(!s)return Promise.reject(new Error('Sign in to manage your settings.'));return fetch((window.MW_SUPABASE_URL||base)+'/rest/v1/'+path,{method:method||'GET',headers:{apikey:window.MW_SUPABASE_KEY||key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Prefer:'return=representation,resolution=merge-duplicates'},body:data?JSON.stringify(data):undefined}).then(async function(r){if(!r.ok)throw new Error('Unable to save notification preferences ('+r.status+').');return r.json()})}
 var panel=null;
 function close(){if(panel){panel.remove();panel=null}}
 async function open(){
