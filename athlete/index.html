@@ -1414,7 +1414,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 .mwDevelopmentTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.mwDevelopmentTabs button{padding:12px 7px;border-radius:9px;background:#172633;color:#b5c5d0;border:1px solid #32434e;font-size:10px;font-weight:800}.mwDevelopmentTabs button.active{background:#d7ab55;color:#071019;border-color:#d7ab55}
 .mwDevelopmentMetrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}.mwDevelopmentMetrics>div{background:#0b1822;padding:12px;border-radius:10px}.mwDevelopmentMetrics small{display:block;color:#a6b7c3;font-size:9px}.mwDevelopmentMetrics strong{display:block;font-size:23px;margin-top:6px}.mwDevelopmentResult{color:#e8c47e;font-size:19px;font-weight:900;margin:10px 0}.mwDevelopmentBars{display:flex;align-items:end;justify-content:space-around;gap:7px;margin:14px 0}.mwDevelopmentBar{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}.mwDevelopmentBar b,.mwDevelopmentBar small{font-size:9px}.mwDevelopmentBar>div{height:75px;width:100%;max-width:45px;background:#263a47;display:flex;align-items:end;border-radius:6px;overflow:hidden}.mwDevelopmentBar i{display:block;width:100%;background:#d7ab55;border-radius:5px 5px 0 0}.mwDevelopmentGuide p{color:#b3c1cc;font-size:11px;line-height:1.6}
 </style>
-<style id="mw-home-stationary-v1">
+<style id="mw-missed-training-guidance-v1">.mwMissedTrainingNotice{margin-top:12px;padding:13px;border:1px solid rgba(231,184,94,.5);border-radius:12px;background:#1a241f;color:#f1e7d2}.mwMissedTrainingNotice b{font-size:11px;color:#e7b85e}.mwMissedTrainingNotice p{font-size:12px;line-height:1.5}.mwMissedTrainingNotice small{font-size:10px;color:#b9c5c5}</style><style id="mw-home-stationary-v1">
 /* Smart Entry must scroll on the first authenticated paint, even when a
    stale Home viewport-lock class remains from the sign-in transition. */
 @media (max-width:599px){
@@ -2569,7 +2569,9 @@ async function renderCompletion(){
   try{const data=await loadMWProgramWeek(w);session=sessionNumber?data?.track?.sessions?.find(x=>Number(x.day)===Number(sessionNumber)):null}catch{}
   if(renderGeneration!==mwCompletionRenderGeneration)return;
   box.innerHTML='';
-  if(overdue&&!(Number(overdue.program_week)===Number(w)&&Number(overdue.program_day)===Number(sessionNumber))){
+  // An unfinished prior workout must never be presented as required catch-up work.
+  // The calendar's current workout remains authoritative.
+  if(false&&overdue&&!(Number(overdue.program_week)===Number(w)&&Number(overdue.program_day)===Number(sessionNumber))){
     const late=document.createElement('div');late.className='checkRow';
     late.innerHTML=`<span><b>Week ${overdue.program_week} · Session ${overdue.program_day}</b><br><small class="muted">INCOMPLETE · YOUR SAVED REPS ARE STILL HERE</small></span><span class="completionActions"><button data-finish-previous="1">FINISH LOGGING</button></span>`;
     box.appendChild(late);
@@ -2583,9 +2585,17 @@ async function renderCompletion(){
   }
   if(hint)hint.style.display='block';
   if(details){
+    const priorDays=Object.entries(mwWorkoutStatusCache||{}).flatMap(([week,days])=>Object.entries(days||{}).map(([day,row])=>({week:Number(week),day:Number(String(day).replace('s','')),row})))
+      .filter(x=>x.week===w&&x.day<sessionNumber&&x.row?.completion_status!=='completed'&&x.row?.completion_status!=='in_progress');
+    const recentMisses=priorDays.length;
+    const previousDay=priorDays[priorDays.length-1];
+    const missedNotice=recentMisses?'<div class="mwMissedTrainingNotice"><b>MW ADAPTIVE TRAINING · '+recentMisses+' MISSED SESSION'+(recentMisses===1?'':'S')+'</b><p>Your program continues on its scheduled day. Do not stack missed sessions or add sprint volume to catch up. '+(recentMisses>=3?'After several missed sessions, review your return-to-training readiness with your coach before high-intensity work.':'Check readiness before today’s workout and consult your coach if a missed hard session affects your recovery.')+'</p><small>Missed workouts are tracked separately. This notice does not change your prescribed sets, pace, or lifting loads.</small></div>':'';
+    details.dataset.mwMissedNotice=missedNotice;
+  }
+  if(details){
     const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
     const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'Follow the MW prescription for today.';
-    const wk=session?.wickets||{};const wicketLine=[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · ');details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WARM-UP:</b> ${session.warmup||'Competition Warm-Up'}<br><b>WICKETS:</b> ${wicketLine||'Daily MW wicket progression'}<br><b>WORK:</b> ${prescribed}<br><b>RECOVERY / STRENGTH:</b> ${session.recovery||'Full quality recovery'}</div>`;
+    const wk=session?.wickets||{};const wicketLine=[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · ');details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WARM-UP:</b> ${session.warmup||'Competition Warm-Up'}<br><b>WICKETS:</b> ${wicketLine||'Daily MW wicket progression'}<br><b>WORK:</b> ${prescribed}<br><b>RECOVERY / STRENGTH:</b> ${session.recovery||'Full quality recovery'}</div>${details.dataset.mwMissedNotice||''}`;
   }
   const pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),isDone=!!wc['s'+sessionNumber]||status==='completed',row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
   const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
