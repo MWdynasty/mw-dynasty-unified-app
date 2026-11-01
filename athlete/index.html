@@ -1418,6 +1418,20 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     overflow:visible!important;
   }
 }
+/* iOS first-login Smart Entry: allow native document scrolling regardless of
+   transient Home classes or delayed authentication layout updates. */
+@media(max-width:599px){
+  html:has(#entry.view.active),body:has(#entry.view.active){
+    position:relative!important;height:auto!important;min-height:100%!important;
+    overflow-y:auto!important;overscroll-behavior-y:auto!important;
+    touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;
+  }
+  body:has(#entry.view.active) .app{
+    height:auto!important;max-height:none!important;min-height:100dvh!important;
+    overflow:visible!important;touch-action:pan-y!important;
+  }
+  #entry.view.active{height:auto!important;max-height:none!important;overflow:visible!important;touch-action:pan-y!important}
+}
 /* Athlete Home is a command center, not a feed. On phone-sized screens it stays
    pinned to one viewport while every other Athlete view keeps normal scrolling. */
 @media (max-width:599px){
@@ -1428,16 +1442,19 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     overscroll-behavior:none!important;
   }
   body.mw-auth-ready.mw-home-locked{
-    position:fixed!important;
-    inset:0!important;
+    /* Keep Home stationary without fixing the document itself.
+       Fixed body on iOS can persist through the first auth-to-entry paint. */
+    position:relative!important;
+    inset:auto!important;
     width:100%!important;
-    height:100dvh!important;
+    height:auto!important;
     min-height:100dvh!important;
-    overflow:hidden!important;
-    overscroll-behavior:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:auto!important;
     padding-bottom:0!important;
-    touch-action:manipulation!important;
-    -webkit-overflow-scrolling:auto!important;
+    touch-action:pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
   }
   body.mw-auth-ready.mw-home-locked .app{
     height:100dvh!important;
@@ -2113,14 +2130,8 @@ function mwSetHomeScrollLock(locked){
     }catch{}
   }
 }
-document.addEventListener('touchmove',e=>{
-  if(!window.matchMedia('(max-width:599px)').matches)return;
-  if(!document.body.classList.contains('mw-home-locked'))return;
-  // Never block scrolling on Smart Entry or any non-Home view during initial login.
-  if(!document.querySelector('#home.view.active')){mwSetHomeScrollLock(false);return}
-  if(e.target.closest('#mwHomeMenu'))return;
-  e.preventDefault();
-},{passive:false,capture:true});
+// Home's CSS constrains its own viewport; never cancel document touchmove.
+// iOS can otherwise retain a blocked gesture during initial Smart Entry login.
 
 const mwInitialHomeLocked=document.querySelector('#home.view.active')!==null;
 mwSetHomeScrollLock(mwInitialHomeLocked);
