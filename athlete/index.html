@@ -1400,6 +1400,24 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 @media(prefers-reduced-motion:reduce){.mwEnteringOrb:before,.mwEnteringOrb:after,.mwEnteringOrb img,.mwEnteringLine i{animation:none}}
 </style>
 <style id="mw-home-stationary-v1">
+/* Smart Entry must scroll on the first authenticated paint, even when a
+   stale Home viewport-lock class remains from the sign-in transition. */
+@media (max-width:599px){
+  html.mw-home-locked:has(#entry.view.active){
+    height:auto!important;min-height:100%!important;
+    overflow-y:auto!important;overscroll-behavior-y:auto!important;
+  }
+  body.mw-auth-ready.mw-home-locked:has(#entry.view.active){
+    position:static!important;inset:auto!important;
+    height:auto!important;min-height:100dvh!important;
+    overflow-y:auto!important;touch-action:pan-y!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body.mw-auth-ready.mw-home-locked:has(#entry.view.active) .app{
+    height:auto!important;min-height:100dvh!important;
+    overflow:visible!important;
+  }
+}
 /* Athlete Home is a command center, not a feed. On phone-sized screens it stays
    pinned to one viewport while every other Athlete view keeps normal scrolling. */
 @media (max-width:599px){
@@ -2057,9 +2075,16 @@ function openView(id,pushHistory=false){
   if(id==='workouts'&&!coachAssigned&&access.mw_training_system!==true&&access.athlete_app===true){mwFeatureLock('Training Access','Your account is active, but no training source is currently available.');return}
   if(id==='workouts'&&!coachAssigned&&window.mwAssessmentRequired){id='entry';const out=$('#entryResult');if(out){out.classList.add('show');out.innerHTML='<div class="warning"><b>Evaluation required.</b><br>Complete your MW Athlete Evaluation to receive your MW training assignment.</div>'}}
   const homeLocked=id==='home';
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));
+  // Set the viewport lock only after the destination view becomes active.
+  // This also repairs the initial sign-in -> evaluation transition on iOS.
   mwSetHomeScrollLock(homeLocked);
-  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));
-  if(id==='entry')syncEntrySeason();
+  if(id==='entry'){
+    document.body.style.removeProperty('overflow');
+    document.documentElement.style.removeProperty('overflow');
+    syncEntrySeason();
+  }
   if(id==='workouts'&&coachAssigned){mwRenderCoachAssignedTraining();}
   else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
   if(id==='progress'&&access.mw_training_system!==true&&access.coach_assigned_training===true)mwRenderSponsoredProgress();else if(id==='home'||id==='progress')renderProgressUI();
