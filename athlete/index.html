@@ -1399,6 +1399,16 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 @media(max-width:430px){.mwEnteringOrb{width:174px;height:174px}.mwEnteringOrb img{width:132px;height:132px;border-radius:28px}.mwEnteringCopy b{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.mwEnteringOrb:before,.mwEnteringOrb:after,.mwEnteringOrb img,.mwEnteringLine i{animation:none}}
 </style>
+<style id="mw-velocity-insights-v1">
+.mwVelocityInsights{margin:16px 0;padding:16px;border:1px solid rgba(245,185,46,.24);border-radius:18px;background:linear-gradient(140deg,#101d28,#061019 70%);color:#f7f9fb}
+.mwVelocityInsightsHeading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:12px;font-size:10px;letter-spacing:.07em}.mwVelocityInsightsHeading span{color:#d9ac52;font-size:9px;text-align:right}
+.mwVelocityInsightsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:22px}
+.mwVelocityInsightsGrid>div{background:#08121b;border:1px solid #253746;border-radius:13px;padding:13px;min-width:0}
+.mwVelocityInsightsGrid small,.mwVelocityInsightsGrid span{display:block;color:#9daab6;font-size:9px}.mwVelocityInsightsGrid strong{display:block;font-size:19px;margin:8px 0}
+.mwVelocityTrack{height:7px;border-radius:10px;background:#253442;overflow:hidden;margin:10px 0}.mwVelocityTrack i{display:block;height:100%;background:linear-gradient(90deg,#a87c2d,#f4c76a);border-radius:10px}
+.mwVelocityWeekHistory{display:flex;gap:9px;align-items:end;justify-content:space-around;min-height:126px}.mwVelocityWeekColumn{flex:1;max-width:55px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}.mwVelocityWeekColumn b{font-size:11px}.mwVelocityWeekColumn small{color:#a5b2bf;font-size:10px}.mwVelocityWeekPillar{width:100%;height:78px;border-radius:7px;background:#20303c;display:flex;align-items:end;overflow:hidden}.mwVelocityWeekPillar i{display:block;width:100%;background:linear-gradient(#f3c86d,#9a7129);border-radius:6px 6px 0 0}
+.mwVelocityFootnote{font-size:10px;color:#9caab6;line-height:1.6;margin:14px 0 0}
+</style>
 <style id="mw-home-stationary-v1">
 /* Smart Entry must scroll on the first authenticated paint, even when a
    stale Home viewport-lock class remains from the sign-in transition. */
@@ -1757,6 +1767,16 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div><strong id="progressCompleted">0</strong><span>WORKOUTS</span></div>
   <div><strong id="progressWeeks">0</strong><span>WEEKS</span></div>
   <div><strong id="progressStart">—</strong><span>STARTED</span></div>
+</div>
+<div class="mwVelocityInsights" id="mwVelocityInsights" aria-label="Training progression insights">
+  <div class="mwVelocityInsightsHeading"><b>YOUR DEVELOPMENT AT A GLANCE</b><span id="mwVelocityPhase">MW VELOCITY</span></div>
+  <div class="mwVelocityInsightsGrid">
+    <div><small>THIS WEEK</small><strong id="mwVelocityWeekRead">0 / 5</strong><div class="mwVelocityTrack"><i id="mwVelocityWeekBar"></i></div><span>Sessions completed</span></div>
+    <div><small>TRAINING JOURNEY</small><strong id="mwVelocityJourneyRead">Week 1 / 41</strong><div class="mwVelocityTrack"><i id="mwVelocityJourneyBar"></i></div><span>Current program position</span></div>
+  </div>
+  <div class="mwVelocityInsightsHeading"><b>RECENT WEEKLY CONSISTENCY</b><span>LAST 6 WEEKS</span></div>
+  <div id="mwVelocityWeekHistory" class="mwVelocityWeekHistory"></div>
+  <p class="mwVelocityFootnote">Based on your saved session completions. Performance results and strength response appear in their dedicated sections below. Completion is not a sprint-speed grade.</p>
 </div>
 <div class="mwProgressSection">
   <div class="mwProgressTitle"><span>PRS & TIME TRIALS</span><small>FROM YOUR PROFILE</small></div>
@@ -2628,7 +2648,21 @@ function renderWeightRoomProgressUI(){
   if(!parts.length)parts.push('<div class="muted">No weight-room history yet. Complete today’s lift and MW will build progression automatically from the check-in you already use.</div>');
   box.innerHTML=parts.join('');
 }
-function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP150','p150'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400'],['progressP500','p500']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI()}
+function renderVelocityInsights(w,wc){
+ const root=document.getElementById('mwVelocityInsights');if(!root)return;
+ const completion=getCompletion(),done=Object.values(wc||{}).filter(Boolean).length;
+ const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+ set('mwVelocityWeekRead',done+' / 5');set('mwVelocityJourneyRead','Week '+w+' / 41');
+ set('mwVelocityPhase',PHASES[phaseFromWeek(w)]?.name||'MW VELOCITY');
+ document.getElementById('mwVelocityWeekBar').style.width=Math.min(100,done/5*100)+'%';
+ document.getElementById('mwVelocityJourneyBar').style.width=Math.min(100,w/41*100)+'%';
+ const from=Math.max(1,w-5),weeks=Array.from({length:w-from+1},(_,i)=>from+i);
+ document.getElementById('mwVelocityWeekHistory').innerHTML=weeks.map(week=>{
+   const n=Math.min(5,Object.values(completion[String(week)]||{}).filter(Boolean).length);
+   return '<div class="mwVelocityWeekColumn" aria-label="Week '+week+': '+n+' of 5 sessions"><b>'+n+'/5</b><div class="mwVelocityWeekPillar"><i style="height:'+(n/5*100)+'%"></i></div><small>W'+week+'</small></div>';
+ }).join('');
+}
+function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP150','p150'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400'],['progressP500','p500']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI();renderVelocityInsights(w,wc)}
 function renderProfileIdentity(){const p=getProfile(),first=(document.getElementById('name')?.value||p.name||'Athlete').trim(),last=(document.getElementById('profileLastName')?.value||'').trim(),events=(document.getElementById('profileEvents')?.value||'SPRINT PERFORMANCE').trim();const nm=document.getElementById('mwProfileDisplayName'),ev=document.getElementById('mwProfileEventLine'),mo=document.getElementById('mwProfileMonogram');if(nm)nm.textContent=(first+' '+last).trim();if(ev)ev.textContent=events||'SPRINT PERFORMANCE';if(mo)mo.textContent=((first[0]||'M')+(last[0]||'W')).toUpperCase()}
 document.querySelectorAll('.mwProfileSaveAlias').forEach(b=>b.onclick=()=>document.getElementById('save')?.click());
 ['name','profileLastName','profileEvents'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProfileIdentity));
