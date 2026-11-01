@@ -2091,12 +2091,26 @@ function mwSetHomeScrollLock(locked){
 document.addEventListener('touchmove',e=>{
   if(!window.matchMedia('(max-width:599px)').matches)return;
   if(!document.body.classList.contains('mw-home-locked'))return;
+  // Never block scrolling on Smart Entry or any non-Home view during initial login.
+  if(!document.querySelector('#home.view.active')){mwSetHomeScrollLock(false);return}
   if(e.target.closest('#mwHomeMenu'))return;
   e.preventDefault();
 },{passive:false,capture:true});
 
 const mwInitialHomeLocked=document.querySelector('#home.view.active')!==null;
 mwSetHomeScrollLock(mwInitialHomeLocked);
+// Login/onboarding can activate Smart Entry outside normal navigation. Keep the
+// home-only fixed viewport lock synchronized with the actually visible screen.
+const mwHomeView=document.getElementById('home');
+if(mwHomeView){
+  new MutationObserver(()=>{
+    const homeActive=mwHomeView.classList.contains('active');
+    if(document.body.classList.contains('mw-home-locked')!==homeActive ||
+       document.documentElement.classList.contains('mw-home-locked')!==homeActive){
+      mwSetHomeScrollLock(homeActive);
+    }
+  }).observe(mwHomeView,{attributes:true,attributeFilter:['class']});
+}
 window.addEventListener('popstate',e=>openView(e.state?.mwView||'home',false));
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>openView(b.dataset.v,true));
 
