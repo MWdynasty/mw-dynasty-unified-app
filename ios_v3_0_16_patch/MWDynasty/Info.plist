@@ -25,7 +25,7 @@
 	<key>MWProductionURL</key>
 	<string>https://app.mwdynasty.com/</string>
 	<key>NSCameraUsageDescription</key>
-	<string>MW Dynasty uses the camera only when you choose to add a training image to Coach MW.</string>
+	<string>MW Dynasty uses the camera only when you choose Motion Intelligence or add a training image to Coach MW.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>MW Dynasty uses your location only when you choose Distance Marker to measure workout distances.</string>
 	<key>NSMicrophoneUsageDescription</key>
