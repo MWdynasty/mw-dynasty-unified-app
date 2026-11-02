@@ -3,6 +3,7 @@ const assert=require('assert');
 
 // Auth controls now come from the same component used by Coach.
 const html=fs.readFileSync('athlete/index.html','utf8')+fs.readFileSync('assets/mw-performance-progression.js','utf8')+require('./assets/mw-signin-v3.js').render('athlete');
+const adaptiveLayout=fs.readFileSync('assets/mw-adaptive-tools-layout.js','utf8');
 const buttons=[...html.matchAll(/<button\b([^>]*)>/gi)].map((m,i)=>({i,attrs:m[1],tag:m[0]}));
 
 function attr(tag,name){
@@ -143,6 +144,10 @@ assert(!html.includes("document.addEventListener('touchmove'"),'Home must not in
 assert(html.includes('touch-action:pan-y!important;'),'Home dropdown must retain its own vertical scrolling under the stationary viewport');
 assert(html.includes('mwSetHomeScrollLock(homeLocked);'),'View navigation must use the hard Home scroll lock helper');
 console.log('PASS: iOS Home preserves internal content scrolling and menu scroll under the fixed viewport.');
+
+assert(adaptiveLayout.includes('Get guidance for returning after a break and see whether a coach review is needed.'),'Training intelligence explains the return guidance before the athlete taps it');
+assert(adaptiveLayout.includes('settings.parentElement!==profile'),'Notification preferences are kept out of the Training Intelligence card');
+console.log('PASS: Home training guidance is explained clearly and notification settings no longer crowd that card.');
 
 
 assert(html.includes("document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id))"),'openView must update all bottom-nav buttons without throwing');

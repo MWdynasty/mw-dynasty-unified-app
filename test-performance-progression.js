@@ -120,10 +120,12 @@ async function client(){
   const section=page.document.getElementById('mw-performance-progression');
   assert(section,'performance dashboard mounts in the Progression view');
   assert.equal(section.parentElement.id,'progress','performance details live with program progression');
+  assert.match(section.textContent,/See your workouts, best times, and lifts over time\./,'the progression page has a one-sentence plain-language explanation');
   assert.equal(page.document.getElementById('home').querySelector('#mw-performance-progression'),null,'Home stays focused on today’s training');
   assert.equal(page.document.getElementById('home').querySelector('.mwHomeProgress'),null,'Home contains no athlete progression summary');
   const summary=page.document.querySelector('#progress .mwProgressProgramSummary');
   assert(summary,'weekly completion and program percentage move into Progression');
+  assert.match(asset,/\.mwProgressProgramSummary button\{grid-column:1\/-1/,'season guidance uses a full-width row instead of a cramped third column');
   assert.equal(summary.previousElementSibling.className,'mwProgressStats','program summary follows the 41-week progress overview');
   assert.equal(page.document.querySelector('[data-v="progress"] span').textContent,'Progression','bottom navigation explains the tab purpose');
   assert.equal(calls.length,1);
