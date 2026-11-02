@@ -261,11 +261,11 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         let names = ["left_shoulder", "right_shoulder", "left_hip", "right_hip", "left_knee", "right_knee", "left_ankle", "right_ankle", "left_elbow", "right_elbow", "left_wrist", "right_wrist"]
         var joints: [String: [String: Float]] = [:]
         for name in names {
-            let transform = body.skeleton.modelTransform(for: ARSkeleton.JointName(rawValue: name))
+            guard let transform = body.skeleton.modelTransform(for: ARSkeleton.JointName(rawValue: name)) else { continue }
             let t = transform.columns.3
             joints[name] = ["x": t.x, "y": t.y, "z": t.z]
         }
-        sendMotion3DResult(["ok": true, "state": "tracking", "timestamp": body.timestamp, "joints": joints])
+        sendMotion3DResult(["ok": true, "state": "tracking", "timestamp": Date().timeIntervalSince1970, "joints": joints])
     }
 
     private func sendMotion3DResult(_ result: [String: Any]) {
