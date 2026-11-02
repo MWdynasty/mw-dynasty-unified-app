@@ -7,8 +7,8 @@ var section=el('section',null,'margin:18px 0 24px;padding:18px;border:1px solid 
 section.appendChild(el('h2','MY PERFORMANCE PROGRESSION','font-size:19px;letter-spacing:.05em;color:#f3c768;margin:0 0 6px'));
 section.appendChild(el('p','Speed • Strength • Actual improvements','color:#aebdcc;margin:0 0 14px'));
 var content=el('div','Loading your saved performances…');section.appendChild(content);
-var anchor=home.querySelector('.mwTodayFocusCard,.todayFocusCard,.today-focus-card')||home.querySelector('section,article,.card');if(anchor)anchor.insertAdjacentElement('afterend',section);else home.prepend(section);
-var s=session();if(!s||!s.access_token){content.textContent='Sign in to see your progression.';return true}
+var focus=home.querySelector('.mwTodayFocusCard,.todayFocusCard,.today-focus-card');if(focus)focus.insertAdjacentElement('afterend',section);else {var header=home.querySelector('.top');if(header)header.insertAdjacentElement('afterend',section);else home.prepend(section)}
+var s=session();if(!s||!s.access_token){content.textContent='Sign in to see your progression. If you are already signed in, reopen the dashboard.';return true}
 fetch((window.MW_SUPABASE_URL||base)+'/rest/v1/rpc/mw_get_performance_progression',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY||key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'}).then(async function(r){var d=await r.json();if(!r.ok)throw Error(d.message||'Unable to load');return d}).then(function(d){content.replaceChildren();
 function heading(t){content.appendChild(el('h3',t,'color:#f1c466;font-size:15px;margin:16px 0 9px'))}
 function card(main,sub){var x=el('div',null,'background:#0a1521;border:1px solid #334657;border-radius:12px;padding:12px;margin:8px 0');x.appendChild(el('strong',main,'display:block;font-size:17px'));x.appendChild(el('div',sub,'font-size:12px;color:#afbecd;margin-top:5px'));content.appendChild(x)}
