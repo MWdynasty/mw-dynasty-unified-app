@@ -146,6 +146,8 @@ assert(html.includes('mwSetHomeScrollLock(homeLocked);'),'View navigation must u
 console.log('PASS: iOS Home preserves internal content scrolling and menu scroll under the fixed viewport.');
 
 assert(adaptiveLayout.includes('Get guidance for returning after a break and see whether a coach review is needed.'),'Training intelligence explains the return guidance before the athlete taps it');
+assert(adaptiveLayout.includes("var train=document.getElementById('workouts')"),'Training intelligence targets the Train tab');
+assert(adaptiveLayout.includes("focus=train.querySelector"),'Training intelligence is inserted into the Train tab instead of Home');
 assert(adaptiveLayout.includes('settings.parentElement!==profile'),'Notification preferences are kept out of the Training Intelligence card');
 console.log('PASS: Home training guidance is explained clearly and notification settings no longer crowd that card.');
 

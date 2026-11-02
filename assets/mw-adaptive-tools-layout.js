@@ -2,9 +2,10 @@
 if(!location.pathname.startsWith('/athlete'))return;
 function mount(){
  var home=document.getElementById('home');
+ var train=document.getElementById('workouts');
  var guidance=document.getElementById('mw-return-guidance-launcher');
  var settings=document.getElementById('mw-notification-settings-launcher');
- if(!home||!guidance||!settings)return false;
+ if(!home||!train||!guidance||!settings)return false;
  var section=document.getElementById('mw-adaptive-tools');
  if(!section){
   section=document.createElement('section');section.id='mw-adaptive-tools';
@@ -13,8 +14,8 @@ function mount(){
   var title=document.createElement('h3');title.textContent='Training intelligence';title.style.cssText='font:700 16px system-ui;margin:0 0 6px';section.appendChild(title);
   var intro=document.createElement('p');intro.textContent='Get guidance for returning after a break and see whether a coach review is needed.';intro.style.cssText='margin:0 0 12px;color:#b8c5d1;font:13px/1.45 system-ui';section.appendChild(intro);
   var actions=document.createElement('div');actions.id='mw-adaptive-actions';actions.style.cssText='display:flex;flex-wrap:wrap;gap:10px';section.appendChild(actions);
-  var focus=home.querySelector('.mwTodayFocusCard,.todayFocusCard,.today-focus-card')||home.querySelector('section,article,.card');
-  if(focus&&focus.parentElement)focus.insertAdjacentElement('afterend',section);else home.appendChild(section);
+  var focus=train.querySelector('#mwTodayToolsCard,.mwWorkoutCard,.workoutCard,.mwTodayCard,.card');
+  if(focus&&focus.parentElement)focus.insertAdjacentElement('afterend',section);else train.appendChild(section);
  }
  var actions=section.querySelector('#mw-adaptive-actions');
  [guidance].forEach(function(button){
