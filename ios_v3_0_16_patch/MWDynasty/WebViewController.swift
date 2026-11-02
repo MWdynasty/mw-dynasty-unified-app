@@ -5,24 +5,30 @@ import Speech
 import AVFoundation
 import UserNotifications
 import StoreKit
+import ARKit
+import simd
 
-final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, CLLocationManagerDelegate {
+final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, CLLocationManagerDelegate, ARSessionDelegate {
     private var webView: WKWebView!
     private let launchIcon = UIImageView()
     private let locationManager = CLLocationManager()
     private var permissionType: String?
     private var transactionUpdatesTask: Task<Void, Never>?
+    private let motion3DSession = ARSession()
+    private var motion3DActive = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 5/255, green: 9/255, blue: 13/255, alpha: 1)
         locationManager.delegate = self
+        motion3DSession.delegate = self
 
         let content = WKUserContentController()
         content.add(self, name: "mwPermissions")
         content.add(self, name: "mwPurchase")
         content.add(self, name: "mwRestorePurchase")
         content.add(self, name: "mwManageSubscriptions")
+        content.add(self, name: "mwMotion3D")
 
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -138,6 +144,13 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             return
         }
 
+        if message.name == "mwMotion3D" {
+            let action = (body["action"] as? String) ?? ""
+            if action == "start" { startMotion3D() }
+            else if action == "stop" { stopMotion3D() }
+            return
+        }
+
         guard message.name == "mwPermissions", let type = body["type"] as? String else { return }
         permissionType = type
         switch type {
@@ -225,9 +238,47 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         webView.evaluateJavaScript("window.mwNativePermissionResult && window.mwNativePermissionResult(\(json));")
     }
 
+    private func startMotion3D() {
+        guard ARBodyTrackingConfiguration.isSupported else {
+            sendMotion3DResult(["ok": false, "supported": false, "error": "3-D body tracking is not supported on this iPhone."])
+            return
+        }
+        let configuration = ARBodyTrackingConfiguration()
+        configuration.isAutoFocusEnabled = true
+        motion3DActive = true
+        motion3DSession.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        sendMotion3DResult(["ok": true, "supported": true, "state": "started"])
+    }
+
+    private func stopMotion3D() {
+        motion3DActive = false
+        motion3DSession.pause()
+        sendMotion3DResult(["ok": true, "state": "stopped"])
+    }
+
+    func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
+        guard motion3DActive, let body = anchors.compactMap({ $0 as? ARBodyAnchor }).first else { return }
+        let names = ["left_shoulder", "right_shoulder", "left_hip", "right_hip", "left_knee", "right_knee", "left_ankle", "right_ankle", "left_elbow", "right_elbow", "left_wrist", "right_wrist"]
+        var joints: [String: [String: Float]] = [:]
+        for name in names {
+            let transform = body.skeleton.modelTransform(for: ARSkeleton.JointName(rawValue: name))
+            let t = transform.columns.3
+            joints[name] = ["x": t.x, "y": t.y, "z": t.z]
+        }
+        sendMotion3DResult(["ok": true, "state": "tracking", "timestamp": body.timestamp, "joints": joints])
+    }
+
+    private func sendMotion3DResult(_ result: [String: Any]) {
+        guard JSONSerialization.isValidJSONObject(result), let data = try? JSONSerialization.data(withJSONObject: result), let json = String(data: data, encoding: .utf8) else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.webView.evaluateJavaScript("window.mwNativeMotion3DResult && window.mwNativeMotion3DResult(\(json));")
+        }
+    }
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         launchIcon.isHidden = true
         launchIcon.layer.removeAnimation(forKey: "mwPulse")
+        webView.evaluateJavaScript("window.mwNativeMotion3D={start:()=>window.webkit.messageHandlers.mwMotion3D.postMessage({action:'start'}),stop:()=>window.webkit.messageHandlers.mwMotion3D.postMessage({action:'stop'})};")
         Task { @MainActor [weak self] in
             for await result in Transaction.unfinished {
                 guard case .verified(let transaction) = result else { continue }
