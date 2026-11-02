@@ -3658,9 +3658,11 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const role=String(profile.role||'athlete');
     const privileged=['founder_owner','admin','coach'].includes(role);
     const hasAthlete=!!d.athlete;
+    const officialWeek=String(d.authoritativeProgram?.week||ps.current_week||1);
+    const officialSourceWeek=String(d.authoritativeProgram?.sourceWeek||ps.source_program_week||officialWeek);
     const featureAccess=d.features?.access||{};window.mwFeatureAccess=featureAccess;
     window.mwCoachConnected=d.coachRelationship?.connected===true;
-    window.MWDiag?.snapshot({audience:'athlete',role,access_mode:String(featureAccess.access_mode||''),has_access:featureAccess.has_access===true,current_week:Number(ps.current_week||1),program_status:String(ps.program_status||''),evaluation_complete:Boolean(ps.onboarding_assessment_completed_at)});
+    window.MWDiag?.snapshot({audience:'athlete',role,access_mode:String(featureAccess.access_mode||''),has_access:featureAccess.has_access===true,current_week:Number(officialWeek),program_status:String(ps.program_status||''),evaluation_complete:Boolean(ps.onboarding_assessment_completed_at)});
     window.mwAssessmentComplete=Boolean(ps.onboarding_assessment_completed_at);
     window.mwAssessmentRequired=hasAthlete&&featureAccess.smart_entry===true&&!window.mwAssessmentComplete;
     window.mwDobRequired=hasAthlete&&!d.athlete?.date_of_birth&&featureAccess.access_mode!=='internal_test';
@@ -3672,9 +3674,9 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       coachType:['male','female'].includes(localVoice.coachType)?localVoice.coachType:'male',
       ...pr,
       prs:d.prs||[],
-      week:String(ps.current_week||1),
-      authoritativeWeek:String(d.authoritativeProgram?.week||ps.current_week||1),
-      sourceWeek:String(d.authoritativeProgram?.sourceWeek||ps.source_program_week||ps.current_week||1),
+      week:officialWeek,
+      authoritativeWeek:officialWeek,
+      sourceWeek:officialSourceWeek,
       currentDay:String(d.authoritativeProgram?.day||ps.current_day||1),
       currentPhase:String(d.authoritativeProgram?.phase||ps.current_phase||1),
       performanceIntelligence:d.performanceIntelligence||null,
