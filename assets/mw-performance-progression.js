@@ -98,20 +98,28 @@
     document.head.appendChild(s);
   }
   function mount(){
-    var home=document.getElementById('home');
-    if(!home||document.getElementById('mw-performance-progression'))return false;
+    var view=document.getElementById('progress');
+    if(!view||document.getElementById('mw-performance-progression'))return false;
     style();
     var section=node('section');section.id='mw-performance-progression';section.setAttribute('aria-labelledby','mwpi-title');
     section.appendChild(node('h2','MY PERFORMANCE PROGRESSION'));section.querySelector('h2').id='mwpi-title';
     section.appendChild(node('p','Speed • Strength • Training consistency','mwpi-sub'));
     var content=node('div','Loading your saved performances…');content.id='mwpi-content';section.appendChild(content);
-    var focus=home.querySelector('.mwTodayFocusCard,.todayFocusCard,.today-focus-card');
-    if(focus)focus.insertAdjacentElement('afterend',section);else {var header=home.querySelector('.top');if(header)header.insertAdjacentElement('afterend',section);else home.prepend(section)}
-    var s=session();
-    if(!s||!s.access_token){content.textContent='Sign in to see your progression. If you are already signed in, refresh the athlete dashboard.';return true}
-    fetch((window.MW_SUPABASE_URL||base)+'/rest/v1/rpc/mw_get_performance_progression_history',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY||key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}',cache:'no-store'})
-      .then(async function(r){var d=await r.json();if(!r.ok)throw Error(d.message||'Unable to load progression');return d})
-      .then(render).catch(function(error){content.textContent='Progression unavailable right now: '+error.message});
+    var hero=view.querySelector('.mwProgressHero');
+    if(hero)hero.insertAdjacentElement('afterend',section);else view.appendChild(section);
+    var load=function(attempt){
+      var s=session();
+      if(!s||!s.access_token){
+        if(attempt<20){content.textContent='Loading your saved performances…';setTimeout(function(){load(attempt+1)},400);return}
+        content.textContent='Your saved progression will appear here when your athlete session is ready. Reopen Progression to try again.';return
+      }
+      content.textContent='Loading your saved performances…';
+      fetch((window.MW_SUPABASE_URL||base)+'/rest/v1/rpc/mw_get_performance_progression_history',{method:'POST',headers:{apikey:window.MW_SUPABASE_KEY||key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}',cache:'no-store'})
+        .then(async function(r){var d=await r.json();if(!r.ok)throw Error(d.message||'Unable to load progression');return d})
+        .then(render).catch(function(error){content.textContent='Progression unavailable right now: '+error.message});
+    };
+    window.MW_REFRESH_PERFORMANCE_PROGRESSION=function(){load(0)};
+    load(0);
     return true;
   }
   function render(data){
@@ -199,6 +207,11 @@
     control(controls,'Compare by',[{label:'Program week',value:'week'},{label:'Calendar month',value:'month'}],period,function(v){period=v;redraw()});
     redraw();
   }
-  function start(){if(mount())return;var observer=new MutationObserver(function(){if(mount())observer.disconnect()});observer.observe(document.body,{childList:true,subtree:true});setTimeout(function(){observer.disconnect()},12000)}
+  function start(){
+    var nav=document.querySelector('.nav button[data-v="progress"]');
+    if(nav){nav.setAttribute('aria-label','Progression');var label=nav.querySelector('span');if(label)label.textContent='Progression';nav.addEventListener('click',function(){setTimeout(function(){window.MW_REFRESH_PERFORMANCE_PROGRESSION?.()},0)})}
+    if(mount())return;
+    var observer=new MutationObserver(function(){if(mount())observer.disconnect()});observer.observe(document.body,{childList:true,subtree:true});setTimeout(function(){observer.disconnect()},12000)
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

@@ -95,7 +95,7 @@ async function database(){
 
 async function client(){
   const page=new Window({url:'https://app.mwdynasty.com/athlete/'});
-  page.document.body.innerHTML='<main id="home"><header class="top">Today</header></main>';
+  page.document.body.innerHTML='<main id="home"><header class="top">Today</header></main><section id="progress"><div class="mwProgressHero">Program progress</div></section><nav class="nav"><button data-v="progress">Progression</button></nav>';
   page.window.MWAccountStorage={local:{getItem:key=>key==='mwSupabaseSession'?JSON.stringify({access_token:'athlete-token',user:{id:ids.userA}}):null},session:{getItem:()=>null}};
   const sessionResults={
     status:'ok',current_week:7,
@@ -118,7 +118,9 @@ async function client(){
   vm.runInNewContext(asset,context);
   await new Promise(resolve=>setTimeout(resolve,0));
   const section=page.document.getElementById('mw-performance-progression');
-  assert(section,'progression dashboard mounts on athlete Today');
+  assert(section,'performance dashboard mounts in the Progression view');
+  assert.equal(section.parentElement.id,'progress','performance details live with program progression');
+  assert.equal(page.document.getElementById('home').querySelector('#mw-performance-progression'),null,'Home stays focused on today’s training');
   assert.equal(calls.length,1);
   assert.match(calls[0].url,/rpc\/mw_get_performance_progression_history/);
   assert.equal(calls[0].options.headers.Authorization,'Bearer athlete-token');
