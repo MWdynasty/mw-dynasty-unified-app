@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v10-account-isolation';
+const CACHE='mw-dynasty-shell-v11-account-isolation';
 const CORE=[
   '/',
   '/athlete/',
