@@ -2,7 +2,7 @@ const fs=require('fs');
 const assert=require('assert');
 
 // Auth controls now come from the same component used by Coach.
-const html=fs.readFileSync('athlete/index.html','utf8')+require('./assets/mw-signin-v3.js').render('athlete');
+const html=fs.readFileSync('athlete/index.html','utf8')+fs.readFileSync('assets/mw-performance-progression.js','utf8')+require('./assets/mw-signin-v3.js').render('athlete');
 const buttons=[...html.matchAll(/<button\b([^>]*)>/gi)].map((m,i)=>({i,attrs:m[1],tag:m[0]}));
 
 function attr(tag,name){
@@ -128,20 +128,21 @@ assert(html.includes('#home .mwHomeShortcuts{display:none!important}'),'Legacy H
 console.log('PASS: athlete Home secondary actions are consolidated into the dropdown menu.');
 
 
-assert(html.includes('id="mw-home-stationary-v1"'),'Stationary Athlete Home stylesheet must exist');
+assert(html.includes('id="mw-home-stationary-v1"'),'Athlete Home scroll-lock stylesheet must exist');
 assert(html.includes("document.body.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle body scrolling state');
 assert(html.includes("document.documentElement.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle document scrolling state');
-assert(html.includes('body.mw-auth-ready.mw-home-locked'),'Stationary Home CSS must override normal authenticated scrolling');
+assert(html.includes('body.mw-auth-ready.mw-home-locked'),'Home CSS must override normal authenticated page scrolling');
+assert(html.includes('overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important'),'Home content must scroll internally above the fixed bottom navigation');
 assert(html.includes('#home .mwHomeMenu{\n    max-height:min(70dvh,520px);'),'Home dropdown must remain internally usable on short screens');
-console.log('PASS: Athlete Home is stationary on phone-sized screens while secondary views retain scrolling.');
+console.log('PASS: Athlete Home keeps the viewport fixed while its content scrolls above the bottom navigation.');
 
 
-assert(html.includes('position:fixed!important;'),'Stationary Home must hard-lock the body on iOS');
+assert(html.includes('position:fixed!important;'),'Home must retain its iOS viewport-lock safeguards');
 assert(html.includes("Home's CSS constrains its own viewport; never cancel document touchmove."),'Home must preserve native iOS gestures instead of canceling touchmove globally');
 assert(!html.includes("document.addEventListener('touchmove'"),'Home must not install a global touchmove cancellation handler');
 assert(html.includes('touch-action:pan-y!important;'),'Home dropdown must retain its own vertical scrolling under the stationary viewport');
 assert(html.includes('mwSetHomeScrollLock(homeLocked);'),'View navigation must use the hard Home scroll lock helper');
-console.log('PASS: iOS Athlete Home hard scroll lock prevents viewport panning while preserving menu scroll.');
+console.log('PASS: iOS Home preserves internal content scrolling and menu scroll under the fixed viewport.');
 
 
 assert(html.includes("document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id))"),'openView must update all bottom-nav buttons without throwing');
@@ -149,7 +150,7 @@ assert(html.includes("document.querySelectorAll('.view').forEach(x=>x.classList.
 assert(!html.includes("$('.nav button').forEach(x=>x.classList.toggle"),'Single-element selector must never be used with forEach for nav state');
 assert(!html.includes("$('.view').forEach(x=>x.classList.toggle"),'Single-element selector must never be used with forEach for view state');
 assert(!html.includes('touch-action:none!important'),'Stationary Home must not disable tap interactions');
-console.log('PASS: stationary Home preserves bottom navigation taps.');
+console.log('PASS: scrollable Home preserves bottom navigation taps.');
 
 assert(html.includes('let mwDeferSeasonDates=false;'),'Season date deferral state must exist');
 assert(html.includes('deferSeasonDates:window.mwCoachConnected===true||mwDeferSeasonDates'),'Season plan must support automatic safe-date deferral without a legacy button');
