@@ -121,6 +121,9 @@ async function client(){
   assert(section,'performance dashboard mounts in the Progression view');
   assert.equal(section.parentElement.id,'progress','performance details live with program progression');
   assert.match(section.textContent,/See your workouts, best times, and lifts over time\./,'the progression page has a one-sentence plain-language explanation');
+  assert.match(section.textContent,/Read the chart from left to right: each dot shows one week or month\./,'athletes get instructions for reading the chart');
+  assert.match(section.textContent,/higher dots mean a faster time/,'sprint direction is explained in plain language');
+  assert.match(section.textContent,/higher dots mean a higher estimated lift/,'strength direction and estimate are explained in plain language');
   assert.equal(page.document.getElementById('home').querySelector('#mw-performance-progression'),null,'Home stays focused on today’s training');
   assert.equal(page.document.getElementById('home').querySelector('.mwHomeProgress'),null,'Home contains no athlete progression summary');
   const summary=page.document.querySelector('#progress .mwProgressProgramSummary');
@@ -133,15 +136,16 @@ async function client(){
   assert.equal(calls[0].options.headers.Authorization,'Bearer athlete-token');
   assert.equal(section.querySelectorAll('svg').length,2,'speed and strength graphs render');
   assert.match(section.textContent,/First 12\.10s · Latest 11\.80s/);
-  assert.match(section.textContent,/5 completed workouts/);
+  assert.match(section.textContent,/5 workouts completed/);
   assert.match(section.textContent,/3 of 41 program weeks/);
   const selects=section.querySelectorAll('select');
   assert.equal(selects.length,5,'sprint purpose, distance, and period plus strength exercise and period are selectable');
   selects[0].value='tempo';selects[0].dispatchEvent(new page.Event('change'));
   assert.doesNotMatch(section.textContent,/First 14\.00s · Latest 13\.80s/,'tempo times never become a maximum-speed improvement claim');
-  assert.match(section.textContent,/faster time is not automatically an improvement for tempo/);
+  assert.match(section.textContent,/For tempo, follow the workout’s pace or skill goal—fastest is not always best/);
   selects[0].value='technical';selects[0].dispatchEvent(new page.Event('change'));
-  assert.match(section.textContent,/faster time is not automatically an improvement for technical/);
+  assert.match(section.textContent,/For technique practice, follow the workout’s pace or skill goal—fastest is not always best/);
+  assert.match(section.textContent,/Only one week or month has a result so far/,'a one-period graph is replaced by a clear explanation instead of a misleading flat chart');
   page.close();
 }
 
