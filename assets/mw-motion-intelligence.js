@@ -33,7 +33,7 @@
         if(!up.ok) throw new Error('Secure upload failed.');
         status.textContent='Verifying recording…';
         const done=await call('finalize',{assessmentId:prepared.assessmentId});
-        status.textContent=done.durationVerified?`✓ Recording saved (${Math.round(Number(done.durationMs||0)/1000)}s). Motion review is ready for processing.`:'Recording saved securely.';
+        status.textContent=done.durationVerified?`✓ Recording saved (${Math.round(Number(done.durationMs||0)/1000)}s). Automated movement findings will appear when the review processor is connected.`:'Recording saved securely.';
         await loadHistory();
       } catch(e) { status.textContent=e.message||'Motion upload failed.'; } finally { btn.disabled=false; }
     };
