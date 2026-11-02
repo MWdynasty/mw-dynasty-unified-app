@@ -95,7 +95,7 @@ async function database(){
 
 async function client(){
   const page=new Window({url:'https://app.mwdynasty.com/athlete/'});
-  page.document.body.innerHTML='<main id="home"><header class="top">Today</header></main><section id="progress"><div class="mwProgressHero">Program progress</div></section><nav class="nav"><button data-v="progress">Progression</button></nav>';
+  page.document.body.innerHTML='<main id="home"><header class="top">Today</header><div class="mwHomeProgress"><strong id="homeDone">0/5</strong><strong id="homePct">0%</strong><button id="homeTrainingYear">WHY THIS WEEK?</button><div id="homeProgressBar"></div></div></main><section id="progress"><div class="mwProgressHero">Program progress</div><div class="mwProgressStats">Stats</div></section><nav class="nav"><button data-v="progress"><span>Program</span></button></nav>';
   page.window.MWAccountStorage={local:{getItem:key=>key==='mwSupabaseSession'?JSON.stringify({access_token:'athlete-token',user:{id:ids.userA}}):null},session:{getItem:()=>null}};
   const sessionResults={
     status:'ok',current_week:7,
@@ -121,6 +121,11 @@ async function client(){
   assert(section,'performance dashboard mounts in the Progression view');
   assert.equal(section.parentElement.id,'progress','performance details live with program progression');
   assert.equal(page.document.getElementById('home').querySelector('#mw-performance-progression'),null,'Home stays focused on today’s training');
+  assert.equal(page.document.getElementById('home').querySelector('.mwHomeProgress'),null,'Home contains no athlete progression summary');
+  const summary=page.document.querySelector('#progress .mwProgressProgramSummary');
+  assert(summary,'weekly completion and program percentage move into Progression');
+  assert.equal(summary.previousElementSibling.className,'mwProgressStats','program summary follows the 41-week progress overview');
+  assert.equal(page.document.querySelector('[data-v="progress"] span').textContent,'Progression','bottom navigation explains the tab purpose');
   assert.equal(calls.length,1);
   assert.match(calls[0].url,/rpc\/mw_get_performance_progression_history/);
   assert.equal(calls[0].options.headers.Authorization,'Bearer athlete-token');
