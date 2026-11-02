@@ -1,9 +1,10 @@
-const {getAccountContext}=require('../lib/mw-auth');
+const {getAccountContext,SUPABASE_URL,SUPABASE_KEY}=require('../lib/mw-auth');
 const {programWeek,PROGRAM_VERSION,normalizeTier,normalizeEventGroup}=require('../lib/mw-program-service');
 const {reconcileSeasonPlan,positionForPlan,uiPhaseForCode}=require('../lib/mw-season-intelligence');
 const {developmentalLoadProfile}=require('../lib/mw-developmental-load');
 const {resolveAuthoritativeState}=require('../lib/mw-authoritative-state');
 const {loadPerformanceContext,evaluatePerformance}=require('../lib/mw-performance-intelligence');
+const {applyAdaptivePrescription}=require('../lib/mw-adaptive-prescription');
 
 function clampWeek(v){const n=Number(v);return Number.isFinite(n)?Math.max(1,Math.min(41,Math.trunc(n))):1}
 function planMap(plan){
@@ -64,6 +65,19 @@ module.exports=async function handler(req,res){
     const athleteEvents=[...(Array.isArray(c.athlete?.selected_events)?c.athlete.selected_events:[]),c.athlete?.primary_event,c.athlete?.secondary_event].filter(Boolean);
     const eventGroup=normalizeEventGroup(athleteEvents);
     let {track,strength}=programWeek(sourceWeek,trackTier,strengthTier,eventGroup);
+    let adaptiveAdjustment=null,adaptiveAdjustmentStatus='none';
+    if(c.athlete&&c.token&&Number.isInteger(Number(authority.day))){
+      try{
+        const query=new URLSearchParams({select:'id,program_week,program_day,session_kind,approved_prescription,review_status,reviewed_at',athlete_id:`eq.${c.user.id}`,program_week:`eq.${week}`,program_day:`eq.${Number(authority.day)}`,review_status:'in.(approved,modified)',order:'reviewed_at.desc',limit:'5'});
+        const response=await fetch(`${SUPABASE_URL}/rest/v1/mw_adaptive_workout_reviews?${query}`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${c.token}`,'Content-Type':'application/json'}});
+        if(!response.ok)throw new Error(`Adaptive review lookup failed (${response.status})`);
+        const reviews=await response.json();
+        for(const review of Array.isArray(reviews)?reviews:[]){
+          const result=applyAdaptivePrescription(track,strength,review);
+          if(result.applied){track=result.track;strength=result.strength;adaptiveAdjustment=result.applied;adaptiveAdjustmentStatus='applied';break}
+        }
+      }catch(e){adaptiveAdjustmentStatus='unavailable';adaptiveAdjustmentError=e.message}
+    }
     const developmentalLoad=developmentalLoadProfile({
       dateOfBirth:c.athlete?.date_of_birth,
       trainingYears:c.athlete?.track_training_years,
@@ -93,7 +107,8 @@ module.exports=async function handler(req,res){
       trackTier,strengthTier,eventGroup,eventLabel:eventGroup==='400'?'400m':'100m / 200m',programVersion:plan?.id?`mw-season-intelligence-v1+${PROGRAM_VERSION}`:PROGRAM_VERSION,
       developmentalLoad,
       seasonIntelligence:{authority:authority.authority,week:authority.week,day:authority.day,phase:authority.phase,sourceWeek:authority.sourceWeek,diverged:authority.diverged,storedWeek:authority.storedWeek,calendar:authority.calendar},
-      performanceIntelligence,
+      performanceIntelligence,adaptiveAdjustment,adaptiveAdjustmentStatus,
+      ...(adaptiveAdjustmentStatus==='unavailable'?{adaptiveAdjustmentError}:{}),
       seasonPlan:plan?.id?{
         id:plan.id,seasonType:plan.season_type,seasonLengthWeeks:Number(plan.season_length_weeks||0),
         phaseCode,peakDate:coachCalendar?(authority.calendar?.peakDate||null):plan.primary_peak_date,sourceProgramWeek:sourceWeek,

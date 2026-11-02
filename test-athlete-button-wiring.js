@@ -27,7 +27,7 @@ assert.deepStrictEqual([...new Set(dupes)],[],'Duplicate static button IDs are n
 const genericFamilies=[
   'data-open','data-open-settings','data-v','data-practice-coach','data-submit-checkin',
   'data-athlete-search-open','data-coach-thread','data-mw-notification','data-resume-strength',
-  'data-sday','data-adjust-strength','data-feel','data-session','data-finish-previous','data-q','data-mw-target','data-rest-toggle','data-rest-reset','data-practice-adjust'
+  'data-sday','data-adjust-strength','data-feel','data-session','data-finish-previous','data-q','data-mw-target','data-rest-toggle','data-rest-reset','data-practice-adjust','data-mw-development'
 ];
 
 const directIds=[
@@ -137,10 +137,9 @@ console.log('PASS: Athlete Home is stationary on phone-sized screens while secon
 
 
 assert(html.includes('position:fixed!important;'),'Stationary Home must hard-lock the body on iOS');
-assert(html.includes('touch-action:manipulation!important;'),'Stationary Home must preserve taps while the body lock and touchmove guard prevent scrolling');
-assert(html.includes("document.addEventListener('touchmove'"),'Stationary Home must block iOS touchmove rubber-banding');
-assert(html.includes("e.preventDefault();"),'Stationary Home touchmove handler must cancel viewport movement');
-assert(html.includes("if(e.target.closest('#mwHomeMenu'))return;"),'Home dropdown must remain independently scrollable');
+assert(html.includes("Home's CSS constrains its own viewport; never cancel document touchmove."),'Home must preserve native iOS gestures instead of canceling touchmove globally');
+assert(!html.includes("document.addEventListener('touchmove'"),'Home must not install a global touchmove cancellation handler');
+assert(html.includes('touch-action:pan-y!important;'),'Home dropdown must retain its own vertical scrolling under the stationary viewport');
 assert(html.includes('mwSetHomeScrollLock(homeLocked);'),'View navigation must use the hard Home scroll lock helper');
 console.log('PASS: iOS Athlete Home hard scroll lock prevents viewport panning while preserving menu scroll.');
 

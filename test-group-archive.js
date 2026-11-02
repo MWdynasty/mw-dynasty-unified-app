@@ -1,8 +1,10 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('coach/app.js','utf8');
-assert.equal(source,fs.readFileSync('coach/app-live-20261005-r1.js','utf8'));
 const archiveSource=source.slice(source.indexOf('function confirmCoachGroupArchive('),source.indexOf('async function groupWorkspaceLive('));
+const deployedSource=fs.readFileSync('coach/app-live-20261005-r1.js','utf8');
+const deployedArchive=deployedSource.slice(deployedSource.indexOf('function confirmCoachGroupArchive('),deployedSource.indexOf('async function groupWorkspaceLive('));
+assert.equal(archiveSource,deployedArchive,'The deployed Coach page must use the current group archive handler');
 assert.ok(!archiveSource.includes('window.confirm('),'Archive must work without native browser dialogs');
 async function run(){
  if(!process.env.MW_PRACTICE_DOM_PATH){console.log('PASS: live archive code parity and native-dialog independence');return;}

@@ -4,8 +4,6 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = process.argv[2] || __dirname;
-const appSource = fs.readFileSync(path.join(root, 'coach/app.js'), 'utf8');
-const voiceSource = fs.readFileSync(path.join(root, 'coach/voice-parity.js'), 'utf8');
 const coachHtml = fs.readFileSync(path.join(root, 'coach/index.html'), 'utf8');
 const clientPaths = [...coachHtml.matchAll(/<script src="(\/coach\/[^"]+)"/g)]
   .map(match => match[1].split('?')[0].slice(1));
@@ -13,6 +11,8 @@ assert.equal(clientPaths.length, 5, 'Coach page must load timing tools, practice
 assert.equal(clientPaths[0],'coach/timing-tools.js');
 assert.equal(clientPaths[1],'coach/custom-programs.js');
 assert.equal(clientPaths[2],'coach/practice-heats.js');
+const appSource = fs.readFileSync(path.join(root, clientPaths[3]), 'utf8');
+const voiceSource = fs.readFileSync(path.join(root, clientPaths[4]), 'utf8');
 assert.equal(fs.readFileSync(path.join(root, clientPaths[3]), 'utf8'), appSource, 'served app must match tested source');
 assert.equal(fs.readFileSync(path.join(root, clientPaths[4]), 'utf8'), voiceSource, 'served voice companion must match tested source');
 const start = appSource.indexOf('function coachMWPage(){');

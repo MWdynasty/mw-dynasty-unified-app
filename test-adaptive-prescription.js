@@ -1,0 +1,21 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {applyAdaptivePrescription}=require('./server/lib/mw-adaptive-prescription');
+
+const track={sessions:[{day:1,title:'Acceleration',prescribedWork:'6 x 20m',focus:'Starts'},{day:2,title:'Tempo',prescribedWork:'8 x 100m',focus:'Recovery'}]};
+const strength={sections:[{title:'TUESDAY — LOWER BODY',entries:[['Squat','3 x 5']]}]};
+const review={id:'review-1',program_week:8,program_day:2,session_kind:'combined',review_status:'modified',approved_prescription:{track:{prescribedWork:'4 x 80m at controlled tempo',focus:'Tempo capacity'},strength:{sectionTitle:'TUESDAY — LOWER BODY',entries:[['Squat','2 x 5 at moderate load']]}}};
+const result=applyAdaptivePrescription(track,strength,review);
+assert.equal(result.applied.track,true);
+assert.equal(result.applied.strength,true);
+assert.equal(result.track.sessions[1].prescribedWork,'4 x 80m at controlled tempo');
+assert.equal(result.track.sessions[0].prescribedWork,'6 x 20m');
+assert.deepEqual(result.strength.sections[0].entries,[['Squat','2 x 5 at moderate load']]);
+assert.equal(track.sessions[1].prescribedWork,'8 x 100m','Original master schedule must not be mutated');
+const unrelated=applyAdaptivePrescription(track,strength,{...review,program_day:1});
+assert.equal(unrelated.applied.track,true);assert.equal(unrelated.applied.strength,false);
+const narrative=applyAdaptivePrescription(track,strength,{...review,approved_prescription:{kind:'return_to_training_recommendation',sprint:'Reduce sprint volume'}});
+assert.equal(narrative.applied,null,'Recommendation-only approvals must not silently alter program prescriptions');
+const unsafe=applyAdaptivePrescription(track,strength,{...review,approved_prescription:{track:{focus:'<img src=x onerror=alert(1)>New focus'}}});
+assert.equal(unsafe.applied.track,true);assert.equal(unsafe.track.sessions[1].focus,'New focus');
+console.log('PASS: coach-approved adaptations are scoped to the athlete day, validated, safely rendered as text, and do not mutate the master program.');
