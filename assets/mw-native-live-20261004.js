@@ -7,12 +7,12 @@
         if(!h){resolve({native:false});return}
         window.__mwPermissionResolve=resolve;
         h.postMessage({type:String(type||'')});
-        setTimeout(function(){if(window.__mwPermissionResolve){window.__mwPermissionResolve=null;resolve({native:true,pending:true})}},1500);
+        window.__mwPermissionTimer=setTimeout(function(){if(window.__mwPermissionResolve){window.__mwPermissionResolve=null;resolve({native:true,pending:true})}},type==='notifications'?30000:1500);
       }catch(e){resolve({native:false,error:String(e)})}
     });
   };
   window.mwNativePermissionResult=function(result){
-    var r=window.__mwPermissionResolve;window.__mwPermissionResolve=null;if(r)r(result||{native:true});
+    clearTimeout(window.__mwPermissionTimer);window.__mwPermissionTimer=null;var r=window.__mwPermissionResolve;window.__mwPermissionResolve=null;if(r)r(result||{native:true});
   };
 })();
 

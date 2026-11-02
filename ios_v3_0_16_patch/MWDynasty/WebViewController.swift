@@ -15,6 +15,8 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(self, selector: #selector(pushTokenAvailable(_:)), name: .mwAPNSTokenAvailable, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(pushNotificationOpened(_:)), name: .mwPushNotificationOpened, object: nil)
         view.backgroundColor = UIColor(red: 5/255, green: 9/255, blue: 13/255, alpha: 1)
         locationManager.delegate = self
 
@@ -196,6 +198,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional, .ephemeral:
+                DispatchQueue.main.async { UIApplication.shared.registerForRemoteNotifications() }
                 DispatchQueue.main.async {
                     self?.sendPermissionResult(["native": true, "granted": true, "type": "notifications"])
                 }
@@ -206,6 +209,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             case .notDetermined:
                 UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
                     DispatchQueue.main.async {
+                        if granted { UIApplication.shared.registerForRemoteNotifications() }
                         self?.sendPermissionResult(["native": true, "granted": granted, "type": "notifications"])
                     }
                 }
@@ -225,9 +229,41 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         webView.evaluateJavaScript("window.mwNativePermissionResult && window.mwNativePermissionResult(\(json));")
     }
 
+    @objc private func pushTokenAvailable(_ notification: Notification) {
+        guard let token = notification.object as? String else { return }
+        publishPushToken(token)
+    }
+
+    @objc private func pushNotificationOpened(_ notification: Notification) {
+        guard let json = notification.object as? String else { return }
+        webView.evaluateJavaScript("window.mwNativePushOpened && window.mwNativePushOpened(\(json));")
+    }
+
+    private func publishPushToken(_ token: String) {
+        #if DEBUG
+        let environment = "development"
+        #else
+        let environment = "production"
+        #endif
+        let payload = ["token": token, "environment": environment]
+        guard JSONSerialization.isValidJSONObject(payload),
+              let data = try? JSONSerialization.data(withJSONObject: payload),
+              let json = String(data: data, encoding: .utf8) else { return }
+        webView.evaluateJavaScript("window.mwNativePushTokenAvailable && window.mwNativePushTokenAvailable(\(json));")
+    }
+
+    private func publishStoredPushToken() {
+        guard let token = UserDefaults.standard.string(forKey: "mwAPNSDeviceToken") else { return }
+        publishPushToken(token)
+    }
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         launchIcon.isHidden = true
         launchIcon.layer.removeAnimation(forKey: "mwPulse")
+        publishStoredPushToken()
+        if let payload = AppDelegate.consumePendingPushNotification() {
+            webView.evaluateJavaScript("window.mwNativePushOpened && window.mwNativePushOpened(\(payload));")
+        }
         Task { @MainActor [weak self] in
             for await result in Transaction.unfinished {
                 guard case .verified(let transaction) = result else { continue }

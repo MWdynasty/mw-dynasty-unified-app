@@ -8,6 +8,7 @@ Included live function source:
 - mw-coach-apply — production v3 — verify_jwt=false (intentional public application intake + internal rate limiting)
 - mw-coach-applications-admin — production v3 — verify_jwt=true
 - mw-admin-delete-account — production v2 — verify_jwt=true
+- mw-push-delivery — production v1 — verify_jwt=false (internal Vault-secret-authenticated APNs delivery worker)
 
 Important:
 - verify_jwt=false is intentional only for the webhook/public-intake functions listed above; each implements its own appropriate access control.
