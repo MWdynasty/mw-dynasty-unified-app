@@ -23,7 +23,7 @@
     // the unhelpful "Importing a module script failed" error. Keep this pinned
     // to a real, stable package version and surface a useful fallback if the
     // device/network cannot load the model.
-    const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/+esm');
+    const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs');
     const resolver=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm');
     const landmarker=await vision.PoseLandmarker.createFromOptions(resolver,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'CPU'},runningMode:'VIDEO',numPoses:1});
     const video=document.createElement('video');video.muted=true;video.playsInline=true;video.src=URL.createObjectURL(file);await new Promise((resolve,reject)=>{video.onloadedmetadata=resolve;video.onerror=reject});
