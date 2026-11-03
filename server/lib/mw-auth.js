@@ -43,6 +43,11 @@ async function athleteRecord(userId,token){
     return one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal,competition_level,competition_state,competition_division,season_preference&user_id=eq.${userId}&limit=1`,token);
   }
 }
+async function profileRecord(userId,token){
+  try{return await one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${userId}&limit=1`,token)}catch{
+    return one(`profiles?select=user_id,first_name,last_name,role&user_id=eq.${userId}&limit=1`,token).then(x=>x?{...x,account_status:x.account_status||'active'}:x);
+  }
+}
 async function getAccountContext(req,{requireAthlete=false}={}){
   const {token,user}=await authenticate(req);
   const userId=encodeURIComponent(user.id);
@@ -50,7 +55,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   // These reads depend only on the authenticated user, so run them together.
   // This keeps sign-in from paying three network round trips in sequence.
   const [profile,athlete,membershipAccess]=await Promise.all([
-    one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${userId}&limit=1`,token),
+    profileRecord(userId,token),
     athleteRecord(userId,token),
     athleteFeatureAccess(token)
   ]);
@@ -82,8 +87,8 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   // Once the athlete id is known, load the remaining account context in parallel.
   const athleteId=encodeURIComponent(athlete.id);
   const [programState,prs,repTracking,access,coachIdentity]=await Promise.all([
-    one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at,season_plan_id,workout_cycle_id,season_length_weeks,source_program_week,season_phase_code&athlete_id=eq.${athleteId}&limit=1`,token),
-    sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified,timing_method,mark_type&athlete_id=eq.${athleteId}&order=event.asc`,token),
+    one(`athlete_program_state?select=athlete_id,current_week,current_day,current_phase,program_status,start_date,starting_week,last_completed_workout_at,track_tier,strength_tier,program_version,assignment_updated_at,onboarding_assessment_completed_at,season_plan_id,workout_cycle_id,season_length_weeks,source_program_week,season_phase_code&athlete_id=eq.${athleteId}&limit=1`,token).catch(()=>null),
+    sj(`${SUPABASE_URL}/rest/v1/athlete_prs?select=event,time_seconds,date_recorded,verified,timing_method,mark_type&athlete_id=eq.${athleteId}&order=event.asc`,token).catch(()=>[]),
     repTrackingAccess(token),
     Promise.resolve(membershipAccess),
     rpc('mw_athlete_assigned_coach_identity',token).catch(()=>[])
