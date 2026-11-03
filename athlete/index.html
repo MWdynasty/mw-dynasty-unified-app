@@ -3599,7 +3599,13 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     box.querySelector('[data-mw-target="coach"]')?.addEventListener('click',()=>handoffMWSession('/coach/','mwCoachSupabaseSession'));
     return true;
   }
-  function saveSession(s,persist=null){mwSession=s;window.mwSetConversationIdentity?.(s);const keep=persist===null?!!window.MWAccountStorage.local.getItem(SESSION_KEY):!!persist;if(keep){window.MWAccountStorage.local.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.session.removeItem(SESSION_KEY)}else{window.MWAccountStorage.session.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.local.removeItem(SESSION_KEY)}}
+  function saveSession(s,persist=null){
+    mwSession=s;window.mwSetConversationIdentity?.(s);
+    const nativeApp=/MWDynasty-iOS\\//i.test(navigator.userAgent||'');
+    const keep=nativeApp||(persist===null?!!window.MWAccountStorage.local.getItem(SESSION_KEY):!!persist);
+    if(keep){window.MWAccountStorage.local.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.session.removeItem(SESSION_KEY)}
+    else{window.MWAccountStorage.session.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.local.removeItem(SESSION_KEY)}
+  }
   function clearSession(){mwSession=null;window.mwSetConversationIdentity?.(null);window.MWAccountStorage.local.removeItem(SESSION_KEY);window.MWAccountStorage.session.removeItem(SESSION_KEY);document.body?.classList.remove('mw-tool-return','mw-entering')}
   function token(){return mwSession?.access_token||''}; window.mwGetSessionToken=token; window.mwGetRemoteProfile=()=>({...mwRemoteProfile}); window.mwAuthenticatedFetch=async(path,opts={})=>{const headers={...(opts.headers||{})};const t=token();if(t)headers.Authorization='Bearer '+t;return fetch(path,{...opts,headers})}
   async function api(path,opts={}){const h={...(opts.headers||{})};if(token())h.Authorization='Bearer '+token();try{h['X-MW-Time-Zone']=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch{}const r=await fetch(path,{...opts,headers:h});const d=await r.json().catch(()=>({}));if(!r.ok)throw mwAccessError(d.error||'MW connection failed',r.status,d);return d}
