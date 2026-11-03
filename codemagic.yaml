@@ -33,13 +33,13 @@ workflows:
       - name: Compile MW Dynasty for iOS Simulator
         script: |
           set -o pipefail
-          xcodebuild \
-            -project "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj" \
-            -scheme MWDynasty \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO \
+          xcodebuild CURRENT_PROJECT_VERSION' || 16
+            -project "$CM_BUILD_DIR/ios_build/MWDynasty.xcodeproj" CURRENT_PROJECT_VERSION' || 16
+            -scheme MWDynasty CURRENT_PROJECT_VERSION' || 16
+            -configuration Debug CURRENT_PROJECT_VERSION' || 16
+            -sdk iphonesimulator CURRENT_PROJECT_VERSION' || 16
+            -destination 'generic/platform=iOS Simulator' CURRENT_PROJECT_VERSION' || 16
+            CODE_SIGNING_ALLOWED=NO CURRENT_PROJECT_VERSION' || 16
             clean build
 
     artifacts:
@@ -125,8 +125,8 @@ workflows:
       - name: Build signed MW Dynasty IPA
         script: |
           cd "$CM_BUILD_DIR/ios_build"
-          xcode-project build-ipa \
-            --project "MWDynasty.xcodeproj" \
+          xcode-project build-ipa CURRENT_PROJECT_VERSION' || 16
+            --project "MWDynasty.xcodeproj" CURRENT_PROJECT_VERSION' || 16
             --scheme "MWDynasty"
 
     artifacts:
