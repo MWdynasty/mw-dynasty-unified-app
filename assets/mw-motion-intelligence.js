@@ -66,5 +66,12 @@
       } catch(e) { status.textContent=e.message||'Motion upload failed.'; } finally { btn.disabled=false; }
     };
   };
+  document.addEventListener('click', event => {
+    const button = event.target.closest?.('button');
+    if (!button || !/MOTION INTELLIGENCE/i.test(button.textContent || '')) return;
+    event.preventDefault();
+    window.openView?.('pacer', true);
+    setTimeout(() => window.mwOpenMotionIntelligence?.(), 100);
+  }, true);
 })();
 
