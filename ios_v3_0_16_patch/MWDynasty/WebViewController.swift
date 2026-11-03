@@ -16,6 +16,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     private var transactionUpdatesTask: Task<Void, Never>?
     private let motion3DSession = ARSession()
     private var motion3DActive = false
+    private var motion3DPreview: ARSCNView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -96,7 +97,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     private func showConfigurationMessage() {
         let html = """
-        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.16 · Build 13</p></body></html>
+        <!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#05090d;color:#fff;font-family:-apple-system;padding:48px 24px"><h1 style="color:#e9b949">MW DYNASTY</h1><h2>iPhone build is ready for your production URL.</h2><p>Set <b>MWProductionURL</b> in Info.plist to your final HTTPS Vercel/domain URL, then archive the app in Xcode.</p><p style="color:#9fb0bb">App 3.0.16 Â· Build 13</p></body></html>
         """
         webView.loadHTMLString(html, baseURL: nil)
     }
@@ -243,6 +244,17 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             sendMotion3DResult(["ok": false, "supported": false, "error": "3-D body tracking is not supported on this iPhone."])
             return
         }
+        if motion3DPreview == nil {
+            let preview = ARSCNView(frame: view.bounds)
+            preview.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            preview.backgroundColor = .black
+            preview.session = motion3DSession
+            view.addSubview(preview)
+            view.bringSubviewToFront(preview)
+            motion3DPreview = preview
+        } else if let preview = motion3DPreview {
+            view.bringSubviewToFront(preview)
+        }
         let configuration = ARBodyTrackingConfiguration()
         configuration.isAutoFocusEnabled = true
         motion3DActive = true
@@ -253,6 +265,8 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     private func stopMotion3D() {
         motion3DActive = false
         motion3DSession.pause()
+        motion3DPreview?.removeFromSuperview()
+        motion3DPreview = nil
         sendMotion3DResult(["ok": true, "state": "stopped"])
     }
 
@@ -261,11 +275,11 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         let names = ["left_shoulder", "right_shoulder", "left_hip", "right_hip", "left_knee", "right_knee", "left_ankle", "right_ankle", "left_elbow", "right_elbow", "left_wrist", "right_wrist"]
         var joints: [String: [String: Float]] = [:]
         for name in names {
-            let transform = body.skeleton.modelTransform(for: ARSkeleton.JointName(rawValue: name))
+            guard let transform = body.skeleton.modelTransform(for: ARSkeleton.JointName(rawValue: name)) else { continue }
             let t = transform.columns.3
             joints[name] = ["x": t.x, "y": t.y, "z": t.z]
         }
-        sendMotion3DResult(["ok": true, "state": "tracking", "timestamp": body.timestamp, "joints": joints])
+        sendMotion3DResult(["ok": true, "state": "tracking", "timestamp": Date().timeIntervalSince1970, "joints": joints])
     }
 
     private func sendMotion3DResult(_ result: [String: Any]) {
