@@ -481,10 +481,14 @@ function performanceToolsPage(){
   pageBase('Performance Tools','Coach-side performance workspace for athlete review and decision support.',`
     <div class="panel-grid">
       <div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>Review pace execution, recent workload signals, strength response and athlete trends.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div>
-      <div class="tile"><span class="status-kicker">ENGINE</span><h3>Emotion Intelligence Engine</h3><p>Prepare athlete readiness and emotional-state context for coaching review.</p><button class="back" data-toast="Emotion Intelligence workspace selected">Open Emotion Intelligence</button></div>
-      <div class="tile"><span class="status-kicker">PROCESSOR</span><h3>Biometric Analysis Processor</h3><p>Centralize biometric and motion inputs for athlete-specific performance review.</p><button class="back" data-toast="Biometric Analysis workspace selected">Open Biometric Analysis</button></div>
+      <div class="tile"><span class="status-kicker">LIVE</span><h3>Motion Intelligence</h3><p>Upload a sprint recording for movement review. The same Motion Intelligence workspace is available on the Athlete side.</p><button class="action" id="coachOpenMotion">Open Motion Intelligence</button></div>
+      <div class="tile"><span class="status-kicker">LIVE</span><h3>Pacing Tools</h3><p>Use Sprint Pace AI, Distance Pacer and the coach stopwatch for today’s session.</p><button class="action" data-page="pacing">Open Pacing Tools</button></div>
     </div>
+    <div class="tile" style="margin-top:14px"><b>Team Progression</b><p>Coach-side progression is tracked in Team → Team Development, where connected athletes are shown by training week and review status.</p><button class="back" data-page="athletes">Open Team Progression</button></div>
+    <div id="mwMotionPanel" style="margin-top:14px"></div>
     <div class="tile" style="margin-top:14px"><b>Coach control remains with you.</b><p>These tools organize athlete signals for review; they do not make medical diagnoses or automatic training changes.</p></div>`);
+  const motion=document.getElementById('coachOpenMotion');
+  if(motion)motion.onclick=()=>window.mwOpenMotionIntelligence?.();
 }
 function morePage(){
   const operations=[
@@ -504,7 +508,7 @@ function morePage(){
     ['strength','🏋️','Strength & Power','Synchronized weight-room programming'],
 
     ['pacing','⏱️','Pacing Tools','Individualized training targets'],
-    ['tools','📊','Performance Tools','Performance, emotion and biometric review']
+    ['tools','📊','Performance Tools','Performance, motion and pacing review']
   ]:[];
   const account=[
     ['activity','◔','Activity Log','Recent coach and athlete activity'],
@@ -2955,4 +2959,5 @@ function strengthPage(){pageBase('Strength & Power','The complete MW weight-room
 window.addEventListener('mw:session-refreshed',e=>{if(e?.detail?.key===SESSION_KEY&&e.detail.session)authSession=e.detail.session});
 window.addEventListener('online',()=>{if(readStoredSession()&&!document.querySelector('.app'))setTimeout(()=>initAuth(),220)});
 initAuth();
+
 
