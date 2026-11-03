@@ -3601,7 +3601,10 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
   }
   function saveSession(s,persist=null){
     mwSession=s;window.mwSetConversationIdentity?.(s);
-    const nativeApp=/MWDynasty-iOS\\//i.test(navigator.userAgent||'');
+    // Native iOS opens Pace AI, Distance Pacer, and Motion Intelligence as
+    // separate same-origin screens. Keep the session in local storage there;
+    // sessionStorage is not reliable across WKWebView tool navigation.
+    const nativeApp=/MWDynasty-iOS\//i.test(navigator.userAgent||'');
     const keep=nativeApp||(persist===null?!!window.MWAccountStorage.local.getItem(SESSION_KEY):!!persist);
     if(keep){window.MWAccountStorage.local.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.session.removeItem(SESSION_KEY)}
     else{window.MWAccountStorage.session.setItem(SESSION_KEY,JSON.stringify(s));window.MWAccountStorage.local.removeItem(SESSION_KEY)}
@@ -4003,7 +4006,14 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'Settings save failed.');mwRemoteProfile.coachType=payload.coach_visual;applyCoachVisual(payload.coach_visual);window.MWAccountStorage.local.setItem('mwPrefs',JSON.stringify({voiceSpeed:payload.voice_speed,voiceMode:payload.voice_mode,autoVoice:payload.auto_voice?'on':'off',workoutReminders:payload.workout_reminders?'on':'off',meetReminders:payload.meet_reminders?'on':'off',messageAlerts:payload.message_alerts?'on':'off'}));return d;
   }
   async function loadMe(){
-    const d=await api('/api/me',{cache:'no-store'});
+    let d;
+    for(let attempt=1;attempt<=3;attempt++){
+      try{d=await api('/api/me',{cache:'no-store'});break}catch(e){
+        const status=Number(e?.status||0);
+        if(attempt===3||!(status===0||status>=500))throw e;
+        await new Promise(r=>setTimeout(r,350*attempt));
+      }
+    }
     window.MWAccountActivity?.start(d.profile?.role);
     try{
       hydrate(d);
@@ -4139,7 +4149,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
       if(authenticated&&mwSession?.access_token){
         console.error('MW post-auth startup issue',e);
         window.MWDiag?.event('athlete_post_auth_startup_error',{severity:'error',code:'post_auth_startup',context:{message:String(e?.message||e).slice(0,180)}});
-        authStatus('You are signed in. MW hit a temporary app-loading issue, but your session is safe. Tap Sign In again or refresh once.',true);
+        authStatus(`You are signed in, but Athlete setup could not finish: ${msg||'profile access could not be loaded'}. Your session is safe; tap Sign In again after fixing the issue.`,true);
         return
       }
       if(transientProblem(e)&&mwSession?.access_token){
@@ -5034,4 +5044,5 @@ document.addEventListener('click',e=>{
 .mwAthleteNotificationBtn:active,#home .mwHomeMenuButton:active,#home .mwHomeMenuButton[aria-expanded="true"],.topActions .gearBtn:active{transform:scale(.92)!important;border:0!important;background:transparent!important;box-shadow:none!important}
 #mwAthleteNotificationBadge{border:2px solid #050a0f!important}
 </style><link rel="stylesheet" href="/assets/mw-hybrid-design.css?v=20261010-hybrid-1"><script src="/assets/mw-notification-settings.js?v=20261101-1" defer></script><script src="/assets/mw-return-guidance.js?v=20261101-2" defer></script><script src="/assets/mw-adaptive-tools-layout.js?v=20261102-2" defer></script><script src="/assets/mw-performance-progression.js?v=20261102-youth-progress-2" defer></script></body></html>
+
 
