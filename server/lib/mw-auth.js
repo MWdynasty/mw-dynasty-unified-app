@@ -36,6 +36,13 @@ async function authenticate(req){
   try{const user=await sj(`${SUPABASE_URL}/auth/v1/user`,token);return {token,user}}catch(e){throw Object.assign(new Error('Your MW session is invalid or expired. Sign in again.'),{status:401})}
 }
 async function one(path,token){const rows=await sj(`${SUPABASE_URL}/rest/v1/${path}`,token);return Array.isArray(rows)?(rows[0]||null):rows}
+async function athleteRecord(userId,token){
+  const full=`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal,competition_level,competition_state,competition_division,season_preference,competition_paths,training_context&user_id=eq.${userId}&limit=1`;
+  try{return await one(full,token)}catch{
+    // Keep sign-in compatible while optional Athlete columns roll out.
+    return one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal,competition_level,competition_state,competition_division,season_preference&user_id=eq.${userId}&limit=1`,token);
+  }
+}
 async function getAccountContext(req,{requireAthlete=false}={}){
   const {token,user}=await authenticate(req);
   const userId=encodeURIComponent(user.id);
@@ -44,7 +51,7 @@ async function getAccountContext(req,{requireAthlete=false}={}){
   // This keeps sign-in from paying three network round trips in sequence.
   const [profile,athlete,membershipAccess]=await Promise.all([
     one(`profiles?select=user_id,first_name,last_name,role,account_status&user_id=eq.${userId}&limit=1`,token),
-    one(`athletes?select=id,user_id,date_of_birth,primary_event,secondary_event,selected_events,track_training_years,experience_level,program_start_date,training_goal,competition_level,competition_state,competition_division,season_preference,competition_paths,training_context&user_id=eq.${userId}&limit=1`,token),
+    athleteRecord(userId,token),
     athleteFeatureAccess(token)
   ]);
   if(!profile) throw Object.assign(new Error('MW profile not found for this login.'),{status:403});
