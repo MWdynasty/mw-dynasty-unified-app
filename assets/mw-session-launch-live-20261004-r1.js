@@ -74,11 +74,14 @@
     document.body?.classList.remove('mw-entering');
     const status = document.querySelector(role === 'coach' ? '#loginMessage' : '#mwAuthStatus');
     if (status) {
-      status.textContent = 'MW is still connecting. Sign in again to retry; your saved session has not been removed.';
+      status.textContent = 'MW is still loading. Tap Sign In to retry; your saved session has not been removed.';
       status.style.display = 'block';
     }
     close();
   };
+  // A slow iPhone/WebView or a cold Supabase function can take longer than
+  // the old 15-second watchdog. Do not send a valid saved session back to the
+  // login screen while the real resume request is still in flight.
   window.setTimeout(() => {
     if (finished) return;
     overlay.classList.add('is-slow');
@@ -89,5 +92,5 @@
   window.setTimeout(() => {
     if (finished) return;
     returnToSignIn();
-  }, 15000);
+  }, 60000);
 })();
