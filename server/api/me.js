@@ -103,37 +103,47 @@ module.exports=async function handler(req,res){
       });
     }
     if(c.athlete&&c.token){
-      const authority=await resolveAuthoritativeState(c,{timeZone:String(req.headers['x-mw-time-zone']||'').slice(0,80)||null});
-      const storedProgramState=c.programState?{...c.programState}:null;
-      c.programState=applyAuthoritativeState(c.programState,authority);
-      c.authoritativeProgram={
-        authority:authority.authority,
-        week:authority.week,
-        day:authority.day,
-        phase:authority.phase,
-        sourceWeek:authority.sourceWeek,
-        phaseCode:authority.phaseCode,
-        seasonLengthWeeks:authority.seasonLengthWeeks,
-        programStatus:authority.programStatus,
-        diverged:authority.diverged,
-        storedWeek:authority.storedWeek
-      };
-      c.seasonCalendar=authority.calendar||null;
-      if(authority.diverged)c.programState.week_reconciled_from=storedProgramState?.current_week||null;
+      // The identity endpoint must remain available even if optional Season
+      // Intelligence or performance enrichment is temporarily unavailable.
+      // Those services are hydrated by the Athlete page afterward, so a
+      // transient RPC/table error here must not turn a valid login into a
+      // generic post-auth startup failure.
+      try{
+        const authority=await resolveAuthoritativeState(c,{timeZone:String(req.headers['x-mw-time-zone']||'').slice(0,80)||null});
+        const storedProgramState=c.programState?{...c.programState}:null;
+        c.programState=applyAuthoritativeState(c.programState,authority);
+        c.authoritativeProgram={
+          authority:authority.authority,
+          week:authority.week,
+          day:authority.day,
+          phase:authority.phase,
+          sourceWeek:authority.sourceWeek,
+          seasonLengthWeeks:authority.seasonLengthWeeks,
+          programStatus:authority.programStatus,
+          diverged:authority.diverged,
+          storedWeek:authority.storedWeek
+        };
+        c.seasonCalendar=authority.calendar||null;
+        if(authority.diverged)c.programState.week_reconciled_from=storedProgramState?.current_week||null;
 
-      const plan=await reconcileSeasonPlan(c.token);
-      if(plan?.id)c.seasonPlan={...plan,position:positionForPlan(plan)};
+        try{
+          const plan=await reconcileSeasonPlan(c.token);
+          if(plan?.id)c.seasonPlan={...plan,position:positionForPlan(plan)};
+        }catch{}
 
-      const access=c.features?.access||{};
-      if(access.mw_training_system===true||access.ai_intelligence===true){
-        const perfContext=await loadPerformanceContext(c);
-        const coachManaged=/^coach_/i.test(String(access.access_mode||''));
-        c.performanceIntelligence=evaluatePerformance(perfContext,{
-          coachManaged,
-          officialWeek:authority.week,
-          officialDay:authority.day
-        });
-      }
+        const access=c.features?.access||{};
+        if(access.mw_training_system===true||access.ai_intelligence===true){
+          try{
+            const perfContext=await loadPerformanceContext(c);
+            const coachManaged=/^coach_/i.test(String(access.access_mode||''));
+            c.performanceIntelligence=evaluatePerformance(perfContext,{
+              coachManaged,
+              officialWeek:authority.week,
+              officialDay:authority.day
+            });
+          }catch{}
+        }
+      }catch{}
     }
     return res.status(200).json(c)
   }catch(e){return res.status(e.status||500).json({error:e.message||'MW athlete lookup failed'})}
