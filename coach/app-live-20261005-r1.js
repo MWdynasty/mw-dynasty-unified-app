@@ -477,6 +477,15 @@ function dashboard(){
   window.setTimeout(()=>maybeStartCoachTour(),180);
 }
 function pageBase(title,subtitle,body){const p=PLANS[experience],settingsAction=title==='Menu'?'<button class="icon-btn" type="button" data-page="account" aria-label="Settings" title="Settings">⚙</button>':'';app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">← Dashboard</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div>${settingsAction}<button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=dashboard;const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
+function performanceToolsPage(){
+  pageBase('Performance Tools','Coach-side performance workspace for athlete review and decision support.',`
+    <div class="panel-grid">
+      <div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>Review pace execution, recent workload signals, strength response and athlete trends.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div>
+      <div class="tile"><span class="status-kicker">ENGINE</span><h3>Emotion Intelligence Engine</h3><p>Prepare athlete readiness and emotional-state context for coaching review.</p><button class="back" data-toast="Emotion Intelligence workspace selected">Open Emotion Intelligence</button></div>
+      <div class="tile"><span class="status-kicker">PROCESSOR</span><h3>Biometric Analysis Processor</h3><p>Centralize biometric and motion inputs for athlete-specific performance review.</p><button class="back" data-toast="Biometric Analysis workspace selected">Open Biometric Analysis</button></div>
+    </div>
+    <div class="tile" style="margin-top:14px"><b>Coach control remains with you.</b><p>These tools organize athlete signals for review; they do not make medical diagnoses or automatic training changes.</p></div>`);
+}
 function morePage(){
   const operations=[
     ['messages','✉','Messages','Talk with athletes and send team or group announcements'],
@@ -494,7 +503,8 @@ function morePage(){
     ['mwtrack','🏃','MW Track Program','The protected 41-week sprint system'],
     ['strength','🏋️','Strength & Power','Synchronized weight-room programming'],
 
-    ['pacing','⏱️','Pacing Tools','Individualized training targets']
+    ['pacing','⏱️','Pacing Tools','Individualized training targets'],
+    ['tools','📊','Performance Tools','Performance, emotion and biometric review']
   ]:[];
   const account=[
     ['activity','◔','Activity Log','Recent coach and athlete activity'],
@@ -1058,11 +1068,11 @@ function rememberCoachActivePage(page){try{window.MWAccountStorage.session.setIt
 function resumeCoachActivePage(){
   let page=history.state?.mwCoachPage||'';
   if(!page)try{page=window.MWAccountStorage.session.getItem(COACH_ACTIVE_PAGE_KEY)||''}catch{}
-  const allowed=new Set(['train','practice','founderpreview','athletes','teams','programs','calendar','meets','attendance','messages','activity','account','support','taskboard','season','adjustment','coachmw','insights','mwtrack','strength','pacing','grouppacing','more']);
+  const allowed=new Set(['train','practice','founderpreview','athletes','teams','programs','calendar','meets','attendance','messages','activity','account','support','taskboard','season','adjustment','coachmw','insights','mwtrack','strength','pacing','tools','grouppacing','more']);
   if(page&&page!=='dashboard'&&allowed.has(page)){openPage(page,false);return}
   dashboard();
 }
-function openPage(id,pushHistory=true){if(id==='race'||id==='school')id='dashboard';if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}if(id!=='practice'){if(window.__mwCoachPracticePoll){clearInterval(window.__mwCoachPracticePoll);window.__mwCoachPracticePoll=null}if(window.__mwCoachPracticeFocus){window.removeEventListener('focus',window.__mwCoachPracticeFocus);window.__mwCoachPracticeFocus=null}}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,pacing:pacingPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';rememberCoachActivePage(page);if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
+function openPage(id,pushHistory=true){if(id==='race'||id==='school')id='dashboard';if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}if(id!=='practice'){if(window.__mwCoachPracticePoll){clearInterval(window.__mwCoachPracticePoll);window.__mwCoachPracticePoll=null}if(window.__mwCoachPracticeFocus){window.removeEventListener('focus',window.__mwCoachPracticeFocus);window.__mwCoachPracticeFocus=null}}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,pacing:pacingPage,tools:performanceToolsPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';rememberCoachActivePage(page);if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
 if(!window.__mwCoachHistoryBound){window.__mwCoachHistoryBound=true;window.addEventListener('popstate',e=>{if(mwSessionToken())openPage(e.state?.mwCoachPage||'dashboard',false)})}
 function bindPageNavigation(root=document){
   root.querySelectorAll('[data-page]').forEach(b=>{if(b.dataset.mwBound==='1')return;b.dataset.mwBound='1';b.addEventListener('click',()=>openPage(b.dataset.page))});
