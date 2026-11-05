@@ -170,12 +170,40 @@ function strengthGuidance(tier,week){
     priority:'Track quality governs the weight room. Friday is protected as a major track / competition slot; missed lifting is not moved there.'
   };
 }
+// Replace, do not stack onto, the existing Tuesday/Thursday technical main set.
+function technicalSledContrast(week,day,tier,eventGroup='100_200'){
+ const w=Number(week),d=Number(day),t=normalizeTier(tier);
+ if(!Number.isInteger(w)||w<1||w>33||![2,4].includes(d))return null;
+ const early=w<=8,competition=w>=25,foundation=t==='foundation',isTue=d===2;
+ const pairs=competition?2:foundation?3:early?4:3;
+ const distance=foundation||competition?10:15;
+ const resistance=isTue
+  ?foundation?'light-to-moderate only; no heavy sled for Foundation'
+   :competition?'light-to-moderate (10-20% sprint velocity loss when measured)'
+   :w<=16?'heavy technical load (30-50% sprint velocity loss when measured)'
+   :'moderately heavy (20-35% sprint velocity loss when measured)'
+  :'light load (5-15% sprint velocity loss when measured)';
+ const paired=isTue
+  ?pairs+' x ('+distance+'m sled pull + '+distance+'m free acceleration)'
+  :pairs+' x ('+distance+'m light sled pull + '+(foundation?15:20)+'m free upright build / fly entry)';
+ const intent=isTue?'Drive phase: project forward and push back into the ground without forced head-down posture.'
+  :'Upright transition: maintain rhythm, stiffness and fast relaxed mechanics. Never grind through resistance.';
+ const rest=isTue?'Rest 2-3 minutes between starts and 4 minutes between paired sets.':'Rest 3-4 minutes between paired sets, fully recovered.';
+ const fallback=isTue?'No sled: mild hill + flat acceleration in place of the same paired sets.'
+  :'No sled: controlled flat build + faster flat run in place of the same paired sets.';
+ const meet=competition?'Optional low-volume micro-dose only when no imminent race and athlete is recovered. Otherwise retain easy wickets and starts. ':'';
+ const safety='Set load from actual speed and sound technique, not plate weight; stop if coordination or velocity deteriorates. Supervise youth. This session REPLACES the existing technical main set; never add extra reps.';
+ return {day:d,week:w,tier:t,eventGroup:normalizeEventGroup(eventGroup),type:isTue?'drive-force-contrast':'upright-speed-contrast',
+  pairs,distanceMeters:distance,resistance,intent,rest,fallback,safety,optional:competition,
+  prescribedWork:meet+paired+'. Resistance: '+resistance+'. '+intent+' '+rest+' '+fallback+' '+safety};
+}
 function compactTrack(week,tier,eventGroup='100_200'){
   const key=normalizeTier(tier),base=getTrackWeek(week,eventGroup);
   if(!base)return null;
   const guidance=trackGuidance(key);
   const sessions=(base.sessions||[]).map(s=>{
     const stressDay=s.day===1||s.day===5;
+    const contrast=technicalSledContrast(week,s.day,key,eventGroup);
     const tierWork={
       foundation:scaleTrackWork(s.work,'foundation',{stressDay}),
       development:scaleTrackWork(s.work,'development',{stressDay}),
@@ -186,7 +214,8 @@ function compactTrack(week,tier,eventGroup='100_200'){
       baseWork:s.work,
       tier:key,
       tierWork,
-      prescribedWork:tierWork[key],
+      prescribedWork:contrast?contrast.prescribedWork:tierWork[key],
+      contrast,
       wickets:tierWickets(s.wickets,key),
       tierGuidance:guidance
     };
@@ -211,5 +240,5 @@ function programWeek(week,trackTier,strengthTier,eventGroup='100_200'){
 }
 module.exports={
   PROGRAM,PROGRAM_VERSION,TIERS,normalizeTier,normalizeEventGroup,programWeek,compactTrack,compactStrength,
-  scaledCount,scaleTrackWork,scaleStructure,scaleStrengthSets,adaptStrengthSections,synchronizedStrengthSections
+  scaledCount,scaleTrackWork,scaleStructure,scaleStrengthSets,adaptStrengthSections,synchronizedStrengthSections,technicalSledContrast
 };
