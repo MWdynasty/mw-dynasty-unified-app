@@ -789,28 +789,26 @@ function renderCoachSeasonAssessment(existing={}){
   };
 }
 function mwCoachFormatReply(input){
-  // Render a small, safe Markdown subset: headings, emphasis and lists.
-  // HTML from the model is escaped before any formatting is applied.
+  // Escape untrusted model output before interpreting headings and emphasis.
   const inline=value=>escapeHtml(String(value||''))
-    .replace(/\\*\\*([^*\\n]+)\\*\\*/g,'<strong>$1</strong>')
-    .replace(/(^|[^*])\\*([^*\\n]+)\\*/g,'$1<em>$2</em>');
-  const lines=String(input||'').replace(/\\r\\n?/g,'\\n').split('\\n');
+    .replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+  const lines=String(input||'').replace(/\r\n?/g,'\n').split('\n');
   let html='',inList=false,listType='';
   const closeList=()=>{if(inList){html+='</'+listType+'>';inList=false;listType='';}};
   for(const source of lines){
     const line=source.trim();
     if(!line){closeList();continue;}
-    const heading=line.match(/^#{1,4}\\s+(.+)$/);
+    const heading=line.match(/^#{1,4}\s+(.+)$/);
     if(heading){closeList();html+='<h3>'+inline(heading[1])+'</h3>';continue;}
-    const bullet=line.match(/^[-*]\\s+(.+)$/);
-    const ordered=line.match(/^\\d+[.)]\\s+(.+)$/);
+    const bullet=line.match(/^[-*]\s+(.+)$/);
+    const ordered=line.match(/^\d+[.)]\s+(.+)$/);
     if(bullet||ordered){
       const kind=ordered?'ol':'ul';
       if(!inList||listType!==kind){closeList();html+='<'+kind+'>';inList=true;listType=kind;}
       html+='<li>'+inline((bullet||ordered)[1])+'</li>';continue;
     }
-    closeList();
-    html+='<p>'+inline(line)+'</p>';
+    closeList();html+='<p>'+inline(line)+'</p>';
   }
   closeList();
   return html||'<p></p>';
