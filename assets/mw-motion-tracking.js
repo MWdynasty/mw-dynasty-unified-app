@@ -8,7 +8,21 @@ const shoulder={x:(l.x+r.x)/2,y:(l.y+r.y)/2},hip={x:(lh.x+rh.x)/2,y:(lh.y+rh.y)/
 if(scale<0.03)return null;
 const legs=[0,1].map(side=>{const h=point(p,side?24:23),k=point(p,side?26:25),a=point(p,side?28:27),heel=point(p,side?30:29),toe=point(p,side?32:31);
 return {side:side?'right':'left',valid:!!(h&&k&&a),ankle:a||null,knee:k||null,heel:heel||null,toe:toe||null,hip:h||null,heelHeight:h&&(heel||a)?(h.y-(heel||a).y)/scale:null,heelToHipX:h&&heel?(heel.x-h.x)/scale:null,toeY:toe?.y??null};});
-return {time,trunk:Math.atan2(Math.abs(shoulder.x-hip.x),Math.abs(hip.y-shoulder.y))*180/Math.PI,legs};
+const shoulderWidth=Math.hypot(l.x-r.x,l.y-r.y),hipWidth=Math.hypot(lh.x-rh.x,lh.y-rh.y);
+const nose=point(p,0),leftEar=point(p,7),rightEar=point(p,8);
+const legValid=legs.filter(x=>x.valid).length;
+// Perspective is inferred from repeated width/depth evidence, not a dropdown.
+const widthRatio=shoulderWidth/scale;
+const faceObserved=!!(nose&&(leftEar||rightEar));
+const faceUnseen=!!(p?.[0]&&Number(p[0].visibility)<0.35);
+const viewEvidence=widthRatio>=0.72?(faceObserved?'front':'front_or_rear')
+ :widthRatio<=0.28?'side':'diagonal';
+const extremities=[point(p,15),point(p,16),point(p,27),point(p,28)].filter(Boolean);
+const yPositions=[l,r,lh,rh,...extremities].map(x=>x.y);
+const visibleHeight=yPositions.length>=6?Math.max(...yPositions)-Math.min(...yPositions):null;
+return {time,trunk:Math.atan2(Math.abs(shoulder.x-hip.x),Math.abs(hip.y-shoulder.y))*180/Math.PI,legs,
+  viewEvidence:faceUnseen&&viewEvidence==='front_or_rear'?'rear_candidate':viewEvidence,
+  shoulderWidth,hipWidth,widthRatio,visibleHeight,legValid};
 }
 
 function detectFootEvents(frames,meta={}){
@@ -73,9 +87,36 @@ function analyzeHeelRecovery(frames,meta={}){
         'Heel-height trend was estimated relative to hip position, but excessive cycling or faulty recovery cannot be diagnosed without phase and direction calibration.'};
   });
 }
+function detectPerspective(frames){
+ const rows=frames.filter(f=>f&&typeof f.viewEvidence==='string'&&finite(f.widthRatio));
+ const counts={side:0,front:0,rear_candidate:0,front_or_rear:0,diagonal:0};
+ for(const f of rows){if(Object.hasOwn(counts,f.viewEvidence))counts[f.viewEvidence]++;}
+ const n=rows.length;
+ if(n<12)return {view:'unknown',confidence:'insufficient',observations:n,reason:'Not enough reliable body geometry to estimate camera angle.'};
+ const frontish=counts.front+counts.front_or_rear+counts.rear_candidate;
+ const side=counts.side,diagonal=counts.diagonal;
+ let view='mixed',winner=0;
+ if(side/n>=0.65){view='side';winner=side;}
+ else if(frontish/n>=0.65){
+   view=counts.front/n>=0.55?'front':counts.rear_candidate/n>=0.55?'rear':'front_or_rear';winner=frontish;
+ }else if(diagonal/n>=0.55){view='diagonal';winner=diagonal;}
+ // Never force front-versus-rear from weak facial landmarks.
+ const confidence=winner/n>=0.8&&n>=24?'moderate':winner/n>=0.65?'preliminary':'uncertain';
+ return {view,confidence,observations:n,counts,reason:'Estimated from repeated 2-D shoulder width, torso scale and available facial landmarks; not a calibrated camera pose.'};
+}
+function distanceTracking(frames){
+ const rows=frames.filter(f=>finite(f.visibleHeight)&&f.visibleHeight>=0.03);
+ if(rows.length<16)return {status:'insufficient',startSize:null,endSize:null,relativeChange:null};
+ const third=Math.max(4,Math.floor(rows.length/3));
+ const first=median(rows.slice(0,third).map(f=>f.visibleHeight));
+ const last=median(rows.slice(-third).map(f=>f.visibleHeight));
+ const change=first&&last?(last-first)/first:null;
+ return {status:change!==null&&change< -0.25?'runner_appears_smaller':change!==null&&change>0.25?'runner_appears_larger':'no_clear_scale_change',
+   startSize:first,endSize:last,relativeChange:change};
+}
 function generateCoachingFeedback(summary){
   const positives=[],issues=[],actions=[];
-  if(summary.quality.adequateForPosture&&summary.phases.some(p=>p.name==='Rising posture / transition pattern')){
+  if(summary.perspective.view==='side'&&summary.quality.adequateForPosture&&summary.phases.some(p=>p.name==='Rising posture / transition pattern')){
     positives.push({evidence:'Forward torso inclination decreased across this recording.',meaning:'A progressive rise can be appropriate during acceleration; this observation alone is not a technique grade.'});
     actions.push({focus:'Transition mechanics',instruction:'Review whether posture rises smoothly across successive steps. Confirm with a coach rather than forcing low heel recovery into upright running.'});
   }
@@ -83,9 +124,18 @@ function generateCoachingFeedback(summary){
     positives.push({evidence:'MW tracked '+summary.quality.usableFrames+' visible body positions.',meaning:'Some movement was recovered despite limited tracking. This is a partial observation, not a sprint-technique grade.'});
     actions.unshift({focus:'Keep the runner visible',instruction:'For the next recording, keep the whole athlete in frame and large enough to see. Front, rear and side recordings are accepted; MW will report only what can be observed.'});
   }
+  if(summary.perspective.view==='front'||summary.perspective.view==='rear'||summary.perspective.view==='front_or_rear'){
+    positives.push({evidence:'Multiple frames show a broadly frontal or rear camera perspective.',meaning:'MW can inspect visible left-right positioning, but it cannot convert this recording into a calibrated side-view force measurement.'});
+    actions.push({focus:'Left-right coordination',instruction:'Review arm travel and knee alignment from this angle with your coach. A single 2-D recording cannot verify joint rotation or a specific technical fault.'});
+  }else if(summary.perspective.view==='diagonal'||summary.perspective.view==='mixed'){
+    actions.push({focus:'Diagonal sprint review',instruction:'Review visible coordination and changes in posture without assigning exact phase boundaries or ground-contact times.'});
+  }
+  if(summary.distance.status==='runner_appears_smaller'){
+    positives.push({evidence:'The runner appears smaller later in the recording.',meaning:'The athlete may be moving away from the camera. MW attempts to use visible motion but will limit detail when joints become too small.'});
+  }
   issues.push({label:'Ground contact',reason:'Touchdown and toe-off have not been verified. Contact duration cannot be calculated from this recording, regardless of camera angle.'});
   const heels=(summary.heels||[]).filter(h=>h.trackingAdequate&&finite(h.change));
-  if(heels.length===2&&summary.phases.some(p=>p.name==='Rising posture / transition pattern')){
+  if(summary.perspective.view==='side'&&heels.length===2&&summary.phases.some(p=>p.name==='Rising posture / transition pattern')){
     const bothRise=heels.every(h=>h.change>=0.15);
     const bothLower=heels.every(h=>h.change<=-0.15);
     if(bothRise){
@@ -119,7 +169,8 @@ const longestRun=(()=>{
 })();
 const good=f.length>=18&&span>=0.75&&coverage>=0.55&&longestRun>=12,third=Math.max(1,Math.floor(f.length/3));
 const early=median(f.slice(0,third).map(x=>x.trunk)),late=median(f.slice(-third).map(x=>x.trunk)),phases=[];
-if(good){
+const perspective=detectPerspective(f),distance=distanceTracking(f);
+if(good&&perspective.view==='side'){
  const delta=early-late;
  const start=f[0].time,finish=f[f.length-1].time,transition=f[Math.min(f.length-1,third)].time;
  if(early>=22&&delta>=10){
@@ -133,9 +184,9 @@ if(good){
 }
 const heels=analyzeHeelRecovery(f,meta);
 const groundContact=detectFootEvents(f,meta);
-const result={quality:{usableFrames:f.length,sampledFrames:meta.sampledFrames||f.length,poseCoverage:coverage,spanSeconds:span,effectiveFps:step?1/step:0,largestGapSeconds:maxGap,longestContinuousRun:longestRun,adequateForPosture:good,adequateForContactTiming:false},phases,heels,groundContact};
+const result={perspective,distance,quality:{usableFrames:f.length,sampledFrames:meta.sampledFrames||f.length,poseCoverage:coverage,spanSeconds:span,effectiveFps:step?1/step:0,largestGapSeconds:maxGap,longestContinuousRun:longestRun,adequateForPosture:good,adequateForContactTiming:false},phases,heels,groundContact};
 result.coaching=generateCoachingFeedback(result);
 return result;
 }
-return {frame,summarize,detectFootEvents,analyzeHeelRecovery,generateCoachingFeedback};
+return {frame,summarize,detectFootEvents,analyzeHeelRecovery,generateCoachingFeedback,detectPerspective,distanceTracking};
 });
