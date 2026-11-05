@@ -1767,6 +1767,7 @@ async function initAuth(){
 
 /* ===== V11.21 FULL INTERACTIVE INTERFACES ===== */
 function mwSessionToken(){return authSession?.access_token||readStoredSession()?.access_token||''}
+window.mwGetSessionToken=mwSessionToken;
 async function mwCurrentUser(){
   if(authSession?.user?.id)return authSession.user;
   const token=mwSessionToken(); if(!token)return null;
