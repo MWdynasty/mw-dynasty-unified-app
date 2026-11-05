@@ -79,3 +79,33 @@ console.log('PASS: strength progression is synchronized to Tuesday/Thursday and 
 for(const week of [1,2,4,6])assert.equal(programWeek(week,'performance','performance','100_200').track.sessions[4].warmup,'Big Warm-Up');
 for(const week of [3,5,7,8,9,25,41])assert.equal(programWeek(week,'performance','performance','100_200').track.sessions[4].warmup,'Competition Warm-Up');
 console.log('PASS: Friday warm-up alternates by stimulus while competition warm-up remains the dominant race-day pattern');
+
+for(const w of [1,8,9,16,17,24,25,33,34,40,41]){
+ for(const tier of ['foundation','development','performance']){
+  for(const event of ['100_200','400']){
+   const track=programWeek(w,tier,tier,event).track;
+   const tue=track.sessions[1],thu=track.sessions[3];
+   if(w<=33){
+    assert.equal(tue.contrast?.type,'drive-force-contrast');
+    assert.equal(thu.contrast?.type,'upright-speed-contrast');
+    assert.match(tue.prescribedWork,/sled pull/);
+    assert.match(thu.prescribedWork,/light sled pull/);
+    assert.match(tue.prescribedWork,/REPLACES the existing technical main set/);
+    assert.match(thu.prescribedWork,/free upright build/);
+    assert.notEqual(tue.prescribedWork,tue.baseWork);
+    assert.equal(tue.contrast.eventGroup,event);
+    assert.equal(thu.contrast.eventGroup,event);
+    if(tier==='foundation')assert.match(tue.prescribedWork,/no heavy sled/);
+    if(w>=25){assert.equal(tue.contrast.optional,true);assert.equal(thu.contrast.optional,true);}
+   }else{
+    assert.equal(tue.contrast,null);
+    assert.equal(thu.contrast,null);
+    assert.doesNotMatch(tue.prescribedWork,/sled pull/);
+   }
+   assert.equal(track.sessions[0].contrast,null);
+   assert.equal(track.sessions[2].contrast,null);
+   assert.equal(track.sessions[4].contrast,null);
+  }
+ }
+}
+console.log('PASS: periodized Tuesday/Thursday sled contrast replaces technical sets, with Foundation and meet-week limits');
