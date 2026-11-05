@@ -143,7 +143,7 @@
       ?coaching.actions.map(x=>row(x.focus+':',x.instruction)).join('')
       :'<p>Use a steady full-body side view and review the first steps with a coach.</p>';
     const phases=engine?.phases?.length
-      ?engine.phases.map(x=>row(x.name+':',x.detail)).join('')
+      ?engine.phases.map(x=>row(x.name+' ('+Number(x.startSeconds).toFixed(1)+'–'+Number(x.endSeconds).toFixed(1)+'s):',x.detail)).join('')
       :'<p>Unable to identify a reliable movement-phase pattern from this recording.</p>';
     const contact=engine?.groundContact;
     const ground='<p>'+esc(contact?.status==='not_verified'?'Exact touchdown, toe-off and contact time are not verified.':'Ground-contact review unavailable.')+'</p>';
