@@ -42,33 +42,42 @@
     landmarker.close();URL.revokeObjectURL(objectUrl);if(readings.length<5)throw Error(`Only ${readings.length} usable body-position frames were detected. This is not enough for a reliable motion read. Try a brighter, steady side-view sprint recording showing the full athlete.`);
     const values={trunk:median(readings.map(x=>x.trunk)),knee:median(readings.map(x=>x.knee)),shin:median(readings.map(x=>x.shin)),arm:median(readings.map(x=>x.arm))};
     if(![values.trunk,values.knee,values.shin].every(Number.isFinite))throw Error('The video did not contain enough clear side-on landmarks for a safe first read.');
-    return {sampledFrames:samples,poseFrames:readings.length,values};
+    return {sampledFrames:samples,poseFrames:readings.length,values,frames:readings};
   }
-  // Phase is explicitly selected by the user, not inferred from sparse sampled frames.
-  // Guidance is conditional coaching education, never a fault diagnosis.
-  const mwMotionPhaseGuide={
-    block:{name:'Block exit / first steps',check:'Check for forward projection and effective backward pushing through the first contacts.',cue:'Push back against the track and rise progressively.',drill:'Short block exits with coach review.'},
-    drive:{name:'Drive phase / early acceleration',check:'Review whether heel recovery stays compact and avoids unnecessarily exaggerated backside cycling.',cue:'Recover the leg efficiently while continuing to project and push.',drill:'Short 10 to 20 m accelerations with side-view feedback.'},
-    transition:{name:'Transition toward upright',check:'Look for a progressive rise and naturally increasing heel recovery, without forcing a low heel throughout.',cue:'Let posture and recovery change smoothly as speed increases.',drill:'Controlled 20 to 40 m build-ups with coach feedback.'},
-    upright:{name:'Upright sprinting',check:'Review front-side mechanics and foot placement without applying drive-phase heel-recovery rules.',cue:'Stay tall and prepare foot contact beneath the body.',drill:'Wicket runs or upright mechanics drills with a coach.'},
-    unknown:{name:'Phase not identified',check:'Identify the part of the sprint before assessing cycling or recovery height.',cue:'Evaluate movement against the correct sprint phase.',drill:'Record a clear side view of one identifiable phase.'}
-  };
+  // Preliminary behind-the-scenes classification from time-ordered posture landmarks.
+  // Never equate torso posture with validated sprint phase, foot contact or technique quality.
+  function buildMotionReport(result) {
+    const frames=(result.frames||[]).filter(f=>Number.isFinite(f.trunk));
+    if(frames.length<12||frames.length/Math.max(1,result.sampledFrames)<0.65) return {phases:[],message:'Not enough continuous tracked body positions to identify sprint phases reliably. Use a steady side-view recording showing the whole runner.'};
+    const section=Math.ceil(frames.length/3);
+    const first=median(frames.slice(0,section).map(f=>f.trunk));
+    const last=median(frames.slice(-section).map(f=>f.trunk));
+    const difference=first-last,phases=[];
+    if(first>=24&&difference>=12){
+      phases.push({name:'Early forward-lean pattern',detail:'Greater forward lean appeared early in this clip. This may be consistent with acceleration, but a block exit is not verified.'});
+      phases.push({name:'Transition toward upright posture',detail:'Forward trunk lean decreased by about '+difference.toFixed(0)+' degrees across the sampled clip. A progressive rise is not automatically a fault.'});
+    }else if(first>=24&&last>=20&&Math.abs(difference)<12){
+      phases.push({name:'Forward-lean posture',detail:'A forward trunk lean was visible, but the specific acceleration phases could not be separated.'});
+    }else if(first<20&&last<20&&Math.abs(difference)<10){
+      phases.push({name:'Mostly upright posture',detail:'The torso appeared comparatively upright. This is not proof that maximum-velocity mechanics are correct.'});
+    }
+    return {phases,message:phases.length?'Preliminary posture patterns, not validated sprint-phase diagnosis.':'Movement phase could not be reliably inferred from the available video.'};
+  }
   function paintAnalysis(result,status){
-    const v=result.values,box=$('mwMotionAnalysis'),phase=mwMotionPhaseGuide[$('mwMotionPhase')?.value]||mwMotionPhaseGuide.unknown;
-    if(!box)return;
+    const box=$('mwMotionAnalysis');if(!box)return;
+    const v=result.values,report=buildMotionReport(result);
+    const angleText=n=>Number.isFinite(n)?n.toFixed(1)+' degrees':'Unavailable';
+    const phaseRows=report.phases.length?report.phases.map(p=>'<div style="border-top:1px solid #314252;padding:10px 0"><b>'+esc(p.name)+'</b><p>'+esc(p.detail)+'</p></div>').join(''):'<p>No reliable phase classification from this recording.</p>';
     box.hidden=false;
-    const angleValue=(n)=>Number.isFinite(n)?n.toFixed(1)+'°':'Not measured';
-    box.innerHTML=`<b>ON-DEVICE MOTION READ</b>
-      <p>Detected ${result.poseFrames} usable body-position frames from ${result.sampledFrames} sampled frames. These are approximate 2D measurements, not verified biomechanical angles or a medical assessment.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" aria-label="Estimated body angles">
-        <span>Trunk angle<br><strong>${angleValue(v.trunk)}</strong></span>
-        <span>Knee angle<br><strong>${angleValue(v.knee)}</strong></span>
-        <span>Shin angle<br><strong>${angleValue(v.shin)}</strong></span>
-        <span>Arm angle<br><strong>${angleValue(v.arm)}</strong></span>
-      </div>
-      <section style="border-top:1px solid #394955;margin-top:14px;padding-top:12px"><b>WHAT AM I DOING WRONG?</b><p><strong>Not enough evidence to identify a specific mistake.</strong> These sampled angles cannot prove excessive cycling, low heel recovery or faulty foot contact.</p><b>PHASE TO REVIEW: ${esc(phase.name)}</b><p><b>What the coach should check:</b> ${esc(phase.check)}</p><p><b>How to correct a confirmed issue:</b> ${esc(phase.cue)}</p><p><b>Suggested drill:</b> ${esc(phase.drill)}</p></section><p><b>Ground contact:</b> Exact touchdown, toe-off and contact duration are not measured by the current frame sampler. High-speed video and validated foot-ground event detection are needed.</p><p><b>Heel recovery / cycling:</b> Not automatically graded yet. Drive-phase standards must not be applied unchanged to upright sprinting.</p><p><b>Coach note:</b> Guidance is conditional, not a diagnosis. Verify what the athlete actually does in the video before prescribing changes.</p>
-      <small>For a clearer read, keep the full athlete visible, use steady side-view footage, and record in good light. No coaching grade is assigned automatically.</small>`;
-    status.textContent='On-device motion measurements are ready. No video was uploaded by this analysis.';
+    box.innerHTML='<h3>MW MOTION INTELLIGENCE - COMPLETE VIDEO REVIEW</h3>'
+      +'<p>Analyzed '+result.poseFrames+' usable body-position frames from '+result.sampledFrames+' sampled frames. Measurements are experimental 2D observations.</p>'
+      +'<h3>Movement phases</h3>'+phaseRows+'<p>'+esc(report.message)+'</p>'
+      +'<h3>What am I doing right?</h3><p>MW cannot yet certify correct technique from this video. The posture patterns observed above are presented without grading.</p>'
+      +'<h3>What needs improvement?</h3><p>Ground contact, heel recovery, backside cycling and block-exit mechanics cannot yet be classified accurately from these samples. No fault is assigned without adequate evidence.</p>'
+      +'<h3>How do I improve?</h3><p>Review the recording with your coach and capture a steady side-view showing the entire athlete. During early acceleration, evaluate effective backward pushing; allow heel recovery to rise naturally during the transition toward upright sprinting.</p>'
+      +'<h3>Preliminary measurements</h3><p>Trunk: '+angleText(v.trunk)+' | Knee: '+angleText(v.knee)+' | Shin: '+angleText(v.shin)+' | Arm: '+angleText(v.arm)+'</p>'
+      +'<small>Exact touchdown, toe-off and contact duration are not measured. Validated high-speed foot-ground event detection is still required.</small>';
+    status.textContent='One on-device review completed. No video was uploaded or stored by this analysis.';
   }
   // Coaches can only see adult-athlete observations explicitly shared with an active assigned coach.
   // The private video-upload endpoint is intentionally athlete-only and must not be exposed here.
@@ -107,7 +116,7 @@
       root = panel();
     }
     if (!root) return;
-    root.innerHTML = `<button class="back" type="button" id="mwMotionBack" style="margin:8px 0 12px">← Back to Performance Tools</button><div class="card" style="margin-top:14px;border-color:#c89d3b"><div class="cardHead"><span>MOTION INTELLIGENCE</span><span class="smalllink">SECURE VIDEO REVIEW</span></div><h2>Show MW how you move.</h2><p class="muted">Upload one short sprint recording. Choose the movement and camera view so MW can evaluate the right thing.</p><button class="save" id="mwMotion3D" type="button" hidden>USE NATIVE 3-D CAMERA</button><label style="display:block;margin:10px 0 4px">Movement<select id="mwMotionMovement" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wickets</option></select></label><label style="display:block;margin:10px 0 4px">Camera view<select id="mwMotionView" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select></label><label style="display:block;margin:10px 0 4px">Sprint phase (select the phase shown)<select id="mwMotionPhase" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="unknown">Not sure / mixed phases</option><option value="block">Block exit / first steps</option><option value="drive">Drive phase / early acceleration</option><option value="transition">Transition to upright</option><option value="upright">Upright sprinting</option></select></label><p class="muted" style="font-size:12px;margin:4px 0 10px">Precise ground contact times are not available from this prototype. For future validated contact analysis, steady side-view 120 or 240 fps footage is preferred.</p><label style="display:block;margin:10px 0 4px">Sprint video<input id="mwMotionFile" type="file" accept="video/mp4,video/quicktime" style="width:100%;padding:10px 0;color:#cbd6df"></label><label style="display:flex;gap:8px;align-items:flex-start;margin:10px 0;color:#cbd6df;font-size:12px"><input id="mwMotionConsent" type="checkbox" style="margin-top:3px"> I consent to MW securely storing this recording for up to 14 days for Motion Intelligence review.</label><button class="save" id="mwMotionUpload" type="button">UPLOAD FOR MOTION REVIEW</button><button class="save" id="mwMotionAnalyze" type="button" hidden>ANALYZE ON THIS IPHONE</button><div id="mwMotionAnalysis" class="lockNote" hidden></div><p id="mwMotionStatus" class="muted" role="status" style="margin-top:10px"></p><details style="margin-top:12px"><summary style="color:#f0c557">My motion recordings</summary><div id="mwMotionHistory" style="margin-top:8px"></div></details></div>`;
+    root.innerHTML = `<button class="back" type="button" id="mwMotionBack" style="margin:8px 0 12px">← Back to Performance Tools</button><div class="card" style="margin-top:14px;border-color:#c89d3b"><div class="cardHead"><span>MOTION INTELLIGENCE</span><span class="smalllink">SECURE VIDEO REVIEW</span></div><h2>Show MW how you move.</h2><p class="muted">Upload one short sprint recording. Choose the movement and camera view so MW can evaluate the right thing.</p><button class="save" id="mwMotion3D" type="button" hidden>USE NATIVE 3-D CAMERA</button><label style="display:block;margin:10px 0 4px">Movement<select id="mwMotionMovement" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wickets</option></select></label><label style="display:block;margin:10px 0 4px">Camera view<select id="mwMotionView" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select></label><label style="display:block;margin:10px 0 4px">Sprint video<input id="mwMotionFile" type="file" accept="video/mp4,video/quicktime" style="width:100%;padding:10px 0;color:#cbd6df"></label><label style="display:flex;gap:8px;align-items:flex-start;margin:10px 0;color:#cbd6df;font-size:12px"><input id="mwMotionConsent" type="checkbox" style="margin-top:3px"> I consent to MW securely storing this recording for up to 14 days for Motion Intelligence review.</label><button class="save" id="mwMotionUpload" type="button">UPLOAD FOR MOTION REVIEW</button><button class="save" id="mwMotionAnalyze" type="button" hidden>ANALYZE ON THIS IPHONE</button><div id="mwMotionAnalysis" class="lockNote" hidden></div><p id="mwMotionStatus" class="muted" role="status" style="margin-top:10px"></p><details style="margin-top:12px"><summary style="color:#f0c557">My motion recordings</summary><div id="mwMotionHistory" style="margin-top:8px"></div></details></div>`;
     $('mwMotionBack')?.addEventListener('click',()=>{ if(window.mwCoachOpenPage) window.mwCoachOpenPage('tools'); else window.openView?.('pacer',true); });
     if(window.mwNativeMotion3D){$('mwMotion3D').hidden=false;$('mwMotion3D').onclick=()=>{window.mwNativeMotion3D.start();$('mwMotionStatus').textContent='Starting native 3-D body trackingâ¦'};window.mwNativeMotion3DResult=(r)=>{if(r?.state==='tracking')$('mwMotionStatus').textContent='Native 3-D body tracking is active. Keep the athlete fully in frame.';else if(r?.error)$('mwMotionStatus').textContent=r.error;};}
     const coach=coachMode(), status=$('mwMotionStatus'), upload=$('mwMotionUpload'), analyze=$('mwMotionAnalyze');
