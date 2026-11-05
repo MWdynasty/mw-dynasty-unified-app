@@ -2,11 +2,14 @@
   const $ = (id) => document.getElementById(id);
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const token = () => window.mwGetSessionToken?.() || '';
+  const coachMode = () => document.body.classList.contains('mw-hybrid-coach');
   const endpoint = () => `${window.MW_SUPABASE_URL}/functions/v1/mw-motion`;
   async function call(action, payload = {}) {
-    const r = await fetch(endpoint(), {method:'POST', headers:{apikey:window.MW_SUPABASE_KEY,Authorization:`Bearer ${token()}`,'Content-Type':'application/json'}, body:JSON.stringify({action,...payload})});
+    const accessToken=token();
+    if(!accessToken) throw new Error('Motion Intelligence requires an active sign-in. Please sign in again.');
+    const r = await fetch(endpoint(), {method:'POST', headers:{apikey:window.MW_SUPABASE_KEY,Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'}, body:JSON.stringify({action,...payload})});
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(d.error || 'Motion Intelligence is unavailable right now.');
+    if (!r.ok) throw new Error(d.error || (r.status===401?'Motion session expired. Sign in again.':'Motion Intelligence is unavailable right now.'));
     return d;
   }
   function panel() { return $('mwMotionPanel'); }
@@ -50,7 +53,35 @@
     root.innerHTML = `<button class="back" type="button" id="mwMotionBack" style="margin:8px 0 12px">← Back to Performance Tools</button><div class="card" style="margin-top:14px;border-color:#c89d3b"><div class="cardHead"><span>MOTION INTELLIGENCE</span><span class="smalllink">SECURE VIDEO REVIEW</span></div><h2>Show MW how you move.</h2><p class="muted">Upload one short sprint recording. Choose the movement and camera view so MW can evaluate the right thing.</p><button class="save" id="mwMotion3D" type="button" hidden>USE NATIVE 3-D CAMERA</button><label style="display:block;margin:10px 0 4px">Movement<select id="mwMotionMovement" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wickets</option></select></label><label style="display:block;margin:10px 0 4px">Camera view<select id="mwMotionView" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select></label><label style="display:block;margin:10px 0 4px">Sprint video<input id="mwMotionFile" type="file" accept="video/mp4,video/quicktime" style="width:100%;padding:10px 0;color:#cbd6df"></label><label style="display:flex;gap:8px;align-items:flex-start;margin:10px 0;color:#cbd6df;font-size:12px"><input id="mwMotionConsent" type="checkbox" style="margin-top:3px"> I consent to MW securely storing this recording for up to 14 days for Motion Intelligence review.</label><button class="save" id="mwMotionUpload" type="button">UPLOAD FOR MOTION REVIEW</button><button class="save" id="mwMotionAnalyze" type="button" hidden>ANALYZE ON THIS IPHONE</button><div id="mwMotionAnalysis" class="lockNote" hidden></div><p id="mwMotionStatus" class="muted" role="status" style="margin-top:10px"></p><details style="margin-top:12px"><summary style="color:#f0c557">My motion recordings</summary><div id="mwMotionHistory" style="margin-top:8px"></div></details></div>`;
     $('mwMotionBack')?.addEventListener('click',()=>{ if(window.mwCoachOpenPage) window.mwCoachOpenPage('tools'); else window.openView?.('pacer',true); });
     if(window.mwNativeMotion3D){$('mwMotion3D').hidden=false;$('mwMotion3D').onclick=()=>{window.mwNativeMotion3D.start();$('mwMotionStatus').textContent='Starting native 3-D body trackingâ¦'};window.mwNativeMotion3DResult=(r)=>{if(r?.state==='tracking')$('mwMotionStatus').textContent='Native 3-D body tracking is active. Keep the athlete fully in frame.';else if(r?.error)$('mwMotionStatus').textContent=r.error;};}
-    await loadHistory();
+    const coach=coachMode(), status=$('mwMotionStatus'), upload=$('mwMotionUpload'), analyze=$('mwMotionAnalyze');
+    // Server upload access is restricted to approved adult athlete pilots.
+    // Coaches may run a private device-only observation; don't imply cloud upload access.
+    if(coach){
+      upload.hidden=true;
+      analyze.hidden=false;
+      $('mwMotionConsent').parentElement.hidden=true;
+      status.textContent='Coach preview: select a sprint video for an on-device movement review. The recording will not be uploaded or saved. Secure coach uploads are not enabled yet.';
+    }else{
+      try {
+        const access=await call('eligibility');
+        if(!access.approved){
+          upload.hidden=true;
+          status.textContent='Secure uploads require approved adult pilot access. You can still review a sprint video on this device.';
+        } else await loadHistory();
+      }catch(error){upload.hidden=true;status.textContent=error.message;}
+      analyze.hidden=false;
+    }
+    analyze.onclick=async()=>{
+      const file=$('mwMotionFile').files?.[0];
+      if(!file){status.textContent='Select a sprint video first.';return;}
+      if(!['video/mp4','video/quicktime'].includes(file.type)||file.size<1||file.size>100*1024*1024){status.textContent='Choose an MP4 or QuickTime video up to 100 MB.';return;}
+      analyze.disabled=true;
+      try{
+        const result=await analyzeVideo(file,status);
+        paintAnalysis(result,status);
+        status.textContent='On-device movement review complete. No recording was uploaded or stored.';
+      }catch(error){status.textContent=error.message||'On-device analysis failed.';}finally{analyze.disabled=false;}
+    };
     $('mwMotionUpload').onclick = async () => {
       const file = $('mwMotionFile').files?.[0], status = $('mwMotionStatus'), btn = $('mwMotionUpload');
       if (!file) { status.textContent='Choose an MP4 or QuickTime sprint video first.'; return; }
@@ -66,7 +97,7 @@
         status.textContent='Verifying recordingâ¦';
         const done=await call('finalize',{assessmentId:prepared.assessmentId});
         status.textContent=done.durationVerified?`â Recording saved (${Math.round(Number(done.durationMs||0)/1000)}s).`:'Recording saved securely.';
-        $('mwMotionAnalyze').hidden=false;$('mwMotionAnalyze').onclick=async()=>{const analyze=$('mwMotionAnalyze');analyze.disabled=true;try{const result=await analyzeVideo(file,status);paintAnalysis(result,status);await call('save_review',{assessmentId:prepared.assessmentId,consentToStoreMeasurements:true,consentVersion:'motion-review-v1',review:{sampledFrames:result.sampledFrames,poseFrames:result.poseFrames,metrics:[{name:'trunk_tilt_2d',samples:result.poseFrames,medianDegrees:result.values.trunk,earlyDegrees:result.values.trunk,lateDegrees:result.values.trunk},{name:'knee_angle_2d',samples:result.poseFrames,medianDegrees:result.values.knee,earlyDegrees:result.values.knee,lateDegrees:result.values.knee},{name:'shin_tilt_2d',samples:result.poseFrames,medianDegrees:result.values.shin,earlyDegrees:result.values.shin,lateDegrees:result.values.shin}]}});}catch(e){status.textContent=e.message||'On-device analysis failed.'}finally{analyze.disabled=false}};
+        // Local analysis is a separate explicit action; do not upload measurements automatically.
         await loadHistory();
       } catch(e) { status.textContent=e.message||'Motion upload failed.'; } finally { btn.disabled=false; }
     };
