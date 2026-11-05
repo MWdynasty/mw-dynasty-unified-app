@@ -174,29 +174,46 @@ function strengthGuidance(tier,week){
 function technicalSledContrast(week,day,tier,eventGroup='100_200'){
  const w=Number(week),d=Number(day),t=normalizeTier(tier);
  if(!Number.isInteger(w)||w<1||w>33||![2,4].includes(d))return null;
- const early=w<=8,competition=w>=25,foundation=t==='foundation',isTue=d===2;
- const pairs=competition?2:foundation?3:early?4:3;
- const distance=foundation||competition?10:15;
+ const competition=w>=25,foundation=t==='foundation',development=t==='development',isTue=d===2;
+ const group=normalizeEventGroup(eventGroup);
+ const index=(w-1)%4;
+ // Distance is phase-, tier- and week-specific, not a fixed 15m prescription.
+ const driveDistances=foundation?[10,15,15,20]:development?[15,20,25,25]:[20,25,30,25];
+ const transitionDistances=foundation?[15,20,20,25]:development?[20,30,35,40]:[30,40,45,50];
+ const micro=competition;
+ const driveDistance=micro?foundation?10:15:driveDistances[index];
+ const longResisted=!isTue&&!micro&&!foundation&&w>=9&&w<=24&&[12,16,20,24].includes(w);
+ const longDistances=development?{12:45,16:50,20:55,24:60}:{12:60,16:75,20:90,24:60};
+ const distance=isTue?driveDistance:micro?foundation?15:20:longResisted?longDistances[w]:transitionDistances[index];
+ const pairs=micro?2:longResisted?1:foundation?2:w<=8?3:3;
+ const unloadedDistance=isTue?driveDistance:micro?20:longResisted?30:development?30:foundation?20:40;
  const resistance=isTue
   ?foundation?'light-to-moderate only; no heavy sled for Foundation'
-   :competition?'light-to-moderate (10-20% sprint velocity loss when measured)'
-   :w<=16?'heavy technical load (30-50% sprint velocity loss when measured)'
-   :'moderately heavy (20-35% sprint velocity loss when measured)'
-  :'light load (5-15% sprint velocity loss when measured)';
+   :competition?'light-to-moderate; no grinding in competition phase'
+   :w<=16?'heavy technical resistance, approximately 30-50% individual acceleration-velocity decrement if measured'
+   :'moderately heavy resistance, approximately 20-35% individual acceleration-velocity decrement if measured'
+  :longResisted?'very light resistance; target no more than about 5-10% velocity loss, measured for the individual'
+   :'light resistance, about 5-15% individual sprint-velocity decrement if measured';
  const paired=isTue
-  ?pairs+' x ('+distance+'m sled pull + '+distance+'m free acceleration)'
-  :pairs+' x ('+distance+'m light sled pull + '+(foundation?15:20)+'m free upright build / fly entry)';
- const intent=isTue?'Drive phase: project forward and push back into the ground without forced head-down posture.'
-  :'Upright transition: maintain rhythm, stiffness and fast relaxed mechanics. Never grind through resistance.';
- const rest=isTue?'Rest 2-3 minutes between starts and 4 minutes between paired sets.':'Rest 3-4 minutes between paired sets, fully recovered.';
- const fallback=isTue?'No sled: mild hill + flat acceleration in place of the same paired sets.'
-  :'No sled: controlled flat build + faster flat run in place of the same paired sets.';
- const meet=competition?'Optional low-volume micro-dose only when no imminent race and athlete is recovered. Otherwise retain easy wickets and starts. ':'';
- const safety='Set load from actual speed and sound technique, not plate weight; stop if coordination or velocity deteriorates. Supervise youth. This session REPLACES the existing technical main set; never add extra reps.';
- return {day:d,week:w,tier:t,eventGroup:normalizeEventGroup(eventGroup),type:isTue?'drive-force-contrast':'upright-speed-contrast',
-  pairs,distanceMeters:distance,resistance,intent,rest,fallback,safety,optional:competition,
-  prescribedWork:meet+paired+'. Resistance: '+resistance+'. '+intent+' '+rest+' '+fallback+' '+safety};
+  ?pairs+' x ('+distance+'m heavy/controlled sled pull + '+unloadedDistance+'m free acceleration)'
+  :pairs+' x ('+distance+'m light sled pull + '+unloadedDistance+'m free upright build / fly entry)';
+ const intent=isTue?'Drive phase: horizontal push, strong projection, consistent steps; do not force athletes to remain bent over for the entire run.'
+  :longResisted?'Long light-resistance sprint rhythm / upright speed-endurance exposure, NOT a maximum-velocity test or guaranteed peak-speed repetition. Follow with a separate short, fast unloaded sprint after full recovery.'
+  :'Upright transition and high-speed rhythm; the free repetition supplies the true speed-quality exposure.';
+ const rest=isTue?'Rest 2-3 minutes between starts and 4-5 minutes between paired sets.'
+  :longResisted?'Full 6-8 minutes or more as needed between resisted and unloaded work; stop if running quality drops.'
+  :'Full 3-5 minutes between paired sets, longer when needed to preserve speed.';
+ const fallback=isTue?'No sled: mild hill and flat acceleration in the SAME total pairs.'
+  :'No sled: controlled build-up and a faster flat run in the SAME total pairs.';
+ const meet=micro?'Optional micro-dose only if no imminent meet and athlete is recovered; otherwise use existing low-volume starts and wickets. ':'';
+ const loading=longResisted?'A 10-15 lb sled is ONLY an optional equipment example, not a universal athlete load; include sled friction/surface and actual velocity decrement when setting resistance. ':'';
+ const safety='The contrasted sets REPLACE the existing technical main work, not additional volume. Supervise developing athletes; stop if sprint mechanics, velocity or readiness decline.';
+ return {day:d,week:w,tier:t,eventGroup:group,type:isTue?'drive-force-contrast':'upright-speed-contrast',
+  pairs,distanceMeters:distance,unloadedDistanceMeters:unloadedDistance,longResisted,
+  resistance,intent,rest,fallback,safety,optional:micro,
+  prescribedWork:meet+paired+'. Resistance: '+resistance+'. '+intent+' '+loading+rest+' '+fallback+' '+safety};
 }
+
 function compactTrack(week,tier,eventGroup='100_200'){
   const key=normalizeTier(tier),base=getTrackWeek(week,eventGroup);
   if(!base)return null;
