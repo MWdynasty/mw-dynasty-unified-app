@@ -90,4 +90,10 @@ const occludedHeels=risingHeels.map((f,i)=>({
 const incompleteHeel=engine.summarize(occludedHeels,{sampledFrames:36});
 assert.equal(incompleteHeel.heels[0].trackingAdequate,false);
 assert.ok(!incompleteHeel.coaching.positives.some(x=>/heel trajectories rose/.test(x.evidence)));
+// Partial front/rear/oblique recordings must still receive honest usable feedback.
+const lowCoverage=engine.summarize(progressive.slice(0,12),{sampledFrames:36});
+assert.ok(lowCoverage.coaching.positives.some(p=>/tracked 12 visible body positions/.test(p.evidence)));
+assert.ok(lowCoverage.coaching.actions.some(a=>/Front, rear and side recordings are accepted/.test(a.instruction)));
+assert.equal(lowCoverage.coaching.faultDetected,false);
+assert.equal(lowCoverage.groundContact.contactMilliseconds,null);
 console.log('Motion tracking tests passed: posture timeline, per-leg trajectories, low-evidence rejection, no invented ground contact.');
