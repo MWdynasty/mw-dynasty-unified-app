@@ -66,17 +66,23 @@
   }
   function paintAnalysis(result,status){
     const box=$('mwMotionAnalysis');if(!box)return;
-    const v=result.values,engine=window.MWMotionTracking?.summarize(result.frames,{sampledFrames:result.sampledFrames}),report=engine?{phases:engine.phases.map(p=>({name:p.name,detail:p.detail})),message:engine.quality.adequateForPosture?'Preliminary torso-posture patterns; sprint phases and ground contact remain unverified.':'Not enough continuous visible positions to make a posture assessment.'}:buildMotionReport(result);
+    const v=result.values,engine=window.MWMotionTracking?.summarize(result.frames,{sampledFrames:result.sampledFrames,cameraView:coachMode()?null:$('mwMotionView')?.value}),report=engine?{phases:engine.phases.map(p=>({name:p.name,detail:p.detail})),message:engine.quality.adequateForPosture?'Preliminary torso-posture patterns; sprint phases and ground contact remain unverified.':'Not enough continuous visible positions to make a posture assessment.'}:buildMotionReport(result);
     const angleText=n=>Number.isFinite(n)?n.toFixed(1)+' degrees':'Unavailable';
     const phaseRows=report.phases.length?report.phases.map(p=>'<div style="border-top:1px solid #314252;padding:10px 0"><b>'+esc(p.name)+'</b><p>'+esc(p.detail)+'</p></div>').join(''):'<p>No reliable phase classification from this recording.</p>';
+    const coachFindings=engine?.coaching;
+    const rightRows=coachFindings?.positives.length?coachFindings.positives.map(x=>'<p><b>Observed:</b> '+esc(x.evidence)+' <small>'+esc(x.meaning)+'</small></p>').join(''):'<p>There is not enough evidence yet to confirm a specific technique strength.</p>';
+    const concernRows=coachFindings?.issues.length?coachFindings.issues.map(x=>'<p><b>'+esc(x.label)+':</b> '+esc(x.reason)+'</p>').join(''):'<p>No mechanics fault has been established from this video.</p>';
+    const drillRows=coachFindings?.actions.length?coachFindings.actions.map(x=>'<p><b>'+esc(x.focus)+':</b> '+esc(x.instruction)+'</p>').join(''):'<p>Review a clear side-view clip with a qualified sprint coach.</p>';
+    const footRows=engine?'<p>'+esc(engine.groundContact.reason)+'</p><p>Possible near-ground foot positions: '+engine.groundContact.candidateEvents.length+' (unverified).</p>':'<p>Foot event detector unavailable.</p>';
+    const heelRows=engine?engine.heels.map(x=>'<p>'+esc(x.side)+' leg: '+esc(x.detail)+' '+(Number.isFinite(x.change)?'Relative heel-height trend: '+x.change.toFixed(2)+' (uncalibrated).':'')+'</p>').join(''):'<p>Heel trajectory detector unavailable.</p>';
     box.hidden=false;
     box.innerHTML='<h3>MW MOTION INTELLIGENCE - COMPLETE VIDEO REVIEW</h3>'
       +'<p>Analyzed '+result.poseFrames+' usable body-position frames from '+result.sampledFrames+' sampled frames. Measurements are experimental 2D observations.</p>'
       +'<h3>Movement phases</h3>'+phaseRows+'<p>'+esc(report.message)+'</p>'
-      +'<h3>What am I doing right?</h3><p>MW cannot yet certify correct technique from this video. The posture patterns observed above are presented without grading.</p>'
-      +'<h3>What needs improvement?</h3><p>Ground contact, heel recovery, backside cycling and block-exit mechanics cannot yet be classified accurately from these samples. No fault is assigned without adequate evidence.</p>'
+      +'<h3>What am I doing right?</h3>'+rightRows
+      +'<h3>What needs improvement?</h3>'+concernRows+'<h3>Ground-contact tracking</h3>'+footRows+'<h3>Heel-recovery tracking</h3>'+heelRows
       +'<h3>Behind-the-scenes tracking</h3><p>'+esc(engine?'Tracked '+engine.quality.usableFrames+' ordered body poses over '+engine.quality.spanSeconds.toFixed(1)+' seconds; left and right leg trajectories inspected.':'Time-ordered motion tracking is unavailable.')+'</p>'
-      +'<h3>How do I improve?</h3><p>Review the recording with your coach and capture a steady side-view showing the entire athlete. During early acceleration, evaluate effective backward pushing; allow heel recovery to rise naturally during the transition toward upright sprinting.</p>'
+      +'<h3>How do I improve?</h3>'+drillRows
       +'<h3>Preliminary measurements</h3><p>Trunk: '+angleText(v.trunk)+' | Knee: '+angleText(v.knee)+' | Shin: '+angleText(v.shin)+' | Arm: '+angleText(v.arm)+'</p>'
       +'<small>Exact touchdown, toe-off and contact duration are not measured. Validated high-speed foot-ground event detection is still required. '+(result.sourceSeconds>result.analyzedSeconds?'The first '+result.analyzedSeconds.toFixed(1)+' seconds of the recording were analyzed to protect iPhone performance.':'')+'</small>';
     status.textContent='One on-device review completed. No video was uploaded or stored by this analysis.';
