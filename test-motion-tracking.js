@@ -53,4 +53,24 @@ assert.equal(side.coaching.faultDetected,false);
 const missing=pose(25);
 missing[11].visibility=0.1;
 assert.equal(engine.frame(missing,0),null);
+
+// High-speed synthetic toe trajectory: detect TWO proximity episodes, not repeated
+// contact frames, and NEVER convert their duration to ground-contact milliseconds.
+const highSpeedToe=Array.from({length:96},(_,i)=>{
+  const phase=i%48;
+  const y=phase<12?0.74+phase*0.01:phase<29?0.86:phase<42?0.86-(phase-29)*0.011:0.715;
+  return {time:i/120,trunk:30,legs:[
+    {side:'left',valid:true,toeY:y,heelHeight:-1},
+    {side:'right',valid:true,toeY:0.72,heelHeight:-1}
+  ]};
+});
+const exploratory=engine.detectFootEvents(highSpeedToe,{cameraView:'side'});
+assert.equal(exploratory.candidateEvents.length,2);
+assert.ok(exploratory.candidateEvents.every(e=>e.kind==='unverified_ground_proximity_window'));
+assert.equal(exploratory.contactMilliseconds,null);
+assert.equal(exploratory.status,'not_verified');
+assert.equal(engine.detectFootEvents(highSpeedToe,{cameraView:'front'}).candidateEvents.length,0);
+// Neither high capture rate nor a changing heel trajectory can produce a fault verdict.
+const progression=engine.summarize(highSpeedToe,{cameraView:'side',sampledFrames:96});
+assert.equal(progression.coaching.faultDetected,false);
 console.log('Motion tracking tests passed: posture timeline, per-leg trajectories, low-evidence rejection, no invented ground contact.');
