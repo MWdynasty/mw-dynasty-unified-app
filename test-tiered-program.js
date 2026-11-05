@@ -109,3 +109,30 @@ for(const w of [1,8,9,16,17,24,25,33,34,40,41]){
  }
 }
 console.log('PASS: periodized Tuesday/Thursday sled contrast replaces technical sets, with Foundation and meet-week limits');
+
+
+const driveDistances=new Set(),uprightDistances=new Set();
+for(let week=1;week<=33;week++){
+ const perf=programWeek(week,'performance','performance','100_200').track;
+ const tue=perf.sessions[1].contrast,thu=perf.sessions[3].contrast;
+ driveDistances.add(tue.distanceMeters);
+ uprightDistances.add(thu.distanceMeters);
+ assert.ok(tue.distanceMeters>=15&&tue.distanceMeters<=30);
+ assert.ok(thu.distanceMeters>=20&&thu.distanceMeters<=90);
+ assert.match(perf.sessions[1].prescribedWork,/REPLACES the existing technical main set/);
+ assert.equal(tue.type,'drive-force-contrast');
+ assert.equal(thu.type,'upright-speed-contrast');
+}
+assert.ok(driveDistances.has(20));
+assert.ok(driveDistances.has(25));
+assert.ok(driveDistances.has(30));
+assert.ok(uprightDistances.has(60));
+assert.ok(uprightDistances.has(75));
+assert.ok(uprightDistances.has(90));
+const longSled=programWeek(20,'performance','performance','100_200').track.sessions[3];
+assert.equal(longSled.contrast.distanceMeters,90);
+assert.equal(longSled.contrast.longResisted,true);
+assert.match(longSled.prescribedWork,/NOT a maximum-velocity test/);
+assert.match(longSled.prescribedWork,/10-15 lb sled is ONLY an optional equipment example/);
+assert.equal(programWeek(20,'foundation','foundation','100_200').track.sessions[3].contrast.longResisted,false);
+console.log('PASS: 20-30m drive development, variable lighter distances through 90m, and no universal pound prescription');
