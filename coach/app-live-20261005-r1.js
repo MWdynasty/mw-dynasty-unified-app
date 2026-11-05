@@ -788,6 +788,33 @@ function renderCoachSeasonAssessment(existing={}){
     }catch(e){msg.textContent=e.message||'Training year could not be saved.';msg.className='login-message show error';save.disabled=false;save.textContent=old}
   };
 }
+function mwCoachFormatReply(input){
+  // Render a small, safe Markdown subset: headings, emphasis and lists.
+  // HTML from the model is escaped before any formatting is applied.
+  const inline=value=>escapeHtml(String(value||''))
+    .replace(/\\*\\*([^*\\n]+)\\*\\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\\*([^*\\n]+)\\*/g,'$1<em>$2</em>');
+  const lines=String(input||'').replace(/\\r\\n?/g,'\\n').split('\\n');
+  let html='',inList=false,listType='';
+  const closeList=()=>{if(inList){html+='</'+listType+'>';inList=false;listType='';}};
+  for(const source of lines){
+    const line=source.trim();
+    if(!line){closeList();continue;}
+    const heading=line.match(/^#{1,4}\\s+(.+)$/);
+    if(heading){closeList();html+='<h3>'+inline(heading[1])+'</h3>';continue;}
+    const bullet=line.match(/^[-*]\\s+(.+)$/);
+    const ordered=line.match(/^\\d+[.)]\\s+(.+)$/);
+    if(bullet||ordered){
+      const kind=ordered?'ol':'ul';
+      if(!inList||listType!==kind){closeList();html+='<'+kind+'>';inList=true;listType=kind;}
+      html+='<li>'+inline((bullet||ordered)[1])+'</li>';continue;
+    }
+    closeList();
+    html+='<p>'+inline(line)+'</p>';
+  }
+  closeList();
+  return html||'<p></p>';
+}
 function coachMWPage(){
   // Coach Mus owns the full mobile surface. Clear any global layer left by a prior
   // page or interrupted transition before rendering the chat controls.
@@ -848,7 +875,7 @@ function coachMWPage(){
     const run=++voiceRun;button.disabled=true;button.textContent='Loading voice…';activeVoiceButton=button;
     try{for(const chunk of voiceChunks(text,prefs.voiceMode)){if(run!==voiceRun)return;const r=await fetch('/api/speak',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({text:chunk,coachType:prefs.coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Coach Mus voice unavailable')}const blob=await r.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.playbackRate=Number(prefs.voiceSpeed||1);activeAudio=audio;activeVoiceURL=url;button.textContent='■ Stop Reading';button.disabled=false;await new Promise((resolve,reject)=>{audio.onended=()=>{if(activeVoiceURL===url){URL.revokeObjectURL(url);activeVoiceURL=''}activeAudio=null;resolve()};audio.onerror=()=>reject(new Error('Voice playback error'));audio.play().catch(reject)});if(run!==voiceRun)return}if(run===voiceRun)resetVoice()}catch(e){if(run===voiceRun){resetVoice();button.disabled=false;button.textContent='🔊 Read Aloud';toast(e.message)}}
   };
-  const render=()=>{chat.innerHTML=history.map((m,i)=>`<div class="tile mw-coach-message ${m.role==='user'?'mw-coach-user':'mw-coach-assistant'}"><b>${m.role==='user'?'Coach':'Coach Mus'}</b><p style="white-space:pre-wrap">${escapeHtml(m.content)}</p>${m.role==='assistant'?`<button class="back mw-read-aloud" data-i="${i}" type="button">🔊 Read Aloud</button>`:''}</div>`).join('');chat.querySelectorAll('.mw-read-aloud').forEach(b=>{const item=history[Number(b.dataset.i)];b.onclick=()=>readAloud(item?.content||'',b)});chat.scrollTop=chat.scrollHeight};
+  const render=()=>{chat.innerHTML=history.map((m,i)=>`<div class="tile mw-coach-message ${m.role==='user'?'mw-coach-user':'mw-coach-assistant'}"><b>${m.role==='user'?'Coach':'Coach Mus'}</b><div class="mw-coach-reply">${m.role==='assistant'?mwCoachFormatReply(m.content):'<p>'+escapeHtml(m.content)+'</p>'}</div>${m.role==='assistant'?`<button class="back mw-read-aloud" data-i="${i}" type="button">🔊 Read Aloud</button>`:''}</div>`).join('');chat.querySelectorAll('.mw-read-aloud').forEach(b=>{const item=history[Number(b.dataset.i)];b.onclick=()=>readAloud(item?.content||'',b)});chat.scrollTop=chat.scrollHeight};
   render();
   document.querySelectorAll('[data-mw-prompt]').forEach(b=>b.onclick=()=>{q.value=b.dataset.mwPrompt||'';q.focus()});
   attach.onclick=()=>pick.click();
@@ -878,8 +905,10 @@ function coachMWPage(){
     bubble.className='mw-coach-message '+(role==='user'?'mw-coach-user':'mw-coach-assistant');
     const label=document.createElement('b');
     label.textContent=role==='user'?'Coach':'Coach Mus';
-    const body=document.createElement('p');
-    body.textContent=content;
+    const body=document.createElement('div');
+    body.className='mw-coach-reply';
+    if(role==='assistant')body.innerHTML=mwCoachFormatReply(content);
+    else body.textContent=content;
     bubble.appendChild(label);
     bubble.appendChild(body);
     if(role==='assistant'){
