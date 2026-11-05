@@ -2618,20 +2618,81 @@ async function messagesPage(preselectGroup=null){
 
 async function activityPage(){pageBase('Activity Log','A real audit trail of coach actions in MW Dynasty.',`<div id="activityLive" class="list"><div class="tile">Loading activity…</div></div>`);try{const rows=await sbRest('coach_activity_log?select=id,action_type,entity_type,detail,created_at&order=created_at.desc&limit=50')||[];activityLive.innerHTML=rows.map(a=>`<div class="row"><span><b>${escapeHtml(a.action_type.replaceAll('_',' '))}</b><br><small>${escapeHtml(a.entity_type||'MW Coach')} ${a.detail?.name?'· '+escapeHtml(a.detail.name):''}</small></span><small>${new Date(a.created_at).toLocaleString()}</small></div>`).join('')||'<div class="tile">Activity will appear as you use the connected coach workspace.</div>'}catch(e){activityLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}}
 async function taskBoardPage(){pageBase('Coach Task Board','Live priorities generated from athlete performance, program state and training activity.',`<div id="taskLive" class="list"><div class="tile">Analyzing assigned athletes…</div></div>`);try{const [d,p]=await Promise.all([fetchCoachRoster(),fetchCoachPerformance().catch(()=>({athletes:[]}))]),a=d.athletes||[],pm=new Map((p.athletes||[]).map(x=>[x.athlete_id,x])),tasks=[];for(const x of a){const perf=pm.get(x.id);for(const f of (perf?.flags||[]))tasks.push({n:x.name,d:f.message,p:f.level==='attention'?'Review Now':'Watch'});if(!x.last_completed_workout_at)tasks.push({n:x.name,d:'No completed workout is currently recorded. Review training status.',p:'Review'});else{const days=(Date.now()-new Date(x.last_completed_workout_at).getTime())/86400000;if(days>7)tasks.push({n:x.name,d:`Last recorded workout was ${Math.floor(days)} days ago. Check attendance and readiness.`,p:'High'});}if((x.prs||[]).length===0)tasks.push({n:x.name,d:'No PR or trial times are recorded. Add any one full-effort result to start individualized pacing.',p:'Setup'});}taskLive.innerHTML=tasks.map(t=>`<div class="row"><span><b>${escapeHtml(t.n)}</b><br>${escapeHtml(t.d)}</span><span class="status">${t.p}</span></div>`).join('')||'<div class="tile"><h3>No urgent athlete tasks detected</h3><p>No performance review flags, basic data gaps, or inactivity signals are active right now.</p></div>'}catch(e){taskLive.innerHTML=`<div class="tile">${escapeHtml(e.message)}</div>`}}
+function mwCoachInsightSummary(roster,performance,repEnabled){
+  // Roster and performance are independently fetched. Never mix an unrelated
+  // performance numerator with a different roster denominator.
+  const assigned=Array.isArray(roster)?roster:[];
+  const records=Array.isArray(performance)?performance:[];
+  const rosterIds=new Set(assigned.map(a=>String(a.id||'')));
+  const recordById=new Map(records.filter(x=>rosterIds.has(String(x.athlete_id||''))).map(x=>[String(x.athlete_id),x]));
+  const missingRecords=assigned.filter(a=>!recordById.has(String(a.id))).length;
+  const extraRecords=records.filter(x=>!rosterIds.has(String(x.athlete_id||''))).length;
+  const athletes=assigned.map(a=>({profile:a,performance:recordById.get(String(a.id))||null}));
+  const sprint=repEnabled?athletes.filter(x=>(x.performance?.sprint?.session_count||0)>0):[];
+  const strength=athletes.filter(x=>(x.performance?.strength?.session_count||0)>0||(x.performance?.strength?.quick_checkins||[]).length>0);
+  const execution=repEnabled?athletes.map(x=>x.performance?.sprint?.latest?.execution_score_pct).filter(Number.isFinite):[];
+  const executionMean=execution.length?Math.round(execution.reduce((sum,v)=>sum+v,0)/execution.length*10)/10:null;
+  const improvingExecution=repEnabled?athletes.filter(x=>x.performance?.sprint?.trend==='improving').length:0;
+  const strengthProgress=athletes.filter(x=>Object.values(x.performance?.strength?.max_progression?.changes||{}).some(y=>Number.isFinite(y?.delta)&&y.delta>0)).length;
+  const flags=athletes.flatMap(x=>(x.performance?.flags||[]).filter(flag=>flag?.level==='watch'||flag?.level==='attention').map(flag=>({
+    name:x.profile.name||'Assigned athlete',athleteId:x.profile.id,level:flag.level,message:String(flag.message||'Review recorded training')
+  }))).sort((x,y)=>(x.level==='attention'?0:1)-(y.level==='attention'?0:1));
+  return {athletes,sprintCount:sprint.length,strengthCount:strength.length,executionMean,
+    executionCount:execution.length,improvingExecution,strengthProgress,flags,
+    mismatch:extraRecords>0||missingRecords>0,extraRecords,missingRecords};
+}
 async function insightsPage(){
-  pageBase('Performance Intelligence','Live coaching intelligence from your assigned athletes.',`<div id="insightLive" class="panel-grid"><div class="tile">Analyzing recorded performance…</div></div><div id="athletePerformanceLive" class="list" style="margin-top:16px"></div>`);
+  pageBase('Performance Intelligence','Team development, training response and your next coaching priorities.',
+    `<div id="insightLive" class="panel-grid"><div class="tile">Reviewing recorded athlete performance…</div></div><div id="athletePerformanceLive" class="list" style="margin-top:16px"></div>`);
   try{
-    const [d,p]=await Promise.all([fetchCoachRoster(),fetchCoachPerformance()]),a=d.athletes||[],pm=new Map((p.athletes||[]).map(x=>[x.athlete_id,x])),s=p.summary||{},rep=p.rep_tracking_enabled!==false;
-    if(!rep){
-      insightLive.innerHTML=`<div class="tile mw-upgrade-teaser"><div class="mw-upgrade-lock">🔒</div><div><div class="eyebrow">COACH VELOCITY</div><h3>Rep-by-Rep Sprint Tracking</h3><p>Track every rep, pace execution, consistency and late-session drop-off inside the complete MW Velocity training system.</p><button class="action" id="upgradeRepTracking">Upgrade to Coach Velocity</button></div></div><div class="tile"><h3>Strength Intelligence</h3><p><b>${s.athletes_with_strength_data||0}</b> of ${a.length} athletes have strength data connected.</p><small>Coach Intelligence continues to analyze available strength and training signals.</small></div>`;
-      document.getElementById('upgradeRepTracking').onclick=membershipPage;
-      athletePerformanceLive.innerHTML=a.map(x=>{const q=pm.get(x.id),flags=q?.flags||[],flag=flags[0];return `<button class="row" data-athlete-id="${escapeHtml(x.id)}" style="width:100%;text-align:left"><span><b>${escapeHtml(x.name)}</b><br><small>${q?.strength?.session_count?`${q.strength.session_count} strength session${q.strength.session_count===1?'':'s'} recorded`:'No strength session data yet'}</small><br><small>${escapeHtml(flag?.message||'Training status available for coach review')}</small></span><span class="status">INTELLIGENCE</span></button>`}).join('')||'<div class="tile">No assigned athletes yet.</div>';
-    }else{
-      insightLive.innerHTML=`<div class="tile"><h3>Pace Check-Ins</h3><p><b>${s.athletes_with_sprint_data||0}</b> of ${a.length} athletes</p><small>Quick check-ins or detailed Sprint Pace AI results</small></div><div class="tile"><h3>Pace Execution</h3><p><b>${s.average_latest_execution_pct==null?'—':s.average_latest_execution_pct+'%'}</b></p><small>Roster average across latest pace check-ins</small></div><div class="tile"><h3>Coach Review</h3><p><b>${s.review_flags||0}</b> review · <b>${s.watch_flags||0}</b> watch</p><small>Signals for coach judgment, not automatic changes</small></div><div class="tile"><h3>Strength Data</h3><p><b>${s.athletes_with_strength_data||0}</b> of ${a.length} athletes</p><small>Quick strength check-ins or detailed set logs</small></div>`;
-      athletePerformanceLive.innerHTML=a.map(x=>{const q=pm.get(x.id),latest=q?.sprint?.latest,flag=q?.flags?.[0];return `<button class="row" data-athlete-id="${escapeHtml(x.id)}" style="width:100%;text-align:left"><span><b>${escapeHtml(x.name)}</b><br><small>${latest?`Week ${latest.program_week} · Day ${latest.program_day} · ${latest.source==='quick_checkin'?`${latest.pace_reps_hit}/${latest.pace_reps_total} on pace`:`${latest.rep_count} timed reps`}`:'No pace check-in yet'}${q?.strength?.session_count?` · ${q.strength.session_count} strength session${q.strength.session_count===1?'':'s'}`:''}</small><br><small>${escapeHtml(flag?.message||latest?.reason||'Awaiting performance data')}</small></span><span class="status">${latest?.execution_score_pct==null?'—':latest.execution_score_pct+'%'}</span></button>`}).join('')||'<div class="tile">No assigned athletes yet.</div>';
+    const [rosterResult,performanceResult]=await Promise.all([fetchCoachRoster(),fetchCoachPerformance()]);
+    const roster=Array.isArray(rosterResult.athletes)?rosterResult.athletes:[];
+    const rep=performanceResult.rep_tracking_enabled!==false;
+    const view=mwCoachInsightSummary(roster,performanceResult.athletes,rep);
+    const total=view.athletes.length;
+    const tile=(heading,lead,description)=>`<section class="tile"><h3>${heading}</h3><p><b>${lead}</b></p><small>${description}</small></section>`;
+    if(!total){
+      insightLive.innerHTML=tile('Athlete Development','No assigned athletes','Connect an athlete to begin tracking development.')
+        +tile('Training Effectiveness','Not enough data','Training response appears after athletes are assigned and start recording sessions.')
+        +tile('Coach Priorities','Awaiting athletes','No assigned athlete records can be reviewed yet.')
+        +(view.extraRecords?`<div class="tile" role="status">Performance records and the assigned roster disagree. No unrelated athlete data is being displayed. Review roster assignments.</div>`:'');
+      athletePerformanceLive.innerHTML='';
+      return;
     }
-    athletePerformanceLive.querySelectorAll('[data-athlete-id]').forEach(b=>b.onclick=()=>athleteDetail(b.dataset.athleteId));
-  }catch(e){insightLive.innerHTML=`<div class="tile"><h3>Performance intelligence unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}
+    const development=rep
+      ?`${view.improvingExecution} of ${total} athletes improving in recorded pace execution; ${view.strengthProgress} with higher comparable recorded strength maxima.`
+      :`${view.strengthProgress} of ${total} athletes with higher comparable recorded strength maxima.`;
+    const developmentNote='A faster sprint time is not established by pace check-ins. Compare equal-distance timed performances to confirm speed gains.';
+    const trainingLead=rep
+      ?(view.executionMean==null?'No scored pace targets yet':`${view.executionMean}% average latest target execution`)
+      :`${view.strengthCount} of ${total} athletes with strength records`;
+    const trainingDescription=rep
+      ?`${view.executionCount} of ${total} athletes have scored sprint check-ins; ${view.strengthCount} have strength records. This reflects recorded work, not proof that the program caused improvement.`
+      :'Review logged strength sessions and athlete readiness. Rep-by-rep pace analysis remains restricted to Coach Velocity.';
+    const priorityLead=view.flags.length?`${view.flags.length} recorded coaching signal${view.flags.length===1?'':'s'}`:'No review flags';
+    const priorityDescription=view.flags.length
+      ?view.flags.slice(0,3).map(f=>`${escapeHtml(f.name)}: ${escapeHtml(f.message)}`).join(' · ')
+      :'No flags currently recorded. Missing athlete data is not evidence that every athlete is doing well.';
+    insightLive.innerHTML=
+      tile('Athlete Development',development,developmentNote)
+      +tile('Training Effectiveness',trainingLead,trainingDescription)
+      +tile('Coach Priorities',priorityLead,priorityDescription)
+      +(view.mismatch?`<div class="tile" role="status"><b>Roster data needs review.</b><p>Performance records and assigned athletes do not fully match. Only athletes in your current roster are counted.</p></div>`:'');
+    athletePerformanceLive.innerHTML='<div class="tile"><h3>Athlete-by-athlete review</h3><small>Choose an assigned athlete for their recorded performance details.</small></div>'
+      +view.athletes.map(({profile,performance})=>{
+        const latest=rep?performance?.sprint?.latest:null;
+        const flag=performance?.flags?.[0];
+        const secondary=rep&&latest
+          ?`Latest pace execution: ${latest.execution_score_pct==null?'not scored':latest.execution_score_pct+'%'}`
+          :performance?.strength?.session_count
+            ?`${performance.strength.session_count} strength sessions recorded`
+            :'Not enough recorded performance data';
+        return `<button class="row" data-athlete-id="${escapeHtml(profile.id)}" style="width:100%;text-align:left"><span><b>${escapeHtml(profile.name||'Assigned athlete')}</b><br><small>${escapeHtml(secondary)}</small><br><small>${escapeHtml(flag?.message||'No recorded review flag')}</small></span><span class="status">${escapeHtml(flag?.level==='attention'?'REVIEW':flag?.level==='watch'?'WATCH':'DETAILS')}</span></button>`;
+      }).join('');
+    athletePerformanceLive.querySelectorAll('[data-athlete-id]').forEach(btn=>btn.onclick=()=>athleteDetail(btn.dataset.athleteId));
+  }catch(error){
+    insightLive.innerHTML=`<div class="tile"><h3>Performance Intelligence unavailable</h3><p>${escapeHtml(error.message||'Try again.')}</p></div>`;
+  }
 }
 
 function mwCoachPaceTarget(event,timeSeconds,repDistance,intensityPct){return window.MWPace?.calculate([{event,time_seconds:timeSeconds}],repDistance,Number(intensityPct)/100)?.target||null}
