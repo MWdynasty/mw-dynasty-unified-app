@@ -31,7 +31,7 @@
     const landmarker=await vision.PoseLandmarker.createFromOptions(resolver,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'CPU'},runningMode:'VIDEO',numPoses:1});
     const video=document.createElement('video');video.muted=true;video.playsInline=true;const objectUrl=URL.createObjectURL(file);video.src=objectUrl;
     try { await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Video could not be opened on this iPhone. Try a short MP4 recording.')),12000);video.onloadedmetadata=()=>{clearTimeout(timer);resolve();};video.onerror=()=>{clearTimeout(timer);reject(new Error('This video format could not be opened. Try MP4.'));};}); } catch(error) {landmarker.close();URL.revokeObjectURL(objectUrl);throw error;}
-    const duration=Math.min(30,Number(video.duration)||0), samples=Math.max(5,Math.min(24,Math.round(duration*2)));const readings=[];
+    const duration=Math.min(30,Number(video.duration)||0), samples=Math.max(10,Math.min(30,Math.round(duration*3)));const readings=[];
     if(!Number.isFinite(duration)||duration<0.2){landmarker.close();URL.revokeObjectURL(objectUrl);throw new Error('Video is too short or its duration is unavailable. Choose a short MP4 sprint recording.');}
     for(let i=0;i<samples;i++){const seekTime=Math.max(0.02,Math.min(duration-0.02,duration*(i/(samples-1))));
       await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Video frame could not be read on this device. Try a different MP4 recording.')),10000);video.onseeked=()=>{clearTimeout(timer);resolve();};video.onerror=()=>{clearTimeout(timer);reject(new Error('Video decoding failed. Try MP4.'));};video.currentTime=seekTime;});const out=landmarker.detectForVideo(video,Math.round(video.currentTime*1000)),p=out?.landmarks?.[0];if(!p)continue;
@@ -39,12 +39,28 @@
       readings.push({trunk:Math.abs(Math.atan2(S.x-H.x,H.y-S.y)*180/Math.PI),knee:angle(hip,knee,ankle),shin:Math.abs(Math.atan2(ankle.x-knee.x,knee.y-ankle.y)*180/Math.PI),arm:angle(S,elbow,wrist)});
       status.textContent=`Analyzing on this iPhoneâ¦ ${i+1}/${samples}`;
     }
-    landmarker.close();URL.revokeObjectURL(objectUrl);if(!readings.length)throw Error('No clear body landmarks were found. Use a brighter side-view sprint video.');
+    landmarker.close();URL.revokeObjectURL(objectUrl);if(readings.length<5)throw Error(`Only ${readings.length} usable body-position frames were detected. This is not enough for a reliable motion read. Try a brighter, steady side-view sprint recording showing the full athlete.`);
     const values={trunk:median(readings.map(x=>x.trunk)),knee:median(readings.map(x=>x.knee)),shin:median(readings.map(x=>x.shin)),arm:median(readings.map(x=>x.arm))};
     if(![values.trunk,values.knee,values.shin].every(Number.isFinite))throw Error('The video did not contain enough clear side-on landmarks for a safe first read.');
     return {sampledFrames:samples,poseFrames:readings.length,values};
   }
-  function paintAnalysis(result,status){const v=result.values;const box=$('mwMotionAnalysis');if(!box)return;box.hidden=false;box.innerHTML=`<b>YOUR FIRST MOTION READ</b><p>MW found ${result.poseFrames} clear body-position frames. These are unverified 2D coaching observationsânot a medical diagnosis or race grade.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><span>Trunk angle<br><strong>${v.trunk?.toFixed(1)??'â'}Â°</strong></span><span>Knee angle<br><strong>${v.knee?.toFixed(1)??'â'}Â°</strong></span><span>Shin angle<br><strong>${v.shin?.toFixed(1)??'â'}Â°</strong></span><span>Arm angle<br><strong>${v.arm?.toFixed(1)??'â'}Â°</strong></span></div><small>Next: MW will turn these measurements into simple strengths and corrections.</small>`;status.textContent='â On-device motion read complete.';}
+  function paintAnalysis(result,status){
+    const v=result.values,box=$('mwMotionAnalysis');
+    if(!box)return;
+    box.hidden=false;
+    const angleValue=(n)=>Number.isFinite(n)?n.toFixed(1)+'°':'Not measured';
+    box.innerHTML=`<b>ON-DEVICE MOTION READ</b>
+      <p>Detected ${result.poseFrames} usable body-position frames from ${result.sampledFrames} sampled frames. These are approximate 2D measurements, not verified biomechanical angles or a medical assessment.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" aria-label="Estimated body angles">
+        <span>Trunk angle<br><strong>${angleValue(v.trunk)}</strong></span>
+        <span>Knee angle<br><strong>${angleValue(v.knee)}</strong></span>
+        <span>Shin angle<br><strong>${angleValue(v.shin)}</strong></span>
+        <span>Arm angle<br><strong>${angleValue(v.arm)}</strong></span>
+      </div>
+      <p style="margin-top:12px"><b>Coach note:</b> These angles alone cannot determine correct or incorrect sprint mechanics. Review the video alongside the athlete's movement, camera view, and coaching goals.</p>
+      <small>For a clearer read, keep the full athlete visible, use steady side-view footage, and record in good light. No coaching grade is assigned automatically.</small>`;
+    status.textContent='On-device motion measurements are ready. No video was uploaded by this analysis.';
+  }
   // Coaches can only see adult-athlete observations explicitly shared with an active assigned coach.
   // The private video-upload endpoint is intentionally athlete-only and must not be exposed here.
   window.mwOpenCoachMotionIntelligence = async () => {
@@ -108,6 +124,7 @@
       if(!file){status.textContent='Select a sprint video first.';return;}
       if(!['video/mp4','video/quicktime'].includes(file.type)||file.size<1||file.size>100*1024*1024){status.textContent='Choose an MP4 or QuickTime video up to 100 MB.';return;}
       analyze.disabled=true;
+      const previous=$('mwMotionAnalysis');if(previous){previous.hidden=true;previous.innerHTML='';}
       try{
         const result=await analyzeVideo(file,status);
         paintAnalysis(result,status);
