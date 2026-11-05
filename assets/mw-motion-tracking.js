@@ -103,10 +103,17 @@ const longestRun=(()=>{
 })();
 const good=f.length>=18&&span>=0.75&&coverage>=0.55&&longestRun>=12,third=Math.max(1,Math.floor(f.length/3));
 const early=median(f.slice(0,third).map(x=>x.trunk)),late=median(f.slice(-third).map(x=>x.trunk)),phases=[];
-if(good){const delta=early-late;
-if(early>=22&&delta>=10){phases.push({name:'Early forward-lean pattern',detail:'A forward-inclined posture was observed in the early part of the recording.'});phases.push({name:'Rising posture / transition pattern',detail:'Torso inclination decreased during the recording. A gradual rise can be normal.'});}
-else if(early<20&&late<20&&Math.abs(delta)<9)phases.push({name:'Mostly upright posture',detail:'The torso remained relatively upright in the visible frames.'});
-else if(early>=22&&late>=20&&Math.abs(delta)<10)phases.push({name:'Forward-inclined posture',detail:'Forward torso lean was present; individual acceleration phases cannot yet be confirmed.'});
+if(good){
+ const delta=early-late;
+ const start=f[0].time,finish=f[f.length-1].time,transition=f[Math.min(f.length-1,third)].time;
+ if(early>=22&&delta>=10){
+   phases.push({name:'Early forward-lean pattern',startSeconds:start,endSeconds:transition,confidence:'preliminary',detail:'A forward-inclined posture was observed early in the recording.'});
+   phases.push({name:'Rising posture / transition pattern',startSeconds:transition,endSeconds:finish,confidence:'preliminary',detail:'Torso inclination decreased over this part of the recording. A gradual rise can be normal.'});
+ }else if(early<20&&late<20&&Math.abs(delta)<9){
+   phases.push({name:'Mostly upright posture',startSeconds:start,endSeconds:finish,confidence:'preliminary',detail:'The torso remained relatively upright in the visible frames.'});
+ }else if(early>=22&&late>=20&&Math.abs(delta)<10){
+   phases.push({name:'Forward-inclined posture',startSeconds:start,endSeconds:finish,confidence:'preliminary',detail:'Forward torso lean was present, but individual acceleration phases cannot be confirmed.'});
+ }
 }
 const heels=analyzeHeelRecovery(f,meta);
 const groundContact=detectFootEvents(f,meta);
