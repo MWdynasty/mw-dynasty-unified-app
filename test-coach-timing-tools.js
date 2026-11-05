@@ -11,10 +11,18 @@ const paceEnd=liveCoach.indexOf('const paceout=document.getElementById',paceStar
 assert.ok(performanceStart>=0&&performanceEnd>performanceStart&&paceStart>=0&&paceEnd>paceStart,'active Coach screens must exist');
 const performanceView=liveCoach.slice(performanceStart,performanceEnd),paceView=liveCoach.slice(paceStart,paceEnd);
 assert.match(performanceView,/id="openCoachDistancePacer"/,'Distance Pacer remains accessible from Performance Tools');
-assert.match(performanceView,/id="coachStopwatch"/,'Stopwatch is mounted in Performance Tools');
-assert.match(performanceView,/mountStopwatch\(document\.getElementById\('coachStopwatch'\)\)/,'Stopwatch is wired after the Performance Tools screen renders');
+const stopwatchStart=liveCoach.indexOf('function coachStopwatchPage(){');
+const stopwatchEnd=liveCoach.indexOf('function morePage(){',stopwatchStart);
+const stopwatchView=liveCoach.slice(stopwatchStart,stopwatchEnd);
+assert.match(performanceView,/data-page="stopwatch"/,'Stopwatch opens via a Performance Tools card');
+assert.doesNotMatch(performanceView.slice(0,performanceView.indexOf('function coachStopwatchPage(){')),/id="coachStopwatch"/,'Stopwatch controls are not exposed on Performance Tools');
+assert.match(stopwatchView,/id="coachStopwatch"/,'Separate stopwatch workspace keeps the original timing controls');
+assert.match(stopwatchView,/mountStopwatch\\(document\\.getElementById\\('coachStopwatch'\\)\\)/,'Stopwatch controls mount when the stopwatch opens');
+assert.match(stopwatchView,/data-page="tools"/,'Stopwatch can navigate back');
 assert.doesNotMatch(paceView,/paceToolsTab|paceToolsPanel|id="coachStopwatch"/,'Pace AI must contain only group and individual pacing');
 assert.match(paceView,/paceTabIds=\['paceGroupTab','paceIndividualTab'\]/,'Pace AI retains two functional tabs');
+assert.match(paceView,/data-page="tools"/,'Pace AI has a visible Performance Tools back action');
+assert.match(liveCoach.slice(liveCoach.indexOf('async function insightsPage(){'),liveCoach.indexOf('function mwCoachPaceTarget')),/data-page="tools"/,'Performance Intelligence has a visible Performance Tools back action');
 
 assert.equal(prescribedRestSeconds('8 x 300m. Rest 75–90 sec between reps and 5 min between sets.'),90);
 assert.equal(prescribedRestSeconds('5 x 200m @ 80%. Rest 3-4 min.'),240);
