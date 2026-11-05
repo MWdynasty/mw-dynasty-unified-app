@@ -36,6 +36,32 @@
     video.src=objectUrl;
     let attempted=0,decodeErrors=0;
     const readings=[],tracking=[];
+    // A local crop helps the existing pose model recover a distant runner.
+    // It is a second attempt at a sampled frame, not an additional native frame.
+    const cropCanvas=document.createElement('canvas');cropCanvas.width=512;cropCanvas.height=512;
+    const cropCtx=cropCanvas.getContext('2d');
+    let lastBodyBounds=null,lastBodyIndex=-100,recoveredCrops=0;
+    const boundsFromPose=(pose)=>{
+      const pts=[0,7,8,11,12,13,14,15,16,23,24,25,26,27,28,29,30,31,32]
+        .map(i=>pose?.[i]).filter(v=>v&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&(v.visibility??1)>=0.5);
+      if(pts.length<6)return null;
+      const minX=Math.max(0,Math.min(...pts.map(v=>v.x))),maxX=Math.min(1,Math.max(...pts.map(v=>v.x)));
+      const minY=Math.max(0,Math.min(...pts.map(v=>v.y))),maxY=Math.min(1,Math.max(...pts.map(v=>v.y)));
+      if(maxY-minY<0.045)return null;
+      return {x:minX,y:minY,w:maxX-minX,h:maxY-minY};
+    };
+    const recoveryCrop=(bounds,videoW,videoH,misses)=>{
+      if(!bounds||!cropCtx||!videoW||!videoH)return null;
+      const pad=Math.min(3.2,1.55+misses*0.12);
+      const cx=(bounds.x+bounds.w/2)*videoW,cy=(bounds.y+bounds.h/2)*videoH;
+      const desired=Math.max(bounds.w*videoW*pad,bounds.h*videoH*pad,90);
+      const size=Math.min(Math.min(videoW,videoH),desired);
+      const x=Math.max(0,Math.min(videoW-size,cx-size/2));
+      const y=Math.max(0,Math.min(videoH-size,cy-size/2));
+      cropCtx.clearRect(0,0,512,512);
+      cropCtx.drawImage(video,x,y,size,size,0,0,512,512);
+      return {x:x/videoW,y:y/videoH,w:size/videoW,h:size/videoH};
+    };
     const awaitMetadata=()=>new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>reject(new Error('Unable to read this video on your iPhone. Try a shorter MP4 recording.')),15000);
       video.onloadedmetadata=()=>{clearTimeout(timer);resolve();};
@@ -63,8 +89,24 @@
           await seekTo(position);
           if(video.readyState<2)throw new Error('Frame not decoded.');
           const actualTime=video.currentTime;
-          const output=landmarker.detectForVideo(video,Math.round(actualTime*1000));
-          const p=output?.landmarks?.[0];
+          const stamp=Math.round(actualTime*1000);
+          const output=landmarker.detectForVideo(video,stamp);
+          let p=output?.landmarks?.[0];
+          let body=p?boundsFromPose(p):null;
+          if(!body&&lastBodyBounds&&i-lastBodyIndex<=14){
+            try{
+              const region=recoveryCrop(lastBodyBounds,video.videoWidth,video.videoHeight,i-lastBodyIndex);
+              if(region){
+                const cropped=landmarker.detectForVideo(cropCanvas,stamp+0.5)?.landmarks?.[0];
+                if(cropped&&boundsFromPose(cropped)){
+                  p=cropped.map(v=>({...v,x:region.x+v.x*region.w,y:region.y+v.y*region.h}));
+                  body=boundsFromPose(p);
+                  if(body)recoveredCrops++;
+                }
+              }
+            }catch(_cropError){/* Continue with full-frame result if the crop path is unsupported. */}
+          }
+          if(body){lastBodyBounds=body;lastBodyIndex=i;}
           if(p){
             const tracked=window.MWMotionTracking?.frame(p,actualTime);
             if(tracked)tracking.push(tracked);
@@ -97,7 +139,7 @@
         shin:median(readings.map(x=>x.shin)),arm:median(readings.map(x=>x.arm))
       };
       return {sampledFrames:samples,poseFrames:tracking.length,values,frames:tracking,analyzedSeconds:duration,
-        sourceSeconds:duration,decodeErrors,analysisMethod:'distributed_video_sampling'};
+        sourceSeconds:duration,decodeErrors,recoveredCrops,analysisMethod:'distributed_video_sampling_plus_local_recovery'};
     }finally{
       try{video.pause();video.removeAttribute('src');video.load();}catch(_){}
       landmarker.close();
@@ -131,6 +173,9 @@
       cameraView:null // Do not assume angle from a hidden/default dropdown; accept all views.
     });
     const quality=engine?.quality,coaching=engine?.coaching;
+    const perspective=engine?.perspective||{view:'unknown',confidence:'insufficient'};
+    const labels={side:'Side',front:'Front',rear:'Rear',front_or_rear:'Front/rear',diagonal:'Diagonal',mixed:'Mixed angle',unknown:'Unclear'};
+    const perspectiveDescription='Estimated view: '+(labels[perspective.view]||'Unclear')+' ('+perspective.confidence+'). This is a preliminary 2-D estimate, not a verified camera calibration.';
     const section=(title,content)=>'<section style="border-top:1px solid #5c4b2e;padding:12px 0"><h3 style="margin:0 0 8px;color:#f2c864;font-size:16px">'+title+'</h3>'+content+'</section>';
     const row=(title,desc)=>'<p style="margin:7px 0;line-height:1.5"><strong>'+esc(title)+'</strong> '+esc(desc)+'</p>';
     const observed=coaching?.positives?.length
@@ -144,7 +189,7 @@
       :'<p>Keep the full athlete visible in the recording and review observable movement with a coach.</p>';
     const phases=engine?.phases?.length
       ?engine.phases.map(x=>row(x.name+' ('+Number(x.startSeconds).toFixed(1)+'–'+Number(x.endSeconds).toFixed(1)+'s):',x.detail)).join('')
-      :'<p>Unable to identify a reliable movement-phase pattern from this recording.</p>';
+      :'<p>No verified side-view phase pattern was identified. MW can still describe other observable movement from this angle.</p>';
     const contact=engine?.groundContact;
     const ground='<p>'+esc(contact?.status==='not_verified'?'Exact touchdown, toe-off and contact time are not verified.':'Ground-contact review unavailable.')+'</p>';
     const heel=engine?.heels?.length
@@ -163,6 +208,7 @@
       +'<p>Approximate trunk angle '+asDegrees(result.values.trunk)+', knee '+asDegrees(result.values.knee)+', shin '+asDegrees(result.values.shin)+', arm '+asDegrees(result.values.arm)+'.</p>'
       +'<p>'+esc(contact?.reason||'Contact detection unavailable.')+'</p>'
       +'<p>Ground-contact milliseconds are withheld until video event detection is validated. The model analyzes sampled frames, not every native camera frame.</p>'
+      +'<p>Local crop recovery attempts that yielded visible landmarks: '+(result.recoveredCrops||0)+'.</p>'
       +(result.decodeErrors?'<p>Frames that could not be decoded: '+result.decodeErrors+'.</p>':'');
     box.hidden=false;
     box.style.padding='14px';
@@ -174,6 +220,7 @@
       +section('What you are doing well',observed)
       +section('What needs improvement',concerns)
       +section('How to correct it',actions)
+      +section('Automatic camera perspective', '<p>'+esc(perspectiveDescription)+'</p>')
       +section('Automatic movement-phase review',phases)
       +section('Ground contact and heel recovery',ground+heel)
       +section('Your next practice focus',coaching?.actions?.length?row(coaching.actions[0].focus+':',coaching.actions[0].instruction):'<p>Record with the full athlete visible; side, front and rear views are all accepted.</p>')
