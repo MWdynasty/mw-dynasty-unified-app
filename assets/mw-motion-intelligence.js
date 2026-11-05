@@ -108,7 +108,7 @@
   // Never equate torso posture with validated sprint phase, foot contact or technique quality.
   function buildMotionReport(result) {
     const frames=(result.frames||[]).filter(f=>Number.isFinite(f.trunk));
-    if(frames.length<12||frames.length/Math.max(1,result.sampledFrames)<0.65) return {phases:[],message:'Not enough continuous tracked body positions to identify sprint phases reliably. Use a steady side-view recording showing the whole runner.'};
+    if(frames.length<12||frames.length/Math.max(1,result.sampledFrames)<0.65) return {phases:[],message:'Not enough continuous tracked body positions to identify sprint phases reliably. Keep the whole runner clearly visible from whichever camera angle is available.'};
     const section=Math.ceil(frames.length/3);
     const first=median(frames.slice(0,section).map(f=>f.trunk));
     const last=median(frames.slice(-section).map(f=>f.trunk));
@@ -128,7 +128,7 @@
     if(!box)return;
     const engine=window.MWMotionTracking?.summarize(result.frames,{
       sampledFrames:result.sampledFrames,
-      cameraView:coachMode()?null:$('mwMotionView')?.value
+      cameraView:null // Do not assume angle from a hidden/default dropdown; accept all views.
     });
     const quality=engine?.quality,coaching=engine?.coaching;
     const section=(title,content)=>'<section style="border-top:1px solid #5c4b2e;padding:12px 0"><h3 style="margin:0 0 8px;color:#f2c864;font-size:16px">'+title+'</h3>'+content+'</section>';
@@ -141,7 +141,7 @@
       :'<p>No specific technical fault was verified in this recording.</p>';
     const actions=coaching?.actions?.length
       ?coaching.actions.map(x=>row(x.focus+':',x.instruction)).join('')
-      :'<p>Use a steady full-body side view and review the first steps with a coach.</p>';
+      :'<p>Keep the full athlete visible in the recording and review observable movement with a coach.</p>';
     const phases=engine?.phases?.length
       ?engine.phases.map(x=>row(x.name+' ('+Number(x.startSeconds).toFixed(1)+'–'+Number(x.endSeconds).toFixed(1)+'s):',x.detail)).join('')
       :'<p>Unable to identify a reliable movement-phase pattern from this recording.</p>';
@@ -157,7 +157,7 @@
     const qualityStatement='Reviewed '+includedSeconds+' of '+totalSeconds+' seconds; '+(quality?.usableFrames||0)+' usable tracked positions from '+result.sampledFrames+' sampled timestamps.';
     const summary=quality?.adequateForPosture&&engine.phases.length
       ?'MW identified preliminary posture changes in the visible recording. These are observations, not a verified sprint-technique grade.'
-      :'The recording did not provide enough continuous evidence for a reliable sprint-phase judgment. Specific faults will not be invented.';
+      :'MW reviewed this footage, but the visible body positions do not support a reliable phase judgment. MW will report observable movement without guessing faults or demanding a particular camera angle.';
     const method='<p>'+esc(qualityStatement)+'</p>'
       +'<p>Continuous visible landmark coverage: '+Math.round((quality?.poseCoverage||0)*100)+'%. Longest usable run: '+(quality?.longestContinuousRun||0)+' frames.</p>'
       +'<p>Approximate trunk angle '+asDegrees(result.values.trunk)+', knee '+asDegrees(result.values.knee)+', shin '+asDegrees(result.values.shin)+', arm '+asDegrees(result.values.arm)+'.</p>'
@@ -176,7 +176,7 @@
       +section('How to correct it',actions)
       +section('Automatic movement-phase review',phases)
       +section('Ground contact and heel recovery',ground+heel)
-      +section('Your next practice focus',coaching?.actions?.length?row(coaching.actions[0].focus+':',coaching.actions[0].instruction):'<p>Record a steady full-body side view for a more reliable review.</p>')
+      +section('Your next practice focus',coaching?.actions?.length?row(coaching.actions[0].focus+':',coaching.actions[0].instruction):'<p>Record with the full athlete visible; side, front and rear views are all accepted.</p>')
       +'<details style="border-top:1px solid #5c4b2e;padding-top:10px"><summary style="color:#e6c16d">Technical measurements and evidence</summary>'+method+'</details>'
       +'</div>';
     status.textContent='Private on-device review ready. No recording was uploaded or stored by this analysis.';
