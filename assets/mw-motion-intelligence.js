@@ -42,6 +42,34 @@
     return {sampledFrames:samples,poseFrames:readings.length,values};
   }
   function paintAnalysis(result,status){const v=result.values;const box=$('mwMotionAnalysis');if(!box)return;box.hidden=false;box.innerHTML=`<b>YOUR FIRST MOTION READ</b><p>MW found ${result.poseFrames} clear body-position frames. These are unverified 2D coaching observationsânot a medical diagnosis or race grade.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px"><span>Trunk angle<br><strong>${v.trunk?.toFixed(1)??'â'}Â°</strong></span><span>Knee angle<br><strong>${v.knee?.toFixed(1)??'â'}Â°</strong></span><span>Shin angle<br><strong>${v.shin?.toFixed(1)??'â'}Â°</strong></span><span>Arm angle<br><strong>${v.arm?.toFixed(1)??'â'}Â°</strong></span></div><small>Next: MW will turn these measurements into simple strengths and corrections.</small>`;status.textContent='â On-device motion read complete.';}
+  // Coaches can only see adult-athlete observations explicitly shared with an active assigned coach.
+  // The private video-upload endpoint is intentionally athlete-only and must not be exposed here.
+  window.mwOpenCoachMotionIntelligence = async () => {
+    const root = panel();
+    if (!root) throw new Error('Motion Intelligence screen is unavailable.');
+    root.innerHTML = '<section class="tile" aria-label="Coach Motion Intelligence"><h3>Shared Motion Intelligence</h3><p>Review movement observations that eligible athletes have chosen to share with their assigned coach. Private recordings are not accessible here.</p><p id="mwMotionCoachStatus" role="status">Checking shared observations…</p><div id="mwMotionCoachObservations"></div><p class="muted">Motion measurements are experimental 2D observations, not verified biomechanics or medical advice. Video uploads currently require approved adult-athlete access.</p><button class="back" type="button" id="mwMotionCoachBack">← Back to Performance Tools</button></section>';
+    $('mwMotionCoachBack')?.addEventListener('click', () => window.mwCoachOpenPage?.('tools'));
+    const status = $('mwMotionCoachStatus'), list = $('mwMotionCoachObservations');
+    if (!token()) { status.textContent = 'Your Coach session has expired. Please sign in again.'; return; }
+    try {
+      const response = await call('coach_season');
+      if (!root.isConnected) return;
+      const records = Array.isArray(response.observations) ? response.observations : [];
+      if (!records.length) { status.textContent = 'No motion observations have been shared with you yet.'; return; }
+      status.textContent = records.length + ' shared observation' + (records.length === 1 ? '' : 's');
+      list.innerHTML = records.map((item) => {
+        const movement = esc(String(item.movement_type || 'Sprint movement').replaceAll('_',' '));
+        const week = Number.isInteger(item.week_number) ? 'Week ' + item.week_number : 'Week not assigned';
+        const date = item.observed_at || item.created_at;
+        const dateText = date && Number.isFinite(Date.parse(date)) ? new Date(date).toLocaleDateString() : 'Date unavailable';
+        const metrics = Array.isArray(item.metrics) ? item.metrics : [];
+        const metricText = metrics.filter(m => m && Number.isFinite(Number(m.medianDegrees)) && typeof m.name === 'string').slice(0,3).map(m => '<span style="display:inline-block;margin:4px 10px 4px 0">' + esc(m.name.replaceAll('_',' ')) + ': <b>' + Number(m.medianDegrees).toFixed(1) + '°</b></span>').join('');
+        return '<article class="tile" style="margin-top:12px"><h3>' + movement + '</h3><p>' + esc(week) + ' · ' + esc(dateText) + '</p><p>' + (metricText || 'Observation shared without angle metrics.') + '</p></article>';
+      }).join('');
+    } catch (error) {
+      if (root.isConnected) status.textContent = error?.message || 'Shared observations could not be loaded. Please retry.';
+    }
+  };
   window.mwOpenMotionIntelligence = async () => {
     let root = panel();
     if (!root) {
@@ -106,7 +134,7 @@
     const button = event.target.closest?.('button');
     if (!button || !/MOTION INTELLIGENCE/i.test(button.textContent || '')) return;
     // Coach navigation uses its dedicated route; do not also trigger the Athlete click handler.
-    if (document.body.classList.contains('mw-hybrid-coach')) return;
+    if (location.pathname.startsWith('/coach') || document.body.classList.contains('mw-hybrid-coach')) return;
     event.preventDefault();
     window.openView?.('pacer', true);
     setTimeout(() => window.mwOpenMotionIntelligence?.(), 100);
