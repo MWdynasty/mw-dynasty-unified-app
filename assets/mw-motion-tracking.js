@@ -17,12 +17,20 @@ const faceObserved=!!(nose&&(leftEar||rightEar));
 const faceUnseen=!!(p?.[0]&&Number(p[0].visibility)<0.35);
 const viewEvidence=widthRatio>=0.72?(faceObserved?'front':'front_or_rear')
  :widthRatio<=0.28?'side':'diagonal';
-const extremities=[point(p,15),point(p,16),point(p,27),point(p,28)].filter(Boolean);
+const leftWrist=point(p,15),rightWrist=point(p,16);
+const kneeLeft=point(p,25),kneeRight=point(p,26);
+const bilateral={
+ leftArm:leftWrist?{x:(leftWrist.x-l.x)/scale,y:(leftWrist.y-l.y)/scale}:null,
+ rightArm:rightWrist?{x:(rightWrist.x-r.x)/scale,y:(rightWrist.y-r.y)/scale}:null,
+ leftKnee:kneeLeft?{x:(kneeLeft.x-lh.x)/scale,y:(kneeLeft.y-lh.y)/scale}:null,
+ rightKnee:kneeRight?{x:(kneeRight.x-rh.x)/scale,y:(kneeRight.y-rh.y)/scale}:null
+};
+const extremities=[leftWrist,rightWrist,point(p,27),point(p,28)].filter(Boolean);
 const yPositions=[l,r,lh,rh,...extremities].map(x=>x.y);
 const visibleHeight=yPositions.length>=6?Math.max(...yPositions)-Math.min(...yPositions):null;
 return {time,trunk:Math.atan2(Math.abs(shoulder.x-hip.x),Math.abs(hip.y-shoulder.y))*180/Math.PI,legs,
   viewEvidence:faceUnseen&&viewEvidence==='front_or_rear'?'rear_candidate':viewEvidence,
-  shoulderWidth,hipWidth,widthRatio,visibleHeight,legValid};
+  shoulderWidth,hipWidth,widthRatio,visibleHeight,legValid,bilateral};
 }
 
 function detectFootEvents(frames,meta={}){
@@ -114,6 +122,19 @@ function distanceTracking(frames){
  return {status:change!==null&&change< -0.25?'runner_appears_smaller':change!==null&&change>0.25?'runner_appears_larger':'no_clear_scale_change',
    startSize:first,endSize:last,relativeChange:change};
 }
+function bilateralMotion(frames){
+ const f=frames.filter(x=>x?.bilateral);
+ const arms=f.filter(x=>x.bilateral.leftArm&&x.bilateral.rightArm);
+ const legs=f.filter(x=>x.bilateral.leftKnee&&x.bilateral.rightKnee);
+ const range=(points,axis)=>{const vals=points.map(p=>p[axis]).filter(finite);return vals.length>=12?Math.max(...vals)-Math.min(...vals):null;};
+ const leftArmY=range(arms.map(x=>x.bilateral.leftArm),'y'),rightArmY=range(arms.map(x=>x.bilateral.rightArm),'y');
+ const leftKneeY=range(legs.map(x=>x.bilateral.leftKnee),'y'),rightKneeY=range(legs.map(x=>x.bilateral.rightKnee),'y');
+ const span=f.length?f[f.length-1].time-f[0].time:0;
+ return {armFrames:arms.length,legFrames:legs.length,
+   armMotionVisible:arms.length>=18&&span>=0.75&&finite(leftArmY)&&finite(rightArmY)&&leftArmY>=0.12&&rightArmY>=0.12,
+   kneeMotionVisible:legs.length>=18&&span>=0.75&&finite(leftKneeY)&&finite(rightKneeY)&&leftKneeY>=0.12&&rightKneeY>=0.12,
+   status:arms.length>=18||legs.length>=18?'preliminary':'limited'};
+}
 function generateCoachingFeedback(summary){
   const positives=[],issues=[],actions=[];
   if(summary.perspective.view==='side'&&summary.quality.adequateForPosture&&summary.phases.some(p=>p.name==='Rising posture / transition pattern')){
@@ -126,7 +147,13 @@ function generateCoachingFeedback(summary){
   }
   if(summary.perspective.view==='front'||summary.perspective.view==='rear'||summary.perspective.view==='front_or_rear'){
     positives.push({evidence:'Multiple frames show a broadly frontal or rear camera perspective.',meaning:'MW can inspect visible left-right positioning, but it cannot convert this recording into a calibrated side-view force measurement.'});
-    actions.push({focus:'Left-right coordination',instruction:'Review arm travel and knee alignment from this angle with your coach. A single 2-D recording cannot verify joint rotation or a specific technical fault.'});
+    if(summary.bilateral.armMotionVisible){
+      positives.push({evidence:'Both arms showed measurable movement across '+summary.bilateral.armFrames+' tracked frames.',meaning:'MW can observe arm motion from this camera direction, but this alone does not establish correct or incorrect arm mechanics.'});
+    }
+    if(summary.bilateral.kneeMotionVisible){
+      positives.push({evidence:'Left and right knee movement was visible across '+summary.bilateral.legFrames+' frames.',meaning:'This makes a basic front/rear coordination review possible, not a verified diagnosis of knee alignment or rotation.'});
+    }
+    actions.push({focus:'Left-right coordination',instruction:'Review the visible arm and knee paths from this angle. A single 2-D recording cannot verify joint rotation or a specific technical fault.'});
   }else if(summary.perspective.view==='diagonal'||summary.perspective.view==='mixed'){
     actions.push({focus:'Diagonal sprint review',instruction:'Review visible coordination and changes in posture without assigning exact phase boundaries or ground-contact times.'});
   }
@@ -169,7 +196,7 @@ const longestRun=(()=>{
 })();
 const good=f.length>=18&&span>=0.75&&coverage>=0.55&&longestRun>=12,third=Math.max(1,Math.floor(f.length/3));
 const early=median(f.slice(0,third).map(x=>x.trunk)),late=median(f.slice(-third).map(x=>x.trunk)),phases=[];
-const perspective=detectPerspective(f),distance=distanceTracking(f);
+const perspective=detectPerspective(f),distance=distanceTracking(f),bilateral=bilateralMotion(f);
 if(good&&perspective.view==='side'){
  const delta=early-late;
  const start=f[0].time,finish=f[f.length-1].time,transition=f[Math.min(f.length-1,third)].time;
@@ -184,9 +211,9 @@ if(good&&perspective.view==='side'){
 }
 const heels=analyzeHeelRecovery(f,meta);
 const groundContact=detectFootEvents(f,meta);
-const result={perspective,distance,quality:{usableFrames:f.length,sampledFrames:meta.sampledFrames||f.length,poseCoverage:coverage,spanSeconds:span,effectiveFps:step?1/step:0,largestGapSeconds:maxGap,longestContinuousRun:longestRun,adequateForPosture:good,adequateForContactTiming:false},phases,heels,groundContact};
+const result={perspective,distance,bilateral,quality:{usableFrames:f.length,sampledFrames:meta.sampledFrames||f.length,poseCoverage:coverage,spanSeconds:span,effectiveFps:step?1/step:0,largestGapSeconds:maxGap,longestContinuousRun:longestRun,adequateForPosture:good,adequateForContactTiming:false},phases,heels,groundContact};
 result.coaching=generateCoachingFeedback(result);
 return result;
 }
-return {frame,summarize,detectFootEvents,analyzeHeelRecovery,generateCoachingFeedback,detectPerspective,distanceTracking};
+return {frame,summarize,detectFootEvents,analyzeHeelRecovery,generateCoachingFeedback,detectPerspective,distanceTracking,bilateralMotion};
 });
