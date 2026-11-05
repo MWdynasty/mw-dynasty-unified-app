@@ -28,18 +28,22 @@ function detectFootEvents(frames,meta={}){
     if(rows.length<45)continue;
     const y=rows.map(x=>x.leg.toeY);
     const ground=median(y.slice().sort((a,b)=>b-a).slice(0,Math.max(5,Math.floor(y.length/7))));
-    for(let i=3;i<rows.length-3;i++){
-      const left=rows[i-2],right=rows[i+2],center=rows[i];
-      const near=ground-center.leg.toeY<0.015;
-      const speed=Math.abs((right.leg.toeY-left.leg.toeY)/(right.time-left.time||1));
-      // Require an approach from a visibly higher foot position rather than a stationary foot.
-      const prior=rows.slice(Math.max(0,i-24),i);
-      const approached=prior.some(r=>r.leg.toeY<ground-0.04);
-      const inSequence=prior.slice(-4).every(r=>r.leg.toeY<=center.leg.toeY+0.025);
-      if(near&&approached&&inSequence&&speed<0.17){
-        const prev=outcome.candidateEvents[outcome.candidateEvents.length-1];
-        if(!prev||prev.side!==side||center.time-prev.time>0.12)
-          outcome.candidateEvents.push({side,time:center.time,kind:'possible_track_proximity',confidence:'unverified'});
+    // Segment each near-ground excursion once. A stationary foot is not a landing.
+    // Store exploratory proximity windows, never treat them as measured foot-strike times.
+    let approachSeen=false,windowStart=null,lastLowTime=null;
+    for(let i=2;i<rows.length-2;i++){
+      const yNow=rows[i].leg.toeY,t=rows[i].time;
+      const near=ground-yNow<0.015;
+      if(yNow<ground-0.04){approachSeen=true;}
+      if(near&&approachSeen){
+        if(windowStart===null)windowStart=t;
+        lastLowTime=t;
+      }else if(windowStart!==null){
+        const lasted=lastLowTime-windowStart;
+        if(lasted>=0.016&&lasted<=0.35){
+          outcome.candidateEvents.push({side,start:windowStart,end:lastLowTime,kind:'unverified_ground_proximity_window',confidence:'unverified'});
+        }
+        windowStart=null;lastLowTime=null;approachSeen=false;
       }
     }
   }
@@ -54,14 +58,18 @@ function analyzeHeelRecovery(frames,meta={}){
     const series=ordered.map(f=>({t:f.time,leg:f.legs?.find(l=>l.side===side&&l.valid)}))
       .filter(v=>v.leg&&Number.isFinite(v.leg.heelHeight));
     const vals=series.map(v=>v.leg.heelHeight);
+    const samples=series.length,span=samples?series[samples-1].t-series[0].t:0;
+    const gaps=series.slice(1).map((v,i)=>v.t-series[i].t).filter(n=>n>0);
+    const stable=samples>=24&&span>=0.8&&(!gaps.length||Math.max(...gaps)<0.25);
     const third=Math.max(1,Math.floor(vals.length/3));
     const first=median(vals.slice(0,third)),last=median(vals.slice(-third));
     return {side,trackedFrames:vals.length,
       earlyRelativeHeight:first,lateRelativeHeight:last,
-      change:finite(first)&&finite(last)?last-first:null,
+      change:stable&&finite(first)&&finite(last)?last-first:null,
+      peakRelativeHeight:stable?Math.max(...vals):null,trackingAdequate:stable,
       rearwardFootSamples:series.filter(v=>Number.isFinite(v.leg.heelToHipX)).length,
       assessment:'not_verified',
-      detail:vals.length<24?'Not enough heel trajectory samples for a temporal comparison.':
+      detail:!stable?'Not enough continuous heel positions for a temporal comparison.':
         'Heel-height trend was estimated relative to hip position, but excessive cycling or faulty recovery cannot be diagnosed without phase and direction calibration.'};
   });
 }
