@@ -80,7 +80,19 @@ function generateCoachingFeedback(summary){
     actions.push({focus:'Transition mechanics',instruction:'Review whether posture rises smoothly across successive steps. Confirm with a coach rather than forcing low heel recovery into upright running.'});
   }
   issues.push({label:'Ground contact',reason:'Touchdown and toe-off have not been verified. Contact duration cannot be calculated from this recording.'});
-  issues.push({label:'Heel recovery and cycling',reason:'No validated phase-aware fault was detected. The tracked foot trajectory is not enough to prescribe a correction.'});
+  const heels=(summary.heels||[]).filter(h=>h.trackingAdequate&&finite(h.change));
+  if(heels.length===2&&summary.phases.some(p=>p.name==='Rising posture / transition pattern')){
+    const bothRise=heels.every(h=>h.change>=0.15);
+    const bothLower=heels.every(h=>h.change<=-0.15);
+    if(bothRise){
+      positives.push({evidence:'The tracked heel trajectories rose relative to the hips as the torso became more upright.',meaning:'This pattern may be consistent with a natural acceleration-to-upright transition. It is not a verified judgment of proper heel cycling.'});
+    }else if(bothLower){
+      issues.push({label:'Heel-recovery pattern',reason:'Both heel trajectories appeared lower relative to the hips later in the clip. Check that the camera and athlete remained in a stable side view before judging the movement.'});
+      actions.push({focus:'Review the transition',instruction:'Look at several consecutive steps with a sprint coach. Let the leg recover naturally as the body rises; do not force a particular heel height.'});
+    }
+  }
+  if(!heels.length)issues.push({label:'Heel recovery and cycling',reason:'The recording did not provide enough uninterrupted heel tracking for a phase-aware interpretation.'});
+  else if(!summary.phases.length)issues.push({label:'Heel recovery and cycling',reason:'Heel movement was tracked, but the sprint phase was not identified reliably enough to judge cycling.'});
   if(!actions.length)actions.push({focus:'Obtain clear evidence',instruction:'Capture a steady, full-body side view and review the first steps through the transition with a sprint coach.'});
   return {positives,issues,actions,diagnosticConfidence:'experimental',faultDetected:false};
 }
