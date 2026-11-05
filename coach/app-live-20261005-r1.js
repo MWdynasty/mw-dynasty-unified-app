@@ -467,21 +467,34 @@ function dashboard(){
   window.setTimeout(()=>maybeStartCoachTour(),180);
 }
 function pageBase(title,subtitle,body){const p=PLANS[experience],settingsAction=title==='Menu'?'<button class="icon-btn" type="button" data-page="account" aria-label="Settings" title="Settings">⚙</button>':'';app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">${title==='Pacing Tools'||title==='Motion Intelligence'?'← Performance Tools':title==='Performance Tools'?'← Dashboard':'← Back'}</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div>${settingsAction}<button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=()=>openPage(title==='Pacing Tools'||title==='Motion Intelligence'?'tools':title==='Performance Tools'?'dashboard':history.state?.mwCoachPreviousPage||'dashboard');const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
-function performanceToolsPage(){
-  pageBase('Performance Tools','Coach-side performance workspace for athlete review and decision support.',`
-    <div class="panel-grid">
-      <div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>Review pace execution, recent workload signals, strength response and athlete trends.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div>
-      <div class="tile"><span class="status-kicker">LIVE</span><h3>Pacing Tools</h3><p>Use Sprint Pace AI, Distance Pacer and the coach stopwatch for today’s session.</p><button class="action" data-page="pacing">Open Pacing Tools</button></div>
-    </div>
-    <div class="tile" style="margin-top:14px"><b>Coach control remains with you.</b><p>These tools organize athlete signals for review; they do not make medical diagnoses or automatic training changes.</p></div>`);
-}
 function motionIntelligencePage(){
   pageBase('Motion Intelligence','Review movement observations shared by your assigned athletes.',`<div id="mwMotionPanel"><p class="muted" id="mwMotionOpening">Opening Motion Intelligence…</p></div>`);
   const status=document.getElementById('mwMotionOpening');
   if(typeof window.mwOpenCoachMotionIntelligence!=='function') {if(status)status.textContent='Motion Intelligence could not load. Close and reopen MW Dynasty, then try again.';return;}
   Promise.resolve().then(()=>window.mwOpenCoachMotionIntelligence()).catch(error=>{const p=document.getElementById('mwMotionPanel');if(p)p.innerHTML=`<div class="tile"><h3>Motion Intelligence unavailable</h3><p>${escapeHtml(error?.message||'Please retry.')}</p><button class="back" data-page="tools">← Back to Performance Tools</button></div>`;bindPageNavigation(app);});
 }
-function performanceToolsPage(){pageBase('Performance Tools','Coach-side performance workspace for athlete review and decision support.',`<div class="panel-grid"><div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>Review pace execution, workload signals, strength response and athlete trends.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div><div class="tile"><span class="status-kicker">LIVE</span><h3>Pacing Tools</h3><p>Use Sprint Pace AI, Distance Pacer and the coach stopwatch.</p><button class="action" data-page="pacing">Open Pacing Tools</button></div></div>`);}
+function performanceToolsPage(){
+  pageBase('Performance Tools','Performance Intelligence, distance measurement and stopwatch in one place.',`
+    <div class="panel-grid">
+      <div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>See athlete development, training effectiveness and coaching priorities.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div>
+      <div class="tile"><span class="status-kicker">LIVE</span><h3>Group & Individual Pace AI</h3><p>Create pace targets for groups or individual athletes.</p><button class="action" data-page="pacing">Open Pace AI</button></div>
+    </div>
+    <div class="coach-pacer-hub" style="margin-top:14px">
+      <article class="coach-pacer-card">
+        <div><span class="eyebrow">◎ DISTANCE PACER</span><h3>Measure the Rep Anywhere</h3><p>Track, football field or open field — measure the exact distance you need.</p></div>
+        <button class="action" id="openCoachDistancePacer">OPEN DISTANCE PACER</button>
+      </article>
+    </div>
+    <section class="coach-pace-section mwCoachStopwatch" id="coachStopwatch" aria-label="Regular stopwatch" style="margin-top:14px">
+      <div class="coach-pace-section-head"><div><span class="eyebrow">REGULAR STOPWATCH</span><h2>Your clock. Your controls.</h2></div></div>
+      <strong data-stopwatch-clock>00:00.00</strong><p data-stopwatch-status role="status">READY</p>
+      <div class="mwCoachStopwatchControls"><button class="action" data-stopwatch-start>START</button><button class="back" data-stopwatch-stop disabled>STOP</button><button class="back" data-stopwatch-lap disabled>LAP</button><button class="back" data-stopwatch-reset>RESET</button></div>
+      <ol data-stopwatch-laps aria-label="Stopwatch laps"></ol>
+    </section>
+    <div class="tile" style="margin-top:14px"><b>Coach control remains with you.</b><p>These tools provide information for coach review, not automatic training changes.</p></div>`);
+  document.getElementById('openCoachDistancePacer')?.addEventListener('click',()=>{location.href='/distance-pacer/?coach=1'});
+  window.MWCoachTimingTools?.mountStopwatch(document.getElementById('coachStopwatch'));
+}
 function morePage(){
   const operations=[
     ['messages','✉','Messages','Talk with athletes and send team or group announcements'],
@@ -2721,24 +2734,8 @@ function mwCoachClusterByPr(rows,tolerancePct=3,maxSize=6){
   return groups;
 }
 async function pacingPage(){
-  pageBase('Pacing Tools','Pace targets, distance measurement and stopwatch.',`
-  <div class="mwPaceTabs" role="tablist" aria-label="Pacing tools"><button class="back" id="paceGroupTab" role="tab" aria-selected="true" aria-controls="coachGroupPaceAI">GROUPS</button><button class="back" id="paceIndividualTab" role="tab" aria-selected="false" aria-controls="coachSprintPace" tabindex="-1">INDIVIDUAL</button><button class="back" id="paceToolsTab" role="tab" aria-selected="false" aria-controls="paceToolsPanel" tabindex="-1">TOOLS</button></div>
-  <div id="paceToolsPanel" role="tabpanel" aria-labelledby="paceToolsTab" hidden>
-  <div class="coach-pacer-hub">
-    <article class="coach-pacer-card">
-      <div><span class="eyebrow">◎ DISTANCE PACER</span><h3>Measure the Rep Anywhere</h3><p>Track, football field or open field — measure the exact distance your group needs to run.</p></div>
-      <button class="action" id="openCoachDistancePacer">OPEN DISTANCE PACER</button>
-    </article>
-  </div>
-
-  <section class="coach-pace-section mwCoachStopwatch" id="coachStopwatch" aria-label="Regular stopwatch">
-    <div class="coach-pace-section-head"><div><span class="eyebrow">REGULAR STOPWATCH</span><h2>Your clock. Your controls.</h2></div></div>
-    <strong data-stopwatch-clock>00:00.00</strong><p data-stopwatch-status role="status">READY</p>
-    <div class="mwCoachStopwatchControls"><button class="action" data-stopwatch-start>START</button><button class="back" data-stopwatch-stop disabled>STOP</button><button class="back" data-stopwatch-lap disabled>LAP</button><button class="back" data-stopwatch-reset>RESET</button></div>
-    <ol data-stopwatch-laps aria-label="Stopwatch laps"></ol>
-  </section>
-  </div>
-
+  pageBase('Pace AI','Pace targets for groups and individual athletes.',`
+  <div class="mwPaceTabs" role="tablist" aria-label="Pacing tools"><button class="back" id="paceGroupTab" role="tab" aria-selected="true" aria-controls="coachGroupPaceAI">GROUPS</button><button class="back" id="paceIndividualTab" role="tab" aria-selected="false" aria-controls="coachSprintPace" tabindex="-1">INDIVIDUAL</button></div>
   <section class="coach-pace-section" id="coachSprintPace" role="tabpanel" aria-labelledby="paceIndividualTab" hidden>
     <div class="coach-pace-section-head"><div><span class="eyebrow">INDIVIDUAL PACE AI</span><h2>Calculate one athlete.</h2><p>Choose the athlete. MW uses their available PRs or full-effort trials to calculate a starting target.</p></div></div>
     <div class="form coach-pace-grid">
@@ -2777,12 +2774,9 @@ async function pacingPage(){
     </details>
   </section>`);
 
-  const paceTabIds=['paceGroupTab','paceIndividualTab','paceToolsTab'],pacePanelIds=['coachGroupPaceAI','coachSprintPace','paceToolsPanel'];
+  const paceTabIds=['paceGroupTab','paceIndividualTab'],pacePanelIds=['coachGroupPaceAI','coachSprintPace'];
   function selectPaceTab(index){paceTabIds.forEach((id,i)=>{const tab=document.getElementById(id);tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;document.getElementById(pacePanelIds[i]).hidden=i!==index;});}
-  paceTabIds.forEach((id,index)=>{const tab=document.getElementById(id);tab.onclick=()=>selectPaceTab(index);tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3;selectPaceTab(next);document.getElementById(paceTabIds[next]).focus();};});
-  document.getElementById('openCoachDistancePacer')?.addEventListener('click',()=>{location.href='/distance-pacer/?coach=1'});
-  window.MWCoachTimingTools.mountStopwatch(document.getElementById('coachStopwatch'));
-
+  paceTabIds.forEach((id,index)=>{const tab=document.getElementById(id);tab.onclick=()=>selectPaceTab(index);tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?1:(index+1)%2;selectPaceTab(next);document.getElementById(paceTabIds[next]).focus();};});
   const paceout=document.getElementById('paceout'),divisionWrap=document.getElementById('paceDivisionRoster'),results=document.getElementById('groupPaceResults');
   let athletes=[],generatedGroups=[],savingGroups=false;
   try{
