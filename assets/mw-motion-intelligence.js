@@ -176,7 +176,7 @@
       +section('How to correct it',actions)
       +section('Automatic movement-phase review',phases)
       +section('Ground contact and heel recovery',ground+heel)
-      +section('Your next practice focus',actions)
+      +section('Your next practice focus',coaching?.actions?.length?row(coaching.actions[0].focus+':',coaching.actions[0].instruction):'<p>Record a steady full-body side view for a more reliable review.</p>')
       +'<details style="border-top:1px solid #5c4b2e;padding-top:10px"><summary style="color:#e6c16d">Technical measurements and evidence</summary>'+method+'</details>'
       +'</div>';
     status.textContent='Private on-device review ready. No recording was uploaded or stored by this analysis.';
