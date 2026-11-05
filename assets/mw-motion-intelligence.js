@@ -74,6 +74,8 @@
   document.addEventListener('click', event => {
     const button = event.target.closest?.('button');
     if (!button || !/MOTION INTELLIGENCE/i.test(button.textContent || '')) return;
+    // Coach navigation uses its dedicated route; do not also trigger the Athlete click handler.
+    if (document.body.classList.contains('mw-hybrid-coach')) return;
     event.preventDefault();
     window.openView?.('pacer', true);
     setTimeout(() => window.mwOpenMotionIntelligence?.(), 100);
