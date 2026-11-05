@@ -124,27 +124,62 @@
     return {phases,message:phases.length?'Preliminary posture patterns, not validated sprint-phase diagnosis.':'Movement phase could not be reliably inferred from the available video.'};
   }
   function paintAnalysis(result,status){
-    const box=$('mwMotionAnalysis');if(!box)return;
-    const v=result.values,engine=window.MWMotionTracking?.summarize(result.frames,{sampledFrames:result.sampledFrames,cameraView:coachMode()?null:$('mwMotionView')?.value}),report=engine?{phases:engine.phases.map(p=>({name:p.name,detail:p.detail})),message:engine.quality.adequateForPosture?'Preliminary torso-posture patterns; sprint phases and ground contact remain unverified.':'Not enough continuous visible positions to make a posture assessment.'}:buildMotionReport(result);
-    const angleText=n=>Number.isFinite(n)?n.toFixed(1)+' degrees':'Unavailable';
-    const phaseRows=report.phases.length?report.phases.map(p=>'<div style="border-top:1px solid #314252;padding:10px 0"><b>'+esc(p.name)+'</b><p>'+esc(p.detail)+'</p></div>').join(''):'<p>No reliable phase classification from this recording.</p>';
-    const coachFindings=engine?.coaching;
-    const rightRows=coachFindings?.positives.length?coachFindings.positives.map(x=>'<p><b>Observed:</b> '+esc(x.evidence)+' <small>'+esc(x.meaning)+'</small></p>').join(''):'<p>There is not enough evidence yet to confirm a specific technique strength.</p>';
-    const concernRows=coachFindings?.issues.length?coachFindings.issues.map(x=>'<p><b>'+esc(x.label)+':</b> '+esc(x.reason)+'</p>').join(''):'<p>No mechanics fault has been established from this video.</p>';
-    const drillRows=coachFindings?.actions.length?coachFindings.actions.map(x=>'<p><b>'+esc(x.focus)+':</b> '+esc(x.instruction)+'</p>').join(''):'<p>Review a clear side-view clip with a qualified sprint coach.</p>';
-    const footRows=engine?'<p>'+esc(engine.groundContact.reason)+'</p><p>Possible near-ground foot positions: '+engine.groundContact.candidateEvents.length+' (unverified).</p>':'<p>Foot event detector unavailable.</p>';
-    const heelRows=engine?engine.heels.map(x=>'<p>'+esc(x.side)+' leg: '+esc(x.detail)+' '+(Number.isFinite(x.change)?'Relative heel-height trend: '+x.change.toFixed(2)+' (uncalibrated).':'')+'</p>').join(''):'<p>Heel trajectory detector unavailable.</p>';
+    const box=$('mwMotionAnalysis');
+    if(!box)return;
+    const engine=window.MWMotionTracking?.summarize(result.frames,{
+      sampledFrames:result.sampledFrames,
+      cameraView:coachMode()?null:$('mwMotionView')?.value
+    });
+    const quality=engine?.quality,coaching=engine?.coaching;
+    const section=(title,content)=>'<section style="border-top:1px solid #5c4b2e;padding:12px 0"><h3 style="margin:0 0 8px;color:#f2c864;font-size:16px">'+title+'</h3>'+content+'</section>';
+    const row=(title,desc)=>'<p style="margin:7px 0;line-height:1.5"><strong>'+esc(title)+'</strong> '+esc(desc)+'</p>';
+    const observed=coaching?.positives?.length
+      ?coaching.positives.map(p=>row(p.evidence,p.meaning)).join('')
+      :'<p>MW could not verify a specific technical strength from the visible frames.</p>';
+    const concerns=coaching?.issues?.length
+      ?coaching.issues.map(x=>row(x.label+':',x.reason)).join('')
+      :'<p>No specific technical fault was verified in this recording.</p>';
+    const actions=coaching?.actions?.length
+      ?coaching.actions.map(x=>row(x.focus+':',x.instruction)).join('')
+      :'<p>Use a steady full-body side view and review the first steps with a coach.</p>';
+    const phases=engine?.phases?.length
+      ?engine.phases.map(x=>row(x.name+':',x.detail)).join('')
+      :'<p>Unable to identify a reliable movement-phase pattern from this recording.</p>';
+    const contact=engine?.groundContact;
+    const ground='<p>'+esc(contact?.status==='not_verified'?'Exact touchdown, toe-off and contact time are not verified.':'Ground-contact review unavailable.')+'</p>';
+    const heel=engine?.heels?.length
+      ?engine.heels.map(h=>row((h.side==='left'?'Left':'Right')+' leg:',h.trackedFrames+' tracked positions. '+(h.detail||'Recovery pattern not verified.'))).join('')
+      :'<p>Heel recovery could not be tracked reliably.</p>';
+    const asDegrees=n=>Number.isFinite(n)?n.toFixed(1)+'°':'Not measured';
+    const includedSeconds=Number(result.analyzedSeconds||0).toFixed(1);
+    const coveredSeconds=quality?.spanSeconds?quality.spanSeconds.toFixed(1):'0.0';
+    const totalSeconds=Number(result.sourceSeconds||0).toFixed(1);
+    const qualityStatement='Reviewed '+includedSeconds+' of '+totalSeconds+' seconds; '+(quality?.usableFrames||0)+' usable tracked positions from '+result.sampledFrames+' sampled timestamps.';
+    const summary=quality?.adequateForPosture&&engine.phases.length
+      ?'MW identified preliminary posture changes in the visible recording. These are observations, not a verified sprint-technique grade.'
+      :'The recording did not provide enough continuous evidence for a reliable sprint-phase judgment. Specific faults will not be invented.';
+    const method='<p>'+esc(qualityStatement)+'</p>'
+      +'<p>Continuous visible landmark coverage: '+Math.round((quality?.poseCoverage||0)*100)+'%. Longest usable run: '+(quality?.longestContinuousRun||0)+' frames.</p>'
+      +'<p>Approximate trunk angle '+asDegrees(result.values.trunk)+', knee '+asDegrees(result.values.knee)+', shin '+asDegrees(result.values.shin)+', arm '+asDegrees(result.values.arm)+'.</p>'
+      +'<p>'+esc(contact?.reason||'Contact detection unavailable.')+'</p>'
+      +'<p>Ground-contact milliseconds are withheld until video event detection is validated. The model analyzes sampled frames, not every native camera frame.</p>'
+      +(result.decodeErrors?'<p>Frames that could not be decoded: '+result.decodeErrors+'.</p>':'');
     box.hidden=false;
-    box.innerHTML='<h3>MW MOTION INTELLIGENCE - COMPLETE VIDEO REVIEW</h3>'
-      +'<p>Analyzed '+result.poseFrames+' usable body-position frames from '+result.sampledFrames+' sampled frames. Measurements are experimental 2D observations.</p>'
-      +'<h3>Movement phases</h3>'+phaseRows+'<p>'+esc(report.message)+'</p>'
-      +'<h3>What am I doing right?</h3>'+rightRows
-      +'<h3>What needs improvement?</h3>'+concernRows+'<h3>Ground-contact tracking</h3>'+footRows+'<h3>Heel-recovery tracking</h3>'+heelRows
-      +'<h3>Behind-the-scenes tracking</h3><p>'+esc(engine?'Tracked '+engine.quality.usableFrames+' ordered body poses over '+engine.quality.spanSeconds.toFixed(1)+' seconds; left and right leg trajectories inspected.':'Time-ordered motion tracking is unavailable.')+'</p>'
-      +'<h3>How do I improve?</h3>'+drillRows
-      +'<h3>Preliminary measurements</h3><p>Trunk: '+angleText(v.trunk)+' | Knee: '+angleText(v.knee)+' | Shin: '+angleText(v.shin)+' | Arm: '+angleText(v.arm)+'</p>'
-      +'<small>Exact touchdown, toe-off and contact duration are not measured. Validated high-speed foot-ground event detection is still required. '+(result.sourceSeconds>result.analyzedSeconds?'The first '+result.analyzedSeconds.toFixed(1)+' seconds of the recording were analyzed to protect iPhone performance.':'')+'</small>';
-    status.textContent='One on-device review completed. No video was uploaded or stored by this analysis.';
+    box.style.padding='14px';
+    box.style.lineHeight='1.55';
+    box.innerHTML='<div style="max-width:100%;overflow-wrap:anywhere">'
+      +'<div style="color:#f2c864;font-size:12px;letter-spacing:.07em;font-weight:800">MW DYNASTY</div>'
+      +'<h2 style="font-size:21px;margin:3px 0 8px">Your Motion Intelligence Review</h2>'
+      +'<p style="color:#d3d9e1">'+esc(summary)+'</p>'
+      +section('What you are doing well',observed)
+      +section('What needs improvement',concerns)
+      +section('How to correct it',actions)
+      +section('Automatic movement-phase review',phases)
+      +section('Ground contact and heel recovery',ground+heel)
+      +section('Your next practice focus',actions)
+      +'<details style="border-top:1px solid #5c4b2e;padding-top:10px"><summary style="color:#e6c16d">Technical measurements and evidence</summary>'+method+'</details>'
+      +'</div>';
+    status.textContent='Private on-device review ready. No recording was uploaded or stored by this analysis.';
   }
   // Coaches can only see adult-athlete observations explicitly shared with an active assigned coach.
   // The private video-upload endpoint is intentionally athlete-only and must not be exposed here.
@@ -183,6 +218,8 @@
       root = panel();
     }
     if (!root) return;
+    root.style.paddingTop='max(18px, env(safe-area-inset-top))';
+    root.style.scrollMarginTop='max(18px, env(safe-area-inset-top))';
     root.innerHTML = `<button class="back" type="button" id="mwMotionBack" style="margin:8px 0 12px">← Back to Performance Tools</button><div class="card" style="margin-top:14px;border-color:#c89d3b"><div class="cardHead"><span>MOTION INTELLIGENCE</span><span class="smalllink">SECURE VIDEO REVIEW</span></div><h2>Show MW how you move.</h2><p class="muted">Select one sprint recording. MW will analyze the available movement patterns and present one complete review. Secure pilot uploads may require additional recording information.</p><button class="save" id="mwMotion3D" type="button" hidden>USE NATIVE 3-D CAMERA</button><label style="display:block;margin:10px 0 4px">Movement<select id="mwMotionMovement" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="block_start">Block start</option><option value="two_point_start">Two-point start</option><option value="three_point_start">Three-point start</option><option value="four_point_start">Four-point start</option><option value="acceleration_30m">30m acceleration</option><option value="front_side">Front-side mechanics</option><option value="wickets">Wickets</option></select></label><label style="display:block;margin:10px 0 4px">Camera view<select id="mwMotionView" style="width:100%;padding:12px;border-radius:10px;background:#07121b;color:#fff;border:1px solid #8b6b2c"><option value="side">Side</option><option value="front">Front</option><option value="rear">Rear</option></select></label><label style="display:block;margin:10px 0 4px">Sprint video<input id="mwMotionFile" type="file" accept="video/mp4,video/quicktime" style="width:100%;padding:10px 0;color:#cbd6df"></label><label style="display:flex;gap:8px;align-items:flex-start;margin:10px 0;color:#cbd6df;font-size:12px"><input id="mwMotionConsent" type="checkbox" style="margin-top:3px"> I consent to MW securely storing this recording for up to 14 days for Motion Intelligence review.</label><button class="save" id="mwMotionUpload" type="button">UPLOAD FOR MOTION REVIEW</button><button class="save" id="mwMotionAnalyze" type="button" hidden>ANALYZE ON THIS IPHONE</button><div id="mwMotionAnalysis" class="lockNote" hidden></div><p id="mwMotionStatus" class="muted" role="status" style="margin-top:10px"></p><details style="margin-top:12px"><summary style="color:#f0c557">My motion recordings</summary><div id="mwMotionHistory" style="margin-top:8px"></div></details></div>`;
     $('mwMotionBack')?.addEventListener('click',()=>{ if(window.mwCoachOpenPage) window.mwCoachOpenPage('tools'); else window.openView?.('pacer',true); });
     if(window.mwNativeMotion3D){$('mwMotion3D').hidden=false;$('mwMotion3D').onclick=()=>{window.mwNativeMotion3D.start();$('mwMotionStatus').textContent='Starting native 3-D body trackingâ¦'};window.mwNativeMotion3DResult=(r)=>{if(r?.state==='tracking')$('mwMotionStatus').textContent='Native 3-D body tracking is active. Keep the athlete fully in frame.';else if(r?.error)$('mwMotionStatus').textContent=r.error;};}
