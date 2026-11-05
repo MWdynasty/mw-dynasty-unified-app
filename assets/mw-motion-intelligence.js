@@ -1,4 +1,12 @@
 (() => {
+  // Phase 2: MW School + Motion Intelligence. The analysis code stays preserved
+  // for future release, but no public athlete/coach session can open it.
+  const MOTION_PUBLIC_RELEASE_ENABLED=false;
+  if(!MOTION_PUBLIC_RELEASE_ENABLED){
+    window.mwOpenMotionIntelligence=async()=>false;
+    window.mwOpenCoachMotionIntelligence=async()=>false;
+    return;
+  }
   const $ = (id) => document.getElementById(id);
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const token = () => window.mwGetSessionToken?.() || '';
