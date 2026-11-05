@@ -71,7 +71,7 @@ function generateCoachingFeedback(summary){
     positives.push({evidence:'Forward torso inclination decreased across this recording.',meaning:'A progressive rise can be appropriate during acceleration; this observation alone is not a technique grade.'});
     actions.push({focus:'Transition mechanics',instruction:'Review whether posture rises smoothly across successive steps. Confirm with a coach rather than forcing low heel recovery into upright running.'});
   }
-  if(!summary.groundContact.candidateEvents.length)issues.push({label:'Ground contact',reason:'Touchdown and toe-off were not identified confidently; contact time cannot be calculated.'});
+  issues.push({label:'Ground contact',reason:'Touchdown and toe-off have not been verified. Contact duration cannot be calculated from this recording.'});
   issues.push({label:'Heel recovery and cycling',reason:'No validated phase-aware fault was detected. The tracked foot trajectory is not enough to prescribe a correction.'});
   if(!actions.length)actions.push({focus:'Obtain clear evidence',instruction:'Capture a steady, full-body side view and review the first steps through the transition with a sprint coach.'});
   return {positives,issues,actions,diagnosticConfidence:'experimental',faultDetected:false};
@@ -80,7 +80,20 @@ function generateCoachingFeedback(summary){
 function summarize(frames,meta={}){
 const f=frames.filter(v=>v&&finite(v.time)&&finite(v.trunk)).slice().sort((a,b)=>a.time-b.time);
 const span=f.length?f[f.length-1].time-f[0].time:0,gaps=f.slice(1).map((v,i)=>v.time-f[i].time).filter(n=>n>0),step=median(gaps);
-const good=f.length>=18&&span>=0.75&&f.length/Math.max(1,meta.sampledFrames||f.length)>=0.55,third=Math.max(1,Math.floor(f.length/3));
+const coverage=f.length/Math.max(1,meta.sampledFrames||f.length);
+const maxGap=gaps.length?Math.max(...gaps):0;
+const typicalGap=step||0;
+const longestRun=(()=>{
+  if(!f.length)return 0;
+  let current=1,best=1;
+  for(let i=1;i<f.length;i++){
+    if(f[i].time-f[i-1].time<=Math.max(0.14,typicalGap*2.5))current++;
+    else current=1;
+    best=Math.max(best,current);
+  }
+  return best;
+})();
+const good=f.length>=18&&span>=0.75&&coverage>=0.55&&longestRun>=12,third=Math.max(1,Math.floor(f.length/3));
 const early=median(f.slice(0,third).map(x=>x.trunk)),late=median(f.slice(-third).map(x=>x.trunk)),phases=[];
 if(good){const delta=early-late;
 if(early>=22&&delta>=10){phases.push({name:'Early forward-lean pattern',detail:'A forward-inclined posture was observed in the early part of the recording.'});phases.push({name:'Rising posture / transition pattern',detail:'Torso inclination decreased during the recording. A gradual rise can be normal.'});}
@@ -89,7 +102,7 @@ else if(early>=22&&late>=20&&Math.abs(delta)<10)phases.push({name:'Forward-incli
 }
 const heels=analyzeHeelRecovery(f,meta);
 const groundContact=detectFootEvents(f,meta);
-const result={quality:{usableFrames:f.length,sampledFrames:meta.sampledFrames||f.length,spanSeconds:span,effectiveFps:step?1/step:0,adequateForPosture:good,adequateForContactTiming:false},phases,heels,groundContact};
+const result={quality:{usableFrames:f.length,sampledFrames:meta.sampledFrames||f.length,poseCoverage:coverage,spanSeconds:span,effectiveFps:step?1/step:0,largestGapSeconds:maxGap,longestContinuousRun:longestRun,adequateForPosture:good,adequateForContactTiming:false},phases,heels,groundContact};
 result.coaching=generateCoachingFeedback(result);
 return result;
 }
