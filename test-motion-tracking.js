@@ -31,6 +31,7 @@ assert.equal(report.heels[0].assessment, 'not_verified');
 const highRate=Array.from({length:60},(_,i)=>engine.frame(pose(31-i*.12),i/120));
 const side=engine.summarize(highRate,{sampledFrames:60,cameraView:'side',nominalFps:120});
 assert.equal(side.groundContact.status,'not_verified');
+assert.equal(side.groundContact.candidateEvents.length,0,'Static foot pose must not create repeated contact candidates');
 assert.equal(side.groundContact.contactMilliseconds,null);
 assert.equal(side.quality.adequateForContactTiming,false);
 assert.equal(side.coaching.faultDetected,false);
