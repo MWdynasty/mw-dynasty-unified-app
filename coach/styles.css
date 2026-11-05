@@ -3418,3 +3418,14 @@ img,svg,video,canvas{max-width:100%}
 .mwCoachVelocityStats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:17px 0}.mwCoachVelocityStats>div{background:#09141e;border:1px solid #2b3a46;border-radius:12px;padding:12px 8px;text-align:center}.mwCoachVelocityStats strong{display:block;font-size:24px}.mwCoachVelocityStats span{display:block;color:#a8b5bf;font-size:9px;margin-top:5px}
 .mwCoachVelocityBars{display:grid;gap:9px}.mwCoachVelocityRow{display:grid;grid-template-columns:minmax(85px,1fr) minmax(55px,1.4fr) 36px 62px;gap:10px;align-items:center;width:100%;padding:11px;background:#0b1822;border:1px solid #273845;border-radius:11px;color:#f4f7fa;text-align:left;cursor:pointer}.mwCoachVelocityRow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700}.mwCoachVelocityRow b{font-size:11px}.mwCoachVelocityRow em{font-style:normal;font-size:10px;color:#9cd5ae;text-align:right}.mwCoachVelocityRow em.mwVelocityAttention{color:#f1b66c}.mwCoachVelocityTrack{height:8px;border-radius:8px;background:#283846;overflow:hidden}.mwCoachVelocityTrack i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#a87c2d,#f5c66b)}.mwCoachVelocity>p{font-size:10px;color:#9daab6;line-height:1.5;margin:14px 0 0}.mwCoachVelocityEmpty{padding:12px;color:#aab8c3}
 @media(max-width:440px){.mwCoachVelocity{padding:13px}.mwCoachVelocityRow{grid-template-columns:minmax(60px,1fr) minmax(35px,1fr) 28px 46px;gap:5px;padding:9px 6px}.mwCoachVelocityRow em{font-size:9px}.mwCoachVelocityRow span{font-size:10px}}
+
+/* Coach Mus: legible, safe formatted replies on iPhone and desktop. */
+.coach-mw-athlete-thread .mw-coach-reply{font-size:14px;line-height:1.65;overflow-wrap:anywhere;white-space:normal;color:#e3e7ed}
+.coach-mw-athlete-thread .mw-coach-reply p{margin:0 0 12px;line-height:inherit;white-space:pre-wrap}
+.coach-mw-athlete-thread .mw-coach-reply p:last-child{margin-bottom:0}
+.coach-mw-athlete-thread .mw-coach-reply h3{font-size:15px!important;line-height:1.35!important;letter-spacing:0!important;margin:16px 0 8px!important;color:#f5d080!important;font-weight:750!important}
+.coach-mw-athlete-thread .mw-coach-reply h3:first-child{margin-top:0!important}
+.coach-mw-athlete-thread .mw-coach-reply ul,.coach-mw-athlete-thread .mw-coach-reply ol{padding-left:22px;margin:6px 0 14px;list-style-position:outside}
+.coach-mw-athlete-thread .mw-coach-reply li{padding-left:2px;margin:0 0 8px;line-height:1.55}
+.coach-mw-athlete-thread .mw-coach-reply strong{color:#f7f9fc;font-weight:750}
+.coach-mw-athlete-thread .mw-coach-reply em{font-style:italic}
