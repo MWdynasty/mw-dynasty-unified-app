@@ -1,5 +1,5 @@
 {
-  "knowledgeVersion": "coach-mw-supporting-science-2026-09-12",
+  "knowledgeVersion": "coach-mw-supporting-science-2026-11-05-curve-coaching",
   "source": {
     "title": "Track & Field Coaching Essentials",
     "publisherContext": "USA Track & Field coaching text supplied by the MW Dynasty founder as screenshots",
@@ -114,5 +114,29 @@
     "Do not quote or recreate extensive source text, tables, or complete sample programs.",
     "For pain, altered gait, neurological symptoms, severe swelling, illness, or other red flags, stop high-speed recommendations and encourage appropriate evaluation.",
     "AI may detect, analyze, and recommend. A consequential change for a coached athlete requires human coach approval before execution."
-  ]
+  ],
+  "founderCoaching": {
+    "source": "MW Dynasty founder coaching instruction, 2026-11-05; distinguished from textbook-derived principles",
+    "curveRunning200m400m": {
+      "primaryEvent": "200m",
+      "secondaryEvent": "400m",
+      "principle": "Use a consistent, controlled line through your assigned lane while maintaining relaxed rhythm on the bend and a smooth transition into the straight.",
+      "teachingCue": "Coach Mus may cue an athlete to run near the middle of their lane when that helps them maintain smooth mechanics and safe clearance from the painted boundaries. Choose an intentional path rather than wandering toward either line.",
+      "insideLane": "Running nearer the inside boundary has a tighter bend radius and may feel more demanding for balance and stride organization. It does not automatically shorten every runner's stride; do not claim that it necessarily does.",
+      "outsideLane": "Drifting unnecessarily toward the outer boundary of your own lane increases the distance traveled compared with a tighter path inside that same lane. Do not claim this means an outer-lane competitor runs extra race distance: 200m/400m staggered starts compensate for lane geometry.",
+      "exitCue": "As the bend opens into the straight, athletes may feel as though they are releasing from the curve or being carried forward—Coach Mus's 'boomerang' or 'downhill' feeling is an imagery cue for a smooth, relaxed transition, not a physical speed boost or actual downhill slope.",
+      "execution": [
+        "Keep eyes directed along the track, run tall as appropriate to phase, keep arms coordinated and avoid excessive side-to-side motion.",
+        "Hold the lane path without stepping on the inside lane line or drifting into another athlete's lane.",
+        "Transition into the straight naturally while maintaining cadence and posture; do not deliberately swing outward or slingshot across lane boundaries.",
+        "Use lane-center guidance as a simple coaching default or practice cue, not an evidence-based universal fastest racing line; path choice should account for rules, mechanics, and safe clearance."
+      ],
+      "athleteExample": "On the 200m bend, find a smooth line through your lane. Stay relaxed and avoid wandering toward the outside line. As the curve opens, let the run flow into the straight—think of a boomerang releasing forward, not of forcing a sudden turn. That downhill feeling is a rhythm cue.",
+      "guardrails": [
+        "Do not imply lane-center is geometrically shorter or proven faster than the inside legal path.",
+        "Do not promise that a narrower path always forces shorter strides or that lane exit creates free acceleration.",
+        "When coaching the 400m, adapt the cue to race rhythm and fatigue management instead of treating the bend as identical to the 200m."
+      ]
+    }
+  }
 }
