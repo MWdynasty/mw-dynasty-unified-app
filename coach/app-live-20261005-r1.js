@@ -813,6 +813,38 @@ function mwCoachFormatReply(input){
   closeList();
   return html||'<p></p>';
 }
+function mwCoachSpeechText(value){
+  return String(value||'')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g,'$1')
+    .replace(/^\s*#{1,6}\s+/gm,'')
+    .replace(/^\s*[-*]\s+/gm,'')
+    .replace(/^\s*\d+[.)]\s+/gm,'')
+    .replace(/\*\*|__|\x60/g,'')
+    .replace(/\n{2,}/g,'. ')
+    .replace(/\n/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function mwCoachSpeechChunks(value,mode){
+  const text=mwCoachSpeechText(value);
+  if(!text)return [];
+  const chunks=[],sentences=text.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text];
+  let current='',limit=mode==='fast'?230:540;
+  const push=()=>{if(current.trim())chunks.push(current.trim());current='';limit=580;};
+  for(const sentence of sentences){
+    const part=sentence.trim();
+    if(!part)continue;
+    if(current&&current.length+part.length+1>limit)push();
+    if(part.length>limit){
+      for(const word of part.split(/\s+/)){
+        if(current&&current.length+word.length+1>limit)push();
+        current+=(current?' ':'')+word;
+      }
+    }else current+=(current?' ':'')+part;
+  }
+  push();
+  return chunks;
+}
 function coachMWPage(){
   // Coach Mus owns the full mobile surface. Clear any global layer left by a prior
   // page or interrupted transition before rendering the chat controls.
@@ -864,14 +896,73 @@ function coachMWPage(){
     history=[];
     window.MWAccountStorage.session.removeItem('mwCoachProConversation');
   }
-  const voiceChunks=(text,mode)=>{if(mode==='standard')return [text];const parts=String(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text],chunks=[];let current='';for(const part of parts){if((current+part).length>360&&current){chunks.push(current.trim());current=''}current+=part}if(current.trim())chunks.push(current.trim());return chunks.slice(0,8)};
-  const resetVoice=()=>{voiceRun++;if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch{}}if(activeVoiceURL)URL.revokeObjectURL(activeVoiceURL);if(activeVoiceButton){activeVoiceButton.textContent='▶ Start Voice';activeVoiceButton.disabled=false;activeVoiceButton=null}activeAudio=null;activeVoiceURL=''};
+  let activeVoiceAbort=null;
+  const resetVoice=()=>{
+    voiceRun++;
+    if(activeVoiceAbort){activeVoiceAbort.abort();activeVoiceAbort=null;}
+    if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch{}}
+    if(activeVoiceURL){URL.revokeObjectURL(activeVoiceURL);activeVoiceURL='';}
+    if(activeVoiceButton){activeVoiceButton.textContent='🔊 Read Aloud';activeVoiceButton.disabled=false;activeVoiceButton=null;}
+    activeAudio=null;
+  };
   const readAloud=async(text,button)=>{
-    if(activeVoiceButton===button&&activeAudio){resetVoice();return}
+    if(activeVoiceButton===button){resetVoice();return;}
     resetVoice();
-    const prefs=coachMWPrefs(),token=mwSessionToken();if(!token)return toast('Coach session expired. Sign in again.');
-    const run=++voiceRun;button.disabled=true;button.textContent='Loading voice…';activeVoiceButton=button;
-    try{for(const chunk of voiceChunks(text,prefs.voiceMode)){if(run!==voiceRun)return;const r=await fetch('/api/speak',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({text:chunk,coachType:prefs.coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Coach Mus voice unavailable')}const blob=await r.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.playbackRate=Number(prefs.voiceSpeed||1);activeAudio=audio;activeVoiceURL=url;button.textContent='■ Stop Reading';button.disabled=false;await new Promise((resolve,reject)=>{audio.onended=()=>{if(activeVoiceURL===url){URL.revokeObjectURL(url);activeVoiceURL=''}activeAudio=null;resolve()};audio.onerror=()=>reject(new Error('Voice playback error'));audio.play().catch(reject)});if(run!==voiceRun)return}if(run===voiceRun)resetVoice()}catch(e){if(run===voiceRun){resetVoice();button.disabled=false;button.textContent='🔊 Read Aloud';toast(e.message)}}
+    const prefs=coachMWPrefs(),token=mwSessionToken();
+    if(!token)return toast('Coach session expired. Sign in again.');
+    const chunks=mwCoachSpeechChunks(text,prefs.voiceMode);
+    if(!chunks.length)return toast('Nothing to read aloud.');
+    const run=++voiceRun,controller=new AbortController(),cache=new Map();
+    activeVoiceAbort=controller;
+    activeVoiceButton=button;
+    button.disabled=false;
+    button.textContent='■ Stop Reading';
+    const getChunk=(index)=>{
+      if(index>=chunks.length)return null;
+      if(!cache.has(index)){
+        const request=fetch('/api/speak',{
+          method:'POST',
+          headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+          signal:controller.signal,
+          body:JSON.stringify({text:chunks[index],coachType:prefs.coachType})
+        }).then(async response=>{
+          if(!response.ok){
+            const details=await response.json().catch(()=>({}));
+            throw new Error(details.error||'Coach Mus voice unavailable');
+          }
+          return response.blob();
+        }).then(blob=>({blob}),error=>({error}));
+        cache.set(index,request);
+      }
+      return cache.get(index);
+    };
+    try{
+      for(let i=0;i<chunks.length;i++){
+        button.textContent=i===0?'Preparing voice…':'■ Stop Reading';
+        const response=await getChunk(i);
+        if(run!==voiceRun)return;
+        if(response.error)throw response.error;
+        getChunk(i+1);
+        const url=URL.createObjectURL(response.blob);
+        activeVoiceURL=url;
+        const audio=new Audio(url);
+        audio.playbackRate=Number(prefs.voiceSpeed||1);
+        activeAudio=audio;
+        button.textContent='■ Stop Reading';
+        await new Promise((resolve,reject)=>{
+          audio.onended=()=>{if(activeVoiceURL===url){URL.revokeObjectURL(url);activeVoiceURL='';}activeAudio=null;resolve();};
+          audio.onerror=()=>reject(new Error('Voice playback error'));
+          audio.play().catch(reject);
+        });
+        if(run!==voiceRun)return;
+      }
+      if(run===voiceRun)resetVoice();
+    }catch(error){
+      if(run===voiceRun){
+        resetVoice();
+        if(error.name!=='AbortError')toast(error.message||'Unable to finish reading the full response.');
+      }
+    }
   };
   const render=()=>{chat.innerHTML=history.map((m,i)=>`<div class="tile mw-coach-message ${m.role==='user'?'mw-coach-user':'mw-coach-assistant'}"><b>${m.role==='user'?'Coach':'Coach Mus'}</b><div class="mw-coach-reply">${m.role==='assistant'?mwCoachFormatReply(m.content):'<p>'+escapeHtml(m.content)+'</p>'}</div>${m.role==='assistant'?`<button class="back mw-read-aloud" data-i="${i}" type="button">🔊 Read Aloud</button>`:''}</div>`).join('');chat.querySelectorAll('.mw-read-aloud').forEach(b=>{const item=history[Number(b.dataset.i)];b.onclick=()=>readAloud(item?.content||'',b)});chat.scrollTop=chat.scrollHeight};
   render();
