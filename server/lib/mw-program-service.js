@@ -195,7 +195,7 @@ function technicalSledContrast(week,day,tier,eventGroup='100_200'){
   :longResisted?'very light resistance; target no more than about 5-10% velocity loss, measured for the individual'
    :'light resistance, about 5-15% individual sprint-velocity decrement if measured';
  const paired=isTue
-  ?pairs+' x ('+distance+'m heavy/controlled sled pull + '+unloadedDistance+'m free acceleration)'
+  ?pairs+' x ('+distance+'m '+(foundation?'controlled':'heavy/controlled')+' sled pull + '+unloadedDistance+'m free acceleration)'
   :pairs+' x ('+distance+'m light sled pull + '+unloadedDistance+'m free upright build / fly entry)';
  const intent=isTue?'Drive phase: horizontal push, strong projection, consistent steps; do not force athletes to remain bent over for the entire run.'
   :longResisted?'Long light-resistance sprint rhythm / upright speed-endurance exposure, NOT a maximum-velocity test or guaranteed peak-speed repetition. Follow with a separate short, fast unloaded sprint after full recovery.'
