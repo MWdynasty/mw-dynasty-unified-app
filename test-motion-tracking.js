@@ -73,4 +73,21 @@ assert.equal(engine.detectFootEvents(highSpeedToe,{cameraView:'front'}).candidat
 // Neither high capture rate nor a changing heel trajectory can produce a fault verdict.
 const progression=engine.summarize(highSpeedToe,{cameraView:'side',sampledFrames:96});
 assert.equal(progression.coaching.faultDetected,false);
+
+// Phase-contextual heel observations must remain descriptive, not technique grades.
+const risingHeels=Array.from({length:36},(_,i)=>{
+  const tracked=engine.frame(pose(40-i*.8),i/12);
+  for(const leg of tracked.legs)leg.heelHeight=-1+i*.012;
+  return tracked;
+});
+const heelTransition=engine.summarize(risingHeels,{sampledFrames:36});
+assert.ok(heelTransition.coaching.positives.some(x=>/heel trajectories rose/.test(x.evidence)));
+assert.equal(heelTransition.coaching.faultDetected,false);
+assert.equal(heelTransition.groundContact.contactMilliseconds,null);
+const occludedHeels=risingHeels.map((f,i)=>({
+  ...f,legs:f.legs.map(l=>({...l,heelHeight:i<9||i>=27?l.heelHeight:null}))
+}));
+const incompleteHeel=engine.summarize(occludedHeels,{sampledFrames:36});
+assert.equal(incompleteHeel.heels[0].trackingAdequate,false);
+assert.ok(!incompleteHeel.coaching.positives.some(x=>/heel trajectories rose/.test(x.evidence)));
 console.log('Motion tracking tests passed: posture timeline, per-leg trajectories, low-evidence rejection, no invented ground contact.');
