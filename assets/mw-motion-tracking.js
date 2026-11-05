@@ -79,7 +79,11 @@ function generateCoachingFeedback(summary){
     positives.push({evidence:'Forward torso inclination decreased across this recording.',meaning:'A progressive rise can be appropriate during acceleration; this observation alone is not a technique grade.'});
     actions.push({focus:'Transition mechanics',instruction:'Review whether posture rises smoothly across successive steps. Confirm with a coach rather than forcing low heel recovery into upright running.'});
   }
-  issues.push({label:'Ground contact',reason:'Touchdown and toe-off have not been verified. Contact duration cannot be calculated from this recording.'});
+  if(summary.quality.usableFrames>=8&&summary.quality.poseCoverage<0.55){
+    positives.push({evidence:'MW tracked '+summary.quality.usableFrames+' visible body positions.',meaning:'Some movement was recovered despite limited tracking. This is a partial observation, not a sprint-technique grade.'});
+    actions.unshift({focus:'Keep the runner visible',instruction:'For the next recording, keep the whole athlete in frame and large enough to see. Front, rear and side recordings are accepted; MW will report only what can be observed.'});
+  }
+  issues.push({label:'Ground contact',reason:'Touchdown and toe-off have not been verified. Contact duration cannot be calculated from this recording, regardless of camera angle.'});
   const heels=(summary.heels||[]).filter(h=>h.trackingAdequate&&finite(h.change));
   if(heels.length===2&&summary.phases.some(p=>p.name==='Rising posture / transition pattern')){
     const bothRise=heels.every(h=>h.change>=0.15);
@@ -93,7 +97,7 @@ function generateCoachingFeedback(summary){
   }
   if(!heels.length)issues.push({label:'Heel recovery and cycling',reason:'The recording did not provide enough uninterrupted heel tracking for a phase-aware interpretation.'});
   else if(!summary.phases.length)issues.push({label:'Heel recovery and cycling',reason:'Heel movement was tracked, but the sprint phase was not identified reliably enough to judge cycling.'});
-  if(!actions.length)actions.push({focus:'Obtain clear evidence',instruction:'Capture a steady, full-body side view and review the first steps through the transition with a sprint coach.'});
+  if(!actions.length)actions.push({focus:'Review visible movement',instruction:'Use the clear sections of this recording to discuss the start, rhythm and posture with a coach. For better detail, keep the athlete large and fully visible; any camera angle is accepted.'});
   return {positives,issues,actions,diagnosticConfidence:'experimental',faultDetected:false};
 }
 
