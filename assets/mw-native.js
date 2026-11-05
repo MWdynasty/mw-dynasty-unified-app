@@ -78,3 +78,68 @@
   });
   window.addEventListener('pageshow',function(e){if(e.persisted){showResumeLoader();hideResumeLoader()}});
 })();
+
+/* Athlete Coach MW: safe, readable replies without editing the athlete document. */
+;(function(){
+  if(!location.pathname.startsWith('/athlete'))return;
+  function escapeText(value){return String(value).replace(/[&<>"']/g,function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  })}
+  function formatCoachReply(input){
+    var inline=function(value){return escapeText(value)
+      .replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')};
+    var lines=String(input||'').replace(/\r\n?/g,'\n').split('\n');
+    var out='',list='';
+    function close(){if(list){out+='</'+list+'>';list=''}}
+    lines.forEach(function(raw){
+      var line=raw.trim(),heading=line.match(/^#{1,4}\s+(.+)$/);
+      if(!line){close();return}
+      if(heading){close();out+='<h3>'+inline(heading[1])+'</h3>';return}
+      var bullet=line.match(/^[-*]\s+(.+)$/),number=line.match(/^\d+[.)]\s+(.+)$/);
+      if(bullet||number){
+        var kind=number?'ol':'ul';if(list!==kind){close();list=kind;out+='<'+kind+'>'}
+        out+='<li>'+inline((bullet||number)[1])+'</li>';return;
+      }
+      close();out+='<p>'+inline(line)+'</p>';
+    });
+    close();return out||'<p></p>';
+  }
+  window.MWAthleteCoachReplyFormat=formatCoachReply;
+  function formatMessages(){
+    var chat=document.getElementById('chat');if(!chat)return;
+    chat.querySelectorAll('.msg.coach').forEach(function(message){
+      if(message.dataset.mwReplyFormatted==='1')return;
+      // Never overwrite a rich message with buttons, media or other controls.
+      if(message.querySelector('button,input,textarea,select,img,video,audio,a'))return;
+      var raw=message.textContent||'';
+      if(!/(^|\n)\s*#{1,4}\s|(^|\n)\s*[-*]\s|\*\*[^*\n]+\*\*/.test(raw))return;
+      message.innerHTML='<div class="mw-athlete-coach-reply">'+formatCoachReply(raw)+'</div>';
+      message.dataset.mwReplyFormatted='1';
+    });
+  }
+  function boot(){
+    var css=document.createElement('style');
+    css.id='mw-athlete-coach-reply-format';
+    css.textContent='#chat .mw-athlete-coach-reply{font-size:14px;line-height:1.65;white-space:normal;overflow-wrap:anywhere}'+
+      '#chat .mw-athlete-coach-reply p{margin:0 0 11px;white-space:pre-wrap;line-height:inherit}'+
+      '#chat .mw-athlete-coach-reply p:last-child{margin-bottom:0}'+
+      '#chat .mw-athlete-coach-reply h3{font-size:15px;line-height:1.35;color:#f3cd7b;font-weight:750;margin:15px 0 8px}'+
+      '#chat .mw-athlete-coach-reply h3:first-child{margin-top:0}'+
+      '#chat .mw-athlete-coach-reply ul,#chat .mw-athlete-coach-reply ol{padding-left:22px;margin:7px 0 12px;list-style-position:outside}'+
+      '#chat .mw-athlete-coach-reply li{margin-bottom:7px;padding-left:2px}'+
+      '#chat .mw-athlete-coach-reply strong{font-weight:750;color:#f8f9fc}';
+    (document.head||document.documentElement).appendChild(css);
+    var chat=document.getElementById('chat');
+    if(!chat)return;
+    var queued=false;
+    function refresh(){queued=false;formatMessages()}
+    var observer=new MutationObserver(function(){
+      if(!queued){queued=true;Promise.resolve().then(refresh)}
+    });
+    observer.observe(chat,{childList:true,subtree:true,characterData:true});
+    formatMessages();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
+})();
