@@ -107,7 +107,7 @@
     if(coach){
       upload.hidden=true;
       analyze.hidden=false;
-      $('mwMotionConsent').parentElement.hidden=true;
+      const consentRow=$('mwMotionConsent')?.parentElement;if(consentRow){consentRow.hidden=true;consentRow.style.display='none';}
       status.textContent='Coach preview: select a sprint video for an on-device movement review. The recording will not be uploaded or saved. Secure coach uploads are not enabled yet.';
     }else{
       try {
