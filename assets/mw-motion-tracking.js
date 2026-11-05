@@ -32,7 +32,11 @@ function detectFootEvents(frames,meta={}){
       const left=rows[i-2],right=rows[i+2],center=rows[i];
       const near=ground-center.leg.toeY<0.015;
       const speed=Math.abs((right.leg.toeY-left.leg.toeY)/(right.time-left.time||1));
-      if(near&&speed<0.17&&rows.slice(Math.max(0,i-3),i).every(r=>r.leg.toeY<=center.leg.toeY+0.025)){
+      // Require an approach from a visibly higher foot position rather than a stationary foot.
+      const prior=rows.slice(Math.max(0,i-24),i);
+      const approached=prior.some(r=>r.leg.toeY<ground-0.04);
+      const inSequence=prior.slice(-4).every(r=>r.leg.toeY<=center.leg.toeY+0.025);
+      if(near&&approached&&inSequence&&speed<0.17){
         const prev=outcome.candidateEvents[outcome.candidateEvents.length-1];
         if(!prev||prev.side!==side||center.time-prev.time>0.12)
           outcome.candidateEvents.push({side,time:center.time,kind:'possible_track_proximity',confidence:'unverified'});
