@@ -31,18 +31,19 @@
     const landmarker=await vision.PoseLandmarker.createFromOptions(resolver,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'CPU'},runningMode:'VIDEO',numPoses:1});
     const video=document.createElement('video');video.muted=true;video.playsInline=true;const objectUrl=URL.createObjectURL(file);video.src=objectUrl;
     try { await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Video could not be opened on this iPhone. Try a short MP4 recording.')),12000);video.onloadedmetadata=()=>{clearTimeout(timer);resolve();};video.onerror=()=>{clearTimeout(timer);reject(new Error('This video format could not be opened. Try MP4.'));};}); } catch(error) {landmarker.close();URL.revokeObjectURL(objectUrl);throw error;}
-    const duration=Math.min(30,Number(video.duration)||0), samples=Math.max(10,Math.min(30,Math.round(duration*3)));const readings=[];
+    const duration=Math.min(8,Number(video.duration)||0), samples=Math.max(18,Math.min(96,Math.round(duration*12)));const readings=[],tracking=[];
     if(!Number.isFinite(duration)||duration<0.2){landmarker.close();URL.revokeObjectURL(objectUrl);throw new Error('Video is too short or its duration is unavailable. Choose a short MP4 sprint recording.');}
     for(let i=0;i<samples;i++){const seekTime=Math.max(0.02,Math.min(duration-0.02,duration*(i/(samples-1))));
       await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Video frame could not be read on this device. Try a different MP4 recording.')),10000);video.onseeked=()=>{clearTimeout(timer);resolve();};video.onerror=()=>{clearTimeout(timer);reject(new Error('Video decoding failed. Try MP4.'));};video.currentTime=seekTime;});const out=landmarker.detectForVideo(video,Math.round(video.currentTime*1000)),p=out?.landmarks?.[0];if(!p)continue;
       const S={x:(p[11].x+p[12].x)/2,y:(p[11].y+p[12].y)/2},H={x:(p[23].x+p[24].x)/2,y:(p[23].y+p[24].y)/2};const side=p[25].visibility>p[26].visibility?25:26,knee=p[side],hip=p[side-2],ankle=p[side+2],elbow=p[side===25?13:14],wrist=p[side===25?15:16];
       readings.push({trunk:Math.abs(Math.atan2(S.x-H.x,H.y-S.y)*180/Math.PI),knee:angle(hip,knee,ankle),shin:Math.abs(Math.atan2(ankle.x-knee.x,knee.y-ankle.y)*180/Math.PI),arm:angle(S,elbow,wrist)});
+      const tracked=window.MWMotionTracking?.frame(p,video.currentTime);if(tracked)tracking.push(tracked);
       status.textContent=`Analyzing on this iPhoneâ¦ ${i+1}/${samples}`;
     }
     landmarker.close();URL.revokeObjectURL(objectUrl);if(readings.length<5)throw Error(`Only ${readings.length} usable body-position frames were detected. This is not enough for a reliable motion read. Try a brighter, steady side-view sprint recording showing the full athlete.`);
     const values={trunk:median(readings.map(x=>x.trunk)),knee:median(readings.map(x=>x.knee)),shin:median(readings.map(x=>x.shin)),arm:median(readings.map(x=>x.arm))};
     if(![values.trunk,values.knee,values.shin].every(Number.isFinite))throw Error('The video did not contain enough clear side-on landmarks for a safe first read.');
-    return {sampledFrames:samples,poseFrames:readings.length,values,frames:readings};
+    return {sampledFrames:samples,poseFrames:readings.length,values,frames:tracking,analyzedSeconds:duration,sourceSeconds:video.duration};
   }
   // Preliminary behind-the-scenes classification from time-ordered posture landmarks.
   // Never equate torso posture with validated sprint phase, foot contact or technique quality.
@@ -65,7 +66,7 @@
   }
   function paintAnalysis(result,status){
     const box=$('mwMotionAnalysis');if(!box)return;
-    const v=result.values,report=buildMotionReport(result);
+    const v=result.values,engine=window.MWMotionTracking?.summarize(result.frames,{sampledFrames:result.sampledFrames}),report=engine?{phases:engine.phases.map(p=>({name:p.name,detail:p.detail})),message:engine.quality.adequateForPosture?'Preliminary torso-posture patterns; sprint phases and ground contact remain unverified.':'Not enough continuous visible positions to make a posture assessment.'}:buildMotionReport(result);
     const angleText=n=>Number.isFinite(n)?n.toFixed(1)+' degrees':'Unavailable';
     const phaseRows=report.phases.length?report.phases.map(p=>'<div style="border-top:1px solid #314252;padding:10px 0"><b>'+esc(p.name)+'</b><p>'+esc(p.detail)+'</p></div>').join(''):'<p>No reliable phase classification from this recording.</p>';
     box.hidden=false;
@@ -74,9 +75,10 @@
       +'<h3>Movement phases</h3>'+phaseRows+'<p>'+esc(report.message)+'</p>'
       +'<h3>What am I doing right?</h3><p>MW cannot yet certify correct technique from this video. The posture patterns observed above are presented without grading.</p>'
       +'<h3>What needs improvement?</h3><p>Ground contact, heel recovery, backside cycling and block-exit mechanics cannot yet be classified accurately from these samples. No fault is assigned without adequate evidence.</p>'
+      +'<h3>Behind-the-scenes tracking</h3><p>'+esc(engine?'Tracked '+engine.quality.usableFrames+' ordered body poses over '+engine.quality.spanSeconds.toFixed(1)+' seconds; left and right leg trajectories inspected.':'Time-ordered motion tracking is unavailable.')+'</p>'
       +'<h3>How do I improve?</h3><p>Review the recording with your coach and capture a steady side-view showing the entire athlete. During early acceleration, evaluate effective backward pushing; allow heel recovery to rise naturally during the transition toward upright sprinting.</p>'
       +'<h3>Preliminary measurements</h3><p>Trunk: '+angleText(v.trunk)+' | Knee: '+angleText(v.knee)+' | Shin: '+angleText(v.shin)+' | Arm: '+angleText(v.arm)+'</p>'
-      +'<small>Exact touchdown, toe-off and contact duration are not measured. Validated high-speed foot-ground event detection is still required.</small>';
+      +'<small>Exact touchdown, toe-off and contact duration are not measured. Validated high-speed foot-ground event detection is still required. '+(result.sourceSeconds>result.analyzedSeconds?'The first '+result.analyzedSeconds.toFixed(1)+' seconds of the recording were analyzed to protect iPhone performance.':'')+'</small>';
     status.textContent='One on-device review completed. No video was uploaded or stored by this analysis.';
   }
   // Coaches can only see adult-athlete observations explicitly shared with an active assigned coach.
