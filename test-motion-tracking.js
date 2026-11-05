@@ -125,4 +125,22 @@ assert.ok(shrinking.coaching.positives.some(p=>/smaller later/.test(p.evidence))
 const mixedViews=frontal.map((f,i)=>({...f,viewEvidence:i%2===0?'side':'front'}));
 assert.equal(engine.summarize(mixedViews,{sampledFrames:36}).perspective.view,'mixed');
 assert.equal(engine.summarize(mixedViews,{sampledFrames:36}).phases.length,0);
+
+// Visible bilateral arm/knee movement should be described only when sampled over time.
+const frontArms=Array.from({length:36},(_,i)=>{
+ const p=pose(10);
+ p[11].x=.38;p[12].x=.62;p[23].x=.47;p[24].x=.53;
+ p[0]={x:.5,y:.17,visibility:1};p[7]={x:.45,y:.20,visibility:1};
+ p[15]={x:.30,y:.42+Math.sin(i/4)*.07,visibility:1};
+ p[16]={x:.70,y:.42-Math.sin(i/4)*.07,visibility:1};
+ p[25].y=.69+Math.sin(i/4)*.07;
+ p[26].y=.69-Math.sin(i/4)*.07;
+ return engine.frame(p,i/12);
+});
+const frontMotion=engine.summarize(frontArms,{sampledFrames:36});
+assert.equal(frontMotion.perspective.view,'front');
+assert.equal(frontMotion.bilateral.armMotionVisible,true);
+assert.equal(frontMotion.bilateral.kneeMotionVisible,true);
+assert.ok(frontMotion.coaching.positives.some(p=>/Both arms showed measurable movement/.test(p.evidence)));
+assert.equal(frontMotion.coaching.faultDetected,false);
 console.log('Motion tracking tests passed: posture timeline, per-leg trajectories, low-evidence rejection, no invented ground contact.');
