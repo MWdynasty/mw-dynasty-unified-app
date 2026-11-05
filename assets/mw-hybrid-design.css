@@ -152,7 +152,7 @@ body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav {
 body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav {
   display: grid !important; position: fixed !important; left: 50% !important; right: auto !important;
   top: auto !important; bottom: 0 !important; width: 100% !important; max-width: 1120px !important;
-  transform: translateX(-50%) !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  transform: translateX(-50%) !important; grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   align-items: stretch !important; z-index: 1100 !important; pointer-events: auto !important;
   border-radius: 18px 18px 0 0;
 }
@@ -170,7 +170,8 @@ body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button::before { di
 body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button > span,
 body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button > span {
   min-height: 17px !important; font-size: 11px !important; line-height: 17px !important; font-weight: 500 !important;
-  letter-spacing: 0 !important; text-transform: none !important; white-space: nowrap; text-shadow: none !important;
+  letter-spacing: 0 !important; text-transform: none !important; white-space: normal !important; text-align: center !important; text-shadow: none !important;
+  min-height: 34px !important; max-width: 100% !important; font-size: 10px !important; line-height: 15px !important;
 }
 body.mw-hybrid-athlete .nav.mwDepthNav.mwImageNav button.active > span,
 body.mw-hybrid-coach .coach-mobile-nav.mwDepthNav.mwImageNav button.active > span { color: var(--mw-hybrid-gold-light) !important; }
