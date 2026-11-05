@@ -36,4 +36,21 @@ assert.equal(side.groundContact.contactMilliseconds,null);
 assert.equal(side.quality.adequateForContactTiming,false);
 assert.equal(side.coaching.faultDetected,false);
 assert.equal(engine.detectFootEvents([], {cameraView:'side'}).candidateEvents.length,0);
+// Quality gating must avoid declaring phases from discontinuous footage.
+const discontinuous=progressive.filter((_,index)=>index<6||index>29);
+const interrupted=engine.summarize(discontinuous,{sampledFrames:36});
+assert.equal(interrupted.quality.adequateForPosture,false);
+assert.equal(interrupted.phases.length,0);
+assert.ok(interrupted.quality.largestGapSeconds>1);
+assert.equal(interrupted.quality.longestContinuousRun,6);
+// Source fps alone must not be misrepresented as inferred ground-contact fps.
+assert.equal(side.quality.adequateForContactTiming,false);
+assert.equal(side.groundContact.status,'not_verified');
+assert.equal(side.groundContact.touchdown,null);
+assert.equal(side.groundContact.toeOff,null);
+assert.equal(side.coaching.faultDetected,false);
+// An absent/occluded torso must not produce fabricated body geometry.
+const missing=pose(25);
+missing[11].visibility=0.1;
+assert.equal(engine.frame(missing,0),null);
 console.log('Motion tracking tests passed: posture timeline, per-leg trajectories, low-evidence rejection, no invented ground contact.');
