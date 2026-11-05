@@ -7,7 +7,7 @@ const l=point(p,11),r=point(p,12),lh=point(p,23),rh=point(p,24);if(!l||!r||!lh||
 const shoulder={x:(l.x+r.x)/2,y:(l.y+r.y)/2},hip={x:(lh.x+rh.x)/2,y:(lh.y+rh.y)/2},scale=Math.hypot(shoulder.x-hip.x,shoulder.y-hip.y);
 if(scale<0.03)return null;
 const legs=[0,1].map(side=>{const h=point(p,side?24:23),k=point(p,side?26:25),a=point(p,side?28:27),heel=point(p,side?30:29),toe=point(p,side?32:31);
-return {side:side?'right':'left',valid:!!(h&&k&&a),ankle:a||null,knee:k||null,heel:heel||null,toe:toe||null,hip:h||null,heelHeight:h&&a?(h.y-a.y)/scale:null,heelToHipX:h&&heel?(heel.x-h.x)/scale:null,toeY:toe?.y??null};});
+return {side:side?'right':'left',valid:!!(h&&k&&a),ankle:a||null,knee:k||null,heel:heel||null,toe:toe||null,hip:h||null,heelHeight:h&&(heel||a)?(h.y-(heel||a).y)/scale:null,heelToHipX:h&&heel?(heel.x-h.x)/scale:null,toeY:toe?.y??null};});
 return {time,trunk:Math.atan2(Math.abs(shoulder.x-hip.x),Math.abs(hip.y-shoulder.y))*180/Math.PI,legs};
 }
 
