@@ -207,7 +207,7 @@ function technicalSledContrast(week,day,tier,eventGroup='100_200'){
   :'No sled: controlled build-up and a faster flat run in the SAME total pairs.';
  const meet=micro?'Optional micro-dose only if no imminent meet and athlete is recovered; otherwise use existing low-volume starts and wickets. ':'';
  const loading=longResisted?'A 10-15 lb sled is ONLY an optional equipment example, not a universal athlete load; include sled friction/surface and actual velocity decrement when setting resistance. ':'';
- const safety='The contrasted sets REPLACE the existing technical main work, not additional volume. Supervise developing athletes; stop if sprint mechanics, velocity or readiness decline.';
+ const safety='This session REPLACES the existing technical main set; never add extra reps. Supervise developing athletes; stop if sprint mechanics, velocity or readiness decline.';
  return {day:d,week:w,tier:t,eventGroup:group,type:isTue?'drive-force-contrast':'upright-speed-contrast',
   pairs,distanceMeters:distance,unloadedDistanceMeters:unloadedDistance,longResisted,
   resistance,intent,rest,fallback,safety,optional:micro,
