@@ -20,30 +20,89 @@
   async function loadHistory() { try { renderHistory((await call('list')).assessments || []); } catch (e) { const s=$('mwMotionStatus'); if(s) s.textContent=e.message; } }
   const angle=(a,b,c)=>{const ab=[a.x-b.x,a.y-b.y],cb=[c.x-b.x,c.y-b.y],dot=ab[0]*cb[0]+ab[1]*cb[1],den=Math.hypot(...ab)*Math.hypot(...cb);return den?Math.acos(Math.max(-1,Math.min(1,dot/den)))*180/Math.PI:null};
   const median=a=>{const x=a.filter(Number.isFinite).sort((m,n)=>m-n);return x.length?x[Math.floor(x.length/2)]:null};
-  async function analyzeVideo(file, status) {
-    status.textContent='Loading on-device motion modelâ¦';
-    // 0.10.22 was never published to npm/jsDelivr, which made WKWebView report
-    // the unhelpful "Importing a module script failed" error. Keep this pinned
-    // to a real, stable package version and surface a useful fallback if the
-    // device/network cannot load the model.
+  // Seek-based analysis is intentionally distinct from high-speed contact timing.
+  // Cover the entire clip instead of silently trimming to its first eight seconds.
+  async function analyzeVideo(file,status){
+    status.textContent='Loading on-device movement model...';
     const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs');
     const resolver=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm');
-    const landmarker=await vision.PoseLandmarker.createFromOptions(resolver,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'CPU'},runningMode:'VIDEO',numPoses:1});
-    const video=document.createElement('video');video.muted=true;video.playsInline=true;const objectUrl=URL.createObjectURL(file);video.src=objectUrl;
-    try { await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Video could not be opened on this iPhone. Try a short MP4 recording.')),12000);video.onloadedmetadata=()=>{clearTimeout(timer);resolve();};video.onerror=()=>{clearTimeout(timer);reject(new Error('This video format could not be opened. Try MP4.'));};}); } catch(error) {landmarker.close();URL.revokeObjectURL(objectUrl);throw error;}
-    const duration=Math.min(8,Number(video.duration)||0), samples=Math.max(18,Math.min(96,Math.round(duration*12)));const readings=[],tracking=[];
-    if(!Number.isFinite(duration)||duration<0.2){landmarker.close();URL.revokeObjectURL(objectUrl);throw new Error('Video is too short or its duration is unavailable. Choose a short MP4 sprint recording.');}
-    for(let i=0;i<samples;i++){const seekTime=Math.max(0.02,Math.min(duration-0.02,duration*(i/(samples-1))));
-      await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Video frame could not be read on this device. Try a different MP4 recording.')),10000);video.onseeked=()=>{clearTimeout(timer);resolve();};video.onerror=()=>{clearTimeout(timer);reject(new Error('Video decoding failed. Try MP4.'));};video.currentTime=seekTime;});const out=landmarker.detectForVideo(video,Math.round(video.currentTime*1000)),p=out?.landmarks?.[0];if(!p)continue;
-      const S={x:(p[11].x+p[12].x)/2,y:(p[11].y+p[12].y)/2},H={x:(p[23].x+p[24].x)/2,y:(p[23].y+p[24].y)/2};const side=p[25].visibility>p[26].visibility?25:26,knee=p[side],hip=p[side-2],ankle=p[side+2],elbow=p[side===25?13:14],wrist=p[side===25?15:16];
-      readings.push({trunk:Math.abs(Math.atan2(S.x-H.x,H.y-S.y)*180/Math.PI),knee:angle(hip,knee,ankle),shin:Math.abs(Math.atan2(ankle.x-knee.x,knee.y-ankle.y)*180/Math.PI),arm:angle(S,elbow,wrist)});
-      const tracked=window.MWMotionTracking?.frame(p,video.currentTime);if(tracked)tracking.push(tracked);
-      status.textContent=`Analyzing on this iPhoneâ¦ ${i+1}/${samples}`;
+    const landmarker=await vision.PoseLandmarker.createFromOptions(resolver,{
+      baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'CPU'},
+      runningMode:'VIDEO',numPoses:1
+    });
+    const video=document.createElement('video');
+    video.muted=true;video.playsInline=true;video.preload='auto';
+    const objectUrl=URL.createObjectURL(file);
+    video.src=objectUrl;
+    let attempted=0,decodeErrors=0;
+    const readings=[],tracking=[];
+    const awaitMetadata=()=>new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(new Error('Unable to read this video on your iPhone. Try a shorter MP4 recording.')),15000);
+      video.onloadedmetadata=()=>{clearTimeout(timer);resolve();};
+      video.onerror=()=>{clearTimeout(timer);reject(new Error('iPhone could not decode this video. Try an MP4 recording.'));};
+      if(video.readyState>=1){clearTimeout(timer);resolve();}
+    });
+    const seekTo=(second)=>new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>{video.onseeked=null;reject(new Error('A video frame took too long to decode.'));},9000);
+      video.onseeked=()=>{clearTimeout(timer);video.onseeked=null;resolve();};
+      video.onerror=()=>{clearTimeout(timer);video.onseeked=null;reject(new Error('Video decoding failed.'));};
+      video.currentTime=second;
+    });
+    try{
+      await awaitMetadata();
+      const duration=Number(video.duration);
+      if(!Number.isFinite(duration)||duration<0.25)throw new Error('The recording is too short or its duration is unavailable.');
+      // 24 samples per second for short recordings; long recordings get distributed
+      // coverage to avoid locking the iPhone. Never present this as native 120/240 fps.
+      const targetRate=duration<=12?24:duration<=30?14:8;
+      const samples=Math.min(360,Math.max(18,Math.ceil(duration*targetRate)));
+      for(let i=0;i<samples;i++){
+        const position=Math.max(0.01,Math.min(duration-0.01,(i+0.5)*duration/samples));
+        attempted++;
+        try {
+          await seekTo(position);
+          if(video.readyState<2)throw new Error('Frame not decoded.');
+          const actualTime=video.currentTime;
+          const output=landmarker.detectForVideo(video,Math.round(actualTime*1000));
+          const p=output?.landmarks?.[0];
+          if(p){
+            const tracked=window.MWMotionTracking?.frame(p,actualTime);
+            if(tracked)tracking.push(tracked);
+            // A landmark is only used if the specific joint is visible; do not
+            // silently substitute offscreen or occluded joints.
+            const visible=(id)=>p[id]&&Number.isFinite(p[id].x)&&Number.isFinite(p[id].y)&&(p[id].visibility??1)>=0.5;
+            if([11,12,23,24,25,26,27,28].every(visible)){
+              const S={x:(p[11].x+p[12].x)/2,y:(p[11].y+p[12].y)/2};
+              const H={x:(p[23].x+p[24].x)/2,y:(p[23].y+p[24].y)/2};
+              const side=(p[25].visibility??1)>=(p[26].visibility??1)?25:26;
+              const knee=p[side],hip=p[side-2],ankle=p[side+2],elbow=p[side===25?13:14],wrist=p[side===25?15:16];
+              readings.push({trunk:Math.abs(Math.atan2(S.x-H.x,H.y-S.y)*180/Math.PI),
+                knee:angle(hip,knee,ankle),
+                shin:Math.abs(Math.atan2(ankle.x-knee.x,knee.y-ankle.y)*180/Math.PI),
+                arm:visible(side===25?13:14)&&visible(side===25?15:16)?angle(S,elbow,wrist):null});
+            }
+          }
+        } catch(error){
+          decodeErrors++;
+          if(decodeErrors>=Math.max(5,Math.ceil(samples*0.15)))throw new Error('Too many frames could not be decoded on this iPhone. Try a shorter or re-exported video.');
+        }
+        if(i%12===0){
+          status.textContent='Analyzing video: '+Math.round((i+1)*100/samples)+'% ('+tracking.length+' body positions found)';
+          await new Promise(resolve=>setTimeout(resolve,0));
+        }
+      }
+      if(tracking.length<8)throw new Error('Only '+tracking.length+' usable body positions were found. Use steady footage with the whole runner visible.');
+      const values={
+        trunk:median(readings.map(x=>x.trunk)),knee:median(readings.map(x=>x.knee)),
+        shin:median(readings.map(x=>x.shin)),arm:median(readings.map(x=>x.arm))
+      };
+      return {sampledFrames:samples,poseFrames:tracking.length,values,frames:tracking,analyzedSeconds:duration,
+        sourceSeconds:duration,decodeErrors,analysisMethod:'distributed_video_sampling'};
+    }finally{
+      try{video.pause();video.removeAttribute('src');video.load();}catch(_){}
+      landmarker.close();
+      URL.revokeObjectURL(objectUrl);
     }
-    landmarker.close();URL.revokeObjectURL(objectUrl);if(readings.length<5)throw Error(`Only ${readings.length} usable body-position frames were detected. This is not enough for a reliable motion read. Try a brighter, steady side-view sprint recording showing the full athlete.`);
-    const values={trunk:median(readings.map(x=>x.trunk)),knee:median(readings.map(x=>x.knee)),shin:median(readings.map(x=>x.shin)),arm:median(readings.map(x=>x.arm))};
-    if(![values.trunk,values.knee,values.shin].every(Number.isFinite))throw Error('The video did not contain enough clear side-on landmarks for a safe first read.');
-    return {sampledFrames:samples,poseFrames:readings.length,values,frames:tracking,analyzedSeconds:duration,sourceSeconds:video.duration};
   }
   // Preliminary behind-the-scenes classification from time-ordered posture landmarks.
   // Never equate torso posture with validated sprint phase, foot contact or technique quality.
