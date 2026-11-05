@@ -89,3 +89,11 @@ Apple access required: active Developer Program membership, membership type (Ind
 Deletion continuation: a failed profile role lookup previously fell through to immediate athlete deletion. The follow-up returns 503 before any deletion, and also refuses duplicate coach-request creation when request lookup fails. The actual TypeScript handler passed Node 24 tests using disposable transports: failed role/request lookups cause no writes, staff/unauthenticated rejection, existing coach request reuse, and authenticated synthetic athlete identity. No real Auth account was removed. Disposable in-app deletion, coach completion/timeframe and connection-sharing controls remain unfinished.
 
 Listing and source-audit privacy questionnaire working answers are in APP_STORE_LISTING_DRAFT.md. They remain drafts, not submitted answers or actual-build screenshots.
+
+## Phase 2 roadmap decision — Motion Intelligence and MW School (November 5, 2026)
+
+Founder-approved release scope: Motion Intelligence joins MW School / Sprint School as a **future-release Phase 2 feature**. Neither is part of the initial Athlete or Coach product launch. Do not advertise these as currently available, even to eligible memberships. Preserve existing motion-analysis source, prior private assessments and storage/consent restrictions; do not delete historical data or change production billing.
+
+Launch navigation: remove the Coach Performance Tools Motion tile, route former Coach `motion` navigation back to Performance Tools, hide the two Athlete Motion action cards, and omit its reference from the Athlete Performance Tools menu description. The Motion Intelligence client has a release-disabled gate and must not open a video review in ordinary Athlete or Coach sessions. Sprint School remains in its earlier unreleased state.
+
+Release readiness: Phase 2 must receive explicit founder approval, real-device and real-video biomechanical validation, athlete/coach permission and privacy review, product copy verification, and a separate regression/deployment check before re-enabling any entry point. Until then focus release QA on the 41-week program, Practice Mode, Progression, Coach MW, billing and athlete/coach workflows.
