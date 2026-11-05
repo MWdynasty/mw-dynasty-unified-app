@@ -2,6 +2,20 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {Session}=require('./lib/mw-practice-heats');
 const {Stopwatch,format,prescribedRestSeconds,createNarrator}=require('./coach/timing-tools');
+
+const liveCoach=fs.readFileSync('coach/app-live-20261005-r1.js','utf8');
+const performanceStart=liveCoach.indexOf('function performanceToolsPage(){');
+const performanceEnd=liveCoach.indexOf('function morePage(){',performanceStart);
+const paceStart=liveCoach.indexOf('async function pacingPage(){');
+const paceEnd=liveCoach.indexOf('const paceout=document.getElementById',paceStart);
+assert.ok(performanceStart>=0&&performanceEnd>performanceStart&&paceStart>=0&&paceEnd>paceStart,'active Coach screens must exist');
+const performanceView=liveCoach.slice(performanceStart,performanceEnd),paceView=liveCoach.slice(paceStart,paceEnd);
+assert.match(performanceView,/id="openCoachDistancePacer"/,'Distance Pacer remains accessible from Performance Tools');
+assert.match(performanceView,/id="coachStopwatch"/,'Stopwatch is mounted in Performance Tools');
+assert.match(performanceView,/mountStopwatch\(document\.getElementById\('coachStopwatch'\)\)/,'Stopwatch is wired after the Performance Tools screen renders');
+assert.doesNotMatch(paceView,/paceToolsTab|paceToolsPanel|id="coachStopwatch"/,'Pace AI must contain only group and individual pacing');
+assert.match(paceView,/paceTabIds=\['paceGroupTab','paceIndividualTab'\]/,'Pace AI retains two functional tabs');
+
 assert.equal(prescribedRestSeconds('8 x 300m. Rest 75–90 sec between reps and 5 min between sets.'),90);
 assert.equal(prescribedRestSeconds('5 x 200m @ 80%. Rest 3-4 min.'),240);
 assert.equal(prescribedRestSeconds('6 x 30m @ 100%'),null,'rep distances are never mistaken for recovery');
