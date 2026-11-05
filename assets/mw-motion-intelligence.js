@@ -2,7 +2,7 @@
   const $ = (id) => document.getElementById(id);
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const token = () => window.mwGetSessionToken?.() || '';
-  const coachMode = () => document.body.classList.contains('mw-hybrid-coach');
+  const coachMode = () => location.pathname.startsWith('/coach') || document.body.classList.contains('mw-hybrid-coach');
   const endpoint = () => `${window.MW_SUPABASE_URL}/functions/v1/mw-motion`;
   async function call(action, payload = {}) {
     const accessToken=token();
@@ -45,10 +45,11 @@
   // Coaches can only see adult-athlete observations explicitly shared with an active assigned coach.
   // The private video-upload endpoint is intentionally athlete-only and must not be exposed here.
   window.mwOpenCoachMotionIntelligence = async () => {
+    // Retain the private on-device video review available to coaches, without granting cloud upload rights.
+    await window.mwOpenMotionIntelligence();
     const root = panel();
     if (!root) throw new Error('Motion Intelligence screen is unavailable.');
-    root.innerHTML = '<section class="tile" aria-label="Coach Motion Intelligence"><h3>Shared Motion Intelligence</h3><p>Review movement observations that eligible athletes have chosen to share with their assigned coach. Private recordings are not accessible here.</p><p id="mwMotionCoachStatus" role="status">Checking shared observations…</p><div id="mwMotionCoachObservations"></div><p class="muted">Motion measurements are experimental 2D observations, not verified biomechanics or medical advice. Video uploads currently require approved adult-athlete access.</p><button class="back" type="button" id="mwMotionCoachBack">← Back to Performance Tools</button></section>';
-    $('mwMotionCoachBack')?.addEventListener('click', () => window.mwCoachOpenPage?.('tools'));
+    root.insertAdjacentHTML('beforeend','<section class="tile" aria-label="Shared Motion Intelligence" style="margin-top:14px"><h3>Shared athlete observations</h3><p>Only observations explicitly shared by eligible adult athletes with their assigned coach appear here. Private recordings are not accessible.</p><p id="mwMotionCoachStatus" role="status">Checking shared observations…</p><div id="mwMotionCoachObservations"></div><p class="muted">Measurements are experimental 2D observations, not verified biomechanics or medical advice.</p></section>');
     const status = $('mwMotionCoachStatus'), list = $('mwMotionCoachObservations');
     if (!token()) { status.textContent = 'Your Coach session has expired. Please sign in again.'; return; }
     try {
