@@ -4,6 +4,8 @@ const SUPABASE_URL=MW_QA_PREVIEW?'https://nktemtmsfhjcgjvkavrm.supabase.co':'htt
 const SUPABASE_KEY=MW_QA_PREVIEW?'sb_publishable_I6p9Atq2zd_-1vA85PjAtA_FILbwc99':'sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
 const SESSION_KEY='mwCoachSupabaseSession';
 const MW_APP_VERSION='3.0.16';
+window.MW_SUPABASE_URL=SUPABASE_URL;
+window.MW_SUPABASE_KEY=SUPABASE_KEY;
 const MW_IOS_BUILD='13';
 let authSession=null;
 let accountAccess={role:null,tier:null,isFounder:false,firstName:'',lastName:'',organization:'',coachTitle:'',email:'',features:{}};
@@ -34,8 +36,8 @@ async function loadPricingCatalog(){
 let experience='core';
 const nav={
  core:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Team Practice'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['messages','✉','Messages'],['account','$','Billing'],['account','⚙','Settings']],
- intelligence:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Team Practice'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach MW'],['messages','✉','Messages'],['account','$','Billing'],['account','⚙','Settings']],
- performance:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Team Practice'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach MW'],['messages','✉','Messages'],['account','$','Billing'],['account','⚙','Settings']]
+ intelligence:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Team Practice'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach Mus'],['messages','✉','Messages'],['account','$','Billing'],['account','⚙','Settings']],
+ performance:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Team Practice'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach Mus'],['messages','✉','Messages'],['account','$','Billing'],['account','⚙','Settings']]
 };
 function sideNav(){
   const items=[...nav[experience]];
@@ -52,11 +54,11 @@ function mobileCoachNav(activePage){
   const active=String(activePage||history.state?.mwCoachPage||'dashboard');
   const trainPages=new Set(['train','practice','programs','mwtrack','strength','pacing','grouppacing']);
   const shownActive=trainPages.has(active)?'train':active;
-  const items=[['dashboard','mwNavHome','DASHBOARD'],['athletes','mwNavProfile','ATHLETES'],['practice','mwNavTrain','TEAM PRACTICE'],['tools','mwNavProgram','PERFORMANCE TOOLS']];
+  const items=[['dashboard','mwNavHome','DASHBOARD'],['athletes','mwNavProfile','ATHLETES'],['practice','mwNavTrain','TEAM PRACTICE'],['tools','mwNavProgram','PERFORMANCE TOOLS'],['coachmw','mwNavCoach','COACH MUS']];
   const primaryIds=new Set(items.map(x=>x[0]));
   const menuActive=!primaryIds.has(shownActive);
   return `<nav class="coach-mobile-nav mwDepthNav mwImageNav" aria-label="Coach navigation">
-    ${items.map(([id,art,label])=>`<button type="button" class="${shownActive===id?'active':''}" data-page="${id}" aria-label="${label}"><b class="mwNavArt ${art}" aria-hidden="true"></b><span>${label==='COACH MW'?'Coach MW':label[0]+label.slice(1).toLowerCase()}</span></button>`).join('')}
+    ${items.map(([id,art,label])=>`<button type="button" class="${shownActive===id?'active':''}" data-page="${id}" aria-label="${label}"><b class="mwNavArt ${art}" aria-hidden="true"></b><span>${label==='COACH MUS'?'Coach Mus':label[0]+label.slice(1).toLowerCase()}</span></button>`).join('')}
     <button type="button" class="${menuActive?'active':''}" data-page="more" aria-label="Menu"><b class="mwNavArt coachMobileMenuArt" aria-hidden="true"><img src="/assets/mw-nav-menu.webp" alt="" draggable="false"></b><span>Menu</span></button>
   </nav>`;
 }
@@ -122,7 +124,7 @@ async function hydrateCoachTrainingYearCard(){
 function simpleCoachHome(primaryPage,primaryLabel,showIntel=false){
   const hour=new Date().getHours(),greeting=hour<12?'Good morning':hour<18?'Good afternoon':'Good evening';
   const today=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
-  const coachMW=experience==='core'?'':`<button type="button" class="mwHybridCoachLink" data-page="coachmw"><img src="/assets/mw-nav-mw.webp" alt=""><span><strong>Coach MW</strong><small>Your next move, made clear.</small></span><em aria-hidden="true">›</em></button>`;
+  const coachMW=experience==='core'?'':`<button type="button" class="mwHybridCoachLink" data-page="coachmw"><img src="/assets/mw-nav-mw.webp" alt=""><span><strong>Coach Mus</strong><small>Your next move, made clear.</small></span><em aria-hidden="true">›</em></button>`;
   const attention=showIntel?athleteStatusBoardShell():'';
   shell(`<div class="mwHybridCoachHome">${topbar('Search your team...')}
   <section class="coach-command-head"><span class="status-kicker">TODAY · ${escapeHtml(today.toUpperCase())}</span><h1>${greeting}, Coach.</h1><p>Keep your team moving in the right direction.</p></section>
@@ -330,7 +332,7 @@ async function practiceModePage(){
         <small>MW Pace AI loads each athlete’s recommended target from today’s prescription + live PRs. Open this setup only when you need to change the group, targets or lane count.</small>
       </div>
     </details>
-    <div class="panel-grid" style="margin-top:14px"><button class="tile practice-launch mw-coach-launch" id="practiceCoachMW" ${experience==='core'?'style="display:none"':''}><h3><span class="mw-coach-crest" aria-hidden="true">MW</span> Coach MW</h3><p>Ask a quick coaching question without leaving Practice Mode.</p><b>OPEN →</b></button></div>
+    <div class="panel-grid" style="margin-top:14px"><button class="tile practice-launch mw-coach-launch" id="practiceCoachMW" ${experience==='core'?'style="display:none"':''}><h3><span class="mw-coach-crest" aria-hidden="true">MW</span> Coach Mus</h3><p>Ask a quick coaching question without leaving Practice Mode.</p><b>OPEN →</b></button></div>
     <div class="tile" style="margin-top:14px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h3>Quick Attendance</h3><p>Set status and save once.</p></div><b id="practiceAttendanceCount">Loading…</b></div><div class="list" id="practiceRoster" style="margin-top:10px"><div class="row">Loading assigned athletes…</div></div><button class="action" id="practiceSaveAttendance" style="margin-top:14px" disabled>Save Practice Attendance</button><div id="practiceAttendanceState" style="margin-top:10px"></div></div>
   `);
   hydrateCoachTodayPractice('practiceTodayPlan',{practiceMode:true});
@@ -464,7 +466,7 @@ function dashboard(){
   hydrateCoachTrainingYearCard();
   window.setTimeout(()=>maybeStartCoachTour(),180);
 }
-function pageBase(title,subtitle,body){const p=PLANS[experience],settingsAction=title==='Menu'?'<button class="icon-btn" type="button" data-page="account" aria-label="Settings" title="Settings">⚙</button>':'';app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">← Dashboard</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div>${settingsAction}<button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=dashboard;const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
+function pageBase(title,subtitle,body){const p=PLANS[experience],settingsAction=title==='Menu'?'<button class="icon-btn" type="button" data-page="account" aria-label="Settings" title="Settings">⚙</button>':'';app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">${title==='Pacing Tools'?'← Performance Tools':title==='Performance Tools'?'← Dashboard':'← Back'}</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div>${settingsAction}<button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=()=>openPage(title==='Pacing Tools'?'tools':title==='Performance Tools'?'dashboard':history.state?.mwCoachPreviousPage||'dashboard');const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
 function performanceToolsPage(){
   pageBase('Performance Tools','Coach-side performance workspace for athlete review and decision support.',`
     <div class="panel-grid">
@@ -531,11 +533,11 @@ function coachMWPrefs(){
 }
 function coachMWSettingsHTML(){
   const pref=coachMWPrefs();
-  return `<div class="tile" id="coachMWSettings"><h3>Coach MW Settings</h3><p>Choose the Coach MW voice and visual once. Coach Intelligence loads this preference automatically.</p><div class="form" style="grid-template-columns:1fr 1fr"><label>Coach MW<select id="coachMWType"><option value="male" ${pref.coachType==='male'?'selected':''}>Male Coach MW</option><option value="female" ${pref.coachType==='female'?'selected':''}>Female Coach MW</option></select></label><label>Voice Speed<select id="coachMWVoiceSpeed"><option value="0.9" ${Number(pref.voiceSpeed)===0.9?'selected':''}>0.9× Relaxed</option><option value="1" ${Number(pref.voiceSpeed)===1?'selected':''}>1.0× Natural</option><option value="1.1" ${Number(pref.voiceSpeed)===1.1?'selected':''}>1.1× Quick</option><option value="1.2" ${Number(pref.voiceSpeed)===1.2?'selected':''}>1.2× Fast</option></select></label><label>Voice Response<select id="coachMWVoiceMode"><option value="fast" ${pref.voiceMode==='fast'?'selected':''}>Fast — start speaking sooner</option><option value="standard" ${pref.voiceMode==='standard'?'selected':''}>Standard — full response audio</option></select></label><label>Auto-Play Coach Voice<select id="coachMWAutoVoice"><option value="on" ${pref.autoVoice==='on'?'selected':''}>On</option><option value="off" ${pref.autoVoice==='off'?'selected':''}>Off</option></select></label></div><button class="action" id="saveCoachMWSettings" style="margin-top:12px">Save Coach MW Settings</button></div>`;
+  return `<div class="tile" id="coachMWSettings"><h3>Coach Mus Settings</h3><p>Choose the Coach Mus voice and visual once. Coach Intelligence loads this preference automatically.</p><div class="form" style="grid-template-columns:1fr 1fr"><label>Coach Mus<select id="coachMWType"><option value="male" ${pref.coachType==='male'?'selected':''}>Male Coach Mus</option><option value="female" ${pref.coachType==='female'?'selected':''}>Female Coach Mus</option></select></label><label>Voice Speed<select id="coachMWVoiceSpeed"><option value="0.9" ${Number(pref.voiceSpeed)===0.9?'selected':''}>0.9× Relaxed</option><option value="1" ${Number(pref.voiceSpeed)===1?'selected':''}>1.0× Natural</option><option value="1.1" ${Number(pref.voiceSpeed)===1.1?'selected':''}>1.1× Quick</option><option value="1.2" ${Number(pref.voiceSpeed)===1.2?'selected':''}>1.2× Fast</option></select></label><label>Voice Response<select id="coachMWVoiceMode"><option value="fast" ${pref.voiceMode==='fast'?'selected':''}>Fast — start speaking sooner</option><option value="standard" ${pref.voiceMode==='standard'?'selected':''}>Standard — full response audio</option></select></label><label>Auto-Play Coach Voice<select id="coachMWAutoVoice"><option value="on" ${pref.autoVoice==='on'?'selected':''}>On</option><option value="off" ${pref.autoVoice==='off'?'selected':''}>Off</option></select></label></div><button class="action" id="saveCoachMWSettings" style="margin-top:12px">Save Coach Mus Settings</button></div>`;
 }
 function bindCoachMWSettings(){
   const btn=document.getElementById('saveCoachMWSettings');if(!btn)return;
-  btn.onclick=()=>{const prefs={coachType:document.getElementById('coachMWType')?.value==='female'?'female':'male',voiceSpeed:Number(document.getElementById('coachMWVoiceSpeed')?.value||1),voiceMode:document.getElementById('coachMWVoiceMode')?.value==='standard'?'standard':'fast',autoVoice:document.getElementById('coachMWAutoVoice')?.value==='off'?'off':'on'};window.MWAccountStorage.local.setItem('mwCoachAISettings',JSON.stringify(prefs));btn.textContent='✓ Saved';setTimeout(()=>btn.textContent='Save Coach MW Settings',1000)};
+  btn.onclick=()=>{const prefs={coachType:document.getElementById('coachMWType')?.value==='female'?'female':'male',voiceSpeed:Number(document.getElementById('coachMWVoiceSpeed')?.value||1),voiceMode:document.getElementById('coachMWVoiceMode')?.value==='standard'?'standard':'fast',autoVoice:document.getElementById('coachMWAutoVoice')?.value==='off'?'off':'on'};window.MWAccountStorage.local.setItem('mwCoachAISettings',JSON.stringify(prefs));btn.textContent='✓ Saved';setTimeout(()=>btn.textContent='Save Coach Mus Settings',1000)};
 }
 const MW_US_STATES=[
   ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']
@@ -767,20 +769,20 @@ function renderCoachSeasonAssessment(existing={}){
   };
 }
 function coachMWPage(){
-  // Coach MW owns the full mobile surface. Clear any global layer left by a prior
+  // Coach Mus owns the full mobile surface. Clear any global layer left by a prior
   // page or interrupted transition before rendering the chat controls.
   ['mwCoachEntering','experienceVeil','coachTour','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
-  pageBase('Coach MW','Your coaching assistant. Ask, review, decide.',`
+  pageBase('Coach Mus','Your coaching assistant. Ask, review, decide.',`
   <section class="coach-mw-athlete-match">
     <div class="coach-mw-athlete-top">
       <div><div class="coach-mw-athlete-logo"><b>MW</b> COACH AI</div><div class="coach-mw-athlete-sub">YOUR PERSONAL MW PERFORMANCE COACH</div></div>
-      <div class="coach-mw-athlete-actions"><span><i>●</i> READY</span><button type="button" data-page="account" aria-label="Coach MW settings">⚙</button></div>
+      <div class="coach-mw-athlete-actions"><span><i>●</i> READY</span><button type="button" data-page="account" aria-label="Coach Mus settings">⚙</button></div>
     </div>
 
     <div class="coach-mw-athlete-shell">
       <div class="coach-mw-athlete-presence">
-        <img src="/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG" alt="Coach MW">
-        <b>COACH MW</b>
+        <img src="/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG" alt="Coach Mus">
+        <b>COACH MUS</b>
         <span>READY • ASK. LEARN. IMPROVE.</span>
         <small>MW SYSTEM • YOUR TEAM • COACHING INTELLIGENCE READY</small>
       </div>
@@ -788,10 +790,10 @@ function coachMWPage(){
       <div id="mwchat" class="mw-coach-thread coach-mw-athlete-thread"></div>
 
       <div class="coach-mw-athlete-composer">
-        <button class="back" id="mwmic" title="Speak to Coach MW" aria-label="Speak to Coach MW">🎙</button>
+        <button class="back" id="mwmic" title="Speak to Coach Mus" aria-label="Speak to Coach Mus">🎙</button>
         <button class="back" id="mwattach" title="Add photo" aria-label="Add photo">＋</button>
         <input id="mwimage" type="file" accept="image/png,image/jpeg,image/webp" style="display:none">
-        <input id="mwq" placeholder="Message Coach MW…">
+        <input id="mwq" placeholder="Message Coach Mus…">
         <button class="action" id="askmw" aria-label="Send message">↑</button>
       </div>
       <div id="mwattachstate" class="mw-coach-state"></div>
@@ -824,9 +826,9 @@ function coachMWPage(){
     resetVoice();
     const prefs=coachMWPrefs(),token=mwSessionToken();if(!token)return toast('Coach session expired. Sign in again.');
     const run=++voiceRun;button.disabled=true;button.textContent='Loading voice…';activeVoiceButton=button;
-    try{for(const chunk of voiceChunks(text,prefs.voiceMode)){if(run!==voiceRun)return;const r=await fetch('/api/speak',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({text:chunk,coachType:prefs.coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Coach MW voice unavailable')}const blob=await r.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.playbackRate=Number(prefs.voiceSpeed||1);activeAudio=audio;activeVoiceURL=url;button.textContent='■ Stop Reading';button.disabled=false;await new Promise((resolve,reject)=>{audio.onended=()=>{if(activeVoiceURL===url){URL.revokeObjectURL(url);activeVoiceURL=''}activeAudio=null;resolve()};audio.onerror=()=>reject(new Error('Voice playback error'));audio.play().catch(reject)});if(run!==voiceRun)return}if(run===voiceRun)resetVoice()}catch(e){if(run===voiceRun){resetVoice();button.disabled=false;button.textContent='🔊 Read Aloud';toast(e.message)}}
+    try{for(const chunk of voiceChunks(text,prefs.voiceMode)){if(run!==voiceRun)return;const r=await fetch('/api/speak',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({text:chunk,coachType:prefs.coachType})});if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Coach Mus voice unavailable')}const blob=await r.blob(),url=URL.createObjectURL(blob),audio=new Audio(url);audio.playbackRate=Number(prefs.voiceSpeed||1);activeAudio=audio;activeVoiceURL=url;button.textContent='■ Stop Reading';button.disabled=false;await new Promise((resolve,reject)=>{audio.onended=()=>{if(activeVoiceURL===url){URL.revokeObjectURL(url);activeVoiceURL=''}activeAudio=null;resolve()};audio.onerror=()=>reject(new Error('Voice playback error'));audio.play().catch(reject)});if(run!==voiceRun)return}if(run===voiceRun)resetVoice()}catch(e){if(run===voiceRun){resetVoice();button.disabled=false;button.textContent='🔊 Read Aloud';toast(e.message)}}
   };
-  const render=()=>{chat.innerHTML=history.map((m,i)=>`<div class="tile mw-coach-message ${m.role==='user'?'mw-coach-user':'mw-coach-assistant'}"><b>${m.role==='user'?'Coach':'Coach MW'}</b><p style="white-space:pre-wrap">${escapeHtml(m.content)}</p>${m.role==='assistant'?`<button class="back mw-read-aloud" data-i="${i}" type="button">🔊 Read Aloud</button>`:''}</div>`).join('');chat.querySelectorAll('.mw-read-aloud').forEach(b=>{const item=history[Number(b.dataset.i)];b.onclick=()=>readAloud(item?.content||'',b)});chat.scrollTop=chat.scrollHeight};
+  const render=()=>{chat.innerHTML=history.map((m,i)=>`<div class="tile mw-coach-message ${m.role==='user'?'mw-coach-user':'mw-coach-assistant'}"><b>${m.role==='user'?'Coach':'Coach Mus'}</b><p style="white-space:pre-wrap">${escapeHtml(m.content)}</p>${m.role==='assistant'?`<button class="back mw-read-aloud" data-i="${i}" type="button">🔊 Read Aloud</button>`:''}</div>`).join('');chat.querySelectorAll('.mw-read-aloud').forEach(b=>{const item=history[Number(b.dataset.i)];b.onclick=()=>readAloud(item?.content||'',b)});chat.scrollTop=chat.scrollHeight};
   render();
   document.querySelectorAll('[data-mw-prompt]').forEach(b=>b.onclick=()=>{q.value=b.dataset.mwPrompt||'';q.focus()});
   attach.onclick=()=>pick.click();
@@ -855,7 +857,7 @@ function coachMWPage(){
     const bubble=document.createElement('div');
     bubble.className='mw-coach-message '+(role==='user'?'mw-coach-user':'mw-coach-assistant');
     const label=document.createElement('b');
-    label.textContent=role==='user'?'Coach':'Coach MW';
+    label.textContent=role==='user'?'Coach':'Coach Mus';
     const body=document.createElement('p');
     body.textContent=content;
     bubble.appendChild(label);
@@ -926,17 +928,17 @@ function coachMWPage(){
     coachMWInFlight=true;
     clearTimeout(coachMWWatchdog);
     if(sendButton)sendButton.disabled=true;
-    requestState.textContent='Coach MW is thinking…';
+    requestState.textContent='Coach Mus is thinking…';
     coachMWWatchdog=setTimeout(()=>{
       if(!coachMWInFlight)return;
       traceCoachStage('watchdog_reset');
-      resetCoachMWUi('Coach MW took too long to respond. Please try again.');
+      resetCoachMWUi('Coach Mus took too long to respond. Please try again.');
     },20000);
     const showRetry=(message)=>{
       requestState.textContent=message;
       const retry=document.createElement('button');
-      retry.type='button';retry.className='back';retry.textContent='Retry Coach MW';
-      retry.setAttribute('aria-label','Retry Coach MW response');
+      retry.type='button';retry.className='back';retry.textContent='Retry Coach Mus';
+      retry.setAttribute('aria-label','Retry Coach Mus response');
       retry.onclick=()=>runCoachRequest();
       requestState.appendChild(document.createTextNode(' '));
       requestState.appendChild(retry);
@@ -956,9 +958,9 @@ function coachMWPage(){
       }
       const d=await r.json().catch(()=>({}));
       traceCoachStage('response_json_parsed');
-      if(!r.ok)throw new Error(d.error||'Coach MW request failed');
+      if(!r.ok)throw new Error(d.error||'Coach Mus request failed');
       const answer=String(d.answer||'').trim();
-      if(!answer)throw new Error('Coach MW returned an empty response. Please try again.');
+      if(!answer)throw new Error('Coach Mus returned an empty response. Please try again.');
       history.push({role:'assistant',content:answer});
       history=history.slice(-40).map(m=>({role:m.role,content:m.content}));
       traceCoachStage('before_assistant_append');
@@ -972,10 +974,10 @@ function coachMWPage(){
     }).catch(e=>{
       console.warn('MW_COACH_UI_REQUEST_FAILED',e);
       const timedOut=e?.name==='AbortError';
-      appendCoachBubble('assistant',timedOut?'Coach MW timed out. Please try again.':'Coach MW could not respond: '+(e?.message||'Please try again.'));
-      showRetry(timedOut?'Coach MW is taking too long to respond. Check your connection and tap Retry.':'Coach MW could not respond: '+(e?.message||'check your connection and try again.'));
+      appendCoachBubble('assistant',timedOut?'Coach Mus timed out. Please try again.':'Coach Mus could not respond: '+(e?.message||'Please try again.'));
+      showRetry(timedOut?'Coach Mus is taking too long to respond. Check your connection and tap Retry.':'Coach Mus could not respond: '+(e?.message||'check your connection and try again.'));
     }).finally(()=>{
-      // Always reset the live Coach MW controls, even if the page was re-rendered.
+      // Always reset the live Coach Mus controls, even if the page was re-rendered.
       traceCoachStage('request_settled');
       resetCoachMWUi('');
     });
@@ -1007,13 +1009,13 @@ function membershipPage(){return coachAccountPage()}
 function founderPreviewPage(){
   if(!accountAccess.isFounder)return coachAccountPage();
   const p=PLANS[experience];
-  app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">← Dashboard</button><div style="flex:1"><div class="eyebrow">Founder Preview</div><h1>Preview Coach Tier</h1><div style="color:#adbdc8">Founder-only preview. This changes only the preview experience, not billing or entitlements.</div></div><button class="back" id="founderAccount">Coach Profile</button></div><div class="plans">${Object.entries(PLANS).map(([k,v])=>`<div class="plan ${k===experience?'current':''}"><h2>${v.name}</h2><p>${v.sub}</p><p><b>$${v.monthly}/month</b><br><small>Sponsored athletes +$${v.sponsor}/athlete/month</small></p><button class="action" data-plan="${k}">${k===experience?'Current Preview':'Preview Tier'}</button></div>`).join('')}</div>${seasonCalendarSettingsHTML()}<section class="section coach-tour-account-card"><div><div class="eyebrow">GUIDED TOUR</div><h2>Learn ${escapeHtml(p.name)}</h2><p>Replay the full walkthrough for this coach platform anytime.</p></div><button class="action" id="replayCoachTour">Replay Tutorial</button></section></div></div>`;
-  document.getElementById('back').onclick=dashboard;document.getElementById('founderAccount').onclick=coachAccountPage;
+  app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">${title==='Pacing Tools'?'← Performance Tools':title==='Performance Tools'?'← Dashboard':'← Back'}</button><div style="flex:1"><div class="eyebrow">Founder Preview</div><h1>Preview Coach Tier</h1><div style="color:#adbdc8">Founder-only preview. This changes only the preview experience, not billing or entitlements.</div></div><button class="back" id="founderAccount">Coach Profile</button></div><div class="plans">${Object.entries(PLANS).map(([k,v])=>`<div class="plan ${k===experience?'current':''}"><h2>${v.name}</h2><p>${v.sub}</p><p><b>$${v.monthly}/month</b><br><small>Sponsored athletes +$${v.sponsor}/athlete/month</small></p><button class="action" data-plan="${k}">${k===experience?'Current Preview':'Preview Tier'}</button></div>`).join('')}</div>${seasonCalendarSettingsHTML()}<section class="section coach-tour-account-card"><div><div class="eyebrow">GUIDED TOUR</div><h2>Learn ${escapeHtml(p.name)}</h2><p>Replay the full walkthrough for this coach platform anytime.</p></div><button class="action" id="replayCoachTour">Replay Tutorial</button></section></div></div>`;
+  document.getElementById('back').onclick=()=>openPage(title==='Pacing Tools'?'tools':title==='Performance Tools'?'dashboard':history.state?.mwCoachPreviousPage||'dashboard');document.getElementById('founderAccount').onclick=coachAccountPage;
   document.querySelectorAll('[data-plan]').forEach(btn=>btn.onclick=()=>smoothSwitchExperience(btn.dataset.plan,btn));
   document.getElementById('replayCoachTour').onclick=()=>startCoachTour({force:true,mode:'full'});bindSeasonCalendarSettings();
 }
 function coachAccountPage(){
-  pageBase('Profile','Your coaching identity, organization, membership, and settings.',`<div class="coach-profile-hero"><div class="coach-profile-monogram">${escapeHtml(((accountAccess.firstName||'C')[0]+(accountAccess.lastName||'')[0]).toUpperCase())}</div><div><span class="status-kicker">MW COACH PROFILE</span><h2>${escapeHtml([accountAccess.firstName,accountAccess.lastName].filter(Boolean).join(' ')||'Coach')}</h2><p>${escapeHtml(accountAccess.organization||accountAccess.coachTitle||'MW Dynasty Coach')}</p></div></div><details class="tile coach-profile-section" open><summary><b>COACH DETAILS</b></summary><p>Your identity is used across MW Dynasty so athletes and teams know who is coaching them.</p><div class="form" style="margin-top:12px"><div class="form-grid"><label>First Name<input id="coachProfileFirst" maxlength="80" autocomplete="given-name" value="${escapeHtml(accountAccess.firstName||'')}"></label><label>Last Name<input id="coachProfileLast" maxlength="80" autocomplete="family-name" value="${escapeHtml(accountAccess.lastName||'')}"></label></div><label>School / Organization <small>(optional)</small><input id="coachProfileOrganization" maxlength="160" autocomplete="organization" placeholder="School, club, team, or organization" value="${escapeHtml(accountAccess.organization||'')}"></label><label>Coach Role / Title <small>(optional)</small><input id="coachProfileTitle" maxlength="120" autocomplete="organization-title" placeholder="Head Coach, Sprints Coach, Assistant Coach…" value="${escapeHtml(accountAccess.coachTitle||'')}"></label><label>Email<input value="${escapeHtml(accountAccess.email||'')}" disabled></label><button class="action" id="saveCoachProfile">Save Coach Profile</button><div id="coachProfileState" style="margin-top:8px"></div></div></details><details class="tile coach-profile-section"><summary><b>MEMBERSHIP & BILLING</b></summary><div class="coach-profile-inner"><h3>${escapeHtml(PLANS[experience].name)}</h3><p><b>$${PLANS[experience].monthly}/month</b> · Sponsored athletes <b>+$${PLANS[experience].sponsor}/athlete/month</b></p><p>Plan changes are protected: upgrades wait for payment confirmation; downgrades wait until the end of the paid period. Your current access stays live while the transition is pending.</p><small>MW Dynasty ${MW_APP_VERSION} · iOS Build ${MW_IOS_BUILD}</small><div style="margin:14px 0"><button class="action" type="button" onclick="location.href='/account/'">Open MW Account & Billing</button></div><div class="tile" id="coachBillingPanel"><h3>Manage Coach Plan</h3><p>Loading secure billing status…</p></div></div></details><div class="tile"><h3>AI &amp; Data Sharing</h3><p>Choose whether Coach MW may send your content to OpenAI. Each athlete controls coach-to-AI sharing separately.</p><button class="action" id="coachAISharing">AI &amp; Data Sharing</button></div>${experience!=='core'?coachMWSettingsHTML():''}${seasonCalendarSettingsHTML()}<div class="tile coach-tour-account-card"><div><h3>App Tutorial</h3><p>Replay the guided walkthrough for your current coach platform.</p></div><button class="action" id="replayCoachTour">Replay Tutorial</button></div><div class="tile"><h3>Launch Diagnostics</h3><p id="coachDiagnosticsStatus">TestFlight diagnostics are active on iPhone builds. MW records only non-sensitive technical events.</p><button class="back" id="coachDiagnosticsSend">Send Diagnostics Now</button></div><div class="tile"><h3>Privacy & Support</h3><p>Review the privacy policy, contact MW Support, or initiate account deletion.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="back" id="coachPrivacy">Privacy Policy</button><button class="back" id="coachSupport">Contact Support</button></div></div><div class="tile" style="border-color:#7a2c2c"><h3>Delete Coach Account</h3><p>Coach accounts can initiate deletion from inside MW Dynasty. Because coach accounts may be connected to team and athlete records, the request may require safe administrative cleanup before final removal.</p><button class="action" id="deleteCoachAccount" style="background:#7a2c2c">Delete Account</button><div id="deleteCoachState" style="margin-top:10px"></div></div>`);
+  pageBase('Profile','Your coaching identity, organization, membership, and settings.',`<div class="coach-profile-hero"><div class="coach-profile-monogram">${escapeHtml(((accountAccess.firstName||'C')[0]+(accountAccess.lastName||'')[0]).toUpperCase())}</div><div><span class="status-kicker">MW COACH PROFILE</span><h2>${escapeHtml([accountAccess.firstName,accountAccess.lastName].filter(Boolean).join(' ')||'Coach')}</h2><p>${escapeHtml(accountAccess.organization||accountAccess.coachTitle||'MW Dynasty Coach')}</p></div></div><details class="tile coach-profile-section" open><summary><b>COACH DETAILS</b></summary><p>Your identity is used across MW Dynasty so athletes and teams know who is coaching them.</p><div class="form" style="margin-top:12px"><div class="form-grid"><label>First Name<input id="coachProfileFirst" maxlength="80" autocomplete="given-name" value="${escapeHtml(accountAccess.firstName||'')}"></label><label>Last Name<input id="coachProfileLast" maxlength="80" autocomplete="family-name" value="${escapeHtml(accountAccess.lastName||'')}"></label></div><label>School / Organization <small>(optional)</small><input id="coachProfileOrganization" maxlength="160" autocomplete="organization" placeholder="School, club, team, or organization" value="${escapeHtml(accountAccess.organization||'')}"></label><label>Coach Role / Title <small>(optional)</small><input id="coachProfileTitle" maxlength="120" autocomplete="organization-title" placeholder="Head Coach, Sprints Coach, Assistant Coach…" value="${escapeHtml(accountAccess.coachTitle||'')}"></label><label>Email<input value="${escapeHtml(accountAccess.email||'')}" disabled></label><button class="action" id="saveCoachProfile">Save Coach Profile</button><div id="coachProfileState" style="margin-top:8px"></div></div></details><details class="tile coach-profile-section"><summary><b>MEMBERSHIP & BILLING</b></summary><div class="coach-profile-inner"><h3>${escapeHtml(PLANS[experience].name)}</h3><p><b>$${PLANS[experience].monthly}/month</b> · Sponsored athletes <b>+$${PLANS[experience].sponsor}/athlete/month</b></p><p>Plan changes are protected: upgrades wait for payment confirmation; downgrades wait until the end of the paid period. Your current access stays live while the transition is pending.</p><small>MW Dynasty ${MW_APP_VERSION} · iOS Build ${MW_IOS_BUILD}</small><div style="margin:14px 0"><button class="action" type="button" onclick="location.href='/account/'">Open MW Account & Billing</button></div><div class="tile" id="coachBillingPanel"><h3>Manage Coach Plan</h3><p>Loading secure billing status…</p></div></div></details><div class="tile"><h3>AI &amp; Data Sharing</h3><p>Choose whether Coach Mus may send your content to OpenAI. Each athlete controls coach-to-AI sharing separately.</p><button class="action" id="coachAISharing">AI &amp; Data Sharing</button></div>${experience!=='core'?coachMWSettingsHTML():''}${seasonCalendarSettingsHTML()}<div class="tile coach-tour-account-card"><div><h3>App Tutorial</h3><p>Replay the guided walkthrough for your current coach platform.</p></div><button class="action" id="replayCoachTour">Replay Tutorial</button></div><div class="tile"><h3>Launch Diagnostics</h3><p id="coachDiagnosticsStatus">TestFlight diagnostics are active on iPhone builds. MW records only non-sensitive technical events.</p><button class="back" id="coachDiagnosticsSend">Send Diagnostics Now</button></div><div class="tile"><h3>Privacy & Support</h3><p>Review the privacy policy, contact MW Support, or initiate account deletion.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="back" id="coachPrivacy">Privacy Policy</button><button class="back" id="coachSupport">Contact Support</button></div></div><div class="tile" style="border-color:#7a2c2c"><h3>Delete Coach Account</h3><p>Coach accounts can initiate deletion from inside MW Dynasty. Because coach accounts may be connected to team and athlete records, the request may require safe administrative cleanup before final removal.</p><button class="action" id="deleteCoachAccount" style="background:#7a2c2c">Delete Account</button><div id="deleteCoachState" style="margin-top:10px"></div></div>`);
   const saveProfile=document.getElementById('saveCoachProfile');if(saveProfile)saveProfile.onclick=async()=>{const state=document.getElementById('coachProfileState'),firstName=document.getElementById('coachProfileFirst').value.trim(),lastName=document.getElementById('coachProfileLast').value.trim(),organization=document.getElementById('coachProfileOrganization').value.trim(),coachTitle=document.getElementById('coachProfileTitle').value.trim();if(!firstName||!lastName){state.textContent='First and last name are required.';return}saveProfile.disabled=true;saveProfile.textContent='Saving…';state.textContent='';try{const r=await fetch('/api/coach/access',{method:'PATCH',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify({firstName,lastName,organization,coachTitle})}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Coach profile could not be saved.');accountAccess={...accountAccess,firstName:d.firstName||firstName,lastName:d.lastName||lastName,organization:d.organization||'',coachTitle:d.coachTitle||'',email:d.email||accountAccess.email};state.textContent='✓ Coach profile saved';saveProfile.textContent='✓ Saved';setTimeout(()=>{saveProfile.textContent='Save Coach Profile';saveProfile.disabled=false},1000)}catch(e){state.textContent=e.message;saveProfile.textContent='Save Coach Profile';saveProfile.disabled=false}};
   document.getElementById('coachAISharing').onclick=()=>window.MWAISharing.open(mwSessionToken()).catch(e=>toast(e.message));
   const replay=document.getElementById('replayCoachTour');if(replay)replay.onclick=()=>startCoachTour({force:true,mode:'full'});
@@ -1065,7 +1067,8 @@ function resumeCoachActivePage(){
   if(page&&page!=='dashboard'&&allowed.has(page)){openPage(page,false);return}
   dashboard();
 }
-function openPage(id,pushHistory=true){if(id==='race'||id==='school')id='dashboard';if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}if(id!=='practice'){if(window.__mwCoachPracticePoll){clearInterval(window.__mwCoachPracticePoll);window.__mwCoachPracticePoll=null}if(window.__mwCoachPracticeFocus){window.removeEventListener('focus',window.__mwCoachPracticeFocus);window.__mwCoachPracticeFocus=null}}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,pacing:pacingPage,tools:performanceToolsPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';rememberCoachActivePage(page);if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
+function openPage(id,pushHistory=true){if(id==='race'||id==='school')id='dashboard';if(id!=='messages'&&window.__mwCoachMessagePoll){clearInterval(window.__mwCoachMessagePoll);window.__mwCoachMessagePoll=null}if(id!=='practice'){if(window.__mwCoachPracticePoll){clearInterval(window.__mwCoachPracticePoll);window.__mwCoachPracticePoll=null}if(window.__mwCoachPracticeFocus){window.removeEventListener('focus',window.__mwCoachPracticeFocus);window.__mwCoachPracticeFocus=null}}const routes={dashboard,train:coachTrainPage,practice:practiceModePage,founderpreview:founderPreviewPage,athletes:athletesPage,teams:teamsPage,programs:programsPage,calendar:calendarPage,meets:meetsPage,attendance:attendancePage,messages:messagesPage,activity:activityPage,account:membershipPage,support:supportPage,taskboard:taskBoardPage,season:seasonPage,adjustment:adjustmentPage,coachmw:coachMWPage,insights:insightsPage,mwtrack:mwTrackPage,strength:strengthPage,pacing:pacingPage,tools:performanceToolsPage,grouppacing:groupPacingPage,more:morePage};const page=routes[id]?id:'support';rememberCoachActivePage(page);if(pushHistory&&history.state?.mwCoachPage!==page)history.pushState({...history.state,mwCoachPreviousPage:history.state?.mwCoachPage||'dashboard',mwCoachPage:page},'',location.href);(routes[page]||supportPage)()}
+window.mwCoachOpenPage=openPage;
 if(!window.__mwCoachHistoryBound){window.__mwCoachHistoryBound=true;window.addEventListener('popstate',e=>{if(mwSessionToken())openPage(e.state?.mwCoachPage||'dashboard',false)})}
 function bindPageNavigation(root=document){
   root.querySelectorAll('[data-page]').forEach(b=>{if(b.dataset.mwBound==='1')return;b.dataset.mwBound='1';b.addEventListener('click',()=>openPage(b.dataset.page))});
@@ -1074,7 +1077,7 @@ function bindPageNavigation(root=document){
 async function coachSearchResults(query){
   const q=String(query||'').trim().toLowerCase();if(!q)return [];
   const navItems=[['athletes','Athletes','People you coach'],['teams','Teams','Groups and squads'],['calendar','Calendar',experience==='core'?'Practices, meets and team events':'School constraints, practices and events'],['meets','Meets','Competition schedule'],['attendance','Attendance','Training attendance'],['messages','Messages','Coach communication'],['programs','Programs','Your training programs'],['activity','Activity Log','Recent coach activity'],['account','Account','Settings and training year'],['support','Help','Support and privacy']];
-  if(experience!=='core')navItems.push(['insights','Performance Intelligence','Coach intelligence'],['coachmw','Coach MW AI','AI coaching assistant'],['taskboard','Task Board','Athlete priorities']);
+  if(experience!=='core')navItems.push(['insights','Performance Intelligence','Coach intelligence'],['coachmw','Coach Mus AI','AI coaching assistant'],['taskboard','Task Board','Athlete priorities']);
   if(experience==='performance')navItems.push(['mwtrack','MW Training','41-week MW system'],['strength','Strength & Power','MW strength system'],['pacing','Pacing Tools','Training targets']);
   const results=navItems.filter(x=>(x[1]+' '+x[2]).toLowerCase().includes(q)).map(x=>({kind:'page',page:x[0],title:x[1],sub:x[2]}));
   try{
@@ -1156,28 +1159,28 @@ const COACH_TOURS={
   ],
   intelligence:[
     {icon:'✦',title:'Welcome to Coach Intelligence',body:'This walkthrough is built around how you will actually use intelligence while coaching — orient yourself, understand the athlete, ask better questions and act on what matters.',hint:'MW Intelligence should make your coaching decisions clearer, not make the app feel more complicated.',target:null,label:'COACH INTELLIGENCE'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Coach Intelligence on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Think of them as the permanent map underneath the intelligence tools.',hint:'The intelligence features are powerful, but these five buttons keep you grounded and make the platform easy to move through.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
+    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MUS and MENU are the five anchors of Coach Intelligence on mobile. MENU holds Calendar, Settings / Profile and the rest of your coach tools. Think of them as the permanent map underneath the intelligence tools.',hint:'The intelligence features are powerful, but these five buttons keep you grounded and make the platform easy to move through.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Start With the Big Picture',body:'HOME is where every coaching day should begin. Use it to see the overall state of your roster and what deserves attention before opening a single athlete.',hint:'Why it matters: intelligence is most useful when you begin with the whole picture instead of reacting to one isolated data point.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Move From Signal to Athlete',body:'TEAM is where you inspect the actual athlete behind a status, flag or recommendation. Open profiles, assignments and the information connected to the people you coach.',hint:'Why it matters: MW can surface a signal, but you still need athlete context before making a coaching decision.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
-    {icon:'',title:'3. Coach MW — Turn Information Into a Coaching Question',body:'COACH MW lets you ask about athletes, workload, planning and the signals MW is seeing across your roster.',hint:'Why it matters: use Coach MW to understand and organize information faster. It recommends — you decide what should actually happen.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'',title:'3. Coach Mus — Turn Information Into a Coaching Question',body:'COACH MUS lets you ask about athletes, workload, planning and the signals MW is seeing across your roster.',hint:'Why it matters: use Coach Mus to understand and organize information faster. It recommends — you decide what should actually happen.',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
     {icon:'',title:'4. Messages — Turn the Decision Into Communication',body:'MESSAGES is where you follow through with the athlete after you review the data and decide what needs to be addressed.',hint:'Why it matters: intelligence only helps if it improves what the athlete understands and executes.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
     {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile and the rest of the coaching tools. Settings / Profile keeps your coaching identity, organization, training-year setup, membership and account settings accurate.',hint:'Why it matters: these settings give MW the correct coaching context and keep your platform access organized.',target:'#sideNav [data-page="account"]',label:'MENU'},
     {icon:'◉',title:'Use Athlete Status as Your Early-Warning Board',body:'The Athlete Status Board separates the roster into On Track, Watch and Needs Attention so you know where to look first.',hint:'Do not treat a flag as the final answer. Use it as a reason to open Team, inspect the athlete and make the coaching decision yourself.',target:'.athlete-status-section',label:'ATHLETE STATUS'},
-    {icon:'☑',title:'Use the Task Board to Prioritize Follow-Up',body:'The AI Task Board turns roster signals into an organized coaching queue so important follow-up does not disappear underneath everything else you are managing.',hint:'A useful rhythm is Status → Athlete → Coach MW if needed → Coach decision → Message or action.',target:'[data-page="taskboard"]',label:'AI TASK BOARD'},
-    {icon:'',title:'Your Everyday Intelligence Flow',body:'A simple rhythm is HOME → TEAM → TRAIN → COACH MW. MENU holds Messages, Calendar, Settings and secondary tools. The intelligence tools support that flow instead of replacing it.',hint:'Start broad, inspect the athlete, ask the right question, make the decision, then communicate it.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
+    {icon:'☑',title:'Use the Task Board to Prioritize Follow-Up',body:'The AI Task Board turns roster signals into an organized coaching queue so important follow-up does not disappear underneath everything else you are managing.',hint:'A useful rhythm is Status → Athlete → Coach Mus if needed → Coach decision → Message or action.',target:'[data-page="taskboard"]',label:'AI TASK BOARD'},
+    {icon:'',title:'Your Everyday Intelligence Flow',body:'A simple rhythm is HOME → TEAM → TRAIN → COACH MUS. MENU holds Messages, Calendar, Settings and secondary tools. The intelligence tools support that flow instead of replacing it.',hint:'Start broad, inspect the athlete, ask the right question, make the decision, then communicate it.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ],
   performance:[
     {icon:'✦',title:'Welcome to Coach Velocity',body:'This walkthrough shows you how to operate the complete MW system without getting lost in all of its power — where to start, how to move, and what each main button is responsible for.',hint:'The 41-week system, strength, pacing and intelligence all become easier when you understand the five navigation anchors first.',target:null,label:'COACH VELOCITY'},
-    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MW and MENU are the five anchors of Coach Velocity on mobile. MENU holds Calendar, Settings / Profile and the rest of the performance tools. The complete MW system branches out from this navigation.',hint:'When you always know which anchor you are working from, the full performance platform stays organized instead of overwhelming.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
+    {icon:'',title:'These Five Buttons Are Your Coaching Map',body:'HOME, TEAM, TRAIN, COACH MUS and MENU are the five anchors of Coach Velocity on mobile. MENU holds Calendar, Settings / Profile and the rest of the performance tools. The complete MW system branches out from this navigation.',hint:'When you always know which anchor you are working from, the full performance platform stays organized instead of overwhelming.',target:'#sideNav',label:'YOUR COACHING MAP',navPreview:true},
     {icon:'',title:'1. Home — Start With Today’s Coaching Picture',body:'HOME is where you orient yourself before touching the program. See what is happening across the coaching environment and what needs your attention first.',hint:'Why it matters: the training system is structured, but your coaching day still starts with understanding what is happening right now.',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'',title:'2. Team — Connect the System to the Athlete',body:'TEAM is where the MW system becomes personal. Review the athlete, their placement, assignments and the information that should shape how you coach the prescribed work.',hint:'Why it matters: the system provides structure; Team gives you the athlete context needed to coach that structure correctly.',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
-    {icon:'',title:'3. Coach MW — Understand the System in Context',body:'COACH MW connects the MW methodology, your roster and coaching intelligence so you can ask questions about the work and the athletes doing it.',hint:'Why it matters: use Coach MW to understand, compare and prepare. The final coaching decision still belongs to you.',target:'#sideNav [data-page="coachmw"]',label:'COACH MW'},
+    {icon:'',title:'3. Coach Mus — Understand the System in Context',body:'COACH MUS connects the MW methodology, your roster and coaching intelligence so you can ask questions about the work and the athletes doing it.',hint:'Why it matters: use Coach Mus to understand, compare and prepare. The final coaching decision still belongs to you.',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
     {icon:'',title:'4. Messages — Make Sure the Athlete Understands',body:'MESSAGES gives you the communication layer around the training system. Use it to reinforce cues, clarify expectations and follow up when execution needs attention.',hint:'Why it matters: even the best program fails if the athlete does not understand what the coach wants executed.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
     {icon:'',title:'5. Menu — Calendar, Settings & More',body:'MENU opens Calendar, Settings / Profile and the rest of your performance tools. Settings / Profile controls your coaching identity, organization, training-year setup, membership and account settings.',hint:'Why it matters: these settings keep the 41-week system, your roster and your access tied to the correct coaching environment.',target:'#sideNav [data-page="account"]',label:'MENU'},
     {icon:'🏃',title:'The 41-Week Track System Is the Backbone',body:'The protected MW Track Program gives you the progressive sprint prescription, recovery, cues and circuit order across the season.',hint:'Use the navigation anchors to manage the coaching day; use the MW Track Program when you need the actual system prescription.',target:'[data-page="mwtrack"]',label:'MW TRACK PROGRAM'},
     {icon:'🏋',title:'Strength Supports the Track Work',body:'Strength & Power is synchronized with the sprint progression so the weight room supports the same performance objective as the track.',hint:'Do not treat track and strength as two unrelated programs. They are designed to progress together.',target:'[data-page="strength"]',label:'STRENGTH & POWER'},
     {icon:'◷',title:'Pacing Makes the Prescription Individual',body:'Pacing Tools use athlete PR data to turn the prescribed work into individualized target times.',hint:'The program tells you the training intent. Pacing helps each athlete execute that intent at the right target.',target:'[data-page="pacing"]',label:'PACING TOOLS'},
-    {icon:'',title:'Your Everyday Coach Velocity Flow',body:'A simple rhythm is HOME → TEAM → COACH MW → execute the MW system → MESSAGES. MENU gives you Calendar, Settings and the deeper performance tools. Use those tools when the coaching question requires them.',hint:'The five main buttons keep you oriented; the 41-week system and performance tools give you the depth.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
+    {icon:'',title:'Your Everyday Coach Velocity Flow',body:'A simple rhythm is HOME → TEAM → COACH MUS → execute the MW system → MESSAGES. MENU gives you Calendar, Settings and the deeper performance tools. Use those tools when the coaching question requires them.',hint:'The five main buttons keep you oriented; the 41-week system and performance tools give you the depth.',target:'#sideNav',label:'DAILY COACH FLOW',navPreview:true}
   ]
 };
 
@@ -1186,7 +1189,7 @@ const COACH_UPGRADE_TOURS={
     {icon:'⚡',title:'Coach Intelligence Is Unlocked',body:'Your platform now adds live roster intelligence and AI decision support on top of your coaching workflow.',hint:'Here are the biggest new tools.',target:null,label:'WHAT’S NEW'},
     {icon:'◉',title:'Athlete Status Board',body:'Your roster is now organized into On Track, Watch and Needs Attention so you can prioritize faster.',hint:'Every flag includes the reason MW detected it.',target:'.athlete-status-section',label:'NEW · ATHLETE STATUS'},
     {icon:'☑',title:'AI Priorities',body:'The AI Task Board turns athlete signals into daily coaching priorities for you to review.',hint:'You decide what gets approved and acted on.',target:'[data-page="taskboard"]',label:'NEW · AI TASK BOARD'},
-    {icon:'☻',title:'Coach MW + Insights',body:'Coach MW AI and AI Insights give you deeper context without taking control away from the coach.',hint:'Your upgraded platform is ready.',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MW'}
+    {icon:'☻',title:'Coach Mus + Insights',body:'Coach Mus AI and AI Insights give you deeper context without taking control away from the coach.',hint:'Your upgraded platform is ready.',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MUS'}
   ],
   performance:[
     {icon:'⚡',title:'Coach Velocity Is Unlocked',body:'You now have the complete MW system plus the full Coach Intelligence layer.',hint:'Here are the major tools added with this platform.',target:null,label:'WHAT’S NEW'},
@@ -1196,7 +1199,7 @@ const COACH_UPGRADE_TOURS={
     {icon:'◷',title:'Pacing Tools',body:'Use live athlete PRs to calculate individualized target times for the prescribed work.',hint:'The complete performance platform is ready.',target:'[data-page="pacing"]',label:'NEW · PACING'}
   ]
 };
-/* Short role-specific tour. Core stays AI-free; Coach MW is optional help in the intelligence tiers. */
+/* Short role-specific tour. Core stays AI-free; Coach Mus is optional help in the intelligence tiers. */
 const COACH_MOBILE_TOURS={
   core:[
     {icon:'⌂',title:'Start at Home',body:'Home shows the team picture and your next coaching action. Review what needs attention before you plan the day.',hint:'Home is the place to orient your coaching day.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
@@ -1208,13 +1211,13 @@ const COACH_MOBILE_TOURS={
     {icon:'⌂',title:'Start With the Team Picture',body:'Home brings roster attention and your next coaching action together. Review the team before opening an individual athlete.',hint:'Start broad, then inspect the athlete or practice that needs attention.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'♟',title:'Review Athlete Signals',body:'Team lets you inspect the athlete behind a status, flag or recommendation and make the coaching decision.',hint:'Signals guide your review; your coaching judgment stays in control.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
     {icon:'🏃',title:'Plan and Run Practice',body:'Training and Practice connect the team plan to the session athletes execute. Record practice so the next review reflects what happened.',hint:'Team and assigned athletes use the same saved season calendar.',navigate:'train',target:'#sideNav [data-page="train"]',label:'TRAIN'},
-    {icon:'✓',title:'Your Coaching Flow',body:'Home → Team → Practice is the daily flow. Coach MW can help with questions and planning when useful, while every core task remains available without AI.',hint:'Open Menu for less-used tools and the gear for settings.',target:null,label:'TOUR COMPLETE'}
+    {icon:'✓',title:'Your Coaching Flow',body:'Home → Team → Practice is the daily flow. Coach Mus can help with questions and planning when useful, while every core task remains available without AI.',hint:'Open Menu for less-used tools and the gear for settings.',target:null,label:'TOUR COMPLETE'}
   ],
   performance:[
     {icon:'⌂',title:'Home Shows the Next Action',body:'Use Home to see the team picture and what needs attention before opening the protected MW training system.',hint:'Start broad, then move to the athlete or practice.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'HOME'},
     {icon:'♟',title:'Review the Athlete Context',body:'Team connects the 41-week MW system to athletes, their placement, assignments and recorded work.',hint:'Assigned athletes inherit the coach’s season calendar.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'TEAM'},
     {icon:'🏃',title:'Run the Synchronized Session',body:'Training holds the MW track and strength prescriptions. Practice Mode guides the team through the session and saves its results.',hint:'Pacing uses the same authoritative week as Today and coach planning.',navigate:'train',target:'#sideNav [data-page="train"]',label:'TRAIN'},
-    {icon:'✓',title:'Your Coaching Flow',body:'Home → Team → Train / Practice is the primary flow. Coach MW can explain the system, but every core task works without it.',hint:'Open Menu for less-used tools and the gear for settings.',target:null,label:'TOUR COMPLETE'}
+    {icon:'✓',title:'Your Coaching Flow',body:'Home → Team → Train / Practice is the primary flow. Coach Mus can explain the system, but every core task works without it.',hint:'Open Menu for less-used tools and the gear for settings.',target:null,label:'TOUR COMPLETE'}
   ]
 };
 let coachTourState=null;
@@ -1469,7 +1472,7 @@ async function submitCoachApplication(e){
     const kicker=auto?'COACH VERIFIED':denied?'VERIFICATION COMPLETE':'APPLICATION RECEIVED';
     const title=auto?'You’re Verified':denied?'Application Not Approved':'Quick Review Needed';
     const copy=auto?'We verified your coaching role automatically. Check your email for your secure setup link—membership and optional sponsored athletes are next.':denied?'We couldn’t approve this Coach application. If you believe this decision should be reviewed, MW Support can help.':'We received everything. A quick MW Dynasty review is needed before membership and payment unlock. You don’t need to submit anything again.';
-    const steps=auto?'<span>1. Open the secure setup email.</span><span>2. Create your password and choose your Coach membership.</span><span>3. Add sponsored athletes if you want.</span><span>4. Complete payment and enter Coach MW Dynasty.</span>':denied?'<span>Contact MW Support if you believe the information should be reviewed.</span>':'<span>1. MW Dynasty reviews the verification details.</span><span>2. If approved, we email your secure setup link.</span><span>3. Choose membership, optional sponsored athletes, and pay.</span><span>4. Enter Coach MW Dynasty.</span>';
+    const steps=auto?'<span>1. Open the secure setup email.</span><span>2. Create your password and choose your Coach membership.</span><span>3. Add sponsored athletes if you want.</span><span>4. Complete payment and enter Coach Mus Dynasty.</span>':denied?'<span>Contact MW Support if you believe the information should be reviewed.</span>':'<span>1. MW Dynasty reviews the verification details.</span><span>2. If approved, we email your secure setup link.</span><span>3. Choose membership, optional sponsored athletes, and pay.</span><span>4. Enter Coach Mus Dynasty.</span>';
     if(card)card.innerHTML=`<div class="coach-apply-result">
       <div class="coach-apply-result-icon">${denied?'!':'✓'}</div>
       <div class="coach-apply-kicker">${kicker}</div>
@@ -1553,7 +1556,7 @@ function renderCoachMembershipSelection(session=authSession){
   let selected='core',sponsorOn=false,sponsorQty=1;
   const planCards=()=>Object.entries(PLANS).map(([key,p])=>`<button type="button" class="coach-member-plan ${key===selected?'selected':''}" data-member-plan="${key}">
     <span class="coach-member-check">✓</span><span class="coach-member-plan-name">${escapeHtml(p.name)}</span>
-    <b>&#36;${p.monthly}<small>/mo</small></b><span>${key==='core'?'Team management + core coaching tools':key==='intelligence'?'Core tools + Coach MW intelligence':'Complete MW sprint system + intelligence'}</span>
+    <b>&#36;${p.monthly}<small>/mo</small></b><span>${key==='core'?'Team management + core coaching tools':key==='intelligence'?'Core tools + Coach Mus intelligence':'Complete MW sprint system + intelligence'}</span>
   </button>`).join('');
   const draw=()=>{
     const p=PLANS[selected],sponsorTotal=sponsorOn?sponsorQty*p.sponsor:0,total=p.monthly+sponsorTotal;
@@ -1842,7 +1845,7 @@ async function athleteDetail(athleteId){
         <div class="tile"><h3>Events</h3><p>${escapeHtml(a.event||'Events not set')}</p><small>${a.track_training_years!=null?escapeHtml(String(a.track_training_years))+' years consistent training':escapeHtml(a.experience_level||'Experience level not set')}</small></div>
         <div class="tile"><h3>Program</h3><p><b>Week ${Number(a.current_week||1)} · Day ${Number(a.current_day||1)}</b></p><small>${escapeHtml(String(a.program_status||'On Track'))}</small></div>
         <div class="tile"><h3>Track Tier</h3><p><b>${escapeHtml(String(a.track_tier||'foundation').toUpperCase())}</b></p><small>${escapeHtml(a.program_version||'mw-41-tiered-v2.9')}</small></div>
-        <div class="tile"><h3>Strength Tier</h3><p><b>${escapeHtml(String(a.strength_tier||'foundation').toUpperCase())}</b></p><small>Shared with athlete + Coach MW</small></div>
+        <div class="tile"><h3>Strength Tier</h3><p><b>${escapeHtml(String(a.strength_tier||'foundation').toUpperCase())}</b></p><small>Shared with athlete + Coach Mus</small></div>
         <div class="tile"><h3>Starting Week</h3><p>${Number(a.starting_week||1)}</p><small>Program start: ${escapeHtml(fmtDate(a.program_start_date))}</small></div>
         <div class="tile"><h3>Last Workout</h3><p>${escapeHtml(fmtDate(a.last_completed_workout_at))}</p><small>Live MW athlete record</small></div>
       </div>
@@ -1885,7 +1888,7 @@ async function athleteDetail(athleteId){
     modal.querySelector('#athStrengthTier').value=a.strength_tier||'foundation';
     modal.querySelector('#saveAthAssignment').onclick=async()=>{
       const btn=modal.querySelector('#saveAthAssignment'),msg=modal.querySelector('#athAssignmentState');btn.disabled=true;btn.textContent='Syncing…';msg.textContent='';
-      try{const payload={action:'update_assignment',athleteId,trackTier:modal.querySelector('#athTrackTier').value,strengthTier:modal.querySelector('#athStrengthTier').value,week:Number(modal.querySelector('#athProgramWeek').value),reason:modal.querySelector('#athAssignmentReason').value.trim()};const rr=await fetch('/api/coach/athlete',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify(payload)});const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||'Assignment could not be synced.');msg.textContent='✓ Saved. Athlete app, coach dashboard, and Coach MW now use this assignment.';toast('Athlete assignment synced')}catch(e){msg.textContent=e.message}finally{btn.disabled=false;btn.textContent='Approve & Sync Assignment'}
+      try{const payload={action:'update_assignment',athleteId,trackTier:modal.querySelector('#athTrackTier').value,strengthTier:modal.querySelector('#athStrengthTier').value,week:Number(modal.querySelector('#athProgramWeek').value),reason:modal.querySelector('#athAssignmentReason').value.trim()};const rr=await fetch('/api/coach/athlete',{method:'POST',headers:{Authorization:`Bearer ${mwSessionToken()}`,'Content-Type':'application/json'},body:JSON.stringify(payload)});const dd=await rr.json().catch(()=>({}));if(!rr.ok)throw new Error(dd.error||'Assignment could not be synced.');msg.textContent='✓ Saved. Athlete app, coach dashboard, and Coach Mus now use this assignment.';toast('Athlete assignment synced')}catch(e){msg.textContent=e.message}finally{btn.disabled=false;btn.textContent='Approve & Sync Assignment'}
     };
     modal.querySelector('#saveAthNote').onclick=async()=>{
       const text=modal.querySelector('#athNote').value.trim(),btn=modal.querySelector('#saveAthNote'),msg=modal.querySelector('#athNoteState');
@@ -2029,7 +2032,7 @@ async function seasonPage(){
 
     <details class="tile" style="margin-top:14px" open>
       <summary><b>SEASON TARGETS & CONTEXT</b></summary>
-      <p>${performance?'These dates become inputs to the MW engine. The championship date is the anchor; athlete age, experience, event, readiness, and missed work control how MW delivers the training.':'These dates power insights and Coach MW context only. Coach Intelligence does not receive or generate the MW Velocity methodology.'}</p>
+      <p>${performance?'These dates become inputs to the MW engine. The championship date is the anchor; athlete age, experience, event, readiness, and missed work control how MW delivers the training.':'These dates power insights and Coach Mus context only. Coach Intelligence does not receive or generate the MW Velocity methodology.'}</p>
       <div class="form">
         <div class="form-grid">
           <label>Season<select id="siSeasonType"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select></label>
@@ -2384,7 +2387,7 @@ function coachDateRange(e){const start=new Date(e.starts_at),end=e.ends_at?new D
 function smartScheduleUnlocked(){return experience==='intelligence'||experience==='performance'}
 function smartScheduleTierCopy(){
   if(experience==='performance')return {kicker:'MW SMART SCHEDULING · 41-WEEK INTEGRATION',title:'Protect the program. Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. MW uses those constraints alongside the 41-week MW Velocity + Strength system so recommendations preserve phase intent and training quality.',badge:'MW 41-WEEK INTEGRATION ACTIVE'};
-  return {kicker:'MW SMART SCHEDULING',title:'Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. Coach MW and the Season Planner use those constraints when helping you organize your own program.',badge:'COACH INTELLIGENCE ACTIVE'};
+  return {kicker:'MW SMART SCHEDULING',title:'Plan around real life.',body:'Add school breaks, exam weeks, holidays, travel, and facility closures. Coach Mus and the Season Planner use those constraints when helping you organize your own program.',badge:'COACH INTELLIGENCE ACTIVE'};
 }
 async function calendarPage(){
   const smart=smartScheduleUnlocked(),tier=smartScheduleTierCopy();
@@ -2450,8 +2453,8 @@ async function schoolConstraintModal(id=null){
     <label>Name<input id="scTitle" maxlength="120" placeholder="Example: Fall Break" value="${escapeHtml(row?.title||'')}"></label>
     <div class="form-grid"><label>Start Date<input id="scStart" type="date" value="${start}"></label><label>End Date<input id="scEnd" type="date" value="${end}"></label></div>
     <label>Training Impact<select id="scImpact"><option value="no_practice">No Practice — keep these dates clear</option><option value="reduced_load">Reduced Load — lighter / simplified schedule</option><option value="awareness_only">Awareness Only — coach decides day by day</option></select></label>
-    <label>Coach Notes<textarea id="scNotes" rows="3" placeholder="Optional details for Coach MW and season planning">${escapeHtml(row?.notes||'')}</textarea></label>
-    <div class="tile"><b>${performance?'Coach Velocity Integration':'Coach Intelligence Integration'}</b><p>${performance?'MW considers this constraint alongside the synchronized 41-week sprint + strength progression. Recommendations protect the current phase and training quality without silently changing the official program.':'Coach MW and the Season Planner consider this constraint when helping organize your program. MW recommends around the conflict without silently changing your official schedule.'}</p></div>
+    <label>Coach Notes<textarea id="scNotes" rows="3" placeholder="Optional details for Coach Mus and season planning">${escapeHtml(row?.notes||'')}</textarea></label>
+    <div class="tile"><b>${performance?'Coach Velocity Integration':'Coach Intelligence Integration'}</b><p>${performance?'MW considers this constraint alongside the synchronized 41-week sprint + strength progression. Recommendations protect the current phase and training quality without silently changing the official program.':'Coach Mus and the Season Planner consider this constraint when helping organize your program. MW recommends around the conflict without silently changing your official schedule.'}</p></div>
     <button class="action" id="saveSC">Save School Calendar</button>
     ${row?'<button class="back" id="deleteSC" type="button">Delete Constraint</button>':''}
   </div>`);
@@ -2910,7 +2913,7 @@ function renderStrengthWeek(x,week){
         ${(block.entries||[]).map(row=>`<div class="mw-lift-row"><b>${escapeHtml(row?.[0]||'')}</b><span>${escapeHtml(row?.[1]||'')}</span></div>`).join('')}</div>
       </section>`).join('')}</div>
     </details>`).join('')}
-    ${x.coachNote?`<section class="mw-coach-note"><b>COACH MW NOTE</b><p>${escapeHtml(x.coachNote)}</p></section>`:''}
+    ${x.coachNote?`<section class="mw-coach-note"><b>COACH MUS NOTE</b><p>${escapeHtml(x.coachNote)}</p></section>`:''}
   </div>`;
 }
 async function mwProgramWeek(week,kind='track',eventGroup='100_200'){
@@ -2943,7 +2946,7 @@ async function mwTrackPage(){
   pageBase('MW Track Program','Your season timeline controls access. Current week is open, the previous week has a 7-day review window, older weeks archive, and future weeks unlock automatically.',`<div class="panel-grid">${cards}</div>`);
   document.querySelectorAll('.mw-week').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'track'));
 }
-function strengthPage(){pageBase('Strength & Power','The complete MW weight-room plan — organized by training day, lift, prescription, circuits and Coach MW notes.',`<div class="panel-grid">${Array.from({length:41},(_,i)=>i+1).map(w=>`<div class="tile"><h3>Week ${w}</h3><p>MW Strength & Power</p><button class="action mw-strength" data-week="${w}">Open Week</button></div>`).join('')}</div>`);document.querySelectorAll('.mw-strength').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'strength'))}
+function strengthPage(){pageBase('Strength & Power','The complete MW weight-room plan — organized by training day, lift, prescription, circuits and Coach Mus notes.',`<div class="panel-grid">${Array.from({length:41},(_,i)=>i+1).map(w=>`<div class="tile"><h3>Week ${w}</h3><p>MW Strength & Power</p><button class="action mw-strength" data-week="${w}">Open Week</button></div>`).join('')}</div>`);document.querySelectorAll('.mw-strength').forEach(b=>b.onclick=()=>mwProgramWeek(+b.dataset.week,'strength'))}
 
 window.addEventListener('mw:session-refreshed',e=>{if(e?.detail?.key===SESSION_KEY&&e.detail.session)authSession=e.detail.session});
 window.addEventListener('online',()=>{if(readStoredSession()&&!document.querySelector('.app'))setTimeout(()=>initAuth(),220)});
