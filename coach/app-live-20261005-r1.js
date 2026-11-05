@@ -473,7 +473,6 @@ function performanceToolsPage(){
       <div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>Review pace execution, recent workload signals, strength response and athlete trends.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div>
       <div class="tile"><span class="status-kicker">LIVE</span><h3>Pacing Tools</h3><p>Use Sprint Pace AI, Distance Pacer and the coach stopwatch for today’s session.</p><button class="action" data-page="pacing">Open Pacing Tools</button></div>
     </div>
-    <div class="tile" style="margin-top:14px"><b>Team Progression</b><p>Coach-side progression is tracked in Team → Team Development, where connected athletes are shown by training week and review status.</p><button class="back" data-page="athletes">Open Team Progression</button></div>
     <div class="tile" style="margin-top:14px"><b>Coach control remains with you.</b><p>These tools organize athlete signals for review; they do not make medical diagnoses or automatic training changes.</p></div>`);
 }
 function motionIntelligencePage(){
@@ -482,7 +481,7 @@ function motionIntelligencePage(){
   if(typeof window.mwOpenCoachMotionIntelligence!=='function') {if(status)status.textContent='Motion Intelligence could not load. Close and reopen MW Dynasty, then try again.';return;}
   Promise.resolve().then(()=>window.mwOpenCoachMotionIntelligence()).catch(error=>{const p=document.getElementById('mwMotionPanel');if(p)p.innerHTML=`<div class="tile"><h3>Motion Intelligence unavailable</h3><p>${escapeHtml(error?.message||'Please retry.')}</p><button class="back" data-page="tools">← Back to Performance Tools</button></div>`;bindPageNavigation(app);});
 }
-function performanceToolsPage(){pageBase('Performance Tools','Coach-side performance workspace for athlete review and decision support.',`<div class="panel-grid"><div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>Review pace execution, workload signals, strength response and athlete trends.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div><div class="tile"><span class="status-kicker">LIVE</span><h3>Pacing Tools</h3><p>Use Sprint Pace AI, Distance Pacer and the coach stopwatch.</p><button class="action" data-page="pacing">Open Pacing Tools</button></div></div><div class="tile" style="margin-top:14px"><b>Team Progression</b><p>Review connected athletes by training week and status.</p><button class="back" data-page="athletes">Open Team Progression</button></div>`);}
+function performanceToolsPage(){pageBase('Performance Tools','Coach-side performance workspace for athlete review and decision support.',`<div class="panel-grid"><div class="tile"><span class="status-kicker">LIVE</span><h3>Performance Intelligence</h3><p>Review pace execution, workload signals, strength response and athlete trends.</p><button class="action" data-page="insights">Open Performance Intelligence</button></div><div class="tile"><span class="status-kicker">LIVE</span><h3>Pacing Tools</h3><p>Use Sprint Pace AI, Distance Pacer and the coach stopwatch.</p><button class="action" data-page="pacing">Open Pacing Tools</button></div></div>`);}
 function morePage(){
   const operations=[
     ['messages','✉','Messages','Talk with athletes and send team or group announcements'],
