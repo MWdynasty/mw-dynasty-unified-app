@@ -34,7 +34,9 @@
     video.muted=true;video.playsInline=true;video.preload='auto';
     const objectUrl=URL.createObjectURL(file);
     video.src=objectUrl;
-    let attempted=0,decodeErrors=0;
+    let attempted=0,decodeErrors=0,decodeRetries=0,poseMisses=0;
+    let sampledFrames=0,shortSegments=0,partial=false;
+    const adaptiveStats={good:0,missing:0,skipped:0};
     const readings=[],tracking=[];
     // A local crop helps the existing pose model recover a distant runner.
     // It is a second attempt at a sampled frame, not an additional native frame.
@@ -68,78 +70,112 @@
       video.onerror=()=>{clearTimeout(timer);reject(new Error('iPhone could not decode this video. Try an MP4 recording.'));};
       if(video.readyState>=1){clearTimeout(timer);resolve();}
     });
+    // Some iOS/WebKit decoders don't fire seeked for a seek inside the same native frame.
+    // Accept ready frames when already at target, and release listeners on every attempt.
     const seekTo=(second)=>new Promise((resolve,reject)=>{
-      const timer=setTimeout(()=>{video.onseeked=null;reject(new Error('A video frame took too long to decode.'));},9000);
-      video.onseeked=()=>{clearTimeout(timer);video.onseeked=null;resolve();};
-      video.onerror=()=>{clearTimeout(timer);video.onseeked=null;reject(new Error('Video decoding failed.'));};
-      video.currentTime=second;
+      let done=false;
+      const cleanup=()=>{video.removeEventListener('seeked',ok);video.removeEventListener('error',bad);clearTimeout(timer);};
+      const finish=(err)=>{if(done)return;done=true;cleanup();err?reject(err):resolve();};
+      const ok=()=>finish(),bad=()=>finish(new Error('Video frame decode event failed.'));
+      const timer=setTimeout(()=>finish(new Error('Video frame seek timed out.')),3500);
+      video.addEventListener('seeked',ok,{once:true});
+      video.addEventListener('error',bad,{once:true});
+      try{
+        if(Math.abs(video.currentTime-second)<0.002&&video.readyState>=2){finish();return;}
+        video.currentTime=second;
+      }catch(error){finish(error);}
     });
     try{
       await awaitMetadata();
       const duration=Number(video.duration);
       if(!Number.isFinite(duration)||duration<0.25)throw new Error('The recording is too short or its duration is unavailable.');
-      // 24 samples per second for short recordings; long recordings get distributed
-      // coverage to avoid locking the iPhone. Never present this as native 120/240 fps.
-      const targetRate=duration<=12?24:duration<=30?14:8;
-      const samples=Math.min(360,Math.max(18,Math.ceil(duration*targetRate)));
-      for(let i=0;i<samples;i++){
-        const position=Math.max(0.01,Math.min(duration-0.01,(i+0.5)*duration/samples));
-        attempted++;
-        try {
-          await seekTo(position);
-          if(video.readyState<2)throw new Error('Frame not decoded.');
-          const actualTime=video.currentTime;
-          const stamp=Math.round(actualTime*1000);
-          const output=landmarker.detectForVideo(video,stamp);
-          let p=output?.landmarks?.[0];
-          let body=p?boundsFromPose(p):null;
-          if(!body&&lastBodyBounds&&i-lastBodyIndex<=14){
-            try{
-              const region=recoveryCrop(lastBodyBounds,video.videoWidth,video.videoHeight,i-lastBodyIndex);
-              if(region){
-                const cropped=landmarker.detectForVideo(cropCanvas,stamp+0.5)?.landmarks?.[0];
-                if(cropped&&boundsFromPose(cropped)){
-                  p=cropped.map(v=>({...v,x:region.x+v.x*region.w,y:region.y+v.y*region.h}));
-                  body=boundsFromPose(p);
-                  if(body)recoveredCrops++;
-                }
+      // One forward, time-ordered adaptive pass avoids repeatedly seeking inside the
+      // same native video frame and preserves MediaPipe VIDEO timestamps.
+      // Higher density is used where the athlete is visible; after misses or decode
+      // failures, scan more broadly to recover. We do not know the native frame rate.
+      const maxSamples=Math.min(300,Math.max(80,Math.ceil(duration*24)));
+      const start=0.015,end=Math.max(start,duration-0.02);
+      let position=start,missStreak=0,decodeStreak=0,lastSuccessTime=-1;
+      const processFrame=(p,actualTime,i)=>{
+        let body=p?boundsFromPose(p):null;
+        if(!body&&lastBodyBounds&&i-lastBodyIndex<=14){
+          try{
+            const region=recoveryCrop(lastBodyBounds,video.videoWidth,video.videoHeight,i-lastBodyIndex);
+            if(region){
+              const cropped=landmarker.detectForVideo(cropCanvas,Math.round(actualTime*1000)+0.5)?.landmarks?.[0];
+              if(cropped&&boundsFromPose(cropped)){
+                p=cropped.map(v=>({...v,x:region.x+v.x*region.w,y:region.y+v.y*region.h}));
+                body=boundsFromPose(p);
+                if(body)recoveredCrops++;
               }
-            }catch(_cropError){/* Continue with full-frame result if the crop path is unsupported. */}
-          }
-          if(body){lastBodyBounds=body;lastBodyIndex=i;}
-          if(p){
-            const tracked=window.MWMotionTracking?.frame(p,actualTime);
-            if(tracked)tracking.push(tracked);
-            // A landmark is only used if the specific joint is visible; do not
-            // silently substitute offscreen or occluded joints.
-            const visible=(id)=>p[id]&&Number.isFinite(p[id].x)&&Number.isFinite(p[id].y)&&(p[id].visibility??1)>=0.5;
-            if([11,12,23,24,25,26,27,28].every(visible)){
-              const S={x:(p[11].x+p[12].x)/2,y:(p[11].y+p[12].y)/2};
-              const H={x:(p[23].x+p[24].x)/2,y:(p[23].y+p[24].y)/2};
-              const side=(p[25].visibility??1)>=(p[26].visibility??1)?25:26;
-              const knee=p[side],hip=p[side-2],ankle=p[side+2],elbow=p[side===25?13:14],wrist=p[side===25?15:16];
-              readings.push({trunk:Math.abs(Math.atan2(S.x-H.x,H.y-S.y)*180/Math.PI),
-                knee:angle(hip,knee,ankle),
-                shin:Math.abs(Math.atan2(ankle.x-knee.x,knee.y-ankle.y)*180/Math.PI),
-                arm:visible(side===25?13:14)&&visible(side===25?15:16)?angle(S,elbow,wrist):null});
             }
-          }
-        } catch(error){
-          decodeErrors++;
-          if(decodeErrors>=Math.max(5,Math.ceil(samples*0.15)))throw new Error('Too many frames could not be decoded on this iPhone. Try a shorter or re-exported video.');
+          }catch(_cropError){/* Crop is optional; full frame remains usable. */}
         }
-        if(i%12===0){
-          status.textContent='Analyzing video: '+Math.round((i+1)*100/samples)+'% ('+tracking.length+' body positions found)';
+        if(body){lastBodyBounds=body;lastBodyIndex=i;}
+        if(!p)return false;
+        const tracked=window.MWMotionTracking?.frame(p,actualTime);
+        if(tracked)tracking.push(tracked);
+        const visible=id=>p[id]&&Number.isFinite(p[id].x)&&Number.isFinite(p[id].y)&&(p[id].visibility??1)>=0.5;
+        if([11,12,23,24,25,26,27,28].every(visible)){
+          const S={x:(p[11].x+p[12].x)/2,y:(p[11].y+p[12].y)/2};
+          const H={x:(p[23].x+p[24].x)/2,y:(p[23].y+p[24].y)/2};
+          const side=(p[25].visibility??1)>=(p[26].visibility??1)?25:26;
+          const knee=p[side],hip=p[side-2],ankle=p[side+2],elbow=p[side===25?13:14],wrist=p[side===25?15:16];
+          readings.push({trunk:Math.abs(Math.atan2(S.x-H.x,H.y-S.y)*180/Math.PI),
+            knee:angle(hip,knee,ankle),
+            shin:Math.abs(Math.atan2(ankle.x-knee.x,knee.y-ankle.y)*180/Math.PI),
+            arm:visible(side===25?13:14)&&visible(side===25?15:16)?angle(S,elbow,wrist):null});
+        }
+        return !!tracked;
+      };
+      while(position<=end&&attempted<maxSamples){
+        const i=attempted++;
+        // Deliberately cap normal sampling near 20 Hz. This does not claim to
+        // process all source frames or to provide verified contact timing.
+        const interval=decodeStreak>=2?0.25:missStreak>=4?0.18:missStreak>0?0.12:0.05;
+        let analyzed=false,decoded=false,actualTime=position;
+        for(let retry=0;retry<2&&!decoded;retry++){
+          try{
+            const target=Math.min(end,position+(retry?0.018:0));
+            await seekTo(target);
+            if(video.readyState<2)throw new Error('Decoded video data unavailable.');
+            actualTime=video.currentTime;
+            // For codecs with coarse frame stepping, do not count the same
+            // frame as another independent movement observation.
+            if(actualTime<=lastSuccessTime+0.006){adaptiveStats.skipped++;decoded=true;break;}
+            const output=landmarker.detectForVideo(video,Math.round(actualTime*1000));
+            sampledFrames++;
+            decoded=true;
+            analyzed=processFrame(output?.landmarks?.[0],actualTime,i);
+            lastSuccessTime=actualTime;
+          }catch(error){if(retry===0)decodeRetries++;else decodeErrors++;}
+        }
+        if(decoded){
+          decodeStreak=0;
+          if(analyzed){missStreak=0;adaptiveStats.good++;}
+          else {missStreak++;poseMisses++;adaptiveStats.missing++;}
+        }else{
+          decodeStreak++;
+          shortSegments++;
+          // Continue across difficult portions instead of aborting a clip
+          // with dozens of successfully tracked frames.
+          if(decodeStreak>=12&&tracking.length<8)break;
+        }
+        if(i%8===0){
+          status.textContent='Reviewing video: '+Math.round(Math.min(100,position/duration*100))+'% ('+tracking.length+' usable body positions)';
           await new Promise(resolve=>setTimeout(resolve,0));
         }
+        position+=interval;
       }
-      if(tracking.length<8)throw new Error('Only '+tracking.length+' usable body positions were found. Use steady footage with the whole runner visible.');
+      partial=position<end||decodeErrors>0||poseMisses>0;
+      if(tracking.length<8)throw new Error('Only '+tracking.length+' usable body positions were found. MW could not build a trustworthy review from this clip; try keeping the runner larger in frame.');
       const values={
         trunk:median(readings.map(x=>x.trunk)),knee:median(readings.map(x=>x.knee)),
         shin:median(readings.map(x=>x.shin)),arm:median(readings.map(x=>x.arm))
       };
-      return {sampledFrames:samples,poseFrames:tracking.length,values,frames:tracking,analyzedSeconds:duration,
-        sourceSeconds:duration,decodeErrors,recoveredCrops,analysisMethod:'distributed_video_sampling_plus_local_recovery'};
+      return {sampledFrames:sampledFrames||attempted,poseFrames:tracking.length,values,frames:tracking,analyzedSeconds:Math.min(duration,position),
+        sourceSeconds:duration,decodeErrors,decodeRetries,poseMisses,shortSegments,partial,recoveredCrops,adaptiveStats,
+        analysisMethod:'adaptive_forward_sampling_with_local_recovery'};
     }finally{
       try{video.pause();video.removeAttribute('src');video.load();}catch(_){}
       landmarker.close();
@@ -209,7 +245,7 @@
       +'<p>'+esc(contact?.reason||'Contact detection unavailable.')+'</p>'
       +'<p>Ground-contact milliseconds are withheld until video event detection is validated. The model analyzes sampled frames, not every native camera frame.</p>'
       +'<p>Local crop recovery attempts that yielded visible landmarks: '+(result.recoveredCrops||0)+'.</p>'
-      +(result.decodeErrors?'<p>Frames that could not be decoded: '+result.decodeErrors+'.</p>':'');
+      +'<p>Sampling: '+esc(result.analysisMethod)+'. Frame retries: '+(result.decodeRetries||0)+'. Unreadable samples: '+(result.decodeErrors||0)+'. Frames with no usable pose: '+(result.poseMisses||0)+'.</p>';
     box.hidden=false;
     box.style.padding='14px';
     box.style.lineHeight='1.55';
