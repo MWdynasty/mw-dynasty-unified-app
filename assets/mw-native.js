@@ -1,4 +1,20 @@
 (function(){
+  // Phase 2: MW School and Motion Intelligence remain preserved, but unreleased.
+  if(location.pathname.startsWith('/athlete')){
+    var phase2Style=document.createElement('style');
+    phase2Style.id='mw-phase2-feature-gates';
+    phase2Style.textContent='button[onclick*="mwOpenMotionIntelligence"]{display:none!important}';
+    (document.head||document.documentElement).appendChild(phase2Style);
+    var refreshPhase2Menu=function(){
+      document.querySelectorAll('[data-open="pacer"] small').forEach(function(el){
+        if(/Motion Intelligence/i.test(el.textContent||'')){
+          el.textContent='Open Sprint Pace AI and Distance Pacer.';
+        }
+      });
+    };
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refreshPhase2Menu,{once:true});
+    else refreshPhase2Menu();
+  }
   window.MW_APP_VERSION='3.0.16';
   window.mwNativePermission=function(type){
     return new Promise(function(resolve){
