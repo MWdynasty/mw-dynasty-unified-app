@@ -96,4 +96,33 @@ assert.ok(lowCoverage.coaching.positives.some(p=>/tracked 12 visible body positi
 assert.ok(lowCoverage.coaching.actions.some(a=>/Front, rear and side recordings are accepted/.test(a.instruction)));
 assert.equal(lowCoverage.coaching.faultDetected,false);
 assert.equal(lowCoverage.groundContact.contactMilliseconds,null);
+
+// Multi-angle regression: body-view inference must not label frontal video as side view.
+const frontal=Array.from({length:36},(_,i)=>{
+ const p=pose(12);
+ p[11].x=.38;p[12].x=.62;
+ p[23].x=.47;p[24].x=.53;
+ p[0]={x:.5,y:.17,visibility:1};
+ p[7]={x:.45,y:.20,visibility:1};
+ return engine.frame(p,i/12);
+});
+const frontalReport=engine.summarize(frontal,{sampledFrames:36});
+assert.equal(frontalReport.perspective.view,'front');
+assert.equal(frontalReport.phases.length,0,'2-D torso angle from frontal view cannot determine sprint phase');
+assert.ok(frontalReport.coaching.actions.some(a=>a.focus==='Left-right coordination'));
+assert.equal(frontalReport.groundContact.contactMilliseconds,null);
+const rear=Array.from({length:36},(_,i)=>{
+ const p=pose(12);
+ p[11].x=.38;p[12].x=.62;p[23].x=.47;p[24].x=.53;
+ p[0].visibility=.1;
+ return engine.frame(p,i/12);
+});
+assert.equal(engine.summarize(rear,{sampledFrames:36}).perspective.view,'rear');
+const smallRunner=progressive.map((f,i)=>({...f,visibleHeight:.5-i*.008}));
+const shrinking=engine.summarize(smallRunner,{sampledFrames:36});
+assert.equal(shrinking.distance.status,'runner_appears_smaller');
+assert.ok(shrinking.coaching.positives.some(p=>/smaller later/.test(p.evidence)));
+const mixedViews=frontal.map((f,i)=>({...f,viewEvidence:i%2===0?'side':'front'}));
+assert.equal(engine.summarize(mixedViews,{sampledFrames:36}).perspective.view,'mixed');
+assert.equal(engine.summarize(mixedViews,{sampledFrames:36}).phases.length,0);
 console.log('Motion tracking tests passed: posture timeline, per-leg trajectories, low-evidence rejection, no invented ground contact.');
