@@ -206,3 +206,7 @@ assert(athleteHtml.includes("class=\"mwPracticeInstruction\""),'Practice Mode pr
 assert(athleteHtml.includes("class=\"mwPracticeBulletList\""),'Practice Mode instructions must render as bullets');
 assert(athleteHtml.includes("calc(env(safe-area-inset-top) + 14px)"),'Practice Mode header must clear the iOS status bar');
 assert(!athleteHtml.includes("$p('mwPracticeWork').textContent=prep.join"),'Practice Mode must not collapse the prescription into one paragraph');
+
+assert(athleteHtml.includes('<details class="mwPracticePrescription">'),'Practice Mode workout instructions must be collapsible');
+assert(athleteHtml.includes('WORKOUT INSTRUCTIONS'),'Practice Mode disclosure control must be clearly named');
+assert(athleteHtml.includes("instructionToggle.open?'TAP TO CLOSE':'TAP TO OPEN'"),'Practice Mode disclosure label must reflect its open/closed state');
