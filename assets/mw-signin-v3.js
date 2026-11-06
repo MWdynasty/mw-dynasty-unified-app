@@ -70,7 +70,7 @@
   root.MWSignIn = api;
   // The Athlete shell still owns authentication. Load its auth bootstrap after
   // the parsed page so the shared sign-in component is mounted before binding.
-  if (root.location && /^\\/athlete(?:\\/|$)/.test(root.location.pathname || '')) {
+  if (root.location && /^\/athlete(?:\/|$)/.test(root.location.pathname || '')) {
     const loadAthleteAuth = () => {
       if (document.querySelector('script[data-mw-athlete-auth]')) return;
       const script = document.createElement('script');
