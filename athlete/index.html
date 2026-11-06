@@ -1825,26 +1825,23 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 </section>
 
 <section class="view" id="progress">
-<div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">SEE THE WORK. SEE THE GROWTH.</div></div><button class="gearBtn" data-open-settings>⚙</button></div>
-<div class="mwProgressHero">
-  <div class="mwProgressRing" id="mwProgressRing"><strong id="progressPct">0%</strong><span>COMPLETE</span></div>
-  <div class="mwProgressHeroCopy"><small>YOUR MW JOURNEY</small><h2 id="progressHeadline">Week 1</h2><p>Keep stacking quality days.</p><div class="progressBar"><i id="progressBarFill"></i></div></div>
+<div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">YOUR TRAINING, MADE SIMPLE.</div></div><button class="gearBtn" data-open-settings>⚙</button></div>
+<div class="mwProgressHero mwKidJourney">
+  <div class="mwProgressHeroCopy"><small>YOUR TRAINING JOURNEY</small><h2 id="progressHeadline">Week 1</h2><p>Follow this week’s plan.</p><div class="progressBar"><i id="progressBarFill"></i></div></div>
 </div>
-<div class="mwProgressStats">
-  <div><strong id="progressCompleted">0</strong><span>WORKOUTS</span></div>
-  <div><strong id="progressWeeks">0</strong><span>WEEKS</span></div>
-  <div><strong id="progressStart">—</strong><span>STARTED</span></div>
+<div class="mwKidWeekCard">
+  <div><small>THIS WEEK</small><strong id="mwVelocityWeekRead">0 of 5</strong><span>workouts done</span></div>
+  <div class="mwVelocityTrack"><i id="mwVelocityWeekBar"></i></div>
 </div>
-<div class="mwDevelopmentGuide" id="mwDevelopmentGuide">
- <div class="mwVelocityInsightsHeading"><b>AM I GETTING BETTER?</b><span>YOUR SAVED RESULTS</span></div>
- <div class="mwDevelopmentTabs"><button type="button" class="active" data-mw-development="speed">MY SPEED</button><button type="button" data-mw-development="execution">MY EXECUTION</button></div>
- <div id="mwDevelopmentRead" aria-live="polite"><p class="mwVelocityFootnote">Loading your saved timed sessions…</p></div>
- <p class="mwVelocityFootnote">Speed compares only matching distances and speed-focused sessions. Tempo and technical work are evaluated against the workout's prescribed target, not ranked by fastest time.</p>
+<div class="mwDevelopmentGuide mwKidResults" id="mwDevelopmentGuide">
+ <div class="mwVelocityInsightsHeading"><b>YOUR SPRINT PROGRESS</b></div>
+ <div id="mwDevelopmentRead" aria-live="polite"><p>Save the same sprint twice to see if you’re getting faster.</p></div>
 </div>
-<div class="mwVelocityInsights" id="mwVelocityInsights" aria-label="Training progression insights">
+<div class="mwKidNext"><small>YOUR NEXT STEP</small><p>Do your next workout, then save it here.</p></div>
+<details class="mwKidHelp"><summary>How to read this</summary><ul><li>We compare the same sprint distance.</li><li>A lower time means you ran faster.</li><li>Workouts count after you save them.</li></ul></details>
+<details class="mwKidDetails"><summary>See all progress</summary><div class="mwKidDetailsContent"><div hidden><span id="progressPct"></span><span id="progressCompleted"></span><span id="progressWeeks"></span><span id="progressStart"></span><span id="mwProgressRing"></span></div><div class="mwVelocityInsights" id="mwVelocityInsights" aria-label="Detailed training progress">
   <div class="mwVelocityInsightsHeading"><b>YOUR DEVELOPMENT AT A GLANCE</b><span id="mwVelocityPhase">MW VELOCITY</span></div>
   <div class="mwVelocityInsightsGrid">
-    <div><small>THIS WEEK</small><strong id="mwVelocityWeekRead">0 / 5</strong><div class="mwVelocityTrack"><i id="mwVelocityWeekBar"></i></div><span>Sessions completed</span></div>
     <div><small>TRAINING JOURNEY</small><strong id="mwVelocityJourneyRead">Week 1 / 41</strong><div class="mwVelocityTrack"><i id="mwVelocityJourneyBar"></i></div><span>Current program position</span></div>
   </div>
   <div class="mwVelocityInsightsHeading"><b>RECENT WEEKLY CONSISTENCY</b><span>LAST 6 WEEKS</span></div>
@@ -1891,8 +1888,34 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div class="mwProgressTitle"><span>PRACTICE MODE</span><small>REP RESULTS</small></div>
   <div id="mwPracticeProgressResults" class="mwPracticeProgressResults"><div class="muted">Your timed Practice Mode reps will appear here after they are logged.</div></div>
 </div>
+</div></div></details>
 </section>
-<section class="view" id="settings"><div class="top"><div><div class="logo"><b>MW</b> SETTINGS</div><div class="sub">YOUR MW EXPERIENCE</div></div><button class="gearBtn" data-open="home">×</button></div><div class="settingGroup"><h3>YOUR COACH MW</h3><button type="button" class="accountLink" id="mwAISharingSettings">AI &amp; DATA SHARING</button><div class="settingRow"><label>COACH PREFERENCE</label><select id="settingsCoachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div><div class="lockNote">Choose once during setup. You can change your Coach MW here anytime.</div></div><div class="settingGroup"><h3>COACH MW VOICE</h3><div class="settingRow"><label>VOICE SPEED</label><select id="voiceSpeed"><option value="0.9">0.9× Relaxed</option><option value="1" selected>1.0× Natural</option><option value="1.1">1.1× Quick</option><option value="1.2">1.2× Fast</option></select></div><div class="settingRow"><label>VOICE RESPONSE</label><select id="voiceMode"><option value="fast" selected>Fast — start speaking sooner</option><option value="standard">Standard — full response audio</option></select></div><div class="settingRow"><label>AUTO-PLAY COACH VOICE</label><select id="autoVoice"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>ACCOUNT & ALERTS</h3><div class="settingRow" style="display:none"><label>WORKOUT REMINDERS</label><select id="workoutReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow" style="display:none"><label>MEET REMINDERS</label><select id="meetReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>IN-APP MESSAGE ALERTS</label><select id="messageAlerts"><option value="on" selected>On</option><option value="off">Off</option></select><small>Controls unread Coach-message alerts inside MW Dynasty.</small></div></div><div class="settingGroup"><h3>MEMBERSHIP</h3><div class="lockNote"><b id="mwAthleteMembershipPrice">MW Athlete · $19/month</b><br><span id="mwAthleteBillingStatus">Loading secure membership status…</span></div><button type="button" class="accountLink" id="mwContinueSelfPay" style="display:none;margin-top:10px">CONTINUE ON MY OWN</button><div class="lockNote" id="mwBillingTransitionNote" style="display:none;margin-top:10px"></div></div><div class="settingGroup"><h3>HELP & ACCOUNT</h3><div class="lockNote">MW Dynasty 3.0.16 · iOS Build 14</div><div class="accountLinkGrid"><button type="button" class="accountLink" id="helpCenterBtn">HELP CENTER</button><button type="button" class="accountLink" id="reportIssueBtn">REPORT A PROBLEM</button><button type="button" class="accountLink" id="privacyBtn">PRIVACY</button><button type="button" class="accountLink" id="termsBtn">TERMS</button><button type="button" class="accountLink" id="deleteAccountBtn">DELETE ACCOUNT</button></div></div><div class="settingGroup"><h3>LAUNCH DIAGNOSTICS</h3><div class="lockNote" id="mwDiagnosticsStatus">TestFlight diagnostics are active on iPhone builds. MW records only non-sensitive technical events.</div><button type="button" class="accountLink" id="mwDiagnosticsSend" style="margin-top:10px">SEND DIAGNOSTICS NOW</button></div><div class="settingGroup"><h3>PROGRAM PROGRESSION</h3><div class="lockNote"><b>MW-controlled progression.</b><br>Your official week is synced from MW Dynasty. Athletes cannot unlock future weeks or change progression rules.</div></div><button id="saveSettings" class="save">SAVE SETTINGS</button><button id="replayTour" class="entryGhost">REPLAY APP TUTORIAL</button><button id="mwSignOut" class="mwSignOut">SIGN OUT</button></section>
+<style id="mw-kid-progression-v1">
+#progress .mwProgressHero.mwKidJourney{display:block;margin-top:14px;padding:19px 18px;border:1px solid rgba(245,185,46,.42);border-radius:18px;background:linear-gradient(145deg,#0b1822,#050a10)}
+#progress .mwKidJourney .mwProgressHeroCopy small,#progress .mwKidNext small{color:#f5c95e;font-size:11px;font-weight:900;letter-spacing:.1em}
+#progress .mwKidJourney .mwProgressHeroCopy h2{margin:7px 0;font-size:25px;color:#fff}
+#progress .mwKidJourney .mwProgressHeroCopy p{margin:0 0 12px;color:#c4ced6;font-size:14px}
+#progress .mwProgressHero .progressBar{height:10px;margin-top:8px;border-radius:99px;background:#253442;overflow:hidden}
+#progress .mwProgressHero .progressBar i{height:100%;border-radius:99px;background:linear-gradient(90deg,#19c7dc,#f5c95e)}
+#progress .mwKidWeekCard,#progress .mwKidResults,#progress .mwKidNext,#progress .mwKidHelp,#progress .mwKidDetails{margin-top:12px;padding:15px;border:1px solid #2a3a48;border-radius:15px;background:#07121b}
+#progress .mwKidWeekCard small{display:block;color:#aab7c1;font-size:11px;font-weight:800;letter-spacing:.08em}
+#progress .mwKidWeekCard strong{display:inline-block;margin:5px 7px 3px 0;color:#fff;font-size:24px}
+#progress .mwKidWeekCard span{color:#b9c5ce;font-size:13px}
+#progress .mwKidWeekCard .mwVelocityTrack{margin-top:9px}
+#progress .mwKidResults .mwVelocityInsightsHeading{margin:0 0 8px}
+#progress .mwKidResultRow{display:grid;grid-template-columns:74px 1fr;gap:8px;padding:8px 0;color:#d4dde4;font-size:13px;line-height:1.4}
+#progress .mwKidResultRow+ .mwKidResultRow{border-top:1px solid #243442}
+#progress .mwKidResultRow b{color:#f5c95e}
+#progress .mwKidNext p{margin:5px 0 0;color:#fff;font-size:16px;line-height:1.4}
+#progress .mwKidHelp>summary,#progress .mwKidDetails>summary{color:#f5c95e;font-weight:900;font-size:14px;cursor:pointer;list-style:none}
+#progress .mwKidHelp>summary::-webkit-details-marker,#progress .mwKidDetails>summary::-webkit-details-marker{display:none}
+#progress .mwKidHelp>summary:after,#progress .mwKidDetails>summary:after{content:'＋';float:right;color:#fff}
+#progress .mwKidHelp[open]>summary:after,#progress .mwKidDetails[open]>summary:after{content:'−'}
+#progress .mwKidHelp ul{margin:10px 0 0;padding-left:20px;color:#d4dde4;font-size:13px;line-height:1.6}
+#progress .mwKidDetailsContent{padding-top:12px}
+#progress .mwKidDetailsContent .mwVelocityInsights{margin-top:0}
+#progress .mwKidDetailsContent .mwProgressSection{margin-top:12px}
+</style><section class="view" id="settings"><div class="top"><div><div class="logo"><b>MW</b> SETTINGS</div><div class="sub">YOUR MW EXPERIENCE</div></div><button class="gearBtn" data-open="home">×</button></div><div class="settingGroup"><h3>YOUR COACH MW</h3><button type="button" class="accountLink" id="mwAISharingSettings">AI &amp; DATA SHARING</button><div class="settingRow"><label>COACH PREFERENCE</label><select id="settingsCoachType"><option value="male">Male Coach MW</option><option value="female">Female Coach MW</option></select></div><div class="lockNote">Choose once during setup. You can change your Coach MW here anytime.</div></div><div class="settingGroup"><h3>COACH MW VOICE</h3><div class="settingRow"><label>VOICE SPEED</label><select id="voiceSpeed"><option value="0.9">0.9× Relaxed</option><option value="1" selected>1.0× Natural</option><option value="1.1">1.1× Quick</option><option value="1.2">1.2× Fast</option></select></div><div class="settingRow"><label>VOICE RESPONSE</label><select id="voiceMode"><option value="fast" selected>Fast — start speaking sooner</option><option value="standard">Standard — full response audio</option></select></div><div class="settingRow"><label>AUTO-PLAY COACH VOICE</label><select id="autoVoice"><option value="on" selected>On</option><option value="off">Off</option></select></div></div><div class="settingGroup"><h3>ACCOUNT & ALERTS</h3><div class="settingRow" style="display:none"><label>WORKOUT REMINDERS</label><select id="workoutReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow" style="display:none"><label>MEET REMINDERS</label><select id="meetReminders"><option value="on" selected>On</option><option value="off">Off</option></select></div><div class="settingRow"><label>IN-APP MESSAGE ALERTS</label><select id="messageAlerts"><option value="on" selected>On</option><option value="off">Off</option></select><small>Controls unread Coach-message alerts inside MW Dynasty.</small></div></div><div class="settingGroup"><h3>MEMBERSHIP</h3><div class="lockNote"><b id="mwAthleteMembershipPrice">MW Athlete · $19/month</b><br><span id="mwAthleteBillingStatus">Loading secure membership status…</span></div><button type="button" class="accountLink" id="mwContinueSelfPay" style="display:none;margin-top:10px">CONTINUE ON MY OWN</button><div class="lockNote" id="mwBillingTransitionNote" style="display:none;margin-top:10px"></div></div><div class="settingGroup"><h3>HELP & ACCOUNT</h3><div class="lockNote">MW Dynasty 3.0.16 · iOS Build 14</div><div class="accountLinkGrid"><button type="button" class="accountLink" id="helpCenterBtn">HELP CENTER</button><button type="button" class="accountLink" id="reportIssueBtn">REPORT A PROBLEM</button><button type="button" class="accountLink" id="privacyBtn">PRIVACY</button><button type="button" class="accountLink" id="termsBtn">TERMS</button><button type="button" class="accountLink" id="deleteAccountBtn">DELETE ACCOUNT</button></div></div><div class="settingGroup"><h3>LAUNCH DIAGNOSTICS</h3><div class="lockNote" id="mwDiagnosticsStatus">TestFlight diagnostics are active on iPhone builds. MW records only non-sensitive technical events.</div><button type="button" class="accountLink" id="mwDiagnosticsSend" style="margin-top:10px">SEND DIAGNOSTICS NOW</button></div><div class="settingGroup"><h3>PROGRAM PROGRESSION</h3><div class="lockNote"><b>MW-controlled progression.</b><br>Your official week is synced from MW Dynasty. Athletes cannot unlock future weeks or change progression rules.</div></div><button id="saveSettings" class="save">SAVE SETTINGS</button><button id="replayTour" class="entryGhost">REPLAY APP TUTORIAL</button><button id="mwSignOut" class="mwSignOut">SIGN OUT</button></section>
 </main>
 
 <div class="tourOverlay" id="mwTour" aria-modal="true" role="dialog" aria-label="MW Dynasty guided app tour">
@@ -2492,31 +2515,22 @@ function mwDevelopmentSpeedEligible(r){
 }
 function renderDevelopmentGuide(){
  const box=document.getElementById('mwDevelopmentRead');if(!box)return;
- const rows=[...(mwPracticeProgressCache||[]),...(mwPracticeHistoryCache||[])].filter(r=>r.result_status!=='dnf'&&Number(r.time_seconds)>0);
- const valid=rows.filter(r=>Number(r.distance_m)>0);
- if(mwDevelopmentMode==='execution'){
-  const targeted=valid.filter(r=>Number(r.target_seconds)>0&&r.pace_status);
-  const hits=targeted.filter(r=>r.pace_status==='on_pace').length;
-  box.innerHTML=targeted.length?'<div class="mwDevelopmentMetrics"><div><small>ON TARGET</small><strong>'+hits+' / '+targeted.length+'</strong></div><div><small>EXECUTION</small><strong>'+Math.round(hits/targeted.length*100)+'%</strong></div></div><p>MW checks whether you executed the assigned pace. Faster than target is not automatically better.</p>':'<p>No target-based rep results yet. Save a prescribed workout in Practice Mode to start tracking execution.</p>';
-  return;
- }
- const eligible=valid.filter(mwDevelopmentSpeedEligible);
+ const rows=[...(mwPracticeProgressCache||[]),...(mwPracticeHistoryCache||[])].filter(r=>r.result_status!=='dnf'&&Number(r.time_seconds)>0&&Number(r.distance_m)>0);
+ const speedRows=rows.filter(mwDevelopmentSpeedEligible);
  const groups=new Map();
- for(const r of eligible){const key=Number(r.distance_m);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r)}
- const options=[...groups.entries()].filter(([,list])=>list.length>=2).sort((a,b)=>b[1].length-a[1].length);
- if(!options.length){box.innerHTML='<p>No comparable speed-test history yet. Record at least two speed-focused tests at the same distance to see your improvement. Tempo and technical reps are still counted in execution.</p>';return}
- const [distance,items]=options[0];items.sort((a,b)=>new Date(a.recorded_at||0)-new Date(b.recorded_at||0));
- const first=items[0],last=items[items.length-1],delta=Number(first.time_seconds)-Number(last.time_seconds);
- const label=delta>0.005?delta.toFixed(2)+'s faster':delta< -0.005?Math.abs(delta).toFixed(2)+'s slower':'Holding steady';
- const vals=items.slice(-8),min=Math.min(...vals.map(x=>Number(x.time_seconds))),max=Math.max(...vals.map(x=>Number(x.time_seconds))),span=Math.max(.01,max-min);
- const bars=vals.map(r=>'<div class="mwDevelopmentBar"><b>'+Number(r.time_seconds).toFixed(2)+'s</b><div><i style="height:'+(25+(max-Number(r.time_seconds))/span*75)+'%"></i></div><small>W'+(Number(r.program_week)||'—')+'</small></div>').join('');
- box.innerHTML='<div class="mwDevelopmentMetrics"><div><small>STARTING · '+distance+'M</small><strong>'+Number(first.time_seconds).toFixed(2)+'s</strong></div><div><small>LATEST · '+distance+'M</small><strong>'+Number(last.time_seconds).toFixed(2)+'s</strong></div></div><div class="mwDevelopmentResult">'+label+'</div><div class="mwDevelopmentBars">'+bars+'</div><p>Comparing saved '+distance+'m speed-focused reps. Conditions and timing methods may vary; review consistency before drawing conclusions.</p>';
+ for(const row of speedRows){const distance=Number(row.distance_m);if(!groups.has(distance))groups.set(distance,[]);groups.get(distance).push(row)}
+ const comparable=[...groups.entries()].filter(([,items])=>items.length>=2).sort((a,b)=>b[1].length-a[1].length)[0];
+ let sprintText='Save the same sprint twice to see if you’re getting faster.';
+ if(comparable){
+   const [distance,items]=comparable;items.sort((a,b)=>new Date(a.recorded_at||0)-new Date(b.recorded_at||0));
+   const first=Number(items[0].time_seconds),last=Number(items.at(-1).time_seconds),change=first-last;
+   sprintText=change>.005?'Your '+distance+'m time is '+change.toFixed(2)+' seconds faster than your first try.':change<-.005?'Your '+distance+'m time is '+Math.abs(change).toFixed(2)+' seconds slower than your first try.':'Your '+distance+'m time is about the same as your first try.';
+ }
+ const targeted=rows.filter(r=>Number(r.target_seconds)>0&&r.pace_status);
+ const hits=targeted.filter(r=>r.pace_status==='on_pace').length;
+ const practiceText=targeted.length?'You hit your goal on '+hits+' of '+targeted.length+' saved runs.':'Your goal results will show after you save a workout.';
+ box.innerHTML='<div class="mwKidResultRow"><b>Sprint</b><span>'+sprintText+'</span></div><div class="mwKidResultRow"><b>Practice</b><span>'+practiceText+'</span></div>';
 }
-document.querySelectorAll('[data-mw-development]').forEach(button=>button.addEventListener('click',()=>{
- mwDevelopmentMode=button.dataset.mwDevelopment;
- document.querySelectorAll('[data-mw-development]').forEach(x=>x.classList.toggle('active',x===button));
- renderDevelopmentGuide();
-}));
 function renderPracticeProgress(){
   const box=document.getElementById('mwPracticeProgressResults');if(!box)return;
   const rows=[...(mwPracticeProgressCache||[]),...(mwPracticeHistoryCache||[])];if(!rows.length){box.innerHTML='<div class="muted">Your timed Practice Mode reps will appear here after they are logged.</div>';return}
@@ -5129,7 +5143,7 @@ document.addEventListener('click',e=>{
 .mwAthleteNotificationBtn,#home .mwHomeMenuButton,.topActions .gearBtn{position:relative!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;color:#f5c95e!important;font-size:21px!important;padding:0!important;display:grid!important;place-items:center!important;-webkit-tap-highlight-color:transparent}
 .mwAthleteNotificationBtn:active,#home .mwHomeMenuButton:active,#home .mwHomeMenuButton[aria-expanded="true"],.topActions .gearBtn:active{transform:scale(.92)!important;border:0!important;background:transparent!important;box-shadow:none!important}
 #mwAthleteNotificationBadge{border:2px solid #050a0f!important}
-</style><link rel="stylesheet" href="/assets/mw-hybrid-design.css?v=20261010-hybrid-1"><script src="/assets/mw-notification-settings.js?v=20261101-1" defer></script><script src="/assets/mw-return-guidance.js?v=20261101-2" defer></script><script src="/assets/mw-adaptive-tools-layout.js?v=20261102-2" defer></script><script src="/assets/mw-performance-progression.js?v=20261106-kid-friendly-2" defer></script></body></html>
+</style><link rel="stylesheet" href="/assets/mw-hybrid-design.css?v=20261010-hybrid-1"><script src="/assets/mw-notification-settings.js?v=20261101-1" defer></script><script src="/assets/mw-return-guidance.js?v=20261101-2" defer></script><script src="/assets/mw-adaptive-tools-layout.js?v=20261102-2" defer></script></body></html>
 
 <script src="/assets/mw-motion-intelligence.js?v=20261103-motion-fix-1"></script>
 
