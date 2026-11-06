@@ -1511,7 +1511,30 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 .mwOptionalDetailsBody{padding:0 10px 10px}
 .mwOptionalDetailsBody>.question{margin:8px 0}
 </style>
-<link rel="stylesheet" href="/assets/mw-practice-rest.css?v=20260928"><script src="/assets/mw-practice-rest.js?v=20260928"></script><link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"><link rel="stylesheet" href="/assets/mw-signin-v3.css"><script src="/assets/mw-signin-v3.js"></script><script src="/assets/mw-ai-sharing.js?v=1"></script><script src="/lib/mw-pace-model.js?v=trial-pacing-1"></script><script>function mwResultDetails(prefix){return Object.fromEntries([60,100,150,200,300,400,500].map(d=>[d+'m',{mark_type:document.getElementById(prefix+d+'Type')?.value||'unspecified',timing_method:document.getElementById(prefix+d+'Timing')?.value||'unknown',date_recorded:document.getElementById(prefix+d+'Date')?.value||null}]))}</script></head>
+<link rel="stylesheet" href="/assets/mw-practice-rest.css?v=20260928"><script src="/assets/mw-practice-rest.js?v=20260928"></script><link rel="stylesheet" href="/assets/mw-auth-unified-live-20261004-r1.css"><link rel="stylesheet" href="/assets/mw-signin-v3.css"><script src="/assets/mw-signin-v3.js"></script><script src="/assets/mw-ai-sharing.js?v=1"></script><script src="/lib/mw-pace-model.js?v=trial-pacing-1"></script><script>function mwResultDetails(prefix){return Object.fromEntries([60,100,150,200,300,400,500].map(d=>[d+'m',{mark_type:document.getElementById(prefix+d+'Type')?.value||'unspecified',timing_method:document.getElementById(prefix+d+'Timing')?.value||'unknown',date_recorded:document.getElementById(prefix+d+'Date')?.value||null}]))}</script>
+<style id="mw-athlete-readable-train">
+@media (max-width: 700px) {
+  #workouts .card { padding: 18px !important; }
+  #todayTrackCard .cardHead,
+  #todayStrengthCard .cardHead { font-size: 15px !important; line-height: 1.35 !important; gap: 8px; }
+  #todayTrackDetails h2 { font-size: 22px !important; line-height: 1.32 !important; }
+  #todayTrackDetails .strengthPhase { font-size: 15px !important; }
+  #todayTrackDetails .coachNoteBox {
+    font-size: 15px !important; line-height: 1.6 !important;
+    padding: 16px !important; overflow-wrap: anywhere;
+  }
+  #todayTrackDetails .coachNoteBox b { font-size: 15px !important; }
+  #todayTrackDetails .mwMissedTrainingNotice { padding: 16px !important; }
+  #todayTrackDetails .mwMissedTrainingNotice b { font-size: 15px !important; line-height: 1.45 !important; }
+  #todayTrackDetails .mwMissedTrainingNotice p { font-size: 16px !important; line-height: 1.6 !important; margin: 10px 0 !important; }
+  #todayTrackDetails .mwMissedTrainingNotice small { display: block; font-size: 14px !important; line-height: 1.6 !important; overflow-wrap: anywhere; }
+  #todayTrackCard .performanceHint { font-size: 15px !important; line-height: 1.55 !important; padding: 14px !important; }
+  #todayTrackCard .muted, #todayStrengthCard .muted,
+  #todayStrengthCard .lockNote { font-size: 15px !important; line-height: 1.55 !important; }
+  #mwPracticeLaunch { min-height: 58px !important; font-size: 15px !important; letter-spacing: .04em !important; }
+}
+</style>
+</head>
 <body class="mw-auth-pending mw-hybrid-athlete"><script src="/assets/mw-session-launch-live-20261004-r1.js?v=20261103-session-launch-1" data-mw-launch-role="athlete"></script>
 <script>
 (()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
@@ -2587,13 +2610,13 @@ async function renderCompletion(){
   if(hint)hint.style.display='block';
   if(details){
     const priorDays=Object.entries(mwWorkoutStatusCache||{}).flatMap(([week,days])=>Object.entries(days||{}).map(([day,row])=>({week:Number(week),day:Number(String(day).replace('s','')),row})))
-      .filter(x=>x.week===w&&x.day<sessionNumber&&['absent','incomplete'].includes(String(x.row?.completion_status||'')));
+      .filter(x=>x.week===w&&x.day<sessionNumber&&['absent','incomplete'].includes(String(x.row?.completion_status||''))).sort((a,b)=>a.week-b.week||a.day-b.day);
     const recentMisses=priorDays.length;
-    const lastMiss=priorDays[priorDays.length-1];
+    const missedSummary=priorDays.map(x=>'Week '+x.week+', session '+x.day).join(' · ');
     const focus=String(session?.focus||session?.title||'').toLowerCase();
     const speedDay=/accel|velocity|speed|sprint|competition/.test(focus);
     const tempoDay=/tempo|recovery|extensive|technical/.test(focus);
-    const missedNotice=recentMisses?'<div class="mwMissedTrainingNotice"><b>MW ADAPTIVE TRAINING · '+recentMisses+' MISSED SESSION'+(recentMisses===1?'':'S')+'</b><p>Today stays on the calendar. '+(recentMisses>=3?'Multiple missed sessions: pause high-intensity progression until readiness is reviewed with your coach.':speedDay?'Speed session: return with a conservative warm-up and check readiness before any fast reps.':tempoDay?'Controlled session: follow today’s target effort; do not add missed volume.':'Follow today’s planned intent without making up missed volume.')+'</p><small>Missed: Week '+lastMiss.week+', session '+lastMiss.day+'. No automatic catch-up or load increase. Your coach should approve changes to sets, intensity or lifting loads.</small></div>':'';
+    const missedNotice=recentMisses?'<div class="mwMissedTrainingNotice"><b>MW ADAPTIVE TRAINING · '+recentMisses+' MISSED SESSION'+(recentMisses===1?'':'S')+'</b><p>Today stays on the calendar. '+(recentMisses>=3?'Multiple missed sessions: pause high-intensity progression until readiness is reviewed with your coach.':speedDay?'Speed session: return with a conservative warm-up and check readiness before any fast reps.':tempoDay?'Controlled session: follow today’s target effort; do not add missed volume.':'Follow today’s planned intent without making up missed volume.')+'</p><small><b>MISSED SESSIONS:</b> '+missedSummary+'. No automatic catch-up or load increase. Your coach should approve changes to sets, intensity or lifting loads.</small></div>':'';
     details.dataset.mwMissedNotice=missedNotice;
   }
   if(details){
