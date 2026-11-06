@@ -200,3 +200,9 @@ assert(athleteHtml.includes('#todayTrackDetails .workoutDetailRow span { color: 
 assert(athleteHtml.includes("const workoutBullets="),'Workout prescription must render as bullet lists');
 assert(athleteHtml.includes("raw.split(/\s*[·•]\s*/)"),'Wicket instructions must be split into readable bullet points');
 assert(athleteHtml.includes("class=\"workoutBulletList\""),'Workout details must use the organized bullet-list layout');
+
+assert(athleteHtml.includes('class="mwPracticeWork"'),'Practice Mode instructions need a dedicated structured container');
+assert(athleteHtml.includes("class=\"mwPracticeInstruction\""),'Practice Mode prescription must render labeled sections');
+assert(athleteHtml.includes("class=\"mwPracticeBulletList\""),'Practice Mode instructions must render as bullets');
+assert(athleteHtml.includes("calc(env(safe-area-inset-top) + 14px)"),'Practice Mode header must clear the iOS status bar');
+assert(!athleteHtml.includes("$p('mwPracticeWork').textContent=prep.join"),'Practice Mode must not collapse the prescription into one paragraph');
