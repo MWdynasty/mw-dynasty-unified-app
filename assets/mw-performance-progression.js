@@ -100,7 +100,7 @@
   }
   function style(){
     if(document.getElementById('mwpi-style'))return;
-    var s=node('style');s.id='mwpi-style';s.textContent="#mw-performance-progression{margin:12px 0 24px;padding:16px;border:1px solid #9b7a39;border-radius:18px;background:#101b29;color:#f7f5ef;font:14px system-ui}#mw-performance-progression h2{font-size:22px;letter-spacing:.03em;color:#f3c768;margin:0 0 4px}#mw-performance-progression .mwpi-sub{color:#aebdcc;margin:0 0 10px}#mw-performance-progression h3{color:#f1c466;font-size:17px;margin:18px 0 8px}.mwpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 16px}.mwpi-card,.mwpi-panel{background:#0a1521;border:1px solid #334657;border-radius:12px;padding:11px;margin:8px 0}.mwpi-card strong{display:block;font-size:21px}.mwpi-card small{display:block;color:#afbecd;margin-top:3px;font-size:12px;line-height:1.2}.mwpi-card .mwpi-answer-value{font-size:17px;line-height:1.15;overflow-wrap:anywhere}.mwpi-card .mwpi-answer-detail{display:block;color:#b8c5d1;font-size:11px;line-height:1.3;margin-top:6px}.mwpi-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:10px 0}.mwpi-controls label{display:block;color:#afbecd;font-size:11px}.mwpi-controls select{width:100%;margin-top:5px;padding:9px 10px;border:1px solid #405568;border-radius:8px;background:#0a1521;color:#f7f5ef;font-size:14px}.mwpi-chart{display:block;width:100%;height:auto;min-height:150px}.mwpi-empty,.mwpi-chart-note,.mwpi-legend{color:#b8c5d1;font-size:12px;line-height:1.45}.mwpi-result{color:#f3c768;font-weight:800;margin:6px 0 0;font-size:13px}.mwpi-panel-title{display:block;color:#d8e0e7;font-size:13px;margin:0 0 2px}.mwpi-selector-help{color:#b8c5d1;font-size:12px;line-height:1.45;margin:8px 0}.mwpi-archive{margin:12px 0 0;border:1px solid #334657;border-radius:12px;background:#0a1521}.mwpi-archive>summary{padding:13px;color:#f3c768;font-weight:800;cursor:pointer;letter-spacing:.04em}.mwpi-archive>.mwProgressSection{margin:0;padding:0;border:0;background:transparent}.mwpi-archive[open]{padding:0 12px 12px}.mwpi-archive>.mwProgressHero,.mwpi-archive>.mwProgressStats,.mwpi-archive>.mwDevelopmentGuide,.mwpi-archive>.mwVelocityInsights,.mwpi-archive>.mwProgressSection{margin-top:10px}.mwpi-panel h3{color:#f1c466;font-size:16px;margin:0 0 8px}.mwpi-emptyGraph{padding:10px 12px;color:#aebdcc;font-size:12px}.mwpi-placeholder{height:92px;border-bottom:1px solid #334657;border-left:1px solid #334657;position:relative;margin:0 0 8px}.mwpi-placeholder:after{content:'';position:absolute;left:8%;right:8%;top:50%;border-top:2px dashed #405568}.mwpi-chart-note{margin:5px 0 0}#mw-performance-progression .mwpi-controls select{font-size:13px}@media(max-width:420px){#mw-performance-progression{padding:13px}.mwpi-grid{gap:5px}.mwpi-card{padding:9px}.mwpi-card strong{font-size:18px}.mwpi-card .mwpi-answer-value{font-size:15px}.mwpi-card .mwpi-answer-detail{font-size:10px}.mwpi-card small{font-size:11px}.mwpi-controls{grid-template-columns:1fr 1fr}}";
+    var s=node('style');s.id='mwpi-style';s.textContent="#mw-performance-progression{margin:12px 0 24px;padding:16px;border:1px solid #9b7a39;border-radius:18px;background:#101b29;color:#f7f5ef;font:14px system-ui}#mw-performance-progression h2{font-size:22px;letter-spacing:.03em;color:#f3c768;margin:0 0 4px}#mw-performance-progression .mwpi-sub{color:#aebdcc;margin:0 0 10px}#mw-performance-progression h3{color:#f1c466;font-size:17px;margin:18px 0 8px}.mwpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 16px}.mwpi-card,.mwpi-panel{background:#0a1521;border:1px solid #334657;border-radius:12px;padding:11px;margin:8px 0}.mwpi-card strong{display:block;font-size:21px}.mwpi-card small{display:block;color:#afbecd;margin-top:3px;font-size:12px;line-height:1.2}.mwpi-card .mwpi-answer-value{font-size:17px;line-height:1.15;overflow-wrap:anywhere}.mwpi-card .mwpi-answer-detail{display:block;color:#b8c5d1;font-size:11px;line-height:1.3;margin-top:6px}.mwpi-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:10px 0}.mwpi-controls label{display:block;color:#afbecd;font-size:11px}.mwpi-controls select{width:100%;margin-top:5px;padding:9px 10px;border:1px solid #405568;border-radius:8px;background:#0a1521;color:#f7f5ef;font-size:14px}.mwpi-chart{display:block;width:100%;height:auto;min-height:150px}.mwpi-empty,.mwpi-chart-note,.mwpi-legend{color:#b8c5d1;font-size:12px;line-height:1.45}.mwpi-result{color:#f3c768;font-weight:800;margin:6px 0 0;font-size:13px}.mwpi-panel-title{display:block;color:#d8e0e7;font-size:13px;margin:0 0 2px}.mwpi-selector-help{color:#b8c5d1;font-size:12px;line-height:1.45;margin:8px 0}.mwpi-archive{margin:12px 0 0;border:1px solid #334657;border-radius:12px;background:#0a1521}.mwpi-archive>summary{padding:13px;color:#f3c768;font-weight:800;cursor:pointer;letter-spacing:.04em}.mwpi-archive>.mwProgressSection{margin:0;padding:0;border:0;background:transparent}.mwpi-archive[open]{padding:0 12px 12px}.mwpi-archive>.mwProgressHero,.mwpi-archive>.mwProgressStats,.mwpi-archive>.mwDevelopmentGuide,.mwpi-archive>.mwVelocityInsights,.mwpi-archive>.mwProgressSection{margin-top:10px}.mwpi-panel h3{color:#f1c466;font-size:16px;margin:0 0 8px}.mwpi-emptyGraph{padding:10px 12px;color:#aebdcc;font-size:12px}.mwpi-placeholder{height:92px;border-bottom:1px solid #334657;border-left:1px solid #334657;position:relative;margin:0 0 8px}.mwpi-placeholder:after{content:'';position:absolute;left:8%;right:8%;top:50%;border-top:2px dashed #405568}.mwpi-chart-note{margin:5px 0 0}#mw-performance-progression .mwpi-controls select{font-size:13px}@media(max-width:420px){#mw-performance-progression{padding:13px}.mwpi-grid{gap:5px}.mwpi-card{padding:9px}.mwpi-card strong{font-size:18px}.mwpi-card .mwpi-answer-value{font-size:15px}.mwpi-card .mwpi-answer-detail{font-size:10px}.mwpi-card small{font-size:11px}.mwpi-controls{grid-template-columns:1fr 1fr}}#mw-performance-progression .mwpi-journey,#mw-performance-progression .mwpi-help,#mw-performance-progression .mwpi-more{background:#0a1521;border:1px solid #334657;border-radius:14px;padding:13px;margin:10px 0}#mw-performance-progression .mwpi-journey-title{margin:0 0 8px;color:#f3c768;font-size:15px;letter-spacing:.02em}#mw-performance-progression .mwpi-journey-week{display:block;color:#fff;font-size:21px}#mw-performance-progression .mwpi-journey-note{margin:4px 0 9px;color:#c7d1dc;font-size:13px;line-height:1.4}.mwpi-week-track{height:10px;background:#283a49;border-radius:99px;overflow:hidden}.mwpi-week-fill{display:block;height:100%;background:linear-gradient(90deg,#15c8df,#f3c768);border-radius:99px;transition:width .2s ease}.mwpi-help>summary,.mwpi-more>summary{cursor:pointer;color:#f3c768;font-weight:800;list-style:none}.mwpi-help>summary::-webkit-details-marker,.mwpi-more>summary::-webkit-details-marker{display:none}.mwpi-help>summary:after,.mwpi-more>summary:after{content:'＋';float:right;color:#fff}.mwpi-help[open]>summary:after,.mwpi-more[open]>summary:after{content:'−'}.mwpi-tips{margin:10px 0 0;padding-left:20px;color:#d3dbe3;font-size:13px;line-height:1.55}.mwpi-tips li+li{margin-top:5px}.mwpi-more>div{padding-top:5px}#mw-performance-progression .mwpi-card .mwpi-answer-detail{font-size:12px;line-height:1.35}#mw-performance-progression .mwpi-card .mwpi-answer-value{font-size:17px}";
     document.head.appendChild(s);
   }
   function mount(){
@@ -108,10 +108,10 @@
     if(!view||document.getElementById('mw-performance-progression'))return false;
     style();
     var section=node('section');section.id='mw-performance-progression';section.setAttribute('aria-labelledby','mwpi-title');
-    section.appendChild(node('h2','YOUR PROGRESS'));section.querySelector('h2').id='mwpi-title';
-    section.appendChild(node('p','See how your training is changing.','mwpi-sub'));
+    section.appendChild(node('h2','Your Progress'));section.querySelector('h2').id='mwpi-title';
+    section.appendChild(node('p','See what you’ve done and what comes next.','mwpi-sub'));
     var content=node('div','Loading your saved results…');content.id='mwpi-content';section.appendChild(content);
-    var archive=node('details',null,'mwpi-archive');archive.appendChild(node('summary','REP-BY-REP HISTORY'));
+    var archive=node('details',null,'mwpi-archive');archive.appendChild(node('summary','Older training details'));
     var practiceSection=view.querySelector('#mwPracticeProgressResults')?.closest('.mwProgressSection');
     if(practiceSection){
       var practiceTitle=practiceSection.querySelector('.mwProgressTitle');if(practiceTitle)practiceTitle.remove();
@@ -146,16 +146,17 @@
     var sprint=Array.isArray(data.speed_history)?data.speed_history:[];
     var strength=Array.isArray(data.strength_history)?data.strength_history:[];
     var consistency=data.consistency||{};
+    renderJourney(content,sprint.concat(strength));
     var eligible=sprint.filter(function(row){return row.speed_test_eligible===true});
     var speedGroups=new Map();
     eligible.forEach(function(row){var key=Number(row.distance_m)+'|'+row.intent_group;if(!speedGroups.has(key))speedGroups.set(key,[]);speedGroups.get(key).push(row)});
     var speedSeries=[...speedGroups.entries()].map(function(pair){return {key:pair[0],points:sessionPoints(pair[1],function(){return true})}}).filter(function(x){return x.points.length}).sort(function(a,b){return b.points.at(-1).date-a.points.at(-1).date});
     var speedCard;
-    if(!speedSeries.length)speedCard={value:'NO TESTS',question:'FASTER?',detail:'Log a speed test to start.'};
-    else if(speedSeries[0].points.length<2)speedCard={value:'FIRST TEST',question:'FASTER?',detail:'Repeat the same type and distance to compare.'};
+    if(!speedSeries.length)speedCard={value:'No sprint saved yet',question:'Sprint',detail:'Save a sprint result to see your progress.'};
+    else if(speedSeries[0].points.length<2)speedCard={value:'First sprint saved',question:'Sprint',detail:'Run the same distance again to compare.'};
     else{
       var speedPoints=speedSeries[0].points,firstSpeed=speedPoints[0].value,lastSpeed=speedPoints.at(-1).value,change=firstSpeed-lastSpeed;
-      speedCard={value:change>0?number(change,2)+'s faster':change<0?number(Math.abs(change),2)+'s slower':'STEADY',question:'FASTER?',detail:'Same type + distance · first '+number(firstSpeed,2)+'s · latest '+number(lastSpeed,2)+'s.'};
+      speedCard={value:change>0?number(change,2)+' sec faster':change<0?number(Math.abs(change),2)+' sec slower':'Same time',question:'Sprint',detail:'Compared with your last matching sprint.'};
     }
     var targetSessions=new Map();
     sprint.forEach(function(row){
@@ -165,7 +166,7 @@
       item.total++;if(row.pace_status==='on_pace')item.on++;targetSessions.set(id,item);
     });
     var latestTarget=[...targetSessions.values()].sort(function(a,b){return b.date-a.date})[0];
-    var targetCard=latestTarget?{value:latestTarget.on+' / '+latestTarget.total,question:'ON TARGET?',detail:'Reps that hit the goal in your latest session.'}:{value:'NO DATA',question:'ON TARGET?',detail:'No target reps have been saved yet.'};
+    var targetCard=latestTarget?{value:latestTarget.on+' of '+latestTarget.total+' runs',question:'Practice',detail:'Hit your goal in your last saved workout.'}:{value:'No goal runs saved yet',question:'Practice',detail:'Your coach’s goal will show here after practice.'};
     var liftGroups=new Map();
     strength.forEach(function(row){
       var value=Number(row.estimated_1rm),d=dateOf(row);if(!d||!Number.isFinite(value)||value<=0)return;
@@ -175,18 +176,40 @@
     });
     var liftSeries=[...liftGroups.entries()].map(function(pair){return {name:pair[0],points:[...pair[1].values()].sort(function(a,b){return a.date-b.date})}}).filter(function(x){return x.points.length}).sort(function(a,b){return b.points.at(-1).date-a.points.at(-1).date});
     var strengthCard;
-    if(!liftSeries.length)strengthCard={value:'NO LIFTS',question:'STRONGER?',detail:'Log a lift with weight and reps.'};
-    else if(liftSeries[0].points.length<2)strengthCard={value:'FIRST LIFT',question:'STRONGER?',detail:'Log the same lift again to compare.'};
+    if(!liftSeries.length)strengthCard={value:'No lift saved yet',question:'Strength',detail:'Save a lift to start tracking it.'};
+    else if(liftSeries[0].points.length<2)strengthCard={value:'First lift saved',question:'Strength',detail:'Do this lift again to compare.'};
     else{
       var liftPoints=liftSeries[0].points,firstLift=liftPoints[0].value,lastLift=liftPoints.at(-1).value,liftChange=lastLift-firstLift,liftUnit=liftPoints.at(-1).row.unit;
-      strengthCard={value:liftChange>0?'+'+number(liftChange,1)+' '+liftUnit:liftChange<0?number(liftChange,1)+' '+liftUnit:'STEADY',question:'STRONGER?',detail:liftSeries[0].name.split('|')[0]+' estimated lift · first '+number(firstLift,1)+' · latest '+number(lastLift,1)+'.'};
+      strengthCard={value:liftChange>0?'+'+number(liftChange,1)+' '+liftUnit:liftChange<0?number(Math.abs(liftChange),1)+' '+liftUnit+' lower':'Same estimate',question:'Strength',detail:'Lift estimate for '+liftSeries[0].name.split('|')[0]+'.'};
     }
     var cards=node('div',null,'mwpi-grid');
     [speedCard,targetCard,strengthCard].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('strong',item.value,'mwpi-answer-value'));c.appendChild(node('small',item.question));c.appendChild(node('span',item.detail,'mwpi-answer-detail'));cards.appendChild(c)});
     content.appendChild(cards);
-    renderSprint(content,sprint);renderStrength(content,strength);
+    var how=node('details',null,'mwpi-help');
+    how.appendChild(node('summary','How to read this'));
+    var tips=node('ul',null,'mwpi-tips');
+    ['For sprint times, a lower number means you ran faster.','We compare the same sprint and distance.','Each dot in the charts is one saved workout.'].forEach(function(text){tips.appendChild(node('li',text))});
+    how.appendChild(tips);content.appendChild(how);
+    var more=node('details',null,'mwpi-more');more.appendChild(node('summary','See all results'));
+    var results=node('div');renderSprint(results,sprint);renderStrength(results,strength);more.appendChild(results);content.appendChild(more);
   }
-  function control(parent,title,values,value,onChange){
+  function renderJourney(parent,rows){
+    var journey=node('section',null,'mwpi-journey');
+    journey.appendChild(node('h3','Your training journey','mwpi-journey-title'));
+    var latest=rows.filter(function(row){return Number(row.program_week)>0&&dateOf(row)}).sort(function(a,b){return dateOf(b)-dateOf(a)})[0];
+    var week=latest?Number(latest.program_week):0;
+    if(week){
+      journey.appendChild(node('strong','Week '+week+' of 41','mwpi-journey-week'));
+      journey.appendChild(node('p','Your latest saved workout is here.','mwpi-journey-note'));
+      var track=node('div',null,'mwpi-week-track'),fill=node('span',null,'mwpi-week-fill');
+      fill.style.width=Math.min(100,Math.max(3,week/41*100))+'%';track.appendChild(fill);track.setAttribute('role','progressbar');track.setAttribute('aria-label','Training weeks saved');track.setAttribute('aria-valuemin','1');track.setAttribute('aria-valuemax','41');track.setAttribute('aria-valuenow',String(Math.min(41,week)));journey.appendChild(track);
+    }else{
+      journey.appendChild(node('strong','Your journey starts here','mwpi-journey-week'));
+      journey.appendChild(node('p','Save your first workout and we’ll show your week here.','mwpi-journey-note'));
+    }
+    parent.appendChild(journey);
+  }
+  function control(parent,title,values,value,onChange)
     var wrap=node('label',title);var select=node('select');
     values.forEach(function(item){var option=node('option',item.label);option.value=item.value;option.selected=item.value===value;select.appendChild(option)});
     select.addEventListener('change',function(){onChange(select.value)});wrap.appendChild(select);parent.appendChild(wrap);return select;
