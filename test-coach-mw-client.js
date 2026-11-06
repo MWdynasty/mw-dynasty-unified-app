@@ -197,6 +197,18 @@ async function run(){
   assert.equal(f.revokes.length,1,'stop voice must release blob URL');
   assert.equal(f.document.listeners.click?.length||0,0,'No competing capturing click listener');
 
+  f.setReply({status:200,answer:'### Beginning of curve lesson\n- First cue: hold your line.\n\n### Boomerang finish\nEnd by releasing into the straight.'});
+  f.send('Explain the full 200m curve lesson');await f.flush();
+  const fullButton=f.document.querySelectorAll('.mw-read-aloud').at(-1);
+  fullButton.click();await f.flush();
+  const fullVoice=f.calls.filter(c=>c.url==='/api/speak').at(-1).body.text;
+  assert.match(fullVoice,/^Beginning of curve lesson/,'Audio starts with the response heading, not an arbitrary paragraph');
+  assert.match(fullVoice,/First cue: hold your line/,'Bullet-point coaching is included');
+  assert.match(fullVoice,/Boomerang finish/,'Later headings are included');
+  assert.match(fullVoice,/End by releasing into the straight/,'Last sentence is not omitted');
+  fullButton.click();await f.flush();
+
+
   f.setReply({status:500,error:'Synthetic API failure'});f.send('Trigger error');await f.flush();
   assert.ok(f.el('mwchat').textContent.includes('Synthetic API failure'),'error must be visible');
   assert.equal(f.el('askmw').disabled,false,'error must unlock send');
