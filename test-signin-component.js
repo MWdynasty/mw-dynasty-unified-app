@@ -54,8 +54,9 @@ for (const entry of [athlete, coachEntry]) {
   assert(entry.includes('/assets/mw-signin-v3.js'));
   assert(entry.indexOf('/assets/mw-signin-v3.js') < entry.indexOf('</head>'), 'Component must load before auth handlers bind');
 }
+const componentSource = fs.readFileSync('assets/mw-signin-v3.js', 'utf8');
 const athleteAuth = fs.readFileSync('assets/mw-athlete-auth-v1.js', 'utf8');
-assert(component.includes("mw-athlete-auth-v1.js?v=20261106"), 'Athlete sign-in component must load its auth bootstrap');
+assert(componentSource.includes("mw-athlete-auth-v1.js?v=20261106"), 'Athlete sign-in component must load its auth bootstrap');
 assert(athleteAuth.includes("querySelector('#mwAthleteLoginForm').onsubmit=e=>{e.preventDefault();login()}"), 'Athlete form must prevent navigation and call the real login handler');
 assert(athleteAuth.includes("async function login()"), 'Athlete sign-in must call Supabase password auth');
 assert(athleteAuth.includes("function requestPasswordReset()"), 'Forgot password flow must remain wired');
