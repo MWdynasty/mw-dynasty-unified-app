@@ -11,7 +11,7 @@ for(const mode of ['fast','standard']){
   assert.equal(chunks.join(' '),full,'All speech text is retained');
   assert.ok(chunks.every(c=>c.length<=600));
 }
-assert.equal(mwCoachSpeechText('### Curve\n- **Stay relaxed**.\n\n### Exit\n- Run smoothly.'),'Curve Stay relaxed. . Exit Run smoothly.'); 
+assert.equal(mwCoachSpeechText('### Curve\n- **Stay relaxed**.\n\n### Exit\n- Run smoothly.'),'Curve Stay relaxed. Exit Run smoothly.'); 
 assert.match(code,/getChunk\(i\+1\)/,'Next audio chunk is prefetched during current playback');
 assert.match(code,/activeVoiceAbort\.abort\(\)/,'Stop cancels pending requests');
 assert.doesNotMatch(code,/return chunks\.slice\(0,8\)/,'No eight-chunk cap');
