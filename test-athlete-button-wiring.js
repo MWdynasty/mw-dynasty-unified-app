@@ -210,3 +210,9 @@ assert(!athleteHtml.includes("$p('mwPracticeWork').textContent=prep.join"),'Prac
 assert(athleteHtml.includes('<details class="mwPracticePrescription">'),'Practice Mode workout instructions must be collapsible');
 assert(athleteHtml.includes('WORKOUT INSTRUCTIONS'),'Practice Mode disclosure control must be clearly named');
 assert(athleteHtml.includes("instructionToggle.open?'TAP TO CLOSE':'TAP TO OPEN'"),'Practice Mode disclosure label must reflect its open/closed state');
+
+assert(athleteHtml.includes('YOUR WORKOUT, IN SIMPLE STEPS'),'Practice Mode must lead with athlete-friendly instructions');
+assert(athleteHtml.includes('COACH’S FULL TRAINING NOTES'),'Technical notes must stay available as an optional detail');
+assert(athleteHtml.includes('front-side timing'),'Full coach notes must preserve the original technical prescription');
+assert(athleteHtml.includes('stay relaxed, run tall, and bring your knees forward smoothly'),'Athlete-facing copy must explain running cues in plain language');
+assert(athleteHtml.includes('This takes the place of your usual technique workout. Do not add reps.'),'Safety instruction must remain explicit in the simpler athlete view');
