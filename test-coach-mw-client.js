@@ -7,20 +7,20 @@ const root = process.argv[2] || __dirname;
 const coachHtml = fs.readFileSync(path.join(root, 'coach/index.html'), 'utf8');
 const clientPaths = [...coachHtml.matchAll(/<script src="(\/coach\/[^"]+)"/g)]
   .map(match => match[1].split('?')[0].slice(1));
-assert.equal(clientPaths.length, 5, 'Coach page must load timing tools, practice heats, app, and voice companion');
+assert.equal(clientPaths.length, 4, 'Coach page must use one built-in voice reader and not load a competing listener');
 assert.equal(clientPaths[0],'coach/timing-tools.js');
 assert.equal(clientPaths[1],'coach/custom-programs.js');
 assert.equal(clientPaths[2],'coach/practice-heats.js');
 const appSource = fs.readFileSync(path.join(root, clientPaths[3]), 'utf8');
-const voiceSource = fs.readFileSync(path.join(root, clientPaths[4]), 'utf8');
+assert.ok(!coachHtml.includes('voice-parity-live-20261004-r1.js'), 'Legacy voice listener must not override the full reader');
 assert.equal(fs.readFileSync(path.join(root, clientPaths[3]), 'utf8'), appSource, 'served app must match tested source');
-assert.equal(fs.readFileSync(path.join(root, clientPaths[4]), 'utf8'), voiceSource, 'served voice companion must match tested source');
+const helperStart=appSource.indexOf('function mwCoachSpeechText('),helperEnd=appSource.indexOf('function coachMWPage(){',helperStart);
+assert.ok(helperStart>=0&&helperEnd>helperStart);
 const start = appSource.indexOf('function coachMWPage(){');
 const end = appSource.indexOf('function membershipPage', start);
 assert.ok(start >= 0 && end > start, 'Coach MW page must exist');
 
-// Execute the real Coach page and voice companion together. This small DOM fixture
-// deliberately models textContent as a childList replacement even if text is equal.
+// Execute the real Coach page and its one built-in voice reader. Synthetic DOM, HTTP and audio are used.
 // It is not an iPhone/WebKit rendering test; all HTTP and media are synthetic.
 function fixture(saved = []) {
   let context, observing = false, pending = false, observer, deliveries = 0, now = 0, timerId = 0;
@@ -147,8 +147,8 @@ function fixture(saved = []) {
   });
   context.window=context;
   context.window.MWAccountStorage={session:sessionStorage};
+  vm.runInContext(appSource.slice(helperStart,helperEnd),context,{timeout:1000});
   vm.runInContext(appSource.slice(start,end),context,{timeout:1000});
-  vm.runInContext(voiceSource,context,{timeout:1000});
   function deliver(){
     let count=0;
     while(pending){
@@ -174,7 +174,7 @@ async function run(){
   assert.equal(f.el('mwcoachrequeststate').textContent,'','success must clear thinking');
   assert.ok(f.el('mwchat').textContent.includes('Verified Coach MW answer'),'answer must be visible');
   assert.ok(f.stages().includes('request_settled'),'success must reach cleanup');
-  assert.equal(f.document.querySelector('.mw-read-aloud').textContent,'▶ Start Voice');
+  assert.equal(f.document.querySelector('.mw-read-aloud').textContent,'🔊 Read Aloud');
   const deliveries=f.deliveries();await f.flush();
   assert.equal(f.deliveries(),deliveries,'observer must become idle');
 
@@ -187,12 +187,15 @@ async function run(){
 
   const voiceButton=f.document.querySelector('.mw-read-aloud');
   voiceButton.click();await f.flush();
-  assert.equal(voiceButton.textContent,'■ Stop Voice','active voice label must not be overwritten');
+  assert.equal(voiceButton.textContent,'■ Stop Reading','active voice label must not be overwritten');
   assert.equal(f.audios.length,1);assert.equal(f.audios[0].paused,false);
+  assert.equal(f.calls.filter(c=>c.url==='/api/speak').length,1,'Only the built-in read-aloud sends a voice request');
+  assert.equal(f.calls.find(c=>c.url==='/api/speak').body.text,'Verified Coach MW answer','Playback must begin from the actual beginning of the response');
   voiceButton.click();await f.flush();
-  assert.equal(voiceButton.textContent,'▶ Start Voice');
+  assert.equal(voiceButton.textContent,'🔊 Read Aloud');
   assert.equal(f.audios[0].paused,true,'stop voice must pause audio');
   assert.equal(f.revokes.length,1,'stop voice must release blob URL');
+  assert.equal(f.document.listeners.click?.length||0,0,'No competing capturing click listener');
 
   f.setReply({status:500,error:'Synthetic API failure'});f.send('Trigger error');await f.flush();
   assert.ok(f.el('mwchat').textContent.includes('Synthetic API failure'),'error must be visible');
@@ -214,7 +217,7 @@ async function run(){
   const saved=fixture([{role:'user',content:'Saved question'},{role:'assistant',content:'Saved answer'}]);
   saved.enter();await saved.flush();
   assert.ok(saved.el('mwchat').textContent.includes('Saved answer'),'saved assistant messages must remain visible');
-  assert.equal(saved.document.querySelector('.mw-read-aloud').textContent,'▶ Start Voice');
+  assert.equal(saved.document.querySelector('.mw-read-aloud').textContent,'🔊 Read Aloud');
   saved.send('New question after reopening');await saved.flush();
   assert.ok(saved.el('mwchat').textContent.includes('Verified Coach MW answer'));
   assert.equal(saved.el('askmw').disabled,false);
@@ -225,6 +228,6 @@ async function run(){
   assert.ok(late.stages().includes('watchdog_reset'));release();await late.flush();
   assert.equal(late.el('askmw').disabled,false);
   assert.ok(late.el('mwchat').textContent.includes('Verified Coach MW answer'));
-  console.log('PASS: real Coach MW page + read-aloud script: observer quiescence, response, repeat send, quick prompt, navigation click, saved history, voice start/stop, API error recovery, and watchdog.');
+  console.log('PASS: Coach Mus single voice reader, full text, stop/restart, saved history, reply recovery, group approvals and watchdog.');
 }
 run().catch(error=>{console.error(error);process.exitCode=1;});
