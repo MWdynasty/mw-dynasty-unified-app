@@ -100,7 +100,7 @@
   }
   function style(){
     if(document.getElementById('mwpi-style'))return;
-    var s=node('style');s.id='mwpi-style';s.textContent="#mw-performance-progression{margin:12px 0 24px;padding:16px;border:1px solid #9b7a39;border-radius:18px;background:#101b29;color:#f7f5ef;font:14px system-ui}#mw-performance-progression h2{font-size:22px;letter-spacing:.03em;color:#f3c768;margin:0 0 4px}#mw-performance-progression .mwpi-sub{color:#aebdcc;margin:0 0 10px}#mw-performance-progression h3{color:#f1c466;font-size:17px;margin:18px 0 8px}.mwpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 16px}.mwpi-card,.mwpi-panel{background:#0a1521;border:1px solid #334657;border-radius:12px;padding:11px;margin:8px 0}.mwpi-card strong{display:block;font-size:21px}.mwpi-card small{display:block;color:#afbecd;margin-top:3px;font-size:12px;line-height:1.2}.mwpi-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:10px 0}.mwpi-controls label{display:block;color:#afbecd;font-size:11px}.mwpi-controls select{width:100%;margin-top:5px;padding:9px 10px;border:1px solid #405568;border-radius:8px;background:#0a1521;color:#f7f5ef;font-size:14px}.mwpi-chart{display:block;width:100%;height:auto;min-height:150px}.mwpi-empty,.mwpi-chart-note,.mwpi-legend{color:#b8c5d1;font-size:12px;line-height:1.45}.mwpi-result{color:#f3c768;font-weight:800;margin:6px 0 0;font-size:13px}.mwpi-panel-title{display:block;color:#d8e0e7;font-size:13px;margin:0 0 2px}.mwpi-selector-help{color:#b8c5d1;font-size:12px;line-height:1.45;margin:8px 0}.mwpi-archive{margin:12px 0 0;border:1px solid #334657;border-radius:12px;background:#0a1521}.mwpi-archive>summary{padding:13px;color:#f3c768;font-weight:800;cursor:pointer;letter-spacing:.04em}.mwpi-archive[open]{padding:0 12px 12px}.mwpi-archive>.mwProgressHero,.mwpi-archive>.mwProgressStats,.mwpi-archive>.mwDevelopmentGuide,.mwpi-archive>.mwVelocityInsights,.mwpi-archive>.mwProgressSection{margin-top:10px}.mwpi-panel h3{color:#f1c466;font-size:16px;margin:0 0 8px}.mwpi-emptyGraph{padding:10px 12px;color:#aebdcc;font-size:12px}.mwpi-placeholder{height:92px;border-bottom:1px solid #334657;border-left:1px solid #334657;position:relative;margin:0 0 8px}.mwpi-placeholder:after{content:'';position:absolute;left:8%;right:8%;top:50%;border-top:2px dashed #405568}.mwpi-chart-note{margin:5px 0 0}#mw-performance-progression .mwpi-controls select{font-size:13px}@media(max-width:420px){#mw-performance-progression{padding:13px}.mwpi-grid{gap:5px}.mwpi-card{padding:9px}.mwpi-card strong{font-size:18px}.mwpi-card small{font-size:11px}.mwpi-controls{grid-template-columns:1fr 1fr}}";
+    var s=node('style');s.id='mwpi-style';s.textContent="#mw-performance-progression{margin:12px 0 24px;padding:16px;border:1px solid #9b7a39;border-radius:18px;background:#101b29;color:#f7f5ef;font:14px system-ui}#mw-performance-progression h2{font-size:22px;letter-spacing:.03em;color:#f3c768;margin:0 0 4px}#mw-performance-progression .mwpi-sub{color:#aebdcc;margin:0 0 10px}#mw-performance-progression h3{color:#f1c466;font-size:17px;margin:18px 0 8px}.mwpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 16px}.mwpi-card,.mwpi-panel{background:#0a1521;border:1px solid #334657;border-radius:12px;padding:11px;margin:8px 0}.mwpi-card strong{display:block;font-size:21px}.mwpi-card small{display:block;color:#afbecd;margin-top:3px;font-size:12px;line-height:1.2}.mwpi-card .mwpi-answer-value{font-size:17px;line-height:1.15;overflow-wrap:anywhere}.mwpi-card .mwpi-answer-detail{display:block;color:#b8c5d1;font-size:11px;line-height:1.3;margin-top:6px}.mwpi-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:10px 0}.mwpi-controls label{display:block;color:#afbecd;font-size:11px}.mwpi-controls select{width:100%;margin-top:5px;padding:9px 10px;border:1px solid #405568;border-radius:8px;background:#0a1521;color:#f7f5ef;font-size:14px}.mwpi-chart{display:block;width:100%;height:auto;min-height:150px}.mwpi-empty,.mwpi-chart-note,.mwpi-legend{color:#b8c5d1;font-size:12px;line-height:1.45}.mwpi-result{color:#f3c768;font-weight:800;margin:6px 0 0;font-size:13px}.mwpi-panel-title{display:block;color:#d8e0e7;font-size:13px;margin:0 0 2px}.mwpi-selector-help{color:#b8c5d1;font-size:12px;line-height:1.45;margin:8px 0}.mwpi-archive{margin:12px 0 0;border:1px solid #334657;border-radius:12px;background:#0a1521}.mwpi-archive>summary{padding:13px;color:#f3c768;font-weight:800;cursor:pointer;letter-spacing:.04em}.mwpi-archive[open]{padding:0 12px 12px}.mwpi-archive>.mwProgressHero,.mwpi-archive>.mwProgressStats,.mwpi-archive>.mwDevelopmentGuide,.mwpi-archive>.mwVelocityInsights,.mwpi-archive>.mwProgressSection{margin-top:10px}.mwpi-panel h3{color:#f1c466;font-size:16px;margin:0 0 8px}.mwpi-emptyGraph{padding:10px 12px;color:#aebdcc;font-size:12px}.mwpi-placeholder{height:92px;border-bottom:1px solid #334657;border-left:1px solid #334657;position:relative;margin:0 0 8px}.mwpi-placeholder:after{content:'';position:absolute;left:8%;right:8%;top:50%;border-top:2px dashed #405568}.mwpi-chart-note{margin:5px 0 0}#mw-performance-progression .mwpi-controls select{font-size:13px}@media(max-width:420px){#mw-performance-progression{padding:13px}.mwpi-grid{gap:5px}.mwpi-card{padding:9px}.mwpi-card strong{font-size:18px}.mwpi-card .mwpi-answer-value{font-size:15px}.mwpi-card .mwpi-answer-detail{font-size:10px}.mwpi-card small{font-size:11px}.mwpi-controls{grid-template-columns:1fr 1fr}}";
     document.head.appendChild(s);
   }
   function mount(){
@@ -140,21 +140,42 @@
     var strength=Array.isArray(data.strength_history)?data.strength_history:[];
     var consistency=data.consistency||{};
     var eligible=sprint.filter(function(row){return row.speed_test_eligible===true});
-    var comparable=new Map();eligible.forEach(function(row){var key=Number(row.distance_m)+'|'+row.intent_group;if(!comparable.has(key))comparable.set(key,[]);comparable.get(key).push(row)});
-    var speedChanges=[];comparable.forEach(function(rows,key){
-      var sessions=sessionPoints(rows,function(){return true});
-      var first=Number(sessions[0]?.value),last=Number(sessions.at(-1)?.value);
-      if(sessions.length>1&&first>0)speedChanges.push({key:key,percent:(first-last)/first*100,seconds:first-last});
+    var speedGroups=new Map();
+    eligible.forEach(function(row){var key=Number(row.distance_m)+'|'+row.intent_group;if(!speedGroups.has(key))speedGroups.set(key,[]);speedGroups.get(key).push(row)});
+    var speedSeries=[...speedGroups.entries()].map(function(pair){return {key:pair[0],points:sessionPoints(pair[1],function(){return true})}}).filter(function(x){return x.points.length}).sort(function(a,b){return b.points.at(-1).date-a.points.at(-1).date});
+    var speedCard;
+    if(!speedSeries.length)speedCard={value:'NO TESTS',question:'FASTER?',detail:'Log a speed test to start.'};
+    else if(speedSeries[0].points.length<2)speedCard={value:'FIRST TEST',question:'FASTER?',detail:'Repeat the same type and distance to compare.'};
+    else{
+      var speedPoints=speedSeries[0].points,firstSpeed=speedPoints[0].value,lastSpeed=speedPoints.at(-1).value,change=firstSpeed-lastSpeed;
+      speedCard={value:change>0?number(change,2)+'s faster':change<0?number(Math.abs(change),2)+'s slower':'STEADY',question:'FASTER?',detail:'Same type + distance · first '+number(firstSpeed,2)+'s · latest '+number(lastSpeed,2)+'s.'};
+    }
+    var targetSessions=new Map();
+    sprint.forEach(function(row){
+      if(!row.pace_status)return;var d=dateOf(row);if(!d)return;
+      var id=[row.workout_cycle_id||'',row.workout_key||'',row.program_week||'',row.program_day||'',dayKey(d),row.intent_group||'',row.distance_m||''].join('|');
+      var item=targetSessions.get(id)||{date:d,total:0,on:0,type:row.intent_group,distance:row.distance_m};
+      item.total++;if(row.pace_status==='on_pace')item.on++;targetSessions.set(id,item);
     });
-    var liftGroups=new Map();strength.forEach(function(row){var key=row.exercise+'|'+row.unit;if(!liftGroups.has(key))liftGroups.set(key,[]);liftGroups.get(key).push(row)});
-    var strengthChanges=[];liftGroups.forEach(function(rows,key){
-      var days=new Map();rows.forEach(function(row){var d=dateOf(row);if(!d)return;var id=[row.training_cycle_key||'',row.program_week||'',row.program_day||'',dayKey(d)].join('|'),v=Number(row.estimated_1rm),old=days.get(id);if(v>0&&(!old||v>old.value))days.set(id,{value:v,date:d})});
-      var ordered=[...days.values()].sort(function(a,b){return a.date-b.date});
-      if(ordered.length>1&&ordered[0].value>0)strengthChanges.push((ordered.at(-1).value-ordered[0].value)/ordered[0].value*100);
+    var latestTarget=[...targetSessions.values()].sort(function(a,b){return b.date-a.date})[0];
+    var targetCard=latestTarget?{value:latestTarget.on+' / '+latestTarget.total,question:'ON TARGET?',detail:'Reps that hit the goal in your latest session.'}:{value:'NO DATA',question:'ON TARGET?',detail:'No target reps have been saved yet.'};
+    var liftGroups=new Map();
+    strength.forEach(function(row){
+      var value=Number(row.estimated_1rm),d=dateOf(row);if(!d||!Number.isFinite(value)||value<=0)return;
+      var group=row.exercise+'|'+row.unit;if(!liftGroups.has(group))liftGroups.set(group,new Map());
+      var sessionId=[row.training_cycle_key||'',row.program_week||'',row.program_day||'',dayKey(d)].join('|'),sessions=liftGroups.get(group),old=sessions.get(sessionId);
+      if(!old||value>old.value)sessions.set(sessionId,{value:value,date:d,row:row});
     });
+    var liftSeries=[...liftGroups.entries()].map(function(pair){return {name:pair[0],points:[...pair[1].values()].sort(function(a,b){return a.date-b.date})}}).filter(function(x){return x.points.length}).sort(function(a,b){return b.points.at(-1).date-a.points.at(-1).date});
+    var strengthCard;
+    if(!liftSeries.length)strengthCard={value:'NO LIFTS',question:'STRONGER?',detail:'Log a lift with weight and reps.'};
+    else if(liftSeries[0].points.length<2)strengthCard={value:'FIRST LIFT',question:'STRONGER?',detail:'Log the same lift again to compare.'};
+    else{
+      var liftPoints=liftSeries[0].points,firstLift=liftPoints[0].value,lastLift=liftPoints.at(-1).value,liftChange=lastLift-firstLift,liftUnit=liftPoints.at(-1).row.unit;
+      strengthCard={value:liftChange>0?'+'+number(liftChange,1)+' '+liftUnit:liftChange<0?number(liftChange,1)+' '+liftUnit:'STEADY',question:'STRONGER?',detail:liftSeries[0].name.split('|')[0]+' estimated lift · first '+number(firstLift,1)+' · latest '+number(lastLift,1)+'.'};
+    }
     var cards=node('div',null,'mwpi-grid');
-    var done=Number(consistency.completed_workouts||0);
-    [[String(eligible.length),'SPEED TESTS'],[String(strength.length),'LIFTS'],[String(done),'WORKOUTS']].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('strong',item[0]));c.appendChild(node('small',item[1]));cards.appendChild(c)});
+    [speedCard,targetCard,strengthCard].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('strong',item.value,'mwpi-answer-value'));c.appendChild(node('small',item.question));c.appendChild(node('span',item.detail,'mwpi-answer-detail'));cards.appendChild(c)});
     content.appendChild(cards);
     renderSprint(content,sprint);renderStrength(content,strength);
   }
