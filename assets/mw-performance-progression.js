@@ -155,7 +155,7 @@
     if(!speedSeries.length)speedCard={value:'No sprint saved yet',question:'Sprint',detail:'Save a sprint result to see your progress.'};
     else if(speedSeries[0].points.length<2)speedCard={value:'First sprint saved',question:'Sprint',detail:'Run the same distance again to compare.'};
     else{
-      var speedPoints=speedSeries[0].points,firstSpeed=speedPoints[0].value,lastSpeed=speedPoints.at(-1).value,change=firstSpeed-lastSpeed;
+      var speedPoints=speedSeries[0].points,previousSpeed=speedPoints.at(-2).value,lastSpeed=speedPoints.at(-1).value,change=previousSpeed-lastSpeed;
       speedCard={value:change>0?number(change,2)+' sec faster':change<0?number(Math.abs(change),2)+' sec slower':'Same time',question:'Sprint',detail:'Compared with your last matching sprint.'};
     }
     var targetSessions=new Map();
@@ -179,8 +179,8 @@
     if(!liftSeries.length)strengthCard={value:'No lift saved yet',question:'Strength',detail:'Save a lift to start tracking it.'};
     else if(liftSeries[0].points.length<2)strengthCard={value:'First lift saved',question:'Strength',detail:'Do this lift again to compare.'};
     else{
-      var liftPoints=liftSeries[0].points,firstLift=liftPoints[0].value,lastLift=liftPoints.at(-1).value,liftChange=lastLift-firstLift,liftUnit=liftPoints.at(-1).row.unit;
-      strengthCard={value:liftChange>0?'+'+number(liftChange,1)+' '+liftUnit:liftChange<0?number(Math.abs(liftChange),1)+' '+liftUnit+' lower':'Same estimate',question:'Strength',detail:'Lift estimate for '+liftSeries[0].name.split('|')[0]+'.'};
+      var liftPoints=liftSeries[0].points,previousLift=liftPoints.at(-2).value,lastLift=liftPoints.at(-1).value,liftChange=lastLift-previousLift,liftUnit=liftPoints.at(-1).row.unit;
+      strengthCard={value:liftChange>0?'+'+number(liftChange,1)+' '+liftUnit:liftChange<0?number(Math.abs(liftChange),1)+' '+liftUnit+' lower':'Same estimate',question:'Strength',detail:'Compared with your last '+liftSeries[0].name.split('|')[0]+'.'};
     }
     var cards=node('div',null,'mwpi-grid');
     [speedCard,targetCard,strengthCard].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('small',item.question));c.appendChild(node('strong',item.value,'mwpi-answer-value'));c.appendChild(node('span',item.detail,'mwpi-answer-detail'));cards.appendChild(c)});
