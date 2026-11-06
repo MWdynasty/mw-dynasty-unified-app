@@ -57,6 +57,7 @@ for (const entry of [athlete, coachEntry]) {
 const componentSource = fs.readFileSync('assets/mw-signin-v3.js', 'utf8');
 const athleteAuth = fs.readFileSync('assets/mw-athlete-auth-v1.js', 'utf8');
 assert.doesNotThrow(() => new Function(athleteAuth), 'Athlete auth bootstrap must parse before it is loaded');
+assert(athleteAuth.includes('window.scheduleSeasonCalendarPreview?.()'), 'Missing calendar preview helper must not abort Athlete account hydration');
 assert(componentSource.includes("mw-athlete-auth-v1.js?v=20261106"), 'Athlete sign-in component must load its auth bootstrap');
 assert(athleteAuth.includes("querySelector('#mwAthleteLoginForm').onsubmit=e=>{e.preventDefault();login()}"), 'Athlete form must prevent navigation and call the real login handler');
 assert(athleteAuth.includes("async function login()"), 'Athlete sign-in must call Supabase password auth');
