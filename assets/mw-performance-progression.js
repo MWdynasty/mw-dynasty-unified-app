@@ -192,7 +192,7 @@
     control(controls,'Workout type',cats.map(function(g){return {label:names[g],value:g}}),category,function(v){category=v;redraw()});
     control(controls,'Distance',distances.map(function(v){return {label:v+'m',value:String(v)}}),distance,function(v){distance=v;redraw()});
     control(controls,'Show by',[{label:'Week',value:'week'},{label:'Month',value:'month'}],period,function(v){period=v;redraw()});
-    root.appendChild(node('p','Workout type = what you practiced (like technique or top speed). Distance = how far you ran. Use the same type and distance to compare results.','mwpi-selector-help'));
+    root.insertBefore(node('p','Workout type = what you practiced (like technique or top speed). Distance = how far you ran. Use the same type and distance to compare results.','mwpi-selector-help'),graph);
     redraw();
   }
   function renderStrength(root,rows){
