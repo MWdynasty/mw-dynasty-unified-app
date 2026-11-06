@@ -180,7 +180,7 @@ assert(authScriptMatch,'Athlete auth script must exist');
 assert(athleteHtml.includes('window.applyCoachVisual=applyCoachVisual;'),'Athlete coach visual helper must be exposed across script scopes');
 assert(authScriptMatch[1].includes('function safeApplyCoachVisual(choice)'),'Auth flow must isolate optional coach visual failures');
 assert(authScriptMatch[1].includes("typeof window.applyCoachVisual==='function'"),'Visual helper must be type-checked before use');
-assert(!authScriptMatch[1].includes('applyCoachVisual(mwRemoteProfile.coachType);'),'Auth flow must not call the optional helper unguarded');
+assert(!/(?<![\\w.$])applyCoachVisual\\(/.test(authScriptMatch[1]),'Auth flow must not call the optional helper unguarded');
 const inlineScripts=[...athleteHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
 assert(inlineScripts.length>=30,'Athlete page lost expected inline script blocks');
 for(const [index,body] of inlineScripts.entries()){
