@@ -208,11 +208,8 @@ assert(athleteHtml.includes("calc(env(safe-area-inset-top) + 14px)"),'Practice M
 assert(!athleteHtml.includes("$p('mwPracticeWork').textContent=prep.join"),'Practice Mode must not collapse the prescription into one paragraph');
 
 assert(athleteHtml.includes('<details class="mwPracticePrescription">'),'Practice Mode workout instructions must be collapsible');
-assert(athleteHtml.includes('WORKOUT INSTRUCTIONS'),'Practice Mode disclosure control must be clearly named');
+assert(athleteHtml.includes('<summary><span>TODAY’S WORK</span>'),'Practice Mode disclosure must identify the work-only content');
 assert(athleteHtml.includes("instructionToggle.open?'TAP TO CLOSE':'TAP TO OPEN'"),'Practice Mode disclosure label must reflect its open/closed state');
-
-assert(athleteHtml.includes('YOUR WORKOUT, IN SIMPLE STEPS'),'Practice Mode must lead with athlete-friendly instructions');
-assert(athleteHtml.includes('COACH’S FULL TRAINING NOTES'),'Technical notes must stay available as an optional detail');
-assert(athleteHtml.includes('front-side timing'),'Full coach notes must preserve the original technical prescription');
-assert(athleteHtml.includes('stay relaxed, run tall, and bring your knees forward smoothly'),'Athlete-facing copy must explain running cues in plain language');
-assert(athleteHtml.includes('This takes the place of your usual technique workout. Do not add reps.'),'Safety instruction must remain explicit in the simpler athlete view');
+assert(athleteHtml.includes("const mainWork=simplifyAthleteText(p.raw||session.focus||'Follow today’s MW prescription.')"),'Practice Mode must use the prescribed main work');
+assert(athleteHtml.includes('This takes the place of your usual technique workout. Do not add reps.'),'Safety instruction must remain explicit in the simplified main work');
+assert(!athleteHtml.includes('COACH’S FULL TRAINING NOTES'),'Unnecessary technical notes must not appear in Practice Mode');

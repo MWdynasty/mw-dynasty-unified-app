@@ -4889,15 +4889,8 @@ async function openPracticeFor(w,d){
  renderLog();const next=Math.min(p.reps,results.length+1);
  const athleteTitle=String(session.title||'Today’s track workout').replace(/\bTECH\b/gi,'RUNNING SKILLS').replace(/\bLIFT\b/gi,'STRENGTH').replace(/\bMON\b/gi,'MONDAY').replace(/\bTUE\b/gi,'TUESDAY').replace(/\bWED\b/gi,'WEDNESDAY').replace(/\bTHU\b/gi,'THURSDAY').replace(/\bFRI\b/gi,'FRIDAY').replace(/\bSAT\b/gi,'SATURDAY').replace(/\bSUN\b/gi,'SUNDAY');
  $p('mwPracticeTitle').textContent=athleteTitle;
- const wk=session?.wickets||{};
  const practiceBullets=(value,mode='sentences')=>{const raw=String(value||'').trim();let items=mode==='dots'?raw.split(/\s*[·•]\s*/):raw.replace(/([.!?])\s+(?=[A-Z0-9])/g,'$1|').split('|');items=items.map(x=>x.trim()).filter(Boolean);return '<ul class="mwPracticeBulletList">'+items.map(x=>'<li>'+x.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</li>').join('')+'</ul>'};
- const practiceSections=[['WARM-UP',session.warmup||'Competition Warm-Up','sentences'],['WICKETS',[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · '),'dots'],['MAIN',p.raw||session.focus||'Follow today’s MW prescription.','sentences'],['RECOVERY',session.recovery||'Recover as prescribed.','sentences']];
- const basis=parsePrescription().paceBasis;if(basis)practiceSections.push(['PACE GUIDANCE',basis.anchor+'. '+basis.note,'sentences']);
  const simplifyAthleteText=value=>{let text=String(value||'');const replacements=[
- [/Rhythm \/ development wickets/gi,'Practice smooth running over small hurdles'],
- [/3-4 passes/gi,'3–4 runs'],
- [/moderate progressive spacing/gi,'space the hurdles a little farther apart each time'],
- [/relaxed cadence, posture and front-side timing/gi,'stay relaxed, run tall, and bring your knees forward smoothly'],
  [/light sled pull/gi,'pull a light sled'],
  [/free upright build \/ fly entry/gi,'run without the sled and gradually build speed while staying tall'],
  [/Resistance: light resistance, about 5-15% individual sprint-velocity decrement if measured\.?/gi,'Use only a light sled. If your coach measures your speed, the sled should slow you by just 5–15%.'],
@@ -4905,15 +4898,14 @@ async function openPracticeFor(w,d){
  [/Full 3-5 minutes between paired sets, longer when needed to preserve speed\.?/gi,'Rest 3–5 minutes between rounds. Rest longer if needed so you can run fast again.'],
  [/No sled: controlled build-up and a faster flat run in the SAME total pairs\.?/gi,'No sled? Ask your coach to use a controlled build-up, then run faster for the same number of rounds.'],
  [/This session REPLACES the existing technical main set; never add extra reps\.?/gi,'This takes the place of your usual technique workout. Do not add reps.'],
- [/Supervise developing athletes; stop if sprint mechanics, velocity or readiness decline\.?/gi,'Have a coach nearby. Stop if your form gets worse, you slow down, or you do not feel ready.'],
- [/Lift B after track in general preparation\.?/gi,'Do Lift B after track during general training.'],
- [/Reduce to a micro-dose or remove it as competition demands rise\.?/gi,'Make it shorter and easier, or skip it when a competition is near.'],
- [/Competition Warm-Up/gi,'Do the warm-up your coach taught you']
+ [/Supervise developing athletes; stop if sprint mechanics, velocity or readiness decline\.?/gi,'Have a coach nearby. Stop if your form gets worse, you slow down, or you do not feel ready.']
  ];for(const [pattern,replacement] of replacements)text=text.replace(pattern,replacement);return text};
- const simpleSections=practiceSections.map(([label,value,mode])=>[{'WARM-UP':'WARM-UP','WICKETS':'SMALL HURDLES','MAIN':'MAIN WORK','RECOVERY':'LIFT & RECOVERY'}[label]||label,simplifyAthleteText(value),mode]);
- const simpleHtml=simpleSections.map(([label,value,mode])=>'<section class="mwPracticeInstruction"><b>'+label+'</b>'+practiceBullets(value,mode)+'</section>').join('');
- const fullHtml=practiceSections.map(([label,value,mode])=>'<section class="mwPracticeInstruction"><b>'+label+'</b>'+practiceBullets(value,mode)+'</section>').join('');
- $p('mwPracticeWork').innerHTML='<div class="mwPracticePlainIntro"><b>YOUR WORKOUT, IN SIMPLE STEPS</b><span>Follow these steps. Ask your coach if anything is unclear.</span>'+simpleHtml+'</div><details class="mwPracticePrescription"><summary><span>COACH’S FULL TRAINING NOTES</span><span class="mwPracticeDisclosure">OPTIONAL · TAP TO OPEN</span></summary><div class="mwPracticeSections">'+fullHtml+'</div></details>';
+ const mainWork=simplifyAthleteText(p.raw||session.focus||'Follow today’s MW prescription.');
+ const basis=parsePrescription().paceBasis;
+ const paceHtml=basis?'<section class="mwPracticeInstruction"><b>PACE</b>'+practiceBullets(basis.anchor+'. '+basis.note)+'</section>':'';
+ $p('mwPracticeWork').innerHTML='<details class="mwPracticePrescription"><summary><span>TODAY’S WORK</span><span class="mwPracticeDisclosure">TAP TO OPEN</span></summary><div class="mwPracticePlainIntro">'+practiceBullets(mainWork)+paceHtml+'</div></details>';
+ const instructionToggle=$p('mwPracticeWork').querySelector('.mwPracticePrescription'),disclosure=$p('mwPracticeWork').querySelector('.mwPracticeDisclosure');
+ instructionToggle?.addEventListener('toggle',()=>{if(disclosure)disclosure.textContent=instructionToggle.open?'TAP TO CLOSE':'TAP TO OPEN'});
  if(workoutSaved){
    restTimer.setDisabled(true,'WORKOUT COMPLETE');
    $p('mwPracticeRep').textContent='WORKOUT COMPLETE';$p('mwPracticeClock').textContent='—';$p('mwPracticeCue').textContent='THIS SESSION IS ALREADY LOGGED';$p('mwPracticeStart').hidden=true;$p('mwPracticePause').hidden=true;$p('mwPracticeNext').hidden=true;$p('mwPracticeSave').hidden=true;showSummary();
