@@ -1571,7 +1571,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   #todayTrackDetails .workoutBulletList li { padding-left: 2px; font-size: 15px; line-height: 1.5; }
   #todayTrackDetails .workoutBulletList li::marker { color: #f2c45e; }
 </style>
-</head>
+<style id="athlete-training-simplify">.trainAccordion>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}.trainAccordion>summary::-webkit-details-marker,.missedTrainingDetails>summary::-webkit-details-marker{display:none}.trainAccordion>summary:after{content:'+';color:#f2c45e;font-size:1.35em;line-height:1}.trainAccordion[open]>summary:after{content:'−'}.workoutExtraDetails,.trackStatusAccordion{margin-top:12px}.workoutExtraDetails>summary,.trackStatusAccordion>summary,.missedTrainingDetails>summary{cursor:pointer;color:#f2c45e;font-weight:800;font-size:.9em;letter-spacing:.06em}.missedTrainingDetails{margin-top:8px}.mwMissedTrainingNotice p{margin:8px 0 0}</style></head>
 <body class="mw-auth-pending mw-hybrid-athlete"><script src="/assets/mw-session-launch-live-20261004-r1.js?v=20261103-session-launch-1" data-mw-launch-role="athlete"></script>
 <script>
 (()=>{try{const q=new URLSearchParams(location.search),hasSession=!!(window.MWAccountStorage.local.getItem('mwSupabaseSession')||window.MWAccountStorage.session.getItem('mwSupabaseSession'));if(q.get('toolReturn')==='1'&&hasSession)document.body.classList.add('mw-tool-return')}catch{}})();
@@ -1716,13 +1716,15 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="cardHead"><span>TODAY'S TRACK WORKOUT</span><span id="unlockBadge" class="smalllink">TODAY</span></div>
 <div id="todayTrackDetails"><div class="muted">Loading today’s track workout…</div></div>
 <button type="button" id="mwPracticeLaunch" class="mwPracticeLaunch">▶ START PRACTICE MODE</button>
-<div class="performanceHint" id="performanceHint"><b>AFTER TRAINING:</b> Tap DONE. If today has a target pace, MW will ask how many reps you hit.</div>
+<div class="performanceHint" id="performanceHint">Finish today’s workout in Practice Mode.</div>
+<details class="trainAccordion trackStatusAccordion"><summary>WORKOUT STATUS &amp; CHECK-IN</summary>
 <p class="muted" id="completionRepHint" style="display:none"></p>
 <div id="weekChecklist" class="checkList"></div><div id="unlockNote" class="lockNote"></div>
+</details>
 <span id="completionWeek" style="display:none">1</span>
 </div>
-<div class="card" id="todayStrengthCard">
-<div class="cardHead">TODAY'S STRENGTH &amp; POWER <span id="strengthPhaseLabel" class="smalllink"></span></div>
+<details class="card trainAccordion" id="todayStrengthCard">
+<summary class="cardHead">TODAY'S STRENGTH &amp; POWER <span id="strengthPhaseLabel" class="smalllink"></span></summary>
 <div class="weekChooser" style="display:none"><label>MW WEEK</label><select id="strengthWeek"></select></div>
 <div id="strengthTodayLabel" class="lockNote" style="margin-top:10px"></div>
 <div id="strengthPlan" class="strengthPlan"></div>
@@ -1751,8 +1753,8 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 </div>
 <div id="strengthLogRecent" class="strengthLogRecent"></div>
 </details>
-</div>
-<div class="card" id="mwTodayToolsCard"><div class="cardHead"><span>PERFORMANCE TOOLS</span><span class="smalllink">READY WHEN YOU NEED THEM</span></div><h2>Tools for today’s work.</h2><p class="muted">Your training comes first. Open a tool here when today’s session calls for it.</p><div class="actionGrid" style="margin-top:12px"><button class="actionCard" type="button" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span class="muted">Get your individualized target times for today’s reps.</span></button><button class="actionCard" type="button" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span class="muted">Track, football field, or open field — know exactly where the rep ends.</span></button><button class="actionCard" type="button" onclick="window.mwOpenMotionIntelligence?.()"><b>🎥 MOTION INTELLIGENCE</b><span class="muted">Upload a sprint video for secure movement review.</span></button></div></div>
+</details>
+<details class="card trainAccordion" id="mwTodayToolsCard"><summary class="cardHead"><span>PERFORMANCE TOOLS</span><span class="smalllink">OPEN WHEN NEEDED</span></summary><h2>Tools for today’s work.</h2><p class="muted">Your training comes first. Open a tool here when today’s session calls for it.</p><div class="actionGrid" style="margin-top:12px"><button class="actionCard" type="button" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span class="muted">Get your individualized target times for today’s reps.</span></button><button class="actionCard" type="button" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span class="muted">Track, football field, or open field — know exactly where the rep ends.</span></button><button class="actionCard" type="button" onclick="window.mwOpenMotionIntelligence?.()"><b>🎥 MOTION INTELLIGENCE</b><span class="muted">Upload a sprint video for secure movement review.</span></button></div></details>
 </section>
 <section class="view" id="pacer"><div class="top"><div><div class="logo"><b>MW</b> PERFORMANCE TOOLS</div><div class="sub">ONE ACCOUNT · ONE TRAINING SYSTEM</div></div></div><div class="card"><h2>Performance Lab</h2><p class="muted">Choose the tool you need. Your MW session stays connected while you train.</p><div class="actionGrid" style="margin-top:14px"><button class="actionCard" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span>Turn your PRs into individualized target times.</span></button><button class="actionCard" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span>Know exactly where your rep finishes.</span></button><button class="actionCard" onclick="window.mwOpenMotionIntelligence?.()"><b>🎥 MOTION INTELLIGENCE</b><span>Upload a side, front, or rear sprint recording for secure review.</span></button></div></div><div id="mwMotionPanel"></div></section>
 <section class="view" id="athlete">
@@ -2653,14 +2655,14 @@ async function renderCompletion(){
     const focus=String(session?.focus||session?.title||'').toLowerCase();
     const speedDay=/accel|velocity|speed|sprint|competition/.test(focus);
     const tempoDay=/tempo|recovery|extensive|technical/.test(focus);
-    const missedNotice=recentMisses?'<div class="mwMissedTrainingNotice"><b>MW ADAPTIVE TRAINING · '+recentMisses+' MISSED SESSION'+(recentMisses===1?'':'S')+'</b><p>Today stays on the calendar. '+(recentMisses>=3?'Multiple missed sessions: pause high-intensity progression until readiness is reviewed with your coach.':speedDay?'Speed session: return with a conservative warm-up and check readiness before any fast reps.':tempoDay?'Controlled session: follow today’s target effort; do not add missed volume.':'Follow today’s planned intent without making up missed volume.')+'</p><small><b>MISSED SESSIONS:</b> '+missedSummary+'. No automatic catch-up or load increase. Your coach should approve changes to sets, intensity or lifting loads.</small></div>':'';
+    const missedNotice=recentMisses?'<div class="mwMissedTrainingNotice"><b>TRAINING NOTE · '+recentMisses+' MISSED</b><p>Follow today’s workout. Don’t add missed reps. Ask your coach before changing speed, sets, or weights.</p><details class="missedTrainingDetails"><summary>WHY AM I SEEING THIS?</summary><small>Missed: '+missedSummary+'. MW does not add catch-up work automatically. Your coach reviews training changes.</small></details></div>':'';
     details.dataset.mwMissedNotice=missedNotice;
   }
   if(details){
     const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
     const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'Follow the MW prescription for today.';
     const wk=session?.wickets||{};const wicketLine=[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · ');const workoutBullets=(value,mode='sentences')=>{const raw=String(value||'').trim();let items=mode==='dots'?raw.split(/\s*[·•]\s*/):raw.replace(/([.!?])\s+(?=[A-Z0-9])/g,'$1|').split('|');items=items.map(x=>x.trim()).filter(Boolean);return '<ul class="workoutBulletList">'+items.map(x=>'<li>'+x.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</li>').join('')+'</ul>'};
-    details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 12px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><div class="workoutDetailRow"><b>WARM-UP</b>${workoutBullets(session.warmup||'Competition Warm-Up')}</div><div class="workoutDetailRow"><b>WICKETS</b>${workoutBullets(wicketLine||'Daily MW wicket progression','dots')}</div><div class="workoutDetailRow"><b>WORK</b>${workoutBullets(prescribed)}</div><div class="workoutDetailRow"><b>RECOVERY / STRENGTH</b>${workoutBullets(session.recovery||'Full quality recovery')}</div></div>${details.dataset.mwMissedNotice||''}`;
+    details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 12px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><div class="workoutDetailRow"><b>WORK</b>${workoutBullets(prescribed)}</div><details class="trainAccordion workoutExtraDetails"><summary>WARM-UP, WICKETS &amp; RECOVERY</summary><div class="workoutDetailRow"><b>WARM-UP</b>${workoutBullets(session.warmup||'Competition Warm-Up')}</div><div class="workoutDetailRow"><b>WICKETS</b>${workoutBullets(wicketLine||'Daily MW wicket progression','dots')}</div><div class="workoutDetailRow"><b>RECOVERY</b>${workoutBullets(session.recovery||'Full quality recovery')}</div></details></div>${details.dataset.mwMissedNotice||''}`;
   }
   const pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),isDone=!!wc['s'+sessionNumber]||status==='completed',row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
   const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
