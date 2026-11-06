@@ -68,5 +68,22 @@
   }
   const api = Object.freeze({render, mount});
   root.MWSignIn = api;
+  // The Athlete shell still owns authentication. Load its auth bootstrap after
+  // the parsed page so the shared sign-in component is mounted before binding.
+  if (root.location && /^\\/athlete(?:\\/|$)/.test(root.location.pathname || '')) {
+    const loadAthleteAuth = () => {
+      if (document.querySelector('script[data-mw-athlete-auth]')) return;
+      const script = document.createElement('script');
+      script.src = '/assets/mw-athlete-auth-v1.js?v=20261106';
+      script.async = false;
+      script.dataset.mwAthleteAuth = '1';
+      (document.head || document.documentElement).appendChild(script);
+    };
+    if (document.readyState === 'loading') {
+      root.addEventListener('DOMContentLoaded', loadAthleteAuth, {once: true});
+    } else {
+      loadAthleteAuth();
+    }
+  }
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
