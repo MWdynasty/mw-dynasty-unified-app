@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v14-account-isolation';
+const CACHE='mw-dynasty-shell-v15-athlete-auth';
 const CORE=[
   '/',
   '/athlete/',
@@ -14,6 +14,7 @@ const CORE=[
   '/coach/styles.css',
   '/assets/mw-unified-theme.css',
   '/assets/mw-signin-v3.js',
+  '/assets/mw-athlete-auth-v1.js?v=20261106',
   '/assets/mw-signin-v3.css',
   '/assets/mw-dynasty-luxe-v21.css',
   '/assets/mw-responsive-v25.css'

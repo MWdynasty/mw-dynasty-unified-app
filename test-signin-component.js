@@ -54,9 +54,16 @@ for (const entry of [athlete, coachEntry]) {
   assert(entry.includes('/assets/mw-signin-v3.js'));
   assert(entry.indexOf('/assets/mw-signin-v3.js') < entry.indexOf('</head>'), 'Component must load before auth handlers bind');
 }
-assert(athlete.includes("querySelector('#mwAthleteLoginForm').onsubmit=e=>{e.preventDefault();login()}"));
+const componentSource = fs.readFileSync('assets/mw-signin-v3.js', 'utf8');
+const athleteAuth = fs.readFileSync('assets/mw-athlete-auth-v1.js', 'utf8');
+assert.doesNotThrow(() => new Function(athleteAuth), 'Athlete auth bootstrap must parse before it is loaded');
+assert(componentSource.includes("mw-athlete-auth-v1.js?v=20261106"), 'Athlete sign-in component must load its auth bootstrap');
+assert(athleteAuth.includes("querySelector('#mwAthleteLoginForm').onsubmit=e=>{e.preventDefault();login()}"), 'Athlete form must prevent navigation and call the real login handler');
+assert(athleteAuth.includes("async function login()"), 'Athlete sign-in must call Supabase password auth');
+assert(athleteAuth.includes("function requestPasswordReset()"), 'Forgot password flow must remain wired');
+
 assert(!athlete.includes("querySelector('#mwAuthPassword').onkeydown=e=>{if(e.key==='Enter')login()}"), 'Enter must not submit twice');
-assert(athlete.includes("querySelector('[data-mw-signin-card]')"), 'Membership transition retains the stable card hook');
+assert(athleteAuth.includes("querySelector('[data-mw-signin-card]')"), 'Membership transition retains the stable card hook');
 assert(css.includes('max-width: 420px'));
 assert(css.includes('min-width: 0'));
 assert(css.includes('font-size: 16px !important'));
@@ -69,7 +76,7 @@ assert(!css.includes('position: absolute'), 'The shared component must never abs
 const launch = fs.readFileSync('assets/mw-session-launch-live-20261004-r1.js','utf8');
 assert(launch.includes('#app [data-mw-signin]'), 'Returning-session overlay must recognize the new Coach screen');
 const serviceWorker = fs.readFileSync('mw-sw.js','utf8');
-assert(serviceWorker.includes("mw-dynasty-shell-v14-account-isolation"), 'Refresh the cached shell for account isolation');
+assert(serviceWorker.includes("mw-dynasty-shell-v15-athlete-auth"), 'Refresh the cached shell for Athlete auth');
 for (const path of ['/assets/mw-signin-v3.js','/assets/mw-signin-v3.css']) {
   assert(serviceWorker.includes("'" + path + "'"), 'Offline shell must cache ' + path);
 }
