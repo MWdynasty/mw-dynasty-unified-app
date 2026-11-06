@@ -150,7 +150,7 @@
     for(const [id,val] of Object.entries(map)){const el=document.querySelector('#'+id);if(el)el.value=val||''}
     document.querySelector('#entrySeasonPreference')?.dispatchEvent(new Event('change'));
     window.mwSyncSeasonCalendarUX?.();
-    scheduleSeasonCalendarPreview();
+    window.scheduleSeasonCalendarPreview?.();
 
     ['week','startDate','startWeek'].forEach(id=>{
       const el=document.querySelector('#'+id);
@@ -431,7 +431,7 @@
       hydrate(d);
     }catch(e){
       console.error('MW post-auth hydration issue',e);
-      window.MWDiag?.event('athlete_post_auth_hydration_error',{severity:'error',code:'post_auth_hydration',context:{message:String(e?.message||e).slice(0,180)}});
+      window.MWDiag?.event('athlete_post_auth_hydration_error',{severity:'error',code:'post_auth_hydration',context:{detail:String(e?.message||e).slice(0,180),errorName:String(e?.name||'Error')}});
       window.mwAthleteBootWarning='Some Athlete features are still loading.';
     }
     try{await loadSeasonCalendar()}catch(e){console.warn('MW training-year calendar unavailable',e)}
