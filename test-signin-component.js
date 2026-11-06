@@ -62,7 +62,7 @@ assert(athleteAuth.includes("async function login()"), 'Athlete sign-in must cal
 assert(athleteAuth.includes("function requestPasswordReset()"), 'Forgot password flow must remain wired');
 
 assert(!athlete.includes("querySelector('#mwAuthPassword').onkeydown=e=>{if(e.key==='Enter')login()}"), 'Enter must not submit twice');
-assert(athlete.includes("querySelector('[data-mw-signin-card]')"), 'Membership transition retains the stable card hook');
+assert(athleteAuth.includes("querySelector('[data-mw-signin-card]')"), 'Membership transition retains the stable card hook');
 assert(css.includes('max-width: 420px'));
 assert(css.includes('min-width: 0'));
 assert(css.includes('font-size: 16px !important'));
