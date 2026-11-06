@@ -1965,6 +1965,7 @@ function applyCoachVisual(choice){
   if(avatar){avatar.setAttribute('data-coach',choice);avatar.style.backgroundImage='none'}
   if(img){img.onerror=()=>{img.onerror=null;img.src=fallback};if(img.getAttribute('src')!==primary)img.src=primary;img.alt=choice==='female'?'Coach MW — Female':'Coach MW — Male'}
 }
+window.applyCoachVisual=applyCoachVisual;
 function setCoachChoice(choice){
   choice=(choice==='female')?'female':'male';
   if($('#coachType'))$('#coachType').value=choice;
