@@ -74,7 +74,7 @@
     const loadAthleteAuth = () => {
       if (document.querySelector('script[data-mw-athlete-auth]')) return;
       const script = document.createElement('script');
-      script.src = '/assets/mw-athlete-auth-v1.js?v=20261106';
+      script.src = '/assets/mw-athlete-auth-v1.js?v=20261107';
       script.async = false;
       script.dataset.mwAthleteAuth = '1';
       (document.head || document.documentElement).appendChild(script);
