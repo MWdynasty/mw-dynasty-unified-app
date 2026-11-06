@@ -1836,6 +1836,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="mwDevelopmentGuide mwKidResults" id="mwDevelopmentGuide">
  <div class="mwVelocityInsightsHeading"><b>YOUR SPRINT PROGRESS</b></div>
  <div id="mwDevelopmentRead" aria-live="polite"><p>Save the same sprint twice to see if you’re getting faster.</p></div>
+ <div class="mwKidResultRow"><b>Strength</b><span id="mwKidStrengthRead">Save the same lift twice to see if you’re getting stronger.</span></div>
 </div>
 <div class="mwKidNext"><small>YOUR NEXT STEP</small><p>Do your next workout, then save it here.</p></div>
 <details class="mwKidHelp"><summary>How to read this</summary><ul><li>We compare the same sprint distance.</li><li>A lower time means you ran faster.</li><li>Workouts count after you save them.</li></ul></details>
@@ -2781,6 +2782,13 @@ function renderWeightRoomProgressUI(){
     trends.push({exercise:last.exercise_name,reps:Number(last.reps_completed),delta,unit:last.weight_unit||unit});
   }
   trends.slice(0,2).forEach(x=>parts.push(`<div class="mwStrengthProgressRow"><div><b>${escapeHtmlLocal(x.exercise)}</b><small>Comparable ${x.reps}-rep working-load trend · optional detailed log</small></div><strong>${x.delta>0?'+':''}${Number(x.delta.toFixed(1))} ${escapeHtmlLocal(x.unit)}</strong></div>`));
+  const kidStrength=document.getElementById('mwKidStrengthRead');
+  if(kidStrength){
+    const trend=trends[0];
+    kidStrength.textContent=trend
+      ? 'Your '+trend.exercise+' is up '+Number(Math.abs(trend.delta).toFixed(1))+' '+String(trend.unit||unit)+' from your first saved lift.'
+      : 'Save the same lift twice to see if you’re getting stronger.';
+  }
 
   if(!parts.length)parts.push('<div class="muted">No weight-room history yet. Complete today’s lift and MW will build progression automatically from the check-in you already use.</div>');
   box.innerHTML=parts.join('');
@@ -2789,7 +2797,7 @@ function renderVelocityInsights(w,wc){
  const root=document.getElementById('mwVelocityInsights');if(!root)return;
  const completion=getCompletion(),done=Object.values(wc||{}).filter(Boolean).length;
  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
- set('mwVelocityWeekRead',done+' / 5');set('mwVelocityJourneyRead','Week '+w+' / 41');
+ set('mwVelocityWeekRead',done+' of 5');set('mwVelocityJourneyRead','Week '+w+' / 41');
  set('mwVelocityPhase',PHASES[phaseFromWeek(w)]?.name||'MW VELOCITY');
  document.getElementById('mwVelocityWeekBar').style.width=Math.min(100,done/5*100)+'%';
  document.getElementById('mwVelocityJourneyBar').style.width=Math.min(100,w/41*100)+'%';
@@ -2799,7 +2807,7 @@ function renderVelocityInsights(w,wc){
    return '<div class="mwVelocityWeekColumn" aria-label="Week '+week+': '+n+' of 5 sessions"><b>'+n+'/5</b><div class="mwVelocityWeekPillar"><i style="height:'+(n/5*100)+'%"></i></div><small>W'+week+'</small></div>';
  }).join('');
 }
-function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} • ${PHASES[phaseFromWeek(w)]?.name||''}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP150','p150'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400'],['progressP500','p500']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI();renderVelocityInsights(w,wc)}
+function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP150','p150'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400'],['progressP500','p500']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI();renderVelocityInsights(w,wc)}
 function renderProfileIdentity(){const p=getProfile(),first=(document.getElementById('name')?.value||p.name||'Athlete').trim(),last=(document.getElementById('profileLastName')?.value||'').trim(),events=(document.getElementById('profileEvents')?.value||'SPRINT PERFORMANCE').trim();const nm=document.getElementById('mwProfileDisplayName'),ev=document.getElementById('mwProfileEventLine'),mo=document.getElementById('mwProfileMonogram');if(nm)nm.textContent=(first+' '+last).trim();if(ev)ev.textContent=events||'SPRINT PERFORMANCE';if(mo)mo.textContent=((first[0]||'M')+(last[0]||'W')).toUpperCase()}
 document.querySelectorAll('.mwProfileSaveAlias').forEach(b=>b.onclick=()=>document.getElementById('save')?.click());
 ['name','profileLastName','profileEvents'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProfileIdentity));
