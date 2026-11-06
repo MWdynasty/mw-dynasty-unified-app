@@ -1533,6 +1533,15 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   #todayStrengthCard .lockNote { font-size: 15px !important; line-height: 1.55 !important; }
   #mwPracticeLaunch { min-height: 58px !important; font-size: 15px !important; letter-spacing: .04em !important; }
 }
+
+  #todayTrackCard .cardHead { align-items: flex-start !important; }
+  #todayTrackCard .cardHead > span:first-child { max-width: 70%; font-size: 14px !important; line-height: 1.25 !important; }
+  #todayTrackCard .cardHead .smalllink { flex: 0 0 auto; font-size: 11px !important; }
+  #todayTrackDetails .coachNoteBox { display: grid !important; gap: 12px !important; padding: 16px !important; }
+  #todayTrackDetails .workoutDetailRow { display: grid; gap: 4px; border-bottom: 1px solid rgba(231,184,94,.22); padding-bottom: 10px; }
+  #todayTrackDetails .workoutDetailRow:last-child { border-bottom: 0; padding-bottom: 0; }
+  #todayTrackDetails .workoutDetailRow b { color: #f2c45e; font-size: 13px !important; letter-spacing: .07em; line-height: 1.3; }
+  #todayTrackDetails .workoutDetailRow span { color: #f1e7d2; font-size: 15px; line-height: 1.55; overflow-wrap: anywhere; }
 </style>
 </head>
 <body class="mw-auth-pending mw-hybrid-athlete"><script src="/assets/mw-session-launch-live-20261004-r1.js?v=20261103-session-launch-1" data-mw-launch-role="athlete"></script>
@@ -2622,7 +2631,7 @@ async function renderCompletion(){
   if(details){
     const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
     const prescribed=session?.prescribedWork||session?.tierWork?.[tier]||session?.work||session?.structure||'Follow the MW prescription for today.';
-    const wk=session?.wickets||{};const wicketLine=[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · ');details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 8px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><b>WARM-UP:</b> ${session.warmup||'Competition Warm-Up'}<br><b>WICKETS:</b> ${wicketLine||'Daily MW wicket progression'}<br><b>WORK:</b> ${prescribed}<br><b>RECOVERY / STRENGTH:</b> ${session.recovery||'Full quality recovery'}</div>${details.dataset.mwMissedNotice||''}`;
+    const wk=session?.wickets||{};const wicketLine=[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · ');details.innerHTML=`<div class="strengthPhase">${session.title||('TRACK SESSION '+sessionNumber)}</div><h2 style="margin:6px 0 12px">${session.focus||'Today’s track session'}</h2><div class="coachNoteBox"><div class="workoutDetailRow"><b>WARM-UP</b><span>${session.warmup||'Competition Warm-Up'}</span></div><div class="workoutDetailRow"><b>WICKETS</b><span>${wicketLine||'Daily MW wicket progression'}</span></div><div class="workoutDetailRow"><b>WORK</b><span>${prescribed}</span></div><div class="workoutDetailRow"><b>RECOVERY / STRENGTH</b><span>${session.recovery||'Full quality recovery'}</span></div></div>${details.dataset.mwMissedNotice||''}`;
   }
   const pc=pace['s'+sessionNumber],state=workoutStatus(w,sessionNumber),status=String(state?.completion_status||'scheduled'),isDone=!!wc['s'+sessionNumber]||status==='completed',row=document.createElement('div');row.className='checkRow'+(isDone?' done':'');
   const paceNote=pc?.total?` · ${pc.hit}/${pc.total} on pace`:'';
