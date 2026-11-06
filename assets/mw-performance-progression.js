@@ -166,7 +166,7 @@
       item.total++;if(row.pace_status==='on_pace')item.on++;targetSessions.set(id,item);
     });
     var latestTarget=[...targetSessions.values()].sort(function(a,b){return b.date-a.date})[0];
-    var targetCard=latestTarget?{value:latestTarget.on+' of '+latestTarget.total+' runs',question:'Practice',detail:'Hit your goal in your last saved workout.'}:{value:'No goal runs saved yet',question:'Practice',detail:'Your coach’s goal will show here after practice.'};
+    var targetCard=latestTarget?{value:latestTarget.on+' of '+latestTarget.total+' runs',question:'Practice',detail:'You hit your goal in your last workout.'}:{value:'No goal runs saved yet',question:'Practice',detail:'Save a workout with a goal to see it here.'};
     var liftGroups=new Map();
     strength.forEach(function(row){
       var value=Number(row.estimated_1rm),d=dateOf(row);if(!d||!Number.isFinite(value)||value<=0)return;
@@ -183,7 +183,7 @@
       strengthCard={value:liftChange>0?'+'+number(liftChange,1)+' '+liftUnit:liftChange<0?number(Math.abs(liftChange),1)+' '+liftUnit+' lower':'Same estimate',question:'Strength',detail:'Lift estimate for '+liftSeries[0].name.split('|')[0]+'.'};
     }
     var cards=node('div',null,'mwpi-grid');
-    [speedCard,targetCard,strengthCard].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('strong',item.value,'mwpi-answer-value'));c.appendChild(node('small',item.question));c.appendChild(node('span',item.detail,'mwpi-answer-detail'));cards.appendChild(c)});
+    [speedCard,targetCard,strengthCard].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('small',item.question));c.appendChild(node('strong',item.value,'mwpi-answer-value'));c.appendChild(node('span',item.detail,'mwpi-answer-detail'));cards.appendChild(c)});
     content.appendChild(cards);
     var how=node('details',null,'mwpi-help');
     how.appendChild(node('summary','How to read this'));
@@ -200,7 +200,7 @@
     var week=latest?Number(latest.program_week):0;
     if(week){
       journey.appendChild(node('strong','Week '+week+' of 41','mwpi-journey-week'));
-      journey.appendChild(node('p','Your latest saved workout is here.','mwpi-journey-note'));
+      journey.appendChild(node('p','This is the week of your latest saved workout.','mwpi-journey-note'));
       var track=node('div',null,'mwpi-week-track'),fill=node('span',null,'mwpi-week-fill');
       fill.style.width=Math.min(100,Math.max(3,week/41*100))+'%';track.appendChild(fill);track.setAttribute('role','progressbar');track.setAttribute('aria-label','Training weeks saved');track.setAttribute('aria-valuemin','1');track.setAttribute('aria-valuemax','41');track.setAttribute('aria-valuenow',String(Math.min(41,week)));journey.appendChild(track);
     }else{
