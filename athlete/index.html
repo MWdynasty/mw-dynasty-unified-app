@@ -1025,6 +1025,14 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 .mwPracticeMode{padding-top:calc(env(safe-area-inset-top) + 14px)}
 .mwPracticeWork{color:#d6e0e8;font-size:15px;line-height:1.55;margin:12px 0 0}
 .mwPracticeInstruction{padding:12px 0;border-top:1px solid rgba(245,201,94,.2)}
+.mwPracticePrescription{border:1px solid rgba(85,201,255,.3);border-radius:15px;background:#07131d;overflow:hidden}
+.mwPracticePrescription summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:14px 16px;color:#f7f9fc;font-size:12px;font-weight:900;letter-spacing:.07em;cursor:pointer}
+.mwPracticePrescription summary::-webkit-details-marker{display:none}
+.mwPracticeDisclosure{color:#f5c95e;font-size:10px;white-space:nowrap}
+.mwPracticePrescription summary::after{content:'+';color:#f5c95e;font-size:20px;line-height:1}
+.mwPracticePrescription[open] summary::after{content:'−'}
+.mwPracticeSections{padding:0 16px 12px}
+
 .mwPracticeInstruction>b{display:block;color:#f5c95e;font-size:11px;letter-spacing:.1em;margin-bottom:7px}
 .mwPracticeBulletList{margin:0;padding-left:20px;display:grid;gap:6px}
 .mwPracticeBulletList li{padding-left:2px;font-size:15px;line-height:1.55;overflow-wrap:anywhere}
@@ -4876,7 +4884,10 @@ async function openPracticeFor(w,d){
  const practiceBullets=(value,mode='sentences')=>{const raw=String(value||'').trim();let items=mode==='dots'?raw.split(/\s*[·•]\s*/):raw.replace(/([.!?])\s+(?=[A-Z0-9])/g,'$1|').split('|');items=items.map(x=>x.trim()).filter(Boolean);return '<ul class="mwPracticeBulletList">'+items.map(x=>'<li>'+x.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</li>').join('')+'</ul>'};
  const practiceSections=[['WARM-UP',session.warmup||'Competition Warm-Up','sentences'],['WICKETS',[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · '),'dots'],['MAIN',p.raw||session.focus||'Follow today’s MW prescription.','sentences'],['RECOVERY',session.recovery||'Recover as prescribed.','sentences']];
  const basis=parsePrescription().paceBasis;if(basis)practiceSections.push(['PACE GUIDANCE',basis.anchor+'. '+basis.note,'sentences']);
- $p('mwPracticeWork').innerHTML=practiceSections.map(([label,value,mode])=>'<section class="mwPracticeInstruction"><b>'+label+'</b>'+practiceBullets(value,mode)+'</section>').join('');
+ const instructionHtml=practiceSections.map(([label,value,mode])=>'<section class="mwPracticeInstruction"><b>'+label+'</b>'+practiceBullets(value,mode)+'</section>').join('');
+ $p('mwPracticeWork').innerHTML='<details class="mwPracticePrescription"><summary><span>WORKOUT INSTRUCTIONS</span><span class="mwPracticeDisclosure">TAP TO OPEN</span></summary><div class="mwPracticeSections">'+instructionHtml+'</div></details>';
+ const instructionToggle=$p('mwPracticeWork').querySelector('.mwPracticePrescription'),disclosure=$p('mwPracticeWork').querySelector('.mwPracticeDisclosure');
+ instructionToggle?.addEventListener('toggle',()=>{if(disclosure)disclosure.textContent=instructionToggle.open?'TAP TO CLOSE':'TAP TO OPEN'});
  if(workoutSaved){
    restTimer.setDisabled(true,'WORKOUT COMPLETE');
    $p('mwPracticeRep').textContent='WORKOUT COMPLETE';$p('mwPracticeClock').textContent='—';$p('mwPracticeCue').textContent='THIS SESSION IS ALREADY LOGGED';$p('mwPracticeStart').hidden=true;$p('mwPracticePause').hidden=true;$p('mwPracticeNext').hidden=true;$p('mwPracticeSave').hidden=true;showSummary();
