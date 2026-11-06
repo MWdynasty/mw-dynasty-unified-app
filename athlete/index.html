@@ -1021,7 +1021,15 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 .mwPracticeLaunch{width:100%;margin:12px 0 4px;min-height:48px;border:1px solid rgba(245,185,46,.6);border-radius:13px;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;font-weight:1000;font-size:10px;letter-spacing:.08em}
 .mwPracticeMode{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 10%,#102333 0,#050b10 42%,#020405 100%);color:#fff;overflow:auto;padding:env(safe-area-inset-top) 16px calc(20px + env(safe-area-inset-bottom))}
 .mwPracticeTop{height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #233541}.mwPracticeTop div{display:grid}.mwPracticeTop small{font-size:7px;color:#f5c95e;letter-spacing:.16em}.mwPracticeTop b{font-size:13px;letter-spacing:.08em}.mwPracticeTop button{width:38px;height:38px;border-radius:50%;border:1px solid #334753;background:#08121a;color:#fff}
-.mwPracticeBody{max-width:560px;margin:0 auto;padding:30px 0}.mwPracticeBadge{font-size:8px;color:#f5c95e;letter-spacing:.14em;font-weight:900}.mwPracticeBody h1{font-size:30px;line-height:1.05;margin:9px 0}.mwPracticeBody>p{color:#9badb8;font-size:12px;line-height:1.5}
+.mwPracticeBody{max-width:560px;margin:0 auto;padding:30px 0}
+.mwPracticeMode{padding-top:calc(env(safe-area-inset-top) + 14px)}
+.mwPracticeWork{color:#d6e0e8;font-size:15px;line-height:1.55;margin:12px 0 0}
+.mwPracticeInstruction{padding:12px 0;border-top:1px solid rgba(245,201,94,.2)}
+.mwPracticeInstruction>b{display:block;color:#f5c95e;font-size:11px;letter-spacing:.1em;margin-bottom:7px}
+.mwPracticeBulletList{margin:0;padding-left:20px;display:grid;gap:6px}
+.mwPracticeBulletList li{padding-left:2px;font-size:15px;line-height:1.55;overflow-wrap:anywhere}
+.mwPracticeBulletList li::marker{color:#f5c95e}
+.mwPracticeBadge{font-size:8px;color:#f5c95e;letter-spacing:.14em;font-weight:900}.mwPracticeBody h1{font-size:30px;line-height:1.05;margin:9px 0}.mwPracticeBody>p{color:#9badb8;font-size:12px;line-height:1.5}
 .mwPracticeRep{margin:28px 0 12px;padding:24px 15px;border:1px solid rgba(245,185,46,.38);border-radius:22px;background:#071018;text-align:center;display:grid;gap:8px}.mwPracticeRep span{font-size:9px;color:#f5c95e;letter-spacing:.12em}.mwPracticeRep strong{font-size:48px;font-variant-numeric:tabular-nums}.mwPracticeRep small{font-size:8px;color:#81939f;letter-spacing:.08em}
 .mwPracticePace{padding:14px;border:1px solid #253945;border-radius:14px;background:#050c12;display:grid;gap:4px}.mwPracticePace b{font-size:9px;color:#fff}.mwPracticePace span{font-size:8px;color:#8496a2}
 .mwPracticeControls{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:12px}.mwPracticeControls button{min-height:52px;border-radius:13px;border:1px solid #30434f;background:#09141c;color:#fff;font-weight:900;font-size:9px}.mwPracticeControls #mwPracticeStart{grid-column:1/-1;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;border:0}.mwPracticeControls button:disabled{opacity:.35}
@@ -1945,7 +1953,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
   <div class="mwPracticeBody">
     <div class="mwPracticeBadge" id="mwPracticeBadge">TODAY'S TRACK SESSION</div>
     <h1 id="mwPracticeTitle">Ready to train?</h1>
-    <p id="mwPracticeWork">Your MW workout will appear here.</p>
+    <div id="mwPracticeWork" class="mwPracticeWork">Your MW workout will appear here.</div>
     <div class="mwPracticeTiming">
       <div class="mwPracticeRep"><span id="mwPracticeRep">REP 1</span><strong id="mwPracticeClock">00:00.0</strong><small id="mwPracticeCue">PRESS START WHEN YOU ARE IN POSITION</small></div>
       <section id="mwPracticeRest" class="mwRestTimer" aria-label="Rest timer">
@@ -4863,8 +4871,12 @@ async function openPracticeFor(w,d){
    if(repaired)Promise.all(results.map(row=>persistOneRep(row))).catch(()=>{});
  }
  renderLog();const next=Math.min(p.reps,results.length+1);
- $p('mwPracticeTitle').textContent=session.title||'MW Track Session';const wk=session?.wickets||{};const prep=['WARM-UP: '+(session.warmup||'Competition Warm-Up'),'WICKETS: '+[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · '),'MAIN: '+(p.raw||session.focus||'Follow today’s MW prescription.'),'RECOVERY: '+(session.recovery||'Recover as prescribed.')];$p('mwPracticeWork').textContent=prep.join('  |  ');
- const basis=parsePrescription().paceBasis;if(basis)$p('mwPracticeWork').textContent+=' · '+basis.anchor+'. '+basis.note;
+ $p('mwPracticeTitle').textContent=session.title||'MW Track Session';
+ const wk=session?.wickets||{};
+ const practiceBullets=(value,mode='sentences')=>{const raw=String(value||'').trim();let items=mode==='dots'?raw.split(/\s*[·•]\s*/):raw.replace(/([.!?])\s+(?=[A-Z0-9])/g,'$1|').split('|');items=items.map(x=>x.trim()).filter(Boolean);return '<ul class="mwPracticeBulletList">'+items.map(x=>'<li>'+x.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</li>').join('')+'</ul>'};
+ const practiceSections=[['WARM-UP',session.warmup||'Competition Warm-Up','sentences'],['WICKETS',[wk.type,wk.passes?wk.passes+' passes':'',wk.spacing,wk.intent].filter(Boolean).join(' · '),'dots'],['MAIN',p.raw||session.focus||'Follow today’s MW prescription.','sentences'],['RECOVERY',session.recovery||'Recover as prescribed.','sentences']];
+ const basis=parsePrescription().paceBasis;if(basis)practiceSections.push(['PACE GUIDANCE',basis.anchor+'. '+basis.note,'sentences']);
+ $p('mwPracticeWork').innerHTML=practiceSections.map(([label,value,mode])=>'<section class="mwPracticeInstruction"><b>'+label+'</b>'+practiceBullets(value,mode)+'</section>').join('');
  if(workoutSaved){
    restTimer.setDisabled(true,'WORKOUT COMPLETE');
    $p('mwPracticeRep').textContent='WORKOUT COMPLETE';$p('mwPracticeClock').textContent='—';$p('mwPracticeCue').textContent='THIS SESSION IS ALREADY LOGGED';$p('mwPracticeStart').hidden=true;$p('mwPracticePause').hidden=true;$p('mwPracticeNext').hidden=true;$p('mwPracticeSave').hidden=true;showSummary();
