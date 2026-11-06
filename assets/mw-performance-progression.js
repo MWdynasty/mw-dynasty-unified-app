@@ -70,7 +70,11 @@
     return groups.filter(function(g){return found.has(g)});
   }
   function drawChart(parent,points,kind,label){
-    if(points.length<2){parent.appendChild(node('p',points.length?'Only one week or month has a result so far. Add another matching session to see a trend.':'No saved results for this selection yet. Record a matching session and it will appear here.','mwpi-empty'));return}
+    if(!points.length){
+      var empty=node('div',null,'mwpi-emptyGraph'),placeholder=node('div',null,'mwpi-placeholder');
+      empty.appendChild(placeholder);empty.appendChild(node('p','Your first result will appear here.','mwpi-empty'));
+      parent.appendChild(empty);return;
+    }
     var svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 360 190');svg.setAttribute('role','img');svg.setAttribute('aria-label',label);svg.classList.add('mwpi-chart');
     var values=points.map(function(p){return p.value}),min=Math.min.apply(null,values),max=Math.max.apply(null,values),span=Math.max(max-min,Math.abs(max)*.025,.01);
     var left=42,right=344,top=18,bottom=145;
@@ -78,23 +82,25 @@
     var coordinates=points.map(function(point,index){
       var x=points.length===1?(left+right)/2:left+(right-left)*index/(points.length-1);
       var fraction=kind==='speed'?(max-point.value)/span:(point.value-min)/span;
-      return {x:x,y:top+10+(bottom-top-20)*(1-fraction),point:point};
+      var y=points.length===1?(top+bottom)/2:top+10+(bottom-top-20)*(1-fraction);
+      return {x:x,y:y,point:point};
     });
     var path=document.createElementNS(ns,'path');path.setAttribute('d',coordinates.map(function(p,i){return (i?'L':'M')+p.x+' '+p.y}).join(' '));path.setAttribute('fill','none');path.setAttribute('stroke','#f3c768');path.setAttribute('stroke-width','3');path.setAttribute('stroke-linecap','round');path.setAttribute('stroke-linejoin','round');svg.appendChild(path);
     coordinates.forEach(function(c){
-      var circle=document.createElementNS(ns,'circle');circle.setAttribute('cx',c.x);circle.setAttribute('cy',c.y);circle.setAttribute('r','5');circle.setAttribute('fill','#f3c768');circle.setAttribute('stroke','#101b29');circle.setAttribute('stroke-width','2');
-      var tip=document.createElementNS(ns,'title');tip.textContent=kind==='speed'?number(c.point.value,2)+' seconds · '+names[c.point.row.intent_group]+' · '+c.point.date.toLocaleDateString():number(c.point.value,1)+' estimated max · '+c.point.row.weight+' '+c.point.row.unit+' × '+c.point.row.reps+' · '+c.point.date.toLocaleDateString();circle.appendChild(tip);svg.appendChild(circle);
+      var circle=document.createElementNS(ns,'circle');circle.setAttribute('cx',c.x);circle.setAttribute('cy',c.y);circle.setAttribute('r','6');circle.setAttribute('fill','#f3c768');circle.setAttribute('stroke','#101b29');circle.setAttribute('stroke-width','2');
+      var tip=document.createElementNS(ns,'title');tip.textContent=kind==='speed'?number(c.point.value,2)+' seconds · '+names[c.point.row.intent_group]+' · '+c.point.date.toLocaleDateString():kind==='execution'?number(c.point.value,0)+'% of reps met target · '+c.point.date.toLocaleDateString():number(c.point.value,1)+' estimated lift · '+c.point.row.weight+' '+c.point.row.unit+' × '+c.point.row.reps+' · '+c.point.date.toLocaleDateString();circle.appendChild(tip);svg.appendChild(circle);
     });
-    var first=points[0],last=points[points.length-1];
-    [[left,bucketLabel(first.key,parent.dataset.period)],[right,bucketLabel(last.key,parent.dataset.period)]].forEach(function(pair){var txt=document.createElementNS(ns,'text');txt.setAttribute('x',pair[0]);txt.setAttribute('y','171');txt.setAttribute('fill','#aebdcc');txt.setAttribute('font-size','10');txt.setAttribute('text-anchor',pair[0]===left?'start':'end');txt.textContent=pair[1];svg.appendChild(txt)});
-    var axisTop=document.createElementNS(ns,'text');axisTop.setAttribute('x','4');axisTop.setAttribute('y','23');axisTop.setAttribute('fill','#aebdcc');axisTop.setAttribute('font-size','9');axisTop.textContent=number(kind==='speed'?min:max,kind==='speed'?2:1)+(kind==='speed'?'s':' '+(points[0]?.row?.unit||''));svg.appendChild(axisTop);
-    var axisBottom=document.createElementNS(ns,'text');axisBottom.setAttribute('x','4');axisBottom.setAttribute('y','147');axisBottom.setAttribute('fill','#aebdcc');axisBottom.setAttribute('font-size','9');axisBottom.textContent=number(kind==='speed'?max:min,kind==='speed'?2:1)+(kind==='speed'?'s':' '+(points[0]?.row?.unit||''));svg.appendChild(axisBottom);
+    var first=points[0],last=points.at(-1);
+    [[left,bucketLabel(first.key,parent.dataset.period)],[right,bucketLabel(last.key,parent.dataset.period)]].filter(function(pair,index,arr){return index===0||pair[1]!==arr[0][1]}).forEach(function(pair){var txt=document.createElementNS(ns,'text');txt.setAttribute('x',points.length===1?'50%':pair[0]);txt.setAttribute('y','171');txt.setAttribute('fill','#aebdcc');txt.setAttribute('font-size','10');txt.setAttribute('text-anchor',points.length===1?'middle':pair[0]===left?'start':'end');txt.textContent=pair[1];svg.appendChild(txt)});
+    var suffix=kind==='speed'?'s':kind==='execution'?'%':' '+(points[0]?.row?.unit||'');
+    var digits=kind==='speed'?2:kind==='execution'?0:1;
+    [[kind==='speed'?min:max,23],[kind==='speed'?max:min,147]].forEach(function(axis){var txt=document.createElementNS(ns,'text');txt.setAttribute('x','4');txt.setAttribute('y',axis[1]);txt.setAttribute('fill','#aebdcc');txt.setAttribute('font-size','9');txt.textContent=number(axis[0],digits)+suffix;svg.appendChild(txt)});
     parent.appendChild(svg);
-    var foot=node('p',kind==='speed'?'Each dot is the fastest saved rep for this distance and sprint type in that week or month. Higher dots mean fewer seconds and a faster time.':'Each dot is an estimate based on the weight and reps you logged for this lift. Higher dots mean the estimate went up; this is not a max lift you need to try.','mwpi-chart-note');parent.appendChild(foot);
+    parent.appendChild(node('p',points.length===1?'One result saved. Another matching session will show a change.':kind==='speed'?'Higher dots mean faster times.':'Higher dots mean a higher result.','mwpi-chart-note'));
   }
   function style(){
     if(document.getElementById('mwpi-style'))return;
-    var s=node('style');s.id='mwpi-style';s.textContent=`#mw-performance-progression{margin:18px 0 24px;padding:18px;border:1px solid #9b7a39;border-radius:18px;background:#101b29;color:#f7f5ef;font:14px system-ui}#mw-performance-progression h2{font-size:19px;letter-spacing:.05em;color:#f3c768;margin:0 0 6px}#mw-performance-progression .mwpi-sub{color:#aebdcc;margin:0 0 14px}#mw-performance-progression h3{color:#f1c466;font-size:15px;margin:18px 0 9px}.mwpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}.mwpi-card,.mwpi-panel{background:#0a1521;border:1px solid #334657;border-radius:12px;padding:12px;margin:8px 0}.mwpi-card strong{display:block;font-size:17px}.mwpi-card small{display:block;color:#afbecd;margin-top:5px}.mwpi-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:10px 0}.mwpi-controls label{display:block;color:#afbecd;font-size:11px}.mwpi-controls select{width:100%;margin-top:5px;padding:9px 10px;border:1px solid #405568;border-radius:8px;background:#0a1521;color:#f7f5ef;font-size:14px}.mwpi-chart{display:block;width:100%;height:auto;min-height:150px}.mwpi-empty,.mwpi-note,.mwpi-chart-note{color:#b8c5d1;font-size:12px;line-height:1.45}.mwpi-note{border-left:3px solid #b99a50;padding:8px 10px;background:#0a1521}.mwpi-result{color:#f3c768;font-weight:800;margin:4px 0}.mwpi-legend{color:#aebdcc;font-size:11px;margin:3px 0 0}.mwpi-reading-guide{margin:12px 0;padding:12px;background:#0a1521;border:1px solid #334657;border-radius:12px}.mwpi-reading-guide h3{margin:0 0 6px!important;font-size:14px!important;color:#f3c768}.mwpi-reading-guide ul{margin:0;padding-left:18px;color:#c6d1dc;font-size:12px;line-height:1.5}.mwProgressProgramSummary{position:relative;margin:14px 0;padding:14px 14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:9px;border:1px solid #334657;border-radius:15px;background:#0a1521;color:#f7f5ef}.mwProgressProgramSummary>div,.mwProgressProgramSummary>button{min-width:0;text-align:center;background:transparent;border:0;color:#fff;padding:5px}.mwProgressProgramSummary strong{display:block;font-size:18px}.mwProgressProgramSummary span{display:block;margin-top:3px;font-size:10px;line-height:1.35;color:#aebdcc;letter-spacing:.04em}.mwProgressProgramSummary button{grid-column:1/-1;display:block;text-align:left;border-top:1px solid #263743;margin-top:3px;padding:10px 5px 5px;line-height:1.4}.mwProgressProgramSummary button strong{color:#f3c768;font-size:14px}.mwProgressProgramSummary button .mwTyKicker{font-size:9px;letter-spacing:.09em}.mwProgressProgramSummary button small,.mwProgressProgramSummary button em{display:block;margin-top:4px;font-size:11px;line-height:1.4;color:#aebdcc;font-style:normal}.mwProgressProgramSummary .progressBar{position:absolute;left:14px;right:14px;bottom:7px;height:3px;padding:0}@media(max-width:599px){html.mw-home-locked,body.mw-auth-ready.mw-home-locked{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important;overscroll-behavior:none!important}body.mw-auth-ready.mw-home-locked .app{height:100dvh!important;min-height:0!important;overflow:hidden!important;padding-bottom:0!important}body.mw-auth-ready.mw-home-locked #home.view.active{height:100%!important;max-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;padding-bottom:calc(150px + env(safe-area-inset-bottom))!important;scroll-padding-bottom:calc(150px + env(safe-area-inset-bottom))!important}}@media(max-width:420px){#mw-performance-progression{padding:14px}.mwpi-controls{grid-template-columns:1fr 1fr}.mwProgressProgramSummary{margin:12px 0;padding:12px}.mwProgressProgramSummary strong{font-size:16px}.mwProgressProgramSummary span{font-size:8px}}`;
+    var s=node('style');s.id='mwpi-style';s.textContent="#mw-performance-progression{margin:12px 0 24px;padding:16px;border:1px solid #9b7a39;border-radius:18px;background:#101b29;color:#f7f5ef;font:14px system-ui}#mw-performance-progression h2{font-size:22px;letter-spacing:.03em;color:#f3c768;margin:0 0 4px}#mw-performance-progression .mwpi-sub{color:#aebdcc;margin:0 0 10px}#mw-performance-progression h3{color:#f1c466;font-size:17px;margin:18px 0 8px}.mwpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 16px}.mwpi-card,.mwpi-panel{background:#0a1521;border:1px solid #334657;border-radius:12px;padding:11px;margin:8px 0}.mwpi-card strong{display:block;font-size:21px}.mwpi-card small{display:block;color:#afbecd;margin-top:3px;font-size:10px;line-height:1.2}.mwpi-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:10px 0}.mwpi-controls label{display:block;color:#afbecd;font-size:11px}.mwpi-controls select{width:100%;margin-top:5px;padding:9px 10px;border:1px solid #405568;border-radius:8px;background:#0a1521;color:#f7f5ef;font-size:14px}.mwpi-chart{display:block;width:100%;height:auto;min-height:150px}.mwpi-empty,.mwpi-chart-note,.mwpi-legend{color:#b8c5d1;font-size:12px;line-height:1.45}.mwpi-result{color:#f3c768;font-weight:800;margin:4px 0;font-size:13px}.mwpi-archive{margin:12px 0 0;border:1px solid #334657;border-radius:12px;background:#0a1521}.mwpi-archive>summary{padding:13px;color:#f3c768;font-weight:800;cursor:pointer;letter-spacing:.04em}.mwpi-archive[open]{padding:0 12px 12px}.mwpi-archive>.mwProgressHero,.mwpi-archive>.mwProgressStats,.mwpi-archive>.mwDevelopmentGuide,.mwpi-archive>.mwVelocityInsights,.mwpi-archive>.mwProgressSection{margin-top:10px}.mwpi-panel h3{color:#f1c466;font-size:16px;margin:0 0 8px}.mwpi-emptyGraph{padding:10px 12px;color:#aebdcc;font-size:12px}.mwpi-placeholder{height:92px;border-bottom:1px solid #334657;border-left:1px solid #334657;position:relative;margin:0 0 8px}.mwpi-placeholder:after{content:'';position:absolute;left:8%;right:8%;top:50%;border-top:2px dashed #405568}.mwpi-chart-note{margin:5px 0 0}#mw-performance-progression .mwpi-controls select{font-size:13px}@media(max-width:420px){#mw-performance-progression{padding:13px}.mwpi-grid{gap:5px}.mwpi-card{padding:9px}.mwpi-card strong{font-size:18px}.mwpi-card small{font-size:9px}.mwpi-controls{grid-template-columns:1fr 1fr}}";
     document.head.appendChild(s);
   }
   function mount(){
@@ -102,14 +108,15 @@
     if(!view||document.getElementById('mw-performance-progression'))return false;
     style();
     var section=node('section');section.id='mw-performance-progression';section.setAttribute('aria-labelledby','mwpi-title');
-    section.appendChild(node('h2','MY PERFORMANCE PROGRESSION'));section.querySelector('h2').id='mwpi-title';
-    section.appendChild(node('p','See your workouts, best times, and lifts over time.','mwpi-sub'));
-    var guide=node('div',null,'mwpi-reading-guide');guide.setAttribute('aria-label','How to read your progression');guide.appendChild(node('h3','HOW TO READ YOUR PROGRESS'));var guideList=node('ul');['Read the chart from left to right: each dot shows one week or month.','Sprint: fewer seconds means faster; higher dots mean a faster time. Compare the same distance and sprint type.','Strength: higher dots mean a higher estimated lift based on your logged weight and reps. It is a guide, not a max you need to try.'].forEach(function(text){guideList.appendChild(node('li',text))});guide.appendChild(guideList);section.appendChild(guide);
-    var content=node('div','Loading your saved performances…');content.id='mwpi-content';section.appendChild(content);
-    var hero=view.querySelector('.mwProgressHero');
-    var summary=document.querySelector('#home .mwHomeProgress');
-    if(summary){summary.classList.add('mwProgressProgramSummary');var stats=view.querySelector('.mwProgressStats');if(stats)stats.insertAdjacentElement('afterend',summary);else view.appendChild(summary)}
-    if(summary)summary.insertAdjacentElement('afterend',section);else if(hero)hero.insertAdjacentElement('afterend',section);else view.appendChild(section);
+    section.appendChild(node('h2','YOUR PROGRESS'));section.querySelector('h2').id='mwpi-title';
+    section.appendChild(node('p','See how your training is changing.','mwpi-sub'));
+    var content=node('div','Loading your saved results…');content.id='mwpi-content';section.appendChild(content);
+    var archive=node('details',null,'mwpi-archive');archive.appendChild(node('summary','PROGRAM & WORKOUT HISTORY'));
+    var legacy=[view.querySelector('.mwProgressHero'),view.querySelector('.mwProgressStats'),view.querySelector('.mwDevelopmentGuide'),view.querySelector('.mwVelocityInsights')].concat(Array.from(view.querySelectorAll('.mwProgressSection')));
+    legacy.filter(Boolean).forEach(function(item){archive.appendChild(item)});
+    section.appendChild(archive);
+    var header=view.querySelector('.top');
+    if(header)header.insertAdjacentElement('afterend',section);else view.insertBefore(section,view.firstChild);
     var load=function(attempt){
       var s=session();
       if(!s||!s.access_token){
@@ -146,14 +153,10 @@
       if(ordered.length>1&&ordered[0].value>0)strengthChanges.push((ordered.at(-1).value-ordered[0].value)/ordered[0].value*100);
     });
     var cards=node('div',null,'mwpi-grid');
-    var speedText=eligible.length+' speed-test rep'+(eligible.length===1?'':'s')+' recorded';
-    var strengthText=strength.length+' strength set'+(strength.length===1?'':'s')+' recorded';
-    var weeks=Number(consistency.program_weeks||0),done=Number(consistency.completed_workouts||0);
-    [[speedText,'Choose the same distance and sprint type below to compare times.'],[strengthText,'Choose the same lift below to see its estimate change.'],[done?done+' workouts completed':'No completed workouts yet',done?'You completed a workout in '+weeks+' of 41 program weeks.':'Your training streak will show here after you finish a workout.']].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('strong',item[0]));c.appendChild(node('small',item[1]));cards.appendChild(c)});
+    var done=Number(consistency.completed_workouts||0);
+    [[String(eligible.length),'SPEED REPS'],[String(strength.length),'STRENGTH SETS'],[String(done),'WORKOUTS']].forEach(function(item){var c=node('div',null,'mwpi-card');c.appendChild(node('strong',item[0]));c.appendChild(node('small',item[1]));cards.appendChild(c)});
     content.appendChild(cards);
-    if(!speedChanges.length&&!strengthChanges.length)content.appendChild(node('p','We need two matching speed tests or two sessions of the same lift before we can show a change. Different workouts are not compared.','mwpi-note'));
     renderSprint(content,sprint);renderStrength(content,strength);
-    content.appendChild(node('p','Tempo and technique practice are judged by their workout goal, not by who ran fastest. Strength estimates are guides, not official records.','mwpi-note'));
   }
   function control(parent,title,values,value,onChange){
     var wrap=node('label',title);var select=node('select');
@@ -161,52 +164,49 @@
     select.addEventListener('change',function(){onChange(select.value)});wrap.appendChild(select);parent.appendChild(wrap);return select;
   }
   function renderSprint(root,rows){
-    root.appendChild(node('h3','⚡ SPRINT PROGRESSION'));
-    if(!rows.length){root.appendChild(node('p','No sprint results saved yet. Results will appear here after a timed session.','mwpi-empty'));return}
-    var cats=groupOptions(rows),distances=[...new Set(rows.map(function(r){return Number(r.distance_m)}).filter(Number.isFinite))].sort(function(a,b){return a-b});
+    root.appendChild(node('h3','⚡ SPRINT PROGRESS'));
+    var cats=groupOptions(rows);
+    if(!rows.length||!cats.length){var empty=node('div',null,'mwpi-panel');empty.appendChild(node('h3','Sprint results'));drawChart(empty,[],'speed','Sprint results');root.appendChild(empty);return}
+    var distances=[...new Set(rows.map(function(r){return Number(r.distance_m)}).filter(Number.isFinite))].sort(function(a,b){return a-b});
     var firstCategory=cats.find(function(g){return speedEligible.has(g)})||cats[0],category=firstCategory,distance=String(distances[0]||''),period='week';
     var controls=node('div',null,'mwpi-controls');root.appendChild(controls);
     var graph=node('div',null,'mwpi-panel');graph.dataset.period=period;root.appendChild(graph);
     var redraw=function(){
       graph.replaceChildren();graph.dataset.period=period;
       var selected=rows.filter(function(r){return r.intent_group===category&&String(r.distance_m)===distance});
-      var points=bySession(selected,function(){return true},period);
-      var title=names[category]+' · '+distance+'m';drawChart(graph,points,'speed',title);
       if(speedEligible.has(category)){
-        var reps=selected.filter(function(r){return Number(r.time_seconds)>0}).sort(function(a,b){return new Date(a.recorded_at)-new Date(b.recorded_at)});
-        var sessions=new Map();reps.forEach(function(r){var d=dateOf(r);if(d){var k=[r.workout_cycle_id||'',r.workout_key||'',r.program_week||'',r.program_day||'',dayKey(d)].join('|'),old=sessions.get(k);if(!old||Number(r.time_seconds)<Number(old.time_seconds))sessions.set(k,r)}});
-        var items=[...sessions.values()].sort(function(a,b){return new Date(a.recorded_at)-new Date(b.recorded_at)});
-        if(items.length>1){var base=Number(items[0].time_seconds),latest=Number(items.at(-1).time_seconds),best=Math.min.apply(null,items.map(function(i){return Number(i.time_seconds)})),delta=base-latest,pct=base?(delta/base*100):0;
-          graph.appendChild(node('p','First '+number(base)+'s · Latest '+number(latest)+'s · Best '+number(best)+'s'+(delta>0?' · '+number(delta)+'s faster ('+number(pct,1)+'%)':delta<0?' · '+number(Math.abs(delta))+'s slower ('+number(Math.abs(pct),1)+'%)':' · holding steady'),'mwpi-result'));
-        }else graph.appendChild(node('p','Add one more matching speed test to compare your first and latest times.','mwpi-legend'));
+        var points=bySession(selected,function(){return true},period);
+        drawChart(graph,points,'speed',names[category]+' '+distance+'m');
+        var items=sessionPoints(selected,function(){return true});
+        if(items.length>1){var first=items[0].value,last=items.at(-1).value,delta=first-last;graph.appendChild(node('p',delta>0?number(delta,2)+' seconds faster since first result.':delta<0?number(Math.abs(delta),2)+' seconds slower since first result.':'Holding steady.','mwpi-result'))}
       }else{
-        var targeted=selected.filter(function(r){return (Number(r.target_min_seconds)>0||Number(r.target_max_seconds)>0||Number(r.target_seconds)>0)&&r.pace_status});
-        var execution=targeted.length?' '+targeted.filter(function(r){return r.pace_status==='on_pace'}).length+' of '+targeted.length+' reps met the target.':'';
-        graph.appendChild(node('p','For '+names[category].toLowerCase()+', follow the workout’s pace or skill goal—fastest is not always best.'+execution,'mwpi-legend'));
+        var buckets=new Map();
+        selected.forEach(function(row){if(!row.pace_status)return;var d=dateOf(row);if(!d)return;var k=bucketKey(d,row,period),v=buckets.get(k)||{total:0,on:0,date:d,row:row};v.total++;if(row.pace_status==='on_pace')v.on++;buckets.set(k,v)});
+        var points=[...buckets.entries()].map(function(pair){return {key:pair[0],value:pair[1].on/pair[1].total*100,date:pair[1].date,row:pair[1].row}}).sort(function(a,b){return a.date-b.date});
+        drawChart(graph,points,'execution',names[category]+' target reps');
+        var targeted=selected.filter(function(r){return !!r.pace_status}),on=targeted.filter(function(r){return r.pace_status==='on_pace'}).length;
+        if(targeted.length)graph.appendChild(node('p',on+' of '+targeted.length+' reps hit the target.','mwpi-result'));
       }
     };
-    control(controls,'Sprint type',cats.map(function(g){return {label:names[g],value:g}}),category,function(v){category=v;redraw()});
+    control(controls,'Workout type',cats.map(function(g){return {label:names[g],value:g}}),category,function(v){category=v;redraw()});
     control(controls,'Distance',distances.map(function(v){return {label:v+'m',value:String(v)}}),distance,function(v){distance=v;redraw()});
     control(controls,'Show by',[{label:'Week',value:'week'},{label:'Month',value:'month'}],period,function(v){period=v;redraw()});
     redraw();
   }
   function renderStrength(root,rows){
-    root.appendChild(node('h3','🏋️ STRENGTH PROGRESSION'));
-    if(!rows.length){root.appendChild(node('p','No saved strength sets yet. Log actual weight and reps to see lift progression.','mwpi-empty'));return}
+    root.appendChild(node('h3','🏋️ STRENGTH PROGRESS'));
+    if(!rows.length){var empty=node('div',null,'mwpi-panel');empty.appendChild(node('h3','Strength results'));drawChart(empty,[],'strength','Strength results');root.appendChild(empty);return}
     var exercises=[...new Set(rows.map(function(r){return r.exercise+'|'+r.unit}))].sort();
     var selected=exercises[0],period='week',controls=node('div',null,'mwpi-controls'),graph=node('div',null,'mwpi-panel');graph.dataset.period=period;root.appendChild(controls);root.appendChild(graph);
     var redraw=function(){
       graph.replaceChildren();graph.dataset.period=period;
       var item=selected.split('|'),exercise=item[0]+'|'+item[1],points=strengthSessions(rows,exercise,period);
       drawChart(graph,points,'strength',item[0]+' estimated lift progression');
-      var sets=rows.filter(function(r){return r.exercise+'|'+r.unit===exercise}).sort(function(a,b){return new Date(a.recorded_at)-new Date(b.recorded_at)});
-      var days=new Map();sets.forEach(function(r){var d=dateOf(r);if(!d)return;var k=[r.training_cycle_key||'',r.program_week||'',r.program_day||'',dayKey(d)].join('|'),prior=days.get(k),n=Number(r.estimated_1rm);if(!prior||n>Number(prior.estimated_1rm))days.set(k,r)});
+      var days=new Map();rows.filter(function(r){return r.exercise+'|'+r.unit===exercise}).forEach(function(r){var d=dateOf(r);if(!d)return;var k=[r.training_cycle_key||'',r.program_week||'',r.program_day||'',dayKey(d)].join('|'),prior=days.get(k),n=Number(r.estimated_1rm);if(!prior||n>Number(prior.estimated_1rm))days.set(k,r)});
       var ordered=[...days.values()].sort(function(a,b){return new Date(a.recorded_at)-new Date(b.recorded_at)});
-      if(ordered.length>1){var first=Number(ordered[0].estimated_1rm),last=Number(ordered.at(-1).estimated_1rm),gain=last-first,pct=first?gain/first*100:null;
-        graph.appendChild(node('p','First estimated max: '+number(first,1)+' '+item[1]+' · Latest: '+number(last,1)+' '+item[1]+(pct!=null?' · '+(gain>=0?'+':'')+number(pct,1)+'%':'')+' · Latest logged: '+ordered.at(-1).weight+' '+item[1]+' × '+ordered.at(-1).reps,'mwpi-result'));
-      }else graph.appendChild(node('p','Log this lift again to see how your strength changes.','mwpi-legend'));
+      if(ordered.length>1){var first=Number(ordered[0].estimated_1rm),last=Number(ordered.at(-1).estimated_1rm),gain=last-first;graph.appendChild(node('p',gain>0?number(gain,1)+' '+item[1]+' higher than first result.':gain<0?number(Math.abs(gain),1)+' '+item[1]+' lower than first result.':'Holding steady.','mwpi-result'))}
     };
-    control(controls,'Exercise',exercises.map(function(e){var p=e.split('|');return {label:p[0]+' ('+p[1]+')',value:e}}),selected,function(v){selected=v;redraw()});
+    control(controls,'Lift',exercises.map(function(e){var p=e.split('|');return {label:p[0]+' ('+p[1]+')',value:e}}),selected,function(v){selected=v;redraw()});
     control(controls,'Show by',[{label:'Week',value:'week'},{label:'Month',value:'month'}],period,function(v){period=v;redraw()});
     redraw();
   }
