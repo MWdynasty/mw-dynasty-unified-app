@@ -173,3 +173,17 @@ assert(html.includes("const actionLabel=isDone?'✓ DONE':status==='in_progress'
 assert(html.includes("['in_progress','incomplete'].includes(status)?window.mwOpenPracticeFor?.(w,sessionNumber):beginWorkoutCheckin"),'IN PROGRESS and INCOMPLETE workouts must resume Practice Mode instead of entering a new completion flow');
 assert(html.includes("isDone=!!wc['s'+sessionNumber]||status==='completed'"),'Authoritative completed status must take precedence over stale local completion state');
 console.log('PASS: Athlete Train rendering prevents stale duplicate rows and resumes the authoritative in-progress workout.');
+
+const athleteHtml=fs.readFileSync('athlete/index.html','utf8');
+const authScriptMatch=athleteHtml.match(/<script id="mw-supabase-auth-v1">([\s\S]*?)<\/script>/);
+assert(authScriptMatch,'Athlete auth script must exist');
+assert(athleteHtml.includes('window.applyCoachVisual=applyCoachVisual;'),'Athlete coach visual helper must be exposed across script scopes');
+assert(authScriptMatch[1].includes('function safeApplyCoachVisual(choice)'),'Auth flow must isolate optional coach visual failures');
+assert(authScriptMatch[1].includes("typeof window.applyCoachVisual==='function'"),'Visual helper must be type-checked before use');
+assert(!/(?<![\\w.$])applyCoachVisual\\(/.test(authScriptMatch[1]),'Auth flow must not call the optional helper unguarded');
+const inlineScripts=[...athleteHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+assert(inlineScripts.length>=30,'Athlete page lost expected inline script blocks');
+for(const [index,body] of inlineScripts.entries()){
+  try{new Function(body)}catch(error){throw new Error('Athlete inline script '+index+' failed to parse: '+error.message)}
+}
+console.log('PASS: Athlete auth tolerates optional visual failures and all inline scripts parse.');

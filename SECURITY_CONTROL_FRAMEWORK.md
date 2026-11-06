@@ -82,3 +82,7 @@ A degraded control is intentionally visible and is not treated as complete cover
 ## Change management
 
 Any new platform, payment path, privileged role, AI action, data domain, or external provider must be added to the control registry before production launch. Changes to authentication, authorization, billing, RLS, security headers, diagnostics, or recovery logic must pass the automated security baseline test and production deployment checks.
+
+## Athlete login fault-tolerance lesson
+
+Authentication and authorization must remain strict: the app must verify the signed-in identity and owner/athlete access before opening protected data. Once that check succeeds, an optional presentation helper (such as Coach MW avatar selection) must not be able to abort session restoration or profile hydration. Expose cross-script helpers explicitly on \`window\`, call optional UI helpers through a type-checked try/catch wrapper, and keep failures visible in diagnostics without discarding a valid session. The Athlete button-wiring test guards these expectations and checks that the Athlete inline scripts parse, which also catches truncated or corrupted page markup.
