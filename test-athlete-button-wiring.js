@@ -180,10 +180,16 @@ assert(authScriptMatch,'Athlete auth script must exist');
 assert(athleteHtml.includes('window.applyCoachVisual=applyCoachVisual;'),'Athlete coach visual helper must be exposed across script scopes');
 assert(authScriptMatch[1].includes('function safeApplyCoachVisual(choice)'),'Auth flow must isolate optional coach visual failures');
 assert(authScriptMatch[1].includes("typeof window.applyCoachVisual==='function'"),'Visual helper must be type-checked before use');
-assert(!/(?<![\\w.$])applyCoachVisual\\(/.test(authScriptMatch[1]),'Auth flow must not call the optional helper unguarded');
+assert(!/(?<![\w.$])applyCoachVisual\(/.test(authScriptMatch[1]),'Auth flow must not call the optional helper unguarded');
 const inlineScripts=[...athleteHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
 assert(inlineScripts.length>=30,'Athlete page lost expected inline script blocks');
 for(const [index,body] of inlineScripts.entries()){
   try{new Function(body)}catch(error){throw new Error('Athlete inline script '+index+' failed to parse: '+error.message)}
 }
 console.log('PASS: Athlete auth tolerates optional visual failures and all inline scripts parse.');
+
+assert(athleteHtml.includes('mw-athlete-readable-train'),'Athlete Train mobile readability overrides missing');
+assert(athleteHtml.includes('#todayTrackDetails .mwMissedTrainingNotice p { font-size: 16px'),'Adaptive-training explanation must use readable mobile text');
+assert(athleteHtml.includes(".sort((a,b)=>a.week-b.week||a.day-b.day)"),'Missed sessions must be listed in chronological order');
+assert(athleteHtml.includes("const missedSummary=priorDays.map(x=>'Week '+x.week+', session '+x.day).join(' · ')"),'Adaptive-training card must prepare a detail for every counted missed session');
+assert(athleteHtml.includes("MISSED SESSIONS:</b> '+missedSummary"),'Adaptive-training card must display all sessions included in its count');
