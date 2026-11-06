@@ -166,7 +166,7 @@
       var sessionId=[row.training_cycle_key||'',row.program_week||'',row.program_day||'',dayKey(d)].join('|'),sessions=liftGroups.get(group),old=sessions.get(sessionId);
       if(!old||value>old.value)sessions.set(sessionId,{value:value,date:d,row:row});
     });
-    var liftSeries=[...liftGroups.entries()].map(function(pair){return {name:pair[0],points:[...pair[1].values()].sort(function(a,b){return a.date-b.date)}}).filter(function(x){return x.points.length}).sort(function(a,b){return b.points.at(-1).date-a.points.at(-1).date});
+    var liftSeries=[...liftGroups.entries()].map(function(pair){return {name:pair[0],points:[...pair[1].values()].sort(function(a,b){return a.date-b.date})}}).filter(function(x){return x.points.length}).sort(function(a,b){return b.points.at(-1).date-a.points.at(-1).date});
     var strengthCard;
     if(!liftSeries.length)strengthCard={value:'NO LIFTS',question:'STRONGER?',detail:'Log a lift with weight and reps.'};
     else if(liftSeries[0].points.length<2)strengthCard={value:'FIRST LIFT',question:'STRONGER?',detail:'Log the same lift again to compare.'};
