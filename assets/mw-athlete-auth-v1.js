@@ -150,7 +150,7 @@
     for(const [id,val] of Object.entries(map)){const el=document.querySelector('#'+id);if(el)el.value=val||''}
     document.querySelector('#entrySeasonPreference')?.dispatchEvent(new Event('change'));
     window.mwSyncSeasonCalendarUX?.();
-    scheduleSeasonCalendarPreview();
+    window.scheduleSeasonCalendarPreview?.();
 
     ['week','startDate','startWeek'].forEach(id=>{
       const el=document.querySelector('#'+id);
