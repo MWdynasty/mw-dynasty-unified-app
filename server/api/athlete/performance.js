@@ -48,7 +48,7 @@ module.exports=async(req,res)=>{
       if(!(time>0)||!(distance>0)||['dnf','did_not_finish','incomplete'].includes(status))continue;
       const intent=String(r.mw_intent||'speed').toLowerCase();
       if(/tempo|recovery|technical|warm.?up|cool.?down|relay/.test(intent))continue;
-      const key=distance+'|'+intent+'|'+String(r.workout_key||'');
+      const sessionDate=String(r.recorded_at||'').slice(0,10),key=distance+'|'+intent+'|'+String(r.workout_key||'')+'|'+sessionDate;
       if(!sprints.has(key))sprints.set(key,{distance,intent,workout:r.workout_key||'',values:[]});
       sprints.get(key).values.push({value:time,date:String(r.recorded_at||'')});
     }
