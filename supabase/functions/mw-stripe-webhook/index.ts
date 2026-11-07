@@ -314,7 +314,7 @@ async function sendPaymentFailureEmail(event: any, invoice: any, subscription: a
     "If your membership access is paused, it will be updated after Stripe confirms payment.",
     "",
     "— MW Dynasty",
-  ].join("\\n");
+  ].join("\n");
   const safeName = escapeHtml(firstName);
   const html = `<div style="font-family:Arial,sans-serif;color:#17212b;line-height:1.5"><p>${safeName ? `Hi ${safeName},` : "Hi,"}</p><p>We couldn’t process the latest payment for your MW Dynasty ${membership} membership.</p><p>Please sign in to MW Dynasty and open <strong>Profile → Billing</strong> to update your payment method.</p><p>If your membership access is paused, it will be updated after Stripe confirms payment.</p><p>— MW Dynasty</p></div>`;
 
