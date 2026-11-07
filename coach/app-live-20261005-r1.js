@@ -59,8 +59,8 @@ function mobileCoachNav(activePage){
     :[['dashboard','mwNavHome','DASHBOARD'],['athletes','mwNavProfile','ATHLETES'],['practice','mwNavTrain','PRACTICE MODE'],['tools','mwNavProgram','PERFORMANCE TOOLS'],['coachmw','mwNavCoach','COACH MUS']];
   const primaryIds=new Set(items.map(x=>x[0]));
   const menuActive=!primaryIds.has(shownActive);
-  return `<nav class="coach-mobile-nav mwDepthNav mwImageNav" aria-label="Coach navigation">
-    ${items.map(([id,art,label])=>`<button type="button" class="${shownActive===id?'active':''}" data-page="${id}" aria-label="${label}"><b class="mwNavArt ${art}" aria-hidden="true"></b><span>${label==='COACH MUS'?'Coach Mus':label[0]+label.slice(1).toLowerCase()}</span></button>`).join('')}
+  return `<nav class="coach-mobile-nav ${experience==='core'?'coach-core-nav':''} mwDepthNav mwImageNav" aria-label="Coach navigation">
+    ${items.map(([id,art,label])=>`<button type="button" class="${shownActive===id?'active':''}" data-page="${id}" aria-label="${label}"><b class="mwNavArt ${art}" aria-hidden="true"></b><span>${label==='COACH MUS'?'Coach Mus':experience==='core'&&label==='PRACTICE MODE'?'Practice':label[0]+label.slice(1).toLowerCase()}</span></button>`).join('')}
     <button type="button" class="${menuActive?'active':''}" data-page="more" aria-label="Menu"><b class="mwNavArt coachMobileMenuArt" aria-hidden="true"><img src="/assets/mw-nav-menu.webp" alt="" draggable="false"></b><span>Menu</span></button>
   </nav>`;
 }
