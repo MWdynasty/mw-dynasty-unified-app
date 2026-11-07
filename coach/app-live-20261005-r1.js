@@ -1291,9 +1291,11 @@ const COACH_TOURS={
     {icon:'✦',title:'Welcome to Coach Intelligence',body:'Coach Intelligence adds athlete signals, planning help and Coach Mus to your daily coaching tools.',hint:'Use the information to guide your review. You make the coaching decisions.',target:null,label:'COACH INTELLIGENCE'},
     {icon:'⌂',title:'Dashboard: see team signals',body:'Start with the team overview to see what may need your attention.',hint:'Open an athlete to understand the reason behind a signal.',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
     {icon:'♟',title:'Athletes: review the details',body:'Check the athlete’s profile, training history and any saved signals before you decide what to do.',hint:'A signal is a reason to look closer, not an automatic change.',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
+    {icon:'🏃',title:'Practice Mode: run a session',body:'Open Practice Mode to guide the workout, time reps and save what happened.',hint:'Saved sessions help you review the athlete’s work.',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
+    {icon:'📊',title:'Performance Tools: check results',body:'Use Performance Tools for pacing, stopwatch timing and performance views.',hint:'Compare matching distances and workout types.',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
     {icon:'↗',title:'Progression: follow development',body:'Review saved progress and coaching insights in Progression.',hint:'Only use comparisons supported by the athlete’s saved results.',target:'#sideNav [data-page="insights"]',label:'PROGRESSION'},
     {icon:'MW',title:'Coach Mus: ask a question',body:'Ask Coach Mus to explain athlete information or help you think through the next step.',hint:'Coach Mus gives guidance. You approve coaching decisions.',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
-    {icon:'☰',title:'Menu: plan and follow up',body:'Find the Task Board, season planning, messages, calendar and settings in Menu.',hint:'Review the information, decide, then communicate with your athlete.',target:'#sideNav [data-page="account"]',label:'YOUR COACHING FLOW'}
+    {icon:'☰',title:'Menu: find more coach tools',body:'Open Menu for the Task Board, season planning, messages, calendar and settings.',hint:'Review the information, decide, then follow up with your athlete.',navigate:'more',target:'.coach-menu-shell',label:'MENU'}
   ],
   performance:[
     {icon:'✦',title:'Welcome to Coach Velocity',body:'Coach Velocity includes the MW track and weight-room plan, performance tools and Coach Mus.',hint:'This tour shows where each part lives.',target:null,label:'COACH VELOCITY'},
@@ -1307,10 +1309,11 @@ const COACH_TOURS={
 };
 const COACH_UPGRADE_TOURS={
   intelligence:[
-    {icon:'◉',title:'Review athlete signals',body:'Your Dashboard highlights athletes who may need your attention.',hint:'Open the athlete and check the details before deciding.',navigate:'dashboard',target:'.athlete-status-section',label:'ATHLETE SIGNALS'},
-    {icon:'☑',title:'Open the Task Board',body:'Find follow-ups and athlete reminders in Menu → Task Board.',hint:'Review each item before taking action.',navigate:'more',target:'.coach-menu-shell [data-page="taskboard"]',label:'TASK BOARD'},
-    {icon:'↗',title:'Check saved progress',body:'Open Progression to review athlete development from saved results.',hint:'Use comparisons only when the saved results match.',navigate:'more',target:'.coach-menu-shell [data-page="insights"]',label:'PROGRESSION'},
-    {icon:'MW',title:'Ask Coach Mus',body:'Coach Mus can explain athlete information and help you consider a next step.',hint:'You make and approve coaching decisions.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'}
+    {icon:'◉',title:'Dashboard: review athlete signals',body:'Your Dashboard highlights athletes who may need your attention.',hint:'Open the athlete and check the details before deciding.',navigate:'dashboard',target:'.athlete-status-section',label:'DASHBOARD'},
+    {icon:'🏃',title:'Practice Mode: guide a session',body:'Open Practice Mode to guide the workout, time reps and save what happened.',hint:'Saved work helps you review the session.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
+    {icon:'📊',title:'Performance Tools: check results',body:'Use pacing, stopwatch timing and performance views when you need them.',hint:'Compare matching distances and workout types.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
+    {icon:'MW',title:'Coach Mus: ask for context',body:'Coach Mus can explain athlete information and help you consider a next step.',hint:'You make and approve coaching decisions.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
+    {icon:'☰',title:'Menu: find the rest of your tools',body:'Open Menu for the Task Board, Progression, season planning, messages, calendar and settings.',hint:'This is where you find tools outside the main tabs.',navigate:'more',target:'.coach-menu-shell',label:'MENU'}
   ],
   performance:[
     {icon:'🏃',title:'Open the MW Track Program',body:'Find the sprint plan and coaching cues in Menu → MW Velocity.',hint:'Use the assigned session for the day.',navigate:'more',target:'.coach-menu-shell [data-page="mwtrack"]',label:'TRACK PROGRAM'},
@@ -1329,11 +1332,12 @@ const COACH_MOBILE_TOURS={
     {icon:'☰',title:'Your Coaching Flow',body:'Start at Dashboard, open Athletes when needed, then run Practice. Menu holds your calendar, profile and help.',hint:'That is the Coach Core workflow.',navigate:'more',target:'#sideNav',label:'TOUR COMPLETE'}
   ],
   intelligence:[
-    {icon:'⌂',title:'Start with the team view',body:'Use Dashboard to see team information and what may need your attention.',hint:'Start broad before opening an athlete.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
-    {icon:'♟',title:'Review an athlete',body:'Open Athletes to check the details behind a signal or recommendation.',hint:'A signal guides your review; it does not change a workout.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
-    {icon:'MW',title:'Ask Coach Mus',body:'Ask Coach Mus to explain the information or help you consider a next step.',hint:'You make and approve coaching decisions.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
-    {icon:'🏃',title:'Run practice',body:'Use Practice Mode to guide the session and save what happened.',hint:'Saved work gives you better information for later reviews.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
-    {icon:'☰',title:'Find more in Menu',body:'The Task Board, Progression, season planning, messages and settings are in Menu.',hint:'Review, decide, then follow up with the athlete.',navigate:'more',target:'#sideNav',label:'TOUR COMPLETE'}
+    {icon:'⌂',title:'Start on Dashboard',body:'See team information and athletes who may need your attention.',hint:'Open an athlete to check the details behind a signal.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
+    {icon:'♟',title:'Open Athletes',body:'Review an athlete’s profile, assignments and saved results.',hint:'A signal helps you know what to review; it does not change a workout.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
+    {icon:'🏃',title:'Use Practice Mode',body:'Guide the session, time reps and save what the athlete completed.',hint:'Saved practice work builds the athlete’s training history.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
+    {icon:'📊',title:'Open Performance Tools',body:'Use pacing, the stopwatch and performance views when you need them.',hint:'Compare the same distance and type of workout.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
+    {icon:'MW',title:'Ask Coach Mus',body:'Ask Coach Mus to explain athlete information or help you consider a next step.',hint:'You make and approve coaching decisions.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
+    {icon:'☰',title:'Find more in Menu',body:'Menu includes the Task Board, Progression, season planning, messages, calendar and settings.',hint:'Open Menu whenever you need a coaching tool outside the main tabs.',navigate:'more',target:'.coach-menu-shell',label:'MENU'}
   ],
   performance:[
     {icon:'⌂',title:'Start on Dashboard',body:'Review today’s coaching action before opening the MW training plan.',hint:'Start broad, then go to the athlete or session.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
@@ -1346,7 +1350,7 @@ const COACH_MOBILE_TOURS={
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:v36`}
+function coachTourCompleteKey(tier=experience){const version=tier==='intelligence'?'v37':'v36';return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:${version}`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
