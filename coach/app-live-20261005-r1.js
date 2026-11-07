@@ -35,9 +35,9 @@ async function loadPricingCatalog(){
 }
 let experience='core';
 const nav={
- core:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Practice Mode'],['messages','✉','Messages'],['account',',
- intelligence:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Practice Mode'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach Mus'],['messages','✉','Messages'],['account','$','Billing'],['account','⚙','Settings']],
- performance:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Practice Mode'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach Mus'],['messages','✉','Messages'],['account','$','Billing'],['account','⚙','Settings']]
+ core:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Practice Mode'],['messages','✉','Messages'],['account','⚙','Settings']],
+ intelligence:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Practice Mode'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach Mus'],['messages','✉','Messages'],['account','Billing','Billing'],['account','⚙','Settings']],
+ performance:[['dashboard','⌂','Dashboard'],['athletes','♟','Athletes'],['practice','🏃','Practice Mode'],['tools','📊','Performance Tools'],['insights','↗','Progression'],['coachmw','MW','Coach Mus'],['messages','✉','Messages'],['account','Billing','Billing'],['account','⚙','Settings']]
 };
 function sideNav(){
   const items=[...nav[experience]];
@@ -1285,7 +1285,7 @@ const COACH_TOURS={
     {icon:'♟',title:'Athletes: manage your roster',body:'Open an athlete to review their profile, assignments, attendance and notes.',hint:'Choose the athlete you want to work with.',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
     {icon:'🏃',title:'Practice Mode: run a session',body:'Open Practice Mode to organize the workout, time reps and save the session.',hint:'Saved sessions help you keep track of what your team did.',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
     {icon:'✉',title:'Messages: follow up',body:'Send athletes a message when you need to explain or follow up on the plan.',hint:'Messages are available from your main navigation.',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'☰',title:'Menu: find the rest',body:'Use Menu for your calendar, activity, profile and help.',hint:'Your Coach Core flow is Dashboard → Athletes → Practice.',target:'#sideNav [data-page="account"]',label:'YOUR COACHING FLOW'}
+    {icon:'✓',title:'Your Coaching Flow',body:'Start on Dashboard, open Athletes when needed, then run Practice Mode. Use Messages for follow-up.',hint:'Use Settings when you need to manage your coach profile or account.',target:null,label:'YOUR COACHING FLOW'}
   ],
   intelligence:[
     {icon:'✦',title:'Welcome to Coach Intelligence',body:'Coach Intelligence adds athlete signals, planning help and Coach Mus to your daily coaching tools.',hint:'Use the information to guide your review. You make the coaching decisions.',target:null,label:'COACH INTELLIGENCE'},
