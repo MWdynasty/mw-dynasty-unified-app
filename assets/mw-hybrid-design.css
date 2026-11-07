@@ -388,3 +388,69 @@ body.mw-hybrid-coach #app .coach-menu-grid > button[data-page="calendar"] > b { 
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   }
 }
+
+/* Coach Mus feature guide */
+body.mw-hybrid-coach #app .coach-mus-guide {
+  margin: 12px 0 14px !important;
+  padding: 14px 16px !important;
+  border: 1px solid rgba(218,171,74,.42) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(145deg,rgba(14,27,39,.96),rgba(6,14,21,.98)) !important;
+}
+body.mw-hybrid-coach #app .coach-mus-guide > summary {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  list-style: none !important;
+  color: var(--mw-hybrid-gold-light,#efc659) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+}
+body.mw-hybrid-coach #app .coach-mus-guide > summary::-webkit-details-marker { display:none !important; }
+body.mw-hybrid-coach #app .coach-mus-guide > summary::after {
+  content: '+'; flex: 0 0 auto; color: #f3ca63; font-size: 23px; line-height: 1;
+}
+body.mw-hybrid-coach #app .coach-mus-guide[open] > summary::after { content: '−'; }
+body.mw-hybrid-coach #app .coach-mus-guide > summary small {
+  margin-left: auto !important;
+  color: #9eabb7 !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-align: right !important;
+}
+body.mw-hybrid-coach #app .coach-mus-guide-content {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 9px !important;
+  margin-top: 14px !important;
+}
+body.mw-hybrid-coach #app .coach-mus-guide-step {
+  min-width: 0 !important;
+  padding: 10px 12px !important;
+  border-left: 2px solid rgba(239,198,89,.68) !important;
+  border-radius: 0 10px 10px 0 !important;
+  background: rgba(3,10,16,.52) !important;
+}
+body.mw-hybrid-coach #app .coach-mus-guide-step > b {
+  display: block !important;
+  color: #f1c85b !important;
+  font-size: 12px !important;
+}
+body.mw-hybrid-coach #app .coach-mus-guide-step p {
+  margin: 5px 0 0 !important;
+  color: #c4cbd2 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+body.mw-hybrid-coach #app .coach-mus-guide-step em {
+  color: #f3dfaa !important;
+}
+@media (min-width: 700px) {
+  body.mw-hybrid-coach #app .coach-mus-guide-content {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}
