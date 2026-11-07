@@ -2073,7 +2073,7 @@ function loadSetupLine(name,total){if(isDumbbellLift(name))return `Use <b>${tota
 function workingLoadHTML(name,prescription){const k=liftKey(name),m=Number(getLiftMaxes()[k]||0);if(!k||!m)return'';const q=String(prescription||'').match(/@(\s*)(\d+(?:\.\d+)?)(?:-(\d+(?:\.\d+)?))?%/);if(!q)return'';const a=Number(q[2]),b=q[3]?Number(q[3]):a;const lo=round5(m*a/100),hi=round5(m*b/100);if(lo===hi)return `<span class="loadCalc"><span class="loadTarget">MW LOAD: ~${lo} lb</span><span class="plateLine">${loadSetupLine(name,lo)}</span></span>`;return `<span class="loadCalc"><span class="loadTarget">MW LOAD: ~${lo}–${hi} lb</span><span class="plateLine">LOW: ${loadSetupLine(name,lo)}</span><span class="plateLine">HIGH: ${loadSetupLine(name,hi)}</span></span>`}
 
 ['name','coachType','p60','p100','p150','p200','p300','p400','p500','week','startDate','startWeek','maxFrontSquat','maxBackSquat','maxBench','maxHangClean','maxHangSnatch','maxHexBar','maxPushPress','maxTestDate'].forEach(k=>{if(saved[k]!==undefined && $('#'+k))$('#'+k).value=saved[k]}); if($('#startDate')&&!$('#startDate').value)$('#startDate').value=new Date().toISOString().slice(0,10);
-function coachVisualChoice(){const remote=(typeof mwRemoteProfile!=='undefined'&&['male','female'].includes(mwRemoteProfile?.coachType))?mwRemoteProfile.coachType:'';const select=['male','female'].includes($('#coachType')?.value)?$('#coachType').value:'';const local=function coachVisualChoice(){return'male'}
+function coachVisualChoice(){return'male'}
 function applyCoachVisual(){
   const avatar=$('#coachAvatar'),img=$('#coachAvatarImg'),primary='/athlete/coach-mw-male.jpg',fallback='/athlete/coach-mw-male-luxe.jpg';
   if(avatar){avatar.setAttribute('data-coach','male');avatar.style.backgroundImage='none'}
@@ -2087,7 +2087,8 @@ function setCoachChoice(){
   try{if(typeof mwRemoteProfile!=='undefined')mwRemoteProfile.coachType=choice}catch{}
   applyCoachVisual();
 }
-150','p200','p300','p400','p500','week','startDate','startWeek','maxPowerClean','maxFrontSquat','maxBackSquat','maxDeadlift'].forEach(k=>{if($('#'+k))d[k]=$('#'+k).value});window.MWAccountStorage.local.setItem('mwPremiumProfile',JSON.stringify(d));sync();renderEntryStatus();$('#save').textContent='✓ PROFILE SAVED';setTimeout(()=>$('#save').textContent='SAVE ATHLETE PROFILE',1200)};
+function sync(){let n=$('#name').value.trim();$('#helloName').textContent=(n||'Athlete')+'.';$('#weekBadge').textContent=$('#week').value||'1';applyCoachVisual()}sync();
+$('#save').onclick=()=>{let d=getProfile();['name','coachType','p60','p100','p150','p200','p300','p400','p500','week','startDate','startWeek','maxPowerClean','maxFrontSquat','maxBackSquat','maxDeadlift'].forEach(k=>{if($('#'+k))d[k]=$('#'+k).value});d.coachType='male';window.MWAccountStorage.local.setItem('mwPremiumProfile',JSON.stringify(d));setCoachChoice();sync();renderEntryStatus();$('#save').textContent='✓ PROFILE SAVED';setTimeout(()=>$('#save').textContent='SAVE ATHLETE PROFILE',1200)};
 function mwFeatureEnabled(key){return window.mwFeatureAccess?.[key]===true}
 function mwFeatureLock(title,message){if(typeof window.o==='function')window.o(title,`<p>${message}</p><button class="save" onclick="document.querySelector('#mwUtilityClose')?.click()">GOT IT</button>`);else alert(message)}
 async function mwActivatePersonalPerformance(){
