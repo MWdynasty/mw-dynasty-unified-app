@@ -2574,7 +2574,7 @@ function mwTrackSessionSamples(rows){
  for(const row of rows){
    if(!mwDevelopmentSpeedEligible(row)||row.result_status==='dnf')continue;
    const distance=Number(row.distance_m),time=Number(row.time_seconds);if(!(distance>0&&time>0))continue;
-   const type=mwDevelopmentSpeedType(row),cycle=String(row.workout_cycle_id||row.season_plan_id||'legacy'),workout=String(row.workout_key||('w'+row.program_week+'d'+row.program_day)),key=[cycle,workout,distance,type].join('|');
+   const type=mwDevelopmentSpeedType(row),cycle=String(row.workout_cycle_id||row.season_plan_id||'legacy'),workout=String(row.workout_key||('w'+row.program_week+'d'+row.program_day)),sessionDate=String(row.recorded_at||'').slice(0,10),key=[cycle,workout,distance,type,sessionDate].join('|');
    if(!sessions.has(key))sessions.set(key,{distance,type,cycle,workout,times:[],recorded_at:row.recorded_at||''});
    const session=sessions.get(key);session.times.push(time);
    if(String(row.recorded_at||'')>String(session.recorded_at||''))session.recorded_at=row.recorded_at;
