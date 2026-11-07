@@ -1307,17 +1307,16 @@ const COACH_TOURS={
 };
 const COACH_UPGRADE_TOURS={
   intelligence:[
-    {icon:'⚡',title:'Coach Intelligence Is Unlocked',body:'Your platform now adds live roster intelligence and AI decision support on top of your coaching workflow.',hint:'Here are the biggest new tools.',target:null,label:'WHAT’S NEW'},
-    {icon:'◉',title:'Athlete Status Board',body:'Your roster is now organized into On Track, Watch and Needs Attention so you can prioritize faster.',hint:'Every flag includes the reason MW detected it.',target:'.athlete-status-section',label:'NEW · ATHLETE STATUS'},
-    {icon:'☑',title:'AI Priorities',body:'The AI Task Board turns athlete signals into daily coaching priorities for you to review.',hint:'You decide what gets approved and acted on.',target:'[data-page="taskboard"]',label:'NEW · AI TASK BOARD'},
-    {icon:'☻',title:'Coach Mus + Insights',body:'Coach Mus AI and AI Insights give you deeper context without taking control away from the coach.',hint:'Your upgraded platform is ready.',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MUS'}
+    {icon:'◉',title:'Your dashboard now shows athlete signals',body:'Dashboard groups athletes by status so you know who may need a closer look.',hint:'Check the reason before deciding what to do.',target:'.athlete-status-section',label:'NEW · ATHLETE STATUS'},
+    {icon:'☑',title:'Use the Task Board for follow-up',body:'Open Menu → Task Board to see coaching follow-ups organized in one place.',hint:'Review each item before taking action.',navigate:'more',target:'#sideNav [data-page="taskboard"]',label:'NEW · TASK BOARD'},
+    {icon:'↗',title:'Review development in Progression',body:'Open Menu → Progression to review saved athlete progress and coaching insights.',hint:'Use only trends supported by saved results.',navigate:'more',target:'#sideNav [data-page="insights"]',label:'NEW · PROGRESSION'},
+    {icon:'MW',title:'Ask Coach Mus when you need context',body:'Coach Mus can explain athlete information and help you think through options.',hint:'You approve every coaching decision.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MUS'}
   ],
   performance:[
-    {icon:'⚡',title:'Coach Velocity Is Unlocked',body:'You now have the complete MW system plus the full Coach Intelligence layer.',hint:'Here are the major tools added with this platform.',target:null,label:'WHAT’S NEW'},
-    {icon:'🏃',title:'41-Week Track System',body:'The complete progressive MW Track Program is now available. Standard Week 1 begins the day after Labor Day, or your team can use a coach-controlled Custom Season Start.',hint:'Athletes do not freely jump weeks: coached athletes follow coach placement; independent late joiners use Smart Entry.',target:'[data-page="mwtrack"]',label:'NEW · TRACK PROGRAM'},
-    {icon:'🏋',title:'Strength & Power',body:'The synchronized MW weight-room progression is now connected to the sprint program.',hint:'Track and strength now live together.',target:'[data-page="strength"]',label:'NEW · STRENGTH'},
-
-    {icon:'◷',title:'Pacing Tools',body:'Use live athlete PRs to calculate individualized target times for the prescribed work.',hint:'The complete performance platform is ready.',target:'[data-page="pacing"]',label:'NEW · PACING'}
+    {icon:'🏃',title:'Open the MW Track Program',body:'The MW Track Program contains the season’s sprint sessions and coaching cues.',hint:'Find it under Menu → MW Velocity.',navigate:'more',target:'#sideNav [data-page="mwtrack"]',label:'NEW · TRACK PROGRAM'},
+    {icon:'🏋',title:'Use synchronized Strength & Power',body:'The weight-room plan supports the same training goals as the track plan.',hint:'Find Strength & Power under Menu → MW Velocity.',navigate:'more',target:'#sideNav [data-page="strength"]',label:'NEW · STRENGTH'},
+    {icon:'📊',title:'Review times with Performance Tools',body:'Use pacing, the stopwatch and performance views when you need them.',hint:'Compare the same distance and workout type.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'NEW · PERFORMANCE TOOLS'},
+    {icon:'MW',title:'Ask Coach Mus about the MW plan',body:'Coach Mus can explain the training intent and help you review athlete results.',hint:'You stay in control of the plan.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'NEW · COACH MUS'}
   ]
 };
 /* Short role-specific tour. Core stays AI-free; Coach Mus is optional help in the intelligence tiers. */
