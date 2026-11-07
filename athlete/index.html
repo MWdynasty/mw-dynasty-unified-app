@@ -4929,7 +4929,7 @@ async function openPracticeFor(w,d){
  if(paceText){
    const workoutText=(paceInfo.raw+' '+String(session?.title||'')).toLowerCase();
    if(paceInfo.target)paceText.textContent=(basis?.estimated?'About ':'')+paceInfo.target.toFixed(2)+' seconds for each '+paceInfo.dist+'m rep.'+(basis?.estimated?' Based on your saved times.':' Set by your coach.');
-   else if(/\\bhill\\b/.test(workoutText))paceText.textContent='No exact time for hill runs. Run fast and smooth. Try to keep the same effort each rep.';
+   else if(workoutText.includes('hill'))paceText.textContent='No exact time for hill runs. Run fast and smooth. Try to keep the same effort each rep.';
    else if(paceInfo.intensity)paceText.textContent='Add a saved race or time trial to get your time goal.';
    else paceText.textContent='Follow the effort written in today’s workout.';
  }
