@@ -1341,32 +1341,32 @@ const COACH_UPGRADE_TOURS={
 /* Short role-specific tour. Core stays AI-free; Coach Mus is optional help in the intelligence tiers. */
 const COACH_MOBILE_TOURS={
   core:[
-    {icon:'⌂',title:'Start on Dashboard',body:'See your next coaching action and a quick view of your team.',hint:'Use Dashboard to choose what to do next.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
-    {icon:'♟',title:'Open Athletes',body:'Connect athletes and review their profiles, assignments and attendance.',hint:'Choose an athlete to see their information.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
-    {icon:'🏃',title:'Run Practice Mode',body:'Open the workout, time reps and save what the team completed.',hint:'Saved practice helps you keep track of the work.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
-    {icon:'✉',title:'Use Messages',body:'Follow up with athletes when they need a cue or reminder.',hint:'Messages are one of the ways to stay connected.',navigate:'messages',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
-    {icon:'☰',title:'Your Coaching Flow',body:'Start at Dashboard, open Athletes when needed, then run Practice. Menu holds your calendar, profile and help.',hint:'That is the Coach Core workflow.',navigate:'more',target:'#sideNav',label:'TOUR COMPLETE'}
+    {icon:'',art:'/assets/mw-nav-home.webp',eyebrow:'1. DASHBOARD',title:'See What Needs Your Attention',body:'Dashboard gives you a quick view of your team and your next coaching step.',previewTitle:'DASHBOARD = YOUR STARTING POINT',previewBody:'Open it first to see what is happening today.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
+    {icon:'',art:'/assets/mw-nav-profile.webp',eyebrow:'2. ATHLETES',title:'Find and Review Your Athletes',body:'Open Athletes to connect your team and review each athlete’s profile, assigned work and attendance.',previewTitle:'ATHLETES = YOUR TEAM',previewBody:'Choose an athlete when you need to see their details.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
+    {icon:'',art:'/assets/mw-nav-train.webp',eyebrow:'3. PRACTICE',title:'Guide the Team Through Practice',body:'Use Practice Mode to open the session, guide the workout, time reps and save what the team completed.',previewTitle:'PRACTICE = RUN THE SESSION',previewBody:'Saved practice keeps a record of the work your team did.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
+    {icon:'',art:'/assets/mw-nav-program.webp',eyebrow:'4. MESSAGES',title:'Stay in Touch With Athletes',body:'Use Messages to answer questions, share a cue or follow up after practice.',previewTitle:'MESSAGES = KEEP IN TOUCH',previewBody:'Open a conversation when you need to communicate with an athlete.',navigate:'messages',target:'#sideNav [data-page="messages"]',label:'MESSAGES'},
+    {icon:'',art:'/assets/mw-nav-menu.webp',eyebrow:'5. MENU',title:'Find Calendar, Settings and Help',body:'Menu holds less-used coach tools. Open it for your calendar, coach profile, help and account settings.',previewTitle:'MENU = MORE COACH TOOLS',previewBody:'Dashboard → Athletes → Practice is a simple everyday flow. Use Menu when you need something else.',navigate:'more',target:'#sideNav [data-page="account"]',label:'MENU',ready:true,tagline:'YOU’RE READY TO COACH.'}
   ],
   intelligence:[
-    {icon:'⌂',title:'Start on Dashboard',body:'See team information and athletes who may need your attention.',hint:'Open an athlete to check the details behind a signal.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
-    {icon:'♟',title:'Open Athletes',body:'Review an athlete’s profile, assignments and saved results.',hint:'A signal helps you know what to review; it does not change a workout.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
-    {icon:'🏃',title:'Use Practice Mode',body:'Guide the session, time reps and save what the athlete completed.',hint:'Saved practice work builds the athlete’s training history.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
-    {icon:'📊',title:'Open Performance Tools',body:'Use pacing, the stopwatch and performance views when you need them.',hint:'Compare the same distance and type of workout.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
-    {icon:'MW',title:'Ask Coach Mus a clear question',body:'Try: “Compare [athlete name]’s two latest saved 100m times.” Coach Mus checks the saved team information it can access, then explains what it finds.',hint:'Sample question only: replace [athlete name] with someone on your team. If information is missing, Coach Mus tells you. You review and approve changes; it never changes a workout by itself.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
-    {icon:'☰',title:'Find more in Menu',body:'Menu includes the Task Board, Progression, season planning, messages, calendar and settings.',hint:'Open Menu whenever you need a coaching tool outside the main tabs.',navigate:'more',target:'.coach-menu-shell',label:'MENU'}
+    {icon:'',art:'/assets/mw-nav-home.webp',eyebrow:'1. DASHBOARD',title:'See the Team Picture',body:'Dashboard brings together your next coaching step and team signals that may need a closer look.',previewTitle:'DASHBOARD = WHERE TO START',previewBody:'Open an athlete to understand what is behind a signal.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
+    {icon:'',art:'/assets/mw-nav-profile.webp',eyebrow:'2. ATHLETES',title:'Check the Details',body:'Open Athletes to review the person, their assigned work and the saved information behind a signal.',previewTitle:'ATHLETES = CHECK THE FACTS',previewBody:'A signal can help you know where to look. You decide what it means.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
+    {icon:'',art:'/assets/mw-nav-train.webp',eyebrow:'3. PRACTICE MODE',title:'Guide and Save Practice',body:'Use Practice Mode to guide the session, time reps and save the work athletes complete.',previewTitle:'PRACTICE = RECORD WHAT HAPPENED',previewBody:'Saved practice helps your next review match what the athlete actually did.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
+    {icon:'',art:'/assets/mw-nav-program.webp',eyebrow:'4. PERFORMANCE TOOLS',title:'Review Performance',body:'Performance Tools includes pacing, stopwatch timing and performance views for saved results.',previewTitle:'COMPARE LIKE WITH LIKE',previewBody:'Compare the same distance and workout type to understand a change.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
+    {icon:'',art:'/assets/mw-nav-mw.webp',eyebrow:'5. COACH MUS',title:'Ask a Clear Question',body:'Ask Coach Mus about an athlete, a saved result or your team. For example: “Who needs a check-in based on saved results?”',previewTitle:'ASK → CHECK → DECIDE',previewBody:'Coach Mus uses information your account is allowed to see. It tells you when something is missing. You review and approve changes; it never changes workouts on its own.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
+    {icon:'',art:'/assets/mw-nav-menu.webp',eyebrow:'6. MENU',title:'Open the Rest of Your Tools',body:'Menu holds Progression, the Task Board, season planning, Messages, Calendar and Settings.',previewTitle:'MENU = SUPPORTING TOOLS',previewBody:'Start on Dashboard, check the athlete, then use the tool that fits the question.',navigate:'more',target:'#sideNav [data-page="account"]',label:'MENU',ready:true,tagline:'REVIEW THE SIGNAL. MAKE THE DECISION.'}
   ],
   performance:[
-    {icon:'⌂',title:'Start on Dashboard',body:'Review today’s coaching action before opening the MW training plan.',hint:'Start broad, then go to the athlete or session.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
-    {icon:'♟',title:'Check the athlete',body:'Open Athletes to review the plan, placement and saved results.',hint:'Use the athlete’s assigned plan for the session.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
-    {icon:'🏃',title:'Run Practice Mode',body:'Guide the team through the session, time reps and save the work.',hint:'Saved sessions build the athlete’s training history.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
-    {icon:'📊',title:'Open Performance Tools',body:'Use pacing, the stopwatch and performance views when you need them.',hint:'Compare the same distance and workout type.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
-    {icon:'MW',title:'Ask Coach Mus a clear question',body:'Try: “Explain today’s workout for [athlete name].” Coach Mus checks the saved team information it can access, then explains what it finds.',hint:'Sample question only: replace [athlete name] with someone on your team. If information is missing, Coach Mus tells you. You review and approve changes; it never changes a workout by itself.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
-    {icon:'☰',title:'Find the MW programs',body:'Menu contains the MW Track Program, Strength & Power, pacing, messages and settings.',hint:'Use the prescribed session as the source for today’s work.',navigate:'more',target:'#sideNav',label:'TOUR COMPLETE'}
+    {icon:'',art:'/assets/mw-nav-home.webp',eyebrow:'1. DASHBOARD',title:'See Today’s Coaching Step',body:'Dashboard shows your team picture and what may need your attention before you open the training plan.',previewTitle:'DASHBOARD = YOUR STARTING POINT',previewBody:'Start here, then open the athlete or session you need.',navigate:'dashboard',target:'#sideNav [data-page="dashboard"]',label:'DASHBOARD'},
+    {icon:'',art:'/assets/mw-nav-profile.webp',eyebrow:'2. ATHLETES',title:'Check the Athlete and Their Plan',body:'Open Athletes to review the athlete, their assigned week and their saved results.',previewTitle:'ATHLETES = PLAN + RESULTS',previewBody:'Athletes follow the placement and training plan set by their coach.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
+    {icon:'',art:'/assets/mw-nav-train.webp',eyebrow:'3. PRACTICE MODE',title:'Run and Save the Session',body:'Practice Mode guides the team through the workout, times reps and saves the work athletes complete.',previewTitle:'PRACTICE = DO THE WORK',previewBody:'Saved sessions help you follow development over time.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
+    {icon:'',art:'/assets/mw-nav-program.webp',eyebrow:'4. PERFORMANCE TOOLS',title:'Review Times and Targets',body:'Use pacing, the stopwatch and performance views to review saved results.',previewTitle:'COMPARE LIKE WITH LIKE',previewBody:'Check the same distance and workout type before comparing results.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
+    {icon:'',art:'/assets/mw-nav-mw.webp',eyebrow:'5. COACH MUS',title:'Ask About the MW Plan',body:'Ask Coach Mus to explain today’s training, a coaching cue or an athlete result. For example: “Explain today’s workout.”',previewTitle:'ASK → UNDERSTAND → DECIDE',previewBody:'Coach Mus explains the plan and saved information. You stay in control of athlete training.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
+    {icon:'',art:'/assets/mw-nav-menu.webp',eyebrow:'6. MENU',title:'Find Track and Strength Plans',body:'Menu is where you find the MW Track Program, Strength & Power, Progression, season planning, Messages and Settings.',previewTitle:'MENU = YOUR MW SYSTEM',previewBody:'Use the assigned session for today. The program week stays protected by coach placement.',navigate:'more',target:'#sideNav [data-page="account"]',label:'MENU',ready:true,tagline:'TRAIN. REVIEW. LEAD.'}
   ]
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){const version='v39';return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:${version}`}
+function coachTourCompleteKey(tier=experience){const version='v40';return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:${version}`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
@@ -1415,8 +1415,8 @@ function startCoachTour(opts={}){
   if(!steps?.length)return;
   if(!document.querySelector('.app')){dashboard();window.setTimeout(()=>startCoachTour(opts),220);return;}
   document.getElementById('coachTour')?.remove();
-  const root=document.createElement('div');root.id='coachTour';root.className=`coach-tour ${PLANS[experience].theme} ${mode==='upgrade'?'upgrade':''}`;
-  root.innerHTML=`<div class="coach-tour-spotlight" id="coachTourSpotlight"></div><div class="coach-tour-tag" id="coachTourTag"></div><section class="coach-tour-card" id="coachTourCard" role="dialog" aria-modal="true" aria-label="${escapeHtml(PLANS[experience].name)} tutorial"><div class="coach-tour-top"><div class="coach-tour-kicker">MW DYNASTY · ${mode==='upgrade'?'WHAT’S NEW':'GUIDED TOUR'}</div><div class="coach-tour-step" id="coachTourStep"></div></div><div class="coach-tour-lead"><div class="coach-tour-icon" id="coachTourIcon"></div><div><h2 id="coachTourTitle"></h2><p id="coachTourBody"></p></div></div><div class="coach-tour-nav-preview" id="coachTourNavPreview"></div><div class="coach-tour-hint" id="coachTourHint"></div><div class="coach-tour-dots" id="coachTourDots"></div><div class="coach-tour-actions"><button type="button" class="coach-tour-skip" id="coachTourSkip">SKIP</button><button type="button" class="coach-tour-back" id="coachTourBack">BACK</button><button type="button" class="coach-tour-next" id="coachTourNext">NEXT</button></div></section>`;
+  const root=document.createElement('div');root.id='coachTour';root.className=`coach-tour coach-tour-quickstart ${PLANS[experience].theme} ${mode==='upgrade'?'upgrade':''}`;
+  root.innerHTML=`<section class="coach-tour-qs-shell" role="dialog" aria-modal="true" aria-label="${escapeHtml(PLANS[experience].name)} Quick Start"><header class="coach-tour-qs-top"><div class="coach-tour-qs-topline"><b>MW DYNASTY · QUICK START</b><span id="coachTourStep"></span></div><div class="coach-tour-qs-track"><i id="coachTourProgress"></i></div></header><main class="coach-tour-qs-main" id="coachTourMain"><div class="coach-tour-qs-icon" id="coachTourIcon"></div><div class="coach-tour-qs-eyebrow" id="coachTourEyebrow"></div><h2 id="coachTourTitle"></h2><p id="coachTourBody"></p><section class="coach-tour-qs-preview"><small>WHAT YOU’LL SEE IN THE APP</small><div class="coach-tour-qs-preview-card"><i id="coachTourMiniIcon"></i><div><b id="coachTourPreviewTitle"></b><p id="coachTourPreviewBody"></p></div></div></section><div class="coach-tour-qs-tagline" id="coachTourTagline"></div></main><footer class="coach-tour-qs-actions"><button type="button" class="coach-tour-skip" id="coachTourSkip">SKIP</button><button type="button" class="coach-tour-back" id="coachTourBack">BACK</button><button type="button" class="coach-tour-next" id="coachTourNext">NEXT</button></footer></section>`;
   document.body.appendChild(root);
   coachTourState={mode,steps,index:0,root};
   root.querySelector('#coachTourSkip').onclick=()=>finishCoachTour(true);
@@ -1438,36 +1438,23 @@ function coachTourNavigateToStep(step){
 function renderCoachTourStep(){
   const st=coachTourState;if(!st)return;const step=st.steps[st.index],root=st.root;
   coachTourNavigateToStep(step);
-  coachTourOpenNavIfNeeded(step);
   root.querySelector('#coachTourStep').textContent=`${st.index+1} OF ${st.steps.length}`;
-  const tourIcon=root.querySelector('#coachTourIcon'),navPreview=root.querySelector('#coachTourNavPreview');
-  if(tourIcon){tourIcon.classList.remove('mw-tour-nav-art');tourIcon.style.backgroundImage='';tourIcon.textContent=step.icon||'✦'}
-  if(navPreview){navPreview.classList.toggle('show',!!step.navPreview);navPreview.innerHTML=''}
-  const resolvedTarget=coachTourResolvedTarget(step);const tourTarget=resolvedTarget?document.querySelector(resolvedTarget):null;
-  const targetArt=tourTarget?.matches?.('.nav-btn')?tourTarget.querySelector('.mwNavArt'):tourTarget?.querySelector?.('.mwNavArt');
-  if(targetArt&&tourIcon){
-    const bg=getComputedStyle(targetArt).backgroundImage;
-    if(bg&&bg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=bg;tourIcon.textContent=''}
+  root.querySelector('#coachTourProgress').style.width=`${((st.index+1)/st.steps.length)*100}%`;
+  const icon=root.querySelector('#coachTourIcon'),mini=root.querySelector('#coachTourMiniIcon');
+  for(const el of [icon,mini]){
+    el.classList.toggle('has-art',!!step.art);
+    el.style.backgroundImage=step.art?`url("${step.art}")`:'';
+    el.textContent=step.art?'':(step.icon||'MW');
   }
-  if(step.navPreview&&navPreview){
-    const buttons=coachTourIsPhone()?[...document.querySelectorAll('.coach-mobile-nav button')].slice(0,5):[...document.querySelectorAll('#sideNav .nav-btn')].slice(0,5);
-    navPreview.innerHTML=buttons.map(btn=>{
-      const art=btn.querySelector('.mwNavArt'),label=btn.querySelector('span:last-child')?.textContent?.trim()||'MW';
-      const bg=art?getComputedStyle(art).backgroundImage:'none';
-      return `<div><i style='background-image:${bg}'></i><span>${escapeHtml(label)}</span></div>`;
-    }).join('');
-    const firstArt=buttons[0]?.querySelector('.mwNavArt');
-    const firstBg=firstArt?getComputedStyle(firstArt).backgroundImage:'none';
-    if(tourIcon&&firstBg&&firstBg!=='none'){tourIcon.classList.add('mw-tour-nav-art');tourIcon.style.backgroundImage=firstBg;tourIcon.textContent=''}
-  }
+  root.querySelector('#coachTourEyebrow').textContent=step.eyebrow||`${st.index+1}. ${step.label||'COACH TOOL'}`;
   root.querySelector('#coachTourTitle').textContent=step.title;
   root.querySelector('#coachTourBody').textContent=step.body;
-  root.querySelector('#coachTourHint').textContent=step.hint||'';
+  root.querySelector('#coachTourPreviewTitle').textContent=step.previewTitle||step.label||step.title;
+  root.querySelector('#coachTourPreviewBody').textContent=step.previewBody||step.hint||step.body;
+  root.querySelector('#coachTourTagline').textContent=step.tagline||'';
+  root.querySelector('#coachTourMain').classList.toggle('is-final',!!step.ready);
   root.querySelector('#coachTourBack').disabled=st.index===0;
-  root.querySelector('#coachTourNext').textContent=st.index===st.steps.length-1?'FINISH':'NEXT';
-  root.querySelector('#coachTourDots').innerHTML=st.steps.map((_,i)=>`<i class="${i===st.index?'active':''}"></i>`).join('');
-  root.classList.toggle('no-target',!step.target);
-  window.setTimeout(()=>coachTourPosition(step),180);
+  root.querySelector('#coachTourNext').textContent=st.index===st.steps.length-1?(step.ready?'ENTER MW DYNASTY':'FINISH'):'NEXT';
 }
 function coachTourPosition(step){
   const root=coachTourState?.root;if(!root)return;const spot=root.querySelector('#coachTourSpotlight'),tag=root.querySelector('#coachTourTag'),card=root.querySelector('#coachTourCard');
