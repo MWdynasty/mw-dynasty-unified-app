@@ -1642,6 +1642,18 @@ async function verifyCoachAccess(session){
   window.MWAccountActivity?.start(d.role);
   return d;
 }
+async function verifyCoachAccessWithRetry(session,attempts=4){
+  let lastError;
+  for(let attempt=0;attempt<attempts;attempt++){
+    try{return await verifyCoachAccess(session)}
+    catch(err){
+      lastError=err;
+      if(!coachTransient(err)||attempt===attempts-1)throw err;
+      await new Promise(resolve=>setTimeout(resolve,Math.min(2500,500*(2**attempt))));
+    }
+  }
+  throw lastError;
+}
 function setLoginMessage(text,type='error'){
   const el=document.getElementById('loginMessage');if(!el)return;el.textContent=text;el.className=`login-message show ${type}`;
 }
@@ -1817,19 +1829,19 @@ function bindLogin(){
       persistSession(session,remember);
       const enteringStarted=showCoachEntering();
       try{
-        await verifyCoachAccess(session);
+        await verifyCoachAccessWithRetry(session);
         await holdCoachEntering(enteringStarted);
         dashboard();
         hideCoachEntering();
       }
       catch(accessErr){
         hideCoachEntering();
-        if(coachTransient(accessErr)){setLoginMessage('Signed in, but MW is having a temporary connection issue. Your Coach session is safe and will reconnect automatically.','neutral');return}
+        if(coachTransient(accessErr)){setLoginMessage('Your sign-in is saved, but Coach could not connect yet. Check your connection and tap Sign In to try again.','neutral');return}
         handleCoachAccessFailure(session,accessErr)
       }
     }catch(err){
       hideCoachEntering();
-      if(coachTransient(err)&&authSession?.access_token){setLoginMessage('Connection interrupted after sign-in. Your Coach session is safe and will reconnect automatically.','neutral')}
+      if(coachTransient(err)&&authSession?.access_token){setLoginMessage('Your sign-in is saved, but Coach could not connect yet. Check your connection and tap Sign In to try again.','neutral')}
       else{clearSession();setLoginMessage(err.message)}
     }finally{setLoginBusy(false)}
   });
@@ -1877,7 +1889,7 @@ async function initAuth(){
       if(!(await validateSession(active)))active=await refreshCoachSession(active);
       if(active&&await validateSession(active)){
         if(await waitForCoachActivation(active))return;
-        try{await verifyCoachAccess(active);resumeCoachActivePage();return}
+        try{await verifyCoachAccessWithRetry(active);resumeCoachActivePage();return}
         catch(accessErr){
           if(coachTransient(accessErr))throw accessErr;
           handleCoachAccessFailure(active,accessErr);return
@@ -1885,7 +1897,7 @@ async function initAuth(){
       }
     }catch(err){
       if(coachTransient(err)){
-        renderLogin('MW is having a temporary connection issue. Your saved Coach session is safe; we’ll reconnect automatically.');
+        renderLogin('Your saved Coach session is safe, but Coach could not connect yet. Check your connection and try again.');
         return
       }
     }
