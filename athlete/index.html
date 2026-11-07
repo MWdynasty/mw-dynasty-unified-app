@@ -2853,12 +2853,21 @@ function renderWeightRoomProgressUI(){
   }
   trends.slice(0,2).forEach(x=>parts.push(`<div class="mwStrengthProgressRow"><div><b>${escapeHtmlLocal(x.exercise)}</b><small>Comparable ${x.reps}-rep working-load trend · optional detailed log</small></div><strong>${x.delta>0?'+':''}${Number(x.delta.toFixed(1))} ${escapeHtmlLocal(x.unit)}</strong></div>`));
   const chartFirst=document.getElementById('mwKidStrengthFirst'),chartLatest=document.getElementById('mwKidStrengthLatest'),chartNote=document.getElementById('mwKidStrengthRead');
-  const strengthGroups=[...byExercise.values()].filter(group=>group.length>=2).sort((a,b)=>b.length-a.length);
+  const strengthGroups=[...byExercise.values()].map(group=>{
+    const sessions=new Map();
+    for(const row of group){
+      const key=[row.training_cycle_key||row.season_plan_id||'legacy',Number(row.program_week||0),Number(row.program_day||0),String(row.session_label||'')].join('|');
+      if(!sessions.has(key))sessions.set(key,{...row,loads:[],latest_recorded_at:String(row.recorded_at||'')});
+      const session=sessions.get(key),load=Number(row.actual_load);if(load>0)session.loads.push(load);
+      if(String(row.recorded_at||'')>session.latest_recorded_at)session.latest_recorded_at=String(row.recorded_at||'');
+    }
+    return [...sessions.values()].filter(session=>session.loads.length).map(session=>({...session,actual_load:session.loads.reduce((a,b)=>a+b,0)/session.loads.length,recorded_at:session.latest_recorded_at}));
+  }).filter(group=>group.length>=2).sort((a,b)=>b.length-a.length);
   if(chartFirst&&chartLatest&&chartNote){
     const group=strengthGroups[0];
     if(!group){
-      const single=[...byExercise.values()].sort((a,b)=>String(b.at(-1)?.recorded_at||'').localeCompare(String(a.at(-1)?.recorded_at||'')))[0];
-      const last=single?.at(-1),lastLoad=Number(last?.actual_load),lastUnit=String(last?.weight_unit||unit);
+      const single=[...byExercise.values()].flat().sort((a,b)=>String(b.recorded_at||'').localeCompare(String(a.recorded_at||'')))[0];
+      const last=single?.actual_load!=null?single:null,lastLoad=Number(last?.actual_load),lastUnit=String(last?.weight_unit||unit);
       chartFirst.textContent='—';chartLatest.textContent=last&&lastLoad>0?Number(lastLoad.toFixed(1))+' '+lastUnit:'—';
       chartNote.textContent=last?'One saved lift. Record the same lift for the same reps again to see your change.':'Save the same lift for the same reps twice to see your strength progress.';
       mwRenderProgressTrendChart('mwKidStrengthGraph',[],false,'Weight-room progress graph needs a second matching result.');
