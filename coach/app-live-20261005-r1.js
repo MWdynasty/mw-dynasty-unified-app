@@ -851,7 +851,7 @@ function coachMWPage(){
   if(experience==='core'){toast('Coach Mus is available with Coach Intelligence and Coach Velocity.');dashboard();return}
   // Coach Mus owns the full mobile surface. Clear any global layer left by a prior
   // page or interrupted transition before rendering the chat controls.
-  ['mwCoachEntering','experienceVeil','coachTour','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
+  ['mwCoachEntering','experienceVeil','mwModal','coachSeasonAssessment','coachApplyModal','mw-native-resume-loader'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.classList.remove('mw-show','show');el.remove()});
   pageBase('Coach Mus','Your coaching assistant. Ask, review, decide.',`
   <section class="coach-mw-athlete-match">
     <div class="coach-mw-athlete-top">
@@ -866,6 +866,16 @@ function coachMWPage(){
         <span>READY • ASK. LEARN. IMPROVE.</span>
         <small>MW SYSTEM • YOUR TEAM • COACHING INTELLIGENCE READY</small>
       </div>
+
+      <details id="coachMusGuide" class="coach-mus-guide" open>
+        <summary><span>HOW COACH MUS WORKS</span><small>A quick guide to getting useful help</small></summary>
+        <div class="coach-mus-guide-content">
+          <section class="coach-mus-guide-step"><b>1 · Ask in your own words</b><p>Name the athlete or team and what you want to know. Try: <em>“Compare Jordan’s two latest saved 100m times.”</em></p></section>
+          <section class="coach-mus-guide-step"><b>2 · Use your MW context</b><p>Coach Mus can use your roster, saved results, schedule and assigned training plan when available. Athlete details are limited by each athlete’s sharing settings. If information is missing, ask Coach Mus what to record next.</p></section>
+          <section class="coach-mus-guide-step"><b>3 · Ask a follow-up</b><p>Ask it to explain, summarize, compare or help plan. Use the quick prompts below, tap the microphone to speak, or use + to attach a photo.</p></section>
+          <section class="coach-mus-guide-step"><b>4 · Review before anything happens</b><p>Calendar changes, group suggestions and messages appear for your review. Nothing is saved or sent until you approve it. Coach Mus does not change an athlete’s workout on its own.</p></section>
+        </div>
+      </details>
 
       <div id="mwchat" class="mw-coach-thread coach-mw-athlete-thread"></div>
 
@@ -887,6 +897,12 @@ function coachMWPage(){
     </div>
   </section>`);
   document.querySelector('.page')?.classList.add('coach-mw-athlete-page');
+  const coachMusGuide=document.getElementById('coachMusGuide');
+  if(coachMusGuide&&window.MWAccountStorage?.local){
+    const guideKey='mwCoachMusGuide:'+String(authSession?.user?.id||'coach');
+    coachMusGuide.open=window.MWAccountStorage.local.getItem(guideKey)!=='closed';
+    coachMusGuide.addEventListener('toggle',()=>window.MWAccountStorage.local.setItem(guideKey,coachMusGuide.open?'open':'closed'));
+  }
   let pendingImage='',activeAudio=null,activeVoiceButton=null,activeVoiceURL='',voiceRun=0;
   const chat=document.getElementById('mwchat'),q=document.getElementById('mwq'),pick=document.getElementById('mwimage'),attach=document.getElementById('mwattach'),mic=document.getElementById('mwmic'),state=document.getElementById('mwattachstate'),requestState=document.getElementById('mwcoachrequeststate');
   const draftPrompt=window.MWAccountStorage.session.getItem('mwCoachDraftPrompt')||'';if(draftPrompt){q.value=draftPrompt;window.MWAccountStorage.session.removeItem('mwCoachDraftPrompt')}
@@ -1294,7 +1310,7 @@ const COACH_TOURS={
     {icon:'🏃',title:'Practice Mode: run a session',body:'Open Practice Mode to guide the workout, time reps and save what happened.',hint:'Saved sessions help you review the athlete’s work.',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
     {icon:'📊',title:'Performance Tools: check results',body:'Use Performance Tools for pacing, stopwatch timing and performance views.',hint:'Compare matching distances and workout types.',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
     {icon:'↗',title:'Progression: follow development',body:'Review saved progress and coaching insights in Progression.',hint:'Only use comparisons supported by the athlete’s saved results.',target:'#sideNav [data-page="insights"]',label:'PROGRESSION'},
-    {icon:'MW',title:'Coach Mus: ask a question',body:'Ask Coach Mus to explain athlete information or help you think through the next step.',hint:'Coach Mus gives guidance. You approve coaching decisions.',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
+    {icon:'MW',title:'Coach Mus: ask and review',body:'Ask about an athlete, saved result, or team question. Coach Mus can explain training, compare saved information, or help you plan.',hint:'It uses only athlete information allowed by sharing settings. You approve actions; it does not change workouts on its own.',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
     {icon:'☰',title:'Menu: find more coach tools',body:'Open Menu for the Task Board, season planning, messages, calendar and settings.',hint:'Review the information, decide, then follow up with your athlete.',navigate:'more',target:'.coach-menu-shell',label:'MENU'}
   ],
   performance:[
@@ -1312,7 +1328,7 @@ const COACH_UPGRADE_TOURS={
     {icon:'◉',title:'Dashboard: review athlete signals',body:'Your Dashboard highlights athletes who may need your attention.',hint:'Open the athlete and check the details before deciding.',navigate:'dashboard',target:'.athlete-status-section',label:'DASHBOARD'},
     {icon:'🏃',title:'Practice Mode: guide a session',body:'Open Practice Mode to guide the workout, time reps and save what happened.',hint:'Saved work helps you review the session.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
     {icon:'📊',title:'Performance Tools: check results',body:'Use pacing, stopwatch timing and performance views when you need them.',hint:'Compare matching distances and workout types.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
-    {icon:'MW',title:'Coach Mus: ask for context',body:'Coach Mus can explain athlete information and help you consider a next step.',hint:'You make and approve coaching decisions.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
+    {icon:'MW',title:'Coach Mus: ask and review',body:'Ask about an athlete, saved result, or team question. Coach Mus can explain training, compare saved information, or help you plan.',hint:'It uses only athlete information allowed by sharing settings. You approve actions; it does not change workouts on its own.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
     {icon:'☰',title:'Menu: find the rest of your tools',body:'Open Menu for the Task Board, Progression, season planning, messages, calendar and settings.',hint:'This is where you find tools outside the main tabs.',navigate:'more',target:'.coach-menu-shell',label:'MENU'}
   ],
   performance:[
@@ -1336,7 +1352,7 @@ const COACH_MOBILE_TOURS={
     {icon:'♟',title:'Open Athletes',body:'Review an athlete’s profile, assignments and saved results.',hint:'A signal helps you know what to review; it does not change a workout.',navigate:'athletes',target:'#sideNav [data-page="athletes"]',label:'ATHLETES'},
     {icon:'🏃',title:'Use Practice Mode',body:'Guide the session, time reps and save what the athlete completed.',hint:'Saved practice work builds the athlete’s training history.',navigate:'practice',target:'#sideNav [data-page="practice"]',label:'PRACTICE MODE'},
     {icon:'📊',title:'Open Performance Tools',body:'Use pacing, the stopwatch and performance views when you need them.',hint:'Compare the same distance and type of workout.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
-    {icon:'MW',title:'Ask Coach Mus',body:'Ask Coach Mus to explain athlete information or help you consider a next step.',hint:'You make and approve coaching decisions.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
+    {icon:'MW',title:'How Coach Mus works',body:'Ask about an athlete, saved result, or team question. Coach Mus can explain training, compare saved information, or help you plan.',hint:'It uses only athlete information allowed by sharing settings. You approve actions; it does not change workouts on its own.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'},
     {icon:'☰',title:'Find more in Menu',body:'Menu includes the Task Board, Progression, season planning, messages, calendar and settings.',hint:'Open Menu whenever you need a coaching tool outside the main tabs.',navigate:'more',target:'.coach-menu-shell',label:'MENU'}
   ],
   performance:[
@@ -1350,7 +1366,7 @@ const COACH_MOBILE_TOURS={
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){const version=tier==='intelligence'?'v37':'v36';return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:${version}`}
+function coachTourCompleteKey(tier=experience){const version=tier==='intelligence'?'v38':'v36';return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:${version}`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
