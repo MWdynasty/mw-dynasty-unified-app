@@ -1827,17 +1827,25 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <section class="view" id="progress">
 <div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">YOUR TRAINING, MADE SIMPLE.</div></div><button class="gearBtn" data-open-settings>⚙</button></div>
 <div class="mwDevelopmentGuide mwKidResults" id="mwDevelopmentGuide">
- <div class="mwVelocityInsightsHeading"><b>YOUR PERFORMANCE</b></div>
- <div class="mwPerformanceGrid">
-  <div class="mwPerformanceTile">
-   <small>SPEED</small><strong id="mwKidSpeedValue">—</strong>
-   <span id="mwKidSpeedRead">Save a sprint time to start tracking.</span>
+ <div class="mwVelocityInsightsHeading"><b>YOUR PROGRESS</b></div>
+ <section class="mwProgressGraphPanel" aria-labelledby="mwTrackProgressTitle">
+  <div class="mwProgressGraphTitle"><b id="mwTrackProgressTitle">TRACK</b><span>SAME DISTANCE &amp; TYPE</span></div>
+  <div class="mwProgressGraphCompare">
+   <div><small>FIRST</small><strong id="mwKidSpeedFirst">—</strong></div><span aria-hidden="true">→</span>
+   <div><small>NOW</small><strong id="mwKidSpeedLatest">—</strong></div>
   </div>
-  <div class="mwPerformanceTile">
-   <small>STRENGTH</small><strong id="mwKidStrengthValue">—</strong>
-   <span id="mwKidStrengthRead">Save the same lift twice to see your change.</span>
+  <div id="mwKidSpeedGraph" class="mwTrendChart" role="img" aria-label="Track progress graph"></div>
+  <p id="mwKidSpeedRead" class="mwProgressGraphNote">Save the same kind of sprint twice to see if you’re getting faster. Lower time means faster.</p>
+ </section>
+ <section class="mwProgressGraphPanel" aria-labelledby="mwStrengthProgressTitle">
+  <div class="mwProgressGraphTitle"><b id="mwStrengthProgressTitle">WEIGHT ROOM</b><span>SAME LIFT &amp; REPS</span></div>
+  <div class="mwProgressGraphCompare">
+   <div><small>FIRST</small><strong id="mwKidStrengthFirst">—</strong></div><span aria-hidden="true">→</span>
+   <div><small>NOW</small><strong id="mwKidStrengthLatest">—</strong></div>
   </div>
- </div>
+  <div id="mwKidStrengthGraph" class="mwTrendChart" role="img" aria-label="Weight-room progress graph"></div>
+  <p id="mwKidStrengthRead" class="mwProgressGraphNote">Save the same lift for the same reps twice to see your change.</p>
+ </section>
 </div>
 <div class="mwProgressHero mwKidJourney">
   <div class="mwProgressHeroCopy">
@@ -1854,7 +1862,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     <div class="mwVelocityInsightsHeading"><b>RECENT WEEKLY CONSISTENCY</b><span>LAST 6 WEEKS</span></div>
     <div id="mwVelocityWeekHistory" class="mwVelocityWeekHistory"></div>
   </div>
-  <p class="mwVelocityFootnote">Based on your saved session completions. Performance results and strength response appear in their dedicated sections below. Completion is not a sprint-speed grade.</p>
+  <p class="mwVelocityFootnote">This chart compares saved training weeks. The track and weight-room graphs above use matching results only.</p>
 </div>
 <div class="mwProgressSection">
   <div class="mwProgressTitle"><span>PRS & TIME TRIALS</span><small>FROM YOUR PROFILE</small></div>
@@ -1914,14 +1922,29 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 #progress .mwKidDetails[open]>summary:after{content:'−'}
 #progress .mwKidDetailsContent{padding-top:12px}
 #progress .mwKidResults{padding:16px}
-#progress .mwKidResults .mwVelocityInsightsHeading{margin:0 0 12px}
-#progress .mwPerformanceGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-#progress .mwPerformanceTile{min-height:132px;padding:14px 12px;border:1px solid #2d3d49;border-radius:15px;background:linear-gradient(145deg,#08131c,#050b11);display:flex;flex-direction:column;justify-content:center}
-#progress .mwPerformanceTile small{color:#9cadb8;font-size:10px;font-weight:900;letter-spacing:.1em}
-#progress .mwPerformanceTile strong{display:block;margin:8px 0;color:#fff;font-size:25px;line-height:1.1}
-#progress .mwPerformanceTile span{color:#b9c5ce;font-size:11px;line-height:1.4}
+#progress .mwKidResults .mwVelocityInsightsHeading{margin:0 0 9px}
+#progress .mwProgressGraphPanel{padding:14px 0}
+#progress .mwProgressGraphPanel+.mwProgressGraphPanel{border-top:1px solid #243442}
+#progress .mwProgressGraphTitle{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#progress .mwProgressGraphTitle b{color:#f5c95e;font-size:12px;letter-spacing:.08em}
+#progress .mwProgressGraphTitle span{color:#8093a0;font-size:8px;letter-spacing:.07em}
+#progress .mwProgressGraphCompare{display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:8px;margin-top:12px}
+#progress .mwProgressGraphCompare>div{display:grid;gap:4px}
+#progress .mwProgressGraphCompare>div:last-child{text-align:right}
+#progress .mwProgressGraphCompare small{color:#8293a0;font-size:8px;letter-spacing:.1em}
+#progress .mwProgressGraphCompare strong{color:#fff;font-size:21px;line-height:1.1;font-variant-numeric:tabular-nums}
+#progress .mwProgressGraphCompare>span{text-align:center;color:#738591;font-size:18px}
+#progress .mwTrendChart{height:68px;margin-top:9px;overflow:hidden}
+#progress .mwTrendChart svg{display:block;width:100%;height:68px}
+#progress .mwTrendGrid{fill:none;stroke:#1a2a35;stroke-width:1;stroke-dasharray:3 5}
+#progress #mwKidSpeedGraph .mwTrendLine{fill:none;stroke:#59c9ff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#progress #mwKidStrengthGraph .mwTrendLine{fill:none;stroke:#f5c95e;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+#progress #mwKidSpeedGraph circle{fill:#59c9ff;stroke:#07121b;stroke-width:2}
+#progress #mwKidStrengthGraph circle{fill:#f5c95e;stroke:#07121b;stroke-width:2}
+#progress .mwTrendEmpty{height:58px;display:grid;place-items:center;color:#778996;font-size:8px;letter-spacing:.08em;text-align:center}
+#progress .mwProgressGraphNote{min-height:30px;margin:0;color:#b8c5cf;font-size:11px;line-height:1.4}
 #progress .mwKidJourney{margin-top:12px}
-@media(max-width:380px){#progress .mwPerformanceGrid{grid-template-columns:1fr 1fr;gap:7px}#progress .mwPerformanceTile{padding:11px 9px;min-height:124px}#progress .mwPerformanceTile strong{font-size:22px}}
+@media(max-width:380px){#progress .mwProgressGraphCompare strong{font-size:19px}#progress .mwProgressGraphTitle span{font-size:7px}}
 #progress .mwKidAction{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;margin-top:12px;padding:0 17px;border:0;border-radius:14px;background:linear-gradient(115deg,#d8a63b,#f4d078);color:#091019;font-size:12px;font-weight:950;letter-spacing:.06em;box-shadow:0 8px 20px rgba(220,171,63,.14)}
 #progress .mwKidAction span{font-size:24px;line-height:1}
 #progress .mwKidDetailsContent .mwVelocityInsights{margin-top:0}
@@ -2520,32 +2543,64 @@ async function loadPracticeProgress(){
 }
 let mwDevelopmentMode='speed';
 function mwDevelopmentSpeedEligible(r){
+ const intent=String(r.mw_intent||'').toLowerCase(),interpretation=String(r.mw_interpretation||'').toLowerCase(),all=intent+' '+interpretation;
+ if(/tempo|recovery|technical|rhythm|controlled|submax|sub-max|wicket/.test(all))return false;
+ return intent==='speed'||/max.vel|max velocity|acceleration|speed test|time trial|fly|flying|sprint test/.test(all);
+}
+function mwDevelopmentSpeedType(r){
  const intent=String(r.mw_intent||'').toLowerCase();
- const interpretation=String(r.mw_interpretation||'').toLowerCase();
- if(/tempo|recovery|technical|rhythm|controlled|submax|sub-max|wicket/.test(intent+' '+interpretation))return false;
- return /max.vel|max velocity|acceleration|speed test|time trial|fly|flying|sprint test/.test(intent+' '+interpretation);
+ if(/accel/.test(intent))return 'acceleration';
+ if(/max.vel|max velocity|fly|flying/.test(intent))return 'max velocity';
+ if(/time.trial|sprint.test/.test(intent))return 'time trial';
+ return 'speed';
+}
+function mwRenderProgressTrendChart(id,values,lowerIsBetter,label){
+ const box=document.getElementById(id);if(!box)return;
+ const data=(values||[]).map(Number).filter(Number.isFinite).slice(-6);
+ box.setAttribute('aria-label',label||'Progress graph');
+ if(data.length<2){box.innerHTML='<div class="mwTrendEmpty">GRAPH STARTS AFTER THE NEXT MATCHING RESULT</div>';return}
+ const min=Math.min(...data),max=Math.max(...data),span=Math.max(max-min,Math.max(Math.abs(max),1)*.025),left=14,right=306,top=12,bottom=66;
+ const points=data.map((v,i)=>{
+   const x=data.length===1?(left+right)/2:left+(right-left)*i/(data.length-1);
+   const progress=lowerIsBetter?(max-v)/span:(v-min)/span;
+   return {x,y:bottom-progress*(bottom-top)}
+ });
+ const path=points.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
+ const dots=points.map((p,i)=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(i===points.length-1?'4':'3')+'" />').join('');
+ box.innerHTML='<svg viewBox="0 0 320 78" aria-hidden="true" focusable="false"><path class="mwTrendGrid" d="M8 18H312 M8 40H312 M8 66H312"/><path class="mwTrendLine" d="'+path+'"/>'+dots+'</svg>';
+}
+function mwTrackSessionSamples(rows){
+ const sessions=new Map();
+ for(const row of rows){
+   if(!mwDevelopmentSpeedEligible(row)||row.result_status==='dnf')continue;
+   const distance=Number(row.distance_m),time=Number(row.time_seconds);if(!(distance>0&&time>0))continue;
+   const type=mwDevelopmentSpeedType(row),cycle=String(row.workout_cycle_id||row.season_plan_id||'legacy'),workout=String(row.workout_key||('w'+row.program_week+'d'+row.program_day)),key=[cycle,workout,distance,type].join('|');
+   if(!sessions.has(key))sessions.set(key,{distance,type,cycle,workout,times:[],recorded_at:row.recorded_at||''});
+   const session=sessions.get(key);session.times.push(time);
+   if(String(row.recorded_at||'')>String(session.recorded_at||''))session.recorded_at=row.recorded_at;
+ }
+ return [...sessions.values()].map(x=>({...x,time:x.times.reduce((a,b)=>a+b,0)/x.times.length}));
 }
 function renderDevelopmentGuide(){
- const valueBox=document.getElementById('mwKidSpeedValue'),noteBox=document.getElementById('mwKidSpeedRead');if(!valueBox||!noteBox)return;
+ const firstBox=document.getElementById('mwKidSpeedFirst'),latestBox=document.getElementById('mwKidSpeedLatest'),noteBox=document.getElementById('mwKidSpeedRead');
+ if(!firstBox||!latestBox||!noteBox)return;
  const rows=[...(mwPracticeProgressCache||[]),...(mwPracticeHistoryCache||[])].filter(r=>r.result_status!=='dnf'&&Number(r.time_seconds)>0&&Number(r.distance_m)>0);
- const speedRows=rows.filter(mwDevelopmentSpeedEligible);
- const groups=new Map();
- for(const row of speedRows){const distance=Number(row.distance_m);if(!groups.has(distance))groups.set(distance,[]);groups.get(distance).push(row)}
- const comparable=[...groups.entries()].filter(([,items])=>items.length>=2).sort((a,b)=>b[1].length-a[1].length)[0];
- const profile=getProfile();let speedValue='—',speedNote='Save a sprint time to start tracking.';
- if(comparable){
-   const [distance,items]=comparable;items.sort((a,b)=>new Date(a.recorded_at||0)-new Date(b.recorded_at||0));
-   const first=Number(items[0].time_seconds),last=Number(items.at(-1).time_seconds),change=first-last;
-   speedValue=last.toFixed(2)+'s';
-   speedNote=distance+'m · '+(change>.005?change.toFixed(2)+'s faster than your first run':change<-.005?Math.abs(change).toFixed(2)+'s slower than your first run':'about the same as your first run');
- }else if(speedRows.length){
-   const latest=[...speedRows].sort((a,b)=>new Date(b.recorded_at||0)-new Date(a.recorded_at||0))[0];
-   speedValue=Number(latest.time_seconds).toFixed(2)+'s';
-   speedNote=Number(latest.distance_m)+'m · save the same sprint again to compare';
- }else if(Number(profile.p100)>0){
-   speedValue=Number(profile.p100).toFixed(2)+'s';speedNote='100m personal best';
+ const samples=mwTrackSessionSamples(rows),groups=new Map();
+ for(const sample of samples){const key=sample.distance+'|'+sample.type;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(sample)}
+ const comparable=[...groups.values()].filter(items=>items.length>=2).sort((a,b)=>b.length-a.length||String(b.at(-1).recorded_at).localeCompare(String(a.at(-1).recorded_at)))[0];
+ if(!comparable){
+   const latest=samples.sort((a,b)=>String(b.recorded_at).localeCompare(String(a.recorded_at)))[0];
+   firstBox.textContent='—';latestBox.textContent=latest?latest.time.toFixed(2)+'s':'—';
+   noteBox.textContent=latest?'One saved '+latest.distance+'m result. Save the same kind of sprint again to see your change.':'Save the same kind of sprint twice to see if you’re getting faster. Lower time means faster.';
+   mwRenderProgressTrendChart('mwKidSpeedGraph',[],true,'Track progress graph needs a second comparable result.');
+   return;
  }
- valueBox.textContent=speedValue;noteBox.textContent=speedNote;
+ comparable.sort((a,b)=>String(a.recorded_at).localeCompare(String(b.recorded_at)));
+ const first=comparable[0],latest=comparable.at(-1),change=first.time-latest.time;
+ firstBox.textContent=first.time.toFixed(2)+'s';latestBox.textContent=latest.time.toFixed(2)+'s';
+ noteBox.textContent=Number(first.distance)+'m · '+(change>.005?change.toFixed(2)+' seconds faster':change<-.005?Math.abs(change).toFixed(2)+' seconds slower':'about the same as your first test')+'. Lower time means faster.';
+ const chartSeries=comparable.length>6?[comparable[0],...comparable.slice(-5)]:comparable;
+ mwRenderProgressTrendChart('mwKidSpeedGraph',chartSeries.map(x=>x.time),true,'Track times for matching '+first.distance+'m speed sessions. Lower times are faster.');
 }
 function renderPracticeProgress(){
   const box=document.getElementById('mwPracticeProgressResults');if(!box)return;
@@ -2785,7 +2840,7 @@ function renderWeightRoomProgressUI(){
   for(const x of [...rows].sort((a,b)=>String(a.recorded_at||'').localeCompare(String(b.recorded_at||'')))){
     const exercise=String(x.exercise_name||'').trim(),reps=Number(x.reps_completed),load=Number(x.actual_load);
     if(!exercise||!Number.isFinite(reps)||!Number.isFinite(load))continue;
-    const key=exercise.toLowerCase()+'|'+reps;
+    const rowUnit=String(x.weight_unit||unit).toLowerCase(),key=exercise.toLowerCase()+'|'+reps+'|'+rowUnit;
     if(!byExercise.has(key))byExercise.set(key,[]);
     byExercise.get(key).push(x);
   }
@@ -2797,13 +2852,25 @@ function renderWeightRoomProgressUI(){
     trends.push({exercise:last.exercise_name,reps:Number(last.reps_completed),delta,unit:last.weight_unit||unit});
   }
   trends.slice(0,2).forEach(x=>parts.push(`<div class="mwStrengthProgressRow"><div><b>${escapeHtmlLocal(x.exercise)}</b><small>Comparable ${x.reps}-rep working-load trend · optional detailed log</small></div><strong>${x.delta>0?'+':''}${Number(x.delta.toFixed(1))} ${escapeHtmlLocal(x.unit)}</strong></div>`));
-  const kidStrength=document.getElementById('mwKidStrengthRead'),kidStrengthValue=document.getElementById('mwKidStrengthValue');
-  if(kidStrength||kidStrengthValue){
-    const trend=trends[0],delta=trend?Number(Math.abs(trend.delta).toFixed(1)):0,trendUnit=String(trend?.unit||unit);
-    if(kidStrengthValue)kidStrengthValue.textContent=trend?(trend.delta>0?'+':'−')+delta+' '+trendUnit:'—';
-    if(kidStrength)kidStrength.textContent=trend
-      ? trend.exercise+' · '+trend.reps+' reps · '+(trend.delta>0?'up ':'down ')+delta+' '+trendUnit+' from your first saved lift'
-      : 'Save the same lift twice to see your change.';
+  const chartFirst=document.getElementById('mwKidStrengthFirst'),chartLatest=document.getElementById('mwKidStrengthLatest'),chartNote=document.getElementById('mwKidStrengthRead');
+  const strengthGroups=[...byExercise.values()].filter(group=>group.length>=2).sort((a,b)=>b.length-a.length);
+  if(chartFirst&&chartLatest&&chartNote){
+    const group=strengthGroups[0];
+    if(!group){
+      const single=[...byExercise.values()].sort((a,b)=>String(b.at(-1)?.recorded_at||'').localeCompare(String(a.at(-1)?.recorded_at||'')))[0];
+      const last=single?.at(-1),lastLoad=Number(last?.actual_load),lastUnit=String(last?.weight_unit||unit);
+      chartFirst.textContent='—';chartLatest.textContent=last&&lastLoad>0?Number(lastLoad.toFixed(1))+' '+lastUnit:'—';
+      chartNote.textContent=last?'One saved lift. Record the same lift for the same reps again to see your change.':'Save the same lift for the same reps twice to see your strength progress.';
+      mwRenderProgressTrendChart('mwKidStrengthGraph',[],false,'Weight-room progress graph needs a second matching result.');
+    }else{
+      group.sort((a,b)=>String(a.recorded_at||'').localeCompare(String(b.recorded_at||'')));
+      const first=group[0],latest=group.at(-1),firstLoad=Number(first.actual_load),latestLoad=Number(latest.actual_load),delta=latestLoad-firstLoad,weightUnit=String(latest.weight_unit||unit);
+      const displayLoad=value=>Number(value).toLocaleString(undefined,{maximumFractionDigits:1});
+      chartFirst.textContent=displayLoad(firstLoad)+' '+weightUnit;chartLatest.textContent=displayLoad(latestLoad)+' '+weightUnit;
+      chartNote.textContent=String(latest.exercise_name||'This lift')+' · '+Number(latest.reps_completed)+' reps · '+(delta>.5?'You lifted '+displayLoad(delta)+' '+weightUnit+' more':delta<-.5?'Your latest matched lift was '+displayLoad(Math.abs(delta))+' '+weightUnit+' lighter':'about the same weight as your first matched lift')+'.';
+      const history=group.length>6?[group[0],...group.slice(-5)]:group;
+      mwRenderProgressTrendChart('mwKidStrengthGraph',history.map(x=>Number(x.actual_load)),false,String(latest.exercise_name||'Weight-room')+' load for the same lift, reps, and unit.');
+    }
   }
 
   if(!parts.length)parts.push('<div class="muted">No weight-room history yet. Complete today’s lift and MW will build progression automatically from the check-in you already use.</div>');
