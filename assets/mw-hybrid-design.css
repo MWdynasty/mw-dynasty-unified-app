@@ -381,3 +381,10 @@ body.mw-hybrid-coach #app .coach-menu-grid > button[data-page="calendar"] > b { 
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   }
 }
+
+/* Override the shared six-tab layout for the five-item Coach Core nav. */
+@media (max-width: 820px) {
+  body.mw-hybrid-coach #app .coach-mobile-nav.coach-core-nav.mwDepthNav.mwImageNav {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+}
