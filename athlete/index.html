@@ -4666,7 +4666,18 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',()=>{
   const s=sess();if(!s?.access_token){alert('Sign in again before deleting your account.');return}
   showAthleteDeleteConfirmation(async(close,confirmBtn)=>{
     const btn=document.getElementById('deleteAccountBtn');btn.disabled=true;btn.textContent='DELETING…';
-    try{const r=await fetch(SB+'/functions/v1/mw-delete-account',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'});})();</script>
+    try{
+      const r=await fetch(SB+'/functions/v1/mw-delete-account',{method:'POST',headers:{apikey:PK,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:'{}'});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion failed');
+      close();window.MWAccountStorage.local.clear();window.MWAccountStorage.session.clear();
+      alert('Your MW Athlete account and associated account data were deleted.');location.replace('/');
+    }catch(e){
+      alert(e.message||'Account deletion failed.');btn.disabled=false;btn.textContent='DELETE ACCOUNT';
+      confirmBtn.disabled=false;confirmBtn.textContent='Try again';confirmBtn.style.opacity='1';
+    }
+  });
+});
+})();</script>
 
 
 <script id="mw-email-invite-session-v310">
