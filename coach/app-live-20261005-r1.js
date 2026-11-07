@@ -466,7 +466,7 @@ function dashboard(){
   hydrateCoachTrainingYearCard();
   window.setTimeout(()=>maybeStartCoachTour(),180);
 }
-function pageBase(title,subtitle,body){const p=PLANS[experience],settingsAction=title==='Menu'?'<button class="icon-btn" type="button" data-page="account" aria-label="Settings" title="Settings">⚙</button>':'';app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">${['Pace AI','Performance Intelligence','Regular Stopwatch','Pacing Tools','Motion Intelligence'].includes(title)?'← Performance Tools':title==='Performance Tools'?'← Dashboard':'← Back'}</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div>${settingsAction}<button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=()=>openPage(['Pace AI','Performance Intelligence','Regular Stopwatch','Pacing Tools','Motion Intelligence'].includes(title)?'tools':title==='Performance Tools'?'dashboard':history.state?.mwCoachPreviousPage||'dashboard');const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
+function pageBase(title,subtitle,body){const p=PLANS[experience],settingsAction=title==='Menu'?'<button class="icon-btn" type="button" data-page="account" aria-label="Settings" title="Settings">⚙</button>':'';app.innerHTML=`<div class="page ${p.theme}"><div class="page-wrap"><div class="page-top"><button class="back" id="back">${['Pace AI','Performance Intelligence','Regular Stopwatch','Pacing Tools','Motion Intelligence'].includes(title)?'← Performance Tools':title==='Performance Tools'?'← Dashboard':'← Back'}</button><div style="flex:1"><div class="eyebrow">${p.name}</div><h1>${title}</h1><div style="color:#adbdc8">${subtitle}</div></div>${settingsAction}<button class="icon-btn mw-notification-btn" id="notificationBell" type="button" aria-label="Notifications">🔔<span id="notificationBadge" class="mw-notification-badge" hidden>0</span></button>${accountAccess.isFounder?'<button class="switch" id="switch">Founder Preview</button>':''}<button class="back mw-page-signout" id="pageSignout" type="button">Sign Out</button></div><div class="panel">${body}</div></div></div>${mobileCoachNav(history.state?.mwCoachPage||'more')}`;document.getElementById('back').onclick=()=>openPage(history.state?.mwCoachPreviousPage||'dashboard');const sw=document.getElementById('switch');if(sw)sw.onclick=founderPreviewPage;const bell=document.getElementById('notificationBell');if(bell)bell.onclick=openNotifications;const pageSignout=document.getElementById('pageSignout');if(pageSignout)pageSignout.onclick=signOut;hydrateNotificationBadge();bindPageActions();bindPageNavigation(app);}
 function motionIntelligencePage(){
   pageBase('Motion Intelligence','Review movement observations shared by your assigned athletes.',`<div id="mwMotionPanel"><p class="muted" id="mwMotionOpening">Opening Motion Intelligence…</p></div>`);
   const status=document.getElementById('mwMotionOpening');
@@ -1262,22 +1262,12 @@ function bindPageActions(){document.querySelectorAll('[data-toast]').forEach(b=>
 function toast(msg){let el=document.querySelector('.toast');if(!el){el=document.createElement('div');el.className='toast';document.body.appendChild(el)}el.textContent=msg;el.classList.add('show');clearTimeout(window.__mwToast);window.__mwToast=setTimeout(()=>el.classList.remove('show'),1600)}
 function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function smoothSwitchExperience(next,button){
-  if(!PLANS[next]||next===experience){dashboard();return;}
+  if(!PLANS[next])return;
   if(button){button.disabled=true;button.textContent='Opening…';}
-  const current=document.querySelector('.app,.page');
-  if(current)current.classList.add('experience-leaving');
-  let veil=document.getElementById('experienceVeil');
-  if(!veil){veil=document.createElement('div');veil.id='experienceVeil';veil.className='experience-veil';document.body.appendChild(veil);}
-  const nextPlan=PLANS[next];
-  veil.innerHTML=`<div class="experience-card ${nextPlan.theme}"><div class="experience-kicker">MW DYNASTY COACH</div><div class="experience-name">${nextPlan.title}</div><div class="experience-tag">${nextPlan.tag}</div><div class="experience-line"><span></span></div></div>`;
-  requestAnimationFrame(()=>veil.classList.add('show'));
-  window.setTimeout(()=>{
-    experience=next;window.MWAccountStorage.local.setItem('mwCoachExperience',experience);dashboard();
-    const fresh=document.querySelector('.app');if(fresh)fresh.classList.add('experience-entering');
-    requestAnimationFrame(()=>{if(fresh)fresh.classList.add('experience-entered')});
-    veil.classList.remove('show');
-    window.setTimeout(()=>{veil.remove();if(fresh){fresh.classList.remove('experience-entering','experience-entered')}},520);
-  },420);
+  experience=next;
+  try{window.MWAccountStorage.local.setItem('mwCoachExperience',experience)}
+  catch(e){console.warn('Coach tier preview could not be saved for the next visit.',e)}
+  dashboard();
 }
 
 
