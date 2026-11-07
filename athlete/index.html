@@ -1827,20 +1827,19 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <section class="view" id="progress">
 <div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">YOUR TRAINING, MADE SIMPLE.</div></div><button class="gearBtn" data-open-settings>⚙</button></div>
 <div class="mwProgressHero mwKidJourney">
-  <div class="mwProgressHeroCopy"><small>YOUR TRAINING JOURNEY</small><h2 id="progressHeadline">Week 1</h2><p>Follow this week’s plan.</p><div class="progressBar"><i id="progressBarFill"></i></div></div>
-</div>
-<div class="mwKidWeekCard">
-  <div><small>THIS WEEK</small><strong id="mwVelocityWeekRead">0 of 5</strong><span>workouts done</span></div>
-  <div class="mwVelocityTrack"><i id="mwVelocityWeekBar"></i></div>
+  <div class="mwProgressHeroCopy">
+    <small>YOUR TRAINING JOURNEY</small>
+    <h2 id="progressHeadline">Week 1 of 41</h2>
+    <div class="mwKidWeekSummary"><strong id="mwVelocityWeekRead">0 of 5</strong><span>workouts this week</span></div>
+    <div class="mwVelocityTrack"><i id="mwVelocityWeekBar"></i></div>
+  </div>
 </div>
 <div class="mwDevelopmentGuide mwKidResults" id="mwDevelopmentGuide">
- <div class="mwVelocityInsightsHeading"><b>YOUR SPRINT PROGRESS</b></div>
- <div id="mwDevelopmentRead" aria-live="polite"><p>Save the same sprint twice to see if you’re getting faster.</p></div>
+ <div class="mwVelocityInsightsHeading"><b>YOUR PROGRESS</b></div>
+ <div id="mwDevelopmentRead" aria-live="polite"><div class="mwKidResultRow"><b>Speed</b><span>Save the same sprint twice to see if you’re getting faster.</span></div></div>
  <div class="mwKidResultRow"><b>Strength</b><span id="mwKidStrengthRead">Save the same lift twice to see if you’re getting stronger.</span></div>
 </div>
-<div class="mwKidNext"><small>YOUR NEXT STEP</small><p>Do your next workout, then save it here.</p></div>
-<details class="mwKidHelp"><summary>How to read this</summary><ul><li>We compare the same sprint distance.</li><li>A lower time means you ran faster.</li><li>Workouts count after you save them.</li></ul></details>
-<details class="mwKidDetails"><summary>See all progress</summary><div class="mwKidDetailsContent"><div hidden><span id="progressPct"></span><span id="progressCompleted"></span><span id="progressWeeks"></span><span id="progressStart"></span><span id="mwProgressRing"></span></div><div class="mwVelocityInsights" id="mwVelocityInsights" aria-label="Detailed training progress">
+<details class="mwKidDetails"><summary>More progress</summary><div class="mwKidDetailsContent"><div hidden><span id="progressPct"></span><span id="progressCompleted"></span><span id="progressWeeks"></span><span id="progressStart"></span><span id="mwProgressRing"></span></div><div class="mwVelocityInsights" id="mwVelocityInsights" aria-label="Detailed training progress">
   <div class="mwVelocityInsightsHeading"><b>DEVELOPMENT PHASE</b><span id="mwVelocityPhase">MW VELOCITY</span></div>
   <div id="mwVelocityWeekHistoryWrap" hidden>
     <div class="mwVelocityInsightsHeading"><b>RECENT WEEKLY CONSISTENCY</b><span>LAST 6 WEEKS</span></div>
@@ -1887,27 +1886,23 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 </div></div></details>
 </section>
 <style id="mw-kid-progression-v1">
-#progress .mwProgressHero.mwKidJourney{display:block;margin-top:14px;padding:19px 18px;border:1px solid rgba(245,185,46,.42);border-radius:18px;background:linear-gradient(145deg,#0b1822,#050a10)}
-#progress .mwKidJourney .mwProgressHeroCopy small,#progress .mwKidNext small{color:#f5c95e;font-size:11px;font-weight:900;letter-spacing:.1em}
-#progress .mwKidJourney .mwProgressHeroCopy h2{margin:7px 0;font-size:25px;color:#fff}
-#progress .mwKidJourney .mwProgressHeroCopy p{margin:0 0 12px;color:#c4ced6;font-size:14px}
-#progress .mwProgressHero .progressBar{height:10px;margin-top:8px;border-radius:99px;background:#253442;overflow:hidden}
-#progress .mwProgressHero .progressBar i{height:100%;border-radius:99px;background:linear-gradient(90deg,#19c7dc,#f5c95e)}
-#progress .mwKidWeekCard,#progress .mwKidResults,#progress .mwKidNext,#progress .mwKidHelp,#progress .mwKidDetails{margin-top:12px;padding:15px;border:1px solid #2a3a48;border-radius:15px;background:#07121b}
-#progress .mwKidWeekCard small{display:block;color:#aab7c1;font-size:11px;font-weight:800;letter-spacing:.08em}
-#progress .mwKidWeekCard strong{display:inline-block;margin:5px 7px 3px 0;color:#fff;font-size:24px}
-#progress .mwKidWeekCard span{color:#b9c5ce;font-size:13px}
-#progress .mwKidWeekCard .mwVelocityTrack{margin-top:9px}
-#progress .mwKidResults .mwVelocityInsightsHeading{margin:0 0 8px}
-#progress .mwKidResultRow{display:grid;grid-template-columns:74px 1fr;gap:8px;padding:8px 0;color:#d4dde4;font-size:13px;line-height:1.4}
+#progress .mwProgressHero.mwKidJourney{display:block;margin-top:14px;padding:20px;border:1px solid rgba(245,185,46,.48);border-radius:20px;background:radial-gradient(ellipse at 100% 0%,rgba(245,185,46,.09),transparent 45%),linear-gradient(145deg,#0b1822,#050a10);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+#progress .mwKidJourney .mwProgressHeroCopy small{color:#f5c95e;font-size:10px;font-weight:900;letter-spacing:.13em}
+#progress .mwKidJourney .mwProgressHeroCopy h2{margin:8px 0 13px;font-size:30px;line-height:1.1;color:#fff}
+#progress .mwKidWeekSummary{display:flex;align-items:baseline;gap:7px}
+#progress .mwKidWeekSummary strong{font-size:20px;color:#fff}
+#progress .mwKidWeekSummary span{font-size:13px;color:#b9c5ce}
+#progress .mwKidJourney .mwVelocityTrack{height:8px;margin-top:9px;border-radius:99px;background:#253442;overflow:hidden}
+#progress .mwKidJourney .mwVelocityTrack i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#d49e32,#f5d278);transition:width .35s ease}
+#progress .mwKidResults,#progress .mwKidDetails{margin-top:12px;padding:16px;border:1px solid #2a3a48;border-radius:16px;background:linear-gradient(145deg,#091621,#061019)}
+#progress .mwKidResults .mwVelocityInsightsHeading{margin:0 0 7px}
+#progress .mwKidResultRow{display:grid;grid-template-columns:74px 1fr;gap:8px;padding:10px 0;color:#d4dde4;font-size:13px;line-height:1.4}
 #progress .mwKidResultRow+ .mwKidResultRow{border-top:1px solid #243442}
 #progress .mwKidResultRow b{color:#f5c95e}
-#progress .mwKidNext p{margin:5px 0 0;color:#fff;font-size:16px;line-height:1.4}
-#progress .mwKidHelp>summary,#progress .mwKidDetails>summary{color:#f5c95e;font-weight:900;font-size:14px;cursor:pointer;list-style:none}
-#progress .mwKidHelp>summary::-webkit-details-marker,#progress .mwKidDetails>summary::-webkit-details-marker{display:none}
-#progress .mwKidHelp>summary:after,#progress .mwKidDetails>summary:after{content:'＋';float:right;color:#fff}
-#progress .mwKidHelp[open]>summary:after,#progress .mwKidDetails[open]>summary:after{content:'−'}
-#progress .mwKidHelp ul{margin:10px 0 0;padding-left:20px;color:#d4dde4;font-size:13px;line-height:1.6}
+#progress .mwKidDetails>summary{color:#f5c95e;font-weight:900;font-size:14px;cursor:pointer;list-style:none}
+#progress .mwKidDetails>summary::-webkit-details-marker{display:none}
+#progress .mwKidDetails>summary:after{content:'＋';float:right;color:#fff}
+#progress .mwKidDetails[open]>summary:after{content:'−'}
 #progress .mwKidDetailsContent{padding-top:12px}
 #progress .mwKidDetailsContent .mwVelocityInsights{margin-top:0}
 #progress .mwKidDetailsContent .mwProgressSection{margin-top:12px}
@@ -2524,8 +2519,8 @@ function renderDevelopmentGuide(){
  }
  const targeted=rows.filter(r=>Number(r.target_seconds)>0&&r.pace_status);
  const hits=targeted.filter(r=>r.pace_status==='on_pace').length;
- const practiceText=targeted.length?'You hit your goal on '+hits+' of '+targeted.length+' saved runs.':'Your goal results will show after you save a workout.';
- box.innerHTML='<div class="mwKidResultRow"><b>Sprint</b><span>'+sprintText+'</span></div><div class="mwKidResultRow"><b>Practice</b><span>'+practiceText+'</span></div>';
+ const practiceHtml=targeted.length?'<div class="mwKidResultRow"><b>Practice</b><span>You hit your goal on '+hits+' of '+targeted.length+' saved runs.</span></div>':'';
+ box.innerHTML='<div class="mwKidResultRow"><b>Speed</b><span>'+sprintText+'</span></div>'+practiceHtml;
 }
 function renderPracticeProgress(){
   const box=document.getElementById('mwPracticeProgressResults');if(!box)return;
@@ -2802,7 +2797,7 @@ function renderVelocityInsights(w,wc){
    return '<div class="mwVelocityWeekColumn" aria-label="Week '+week+': '+n+' of 5 sessions"><b>'+n+'/5</b><div class="mwVelocityWeekPillar"><i style="height:'+(n/5*100)+'%"></i></div><small>W'+week+'</small></div>';
  }).join('');
 }
-function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w}`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP150','p150'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400'],['progressP500','p500']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI();renderVelocityInsights(w,wc)}
+function renderProgressUI(){const p=getProfile(),w=advanceCurrentWeek(),total=completedCount(),wc=(getCompletion()[String(w)]||{}),weekN=Object.values(wc).filter(Boolean).length,pct=Math.min(100,Math.round(total/(41*5)*100));if($('#homeName'))$('#homeName').textContent=p.name||'Athlete';if($('#homeWeek'))$('#homeWeek').textContent=w;if($('#homeDone'))$('#homeDone').textContent=weekN+'/5';if($('#homePct'))$('#homePct').textContent=pct+'%';if($('#homeProgressBar'))$('#homeProgressBar').style.width=pct+'%';if($('#progressPct'))$('#progressPct').textContent=pct+'%';if($('#mwProgressRing'))$('#mwProgressRing').style.background=`conic-gradient(var(--gold) ${pct}%,#17222c ${pct}% 100%)`;if($('#progressBarFill'))$('#progressBarFill').style.width=pct+'%';if($('#progressHeadline'))$('#progressHeadline').textContent=`Week ${w} of 41`;if($('#progressStart'))$('#progressStart').textContent=p.startDate?new Date(p.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'—';if($('#progressCompleted'))$('#progressCompleted').textContent=total;if($('#progressWeeks'))$('#progressWeeks').textContent=weeksComplete();if($('#progressCurrentWeek'))$('#progressCurrentWeek').textContent='WEEK '+w;[['progressP60','p60'],['progressP100','p100'],['progressP150','p150'],['progressP200','p200'],['progressP300','p300'],['progressP400','p400'],['progressP500','p500']].forEach(([id,k])=>{const el=$('#'+id);if(el)el.textContent=p[k]?Number(p[k]).toFixed(2):'—'});const pb=$('#progressChecklist');if(pb){pb.innerHTML='';for(let i=1;i<=5;i++){let r=document.createElement('div');r.className='mwWeekDot'+(wc['s'+i]?' done':'');r.innerHTML=`<i>${wc['s'+i]?'✓':i}</i><span>SESSION ${i}</span>`;pb.appendChild(r)}}renderWeightRoomProgressUI();renderVelocityInsights(w,wc)}
 function renderProfileIdentity(){const p=getProfile(),first=(document.getElementById('name')?.value||p.name||'Athlete').trim(),last=(document.getElementById('profileLastName')?.value||'').trim(),events=(document.getElementById('profileEvents')?.value||'SPRINT PERFORMANCE').trim();const nm=document.getElementById('mwProfileDisplayName'),ev=document.getElementById('mwProfileEventLine'),mo=document.getElementById('mwProfileMonogram');if(nm)nm.textContent=(first+' '+last).trim();if(ev)ev.textContent=events||'SPRINT PERFORMANCE';if(mo)mo.textContent=((first[0]||'M')+(last[0]||'W')).toUpperCase()}
 document.querySelectorAll('.mwProfileSaveAlias').forEach(b=>b.onclick=()=>document.getElementById('save')?.click());
 ['name','profileLastName','profileEvents'].forEach(id=>document.getElementById(id)?.addEventListener('input',renderProfileIdentity));
