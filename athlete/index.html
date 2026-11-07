@@ -2419,15 +2419,16 @@ if($('#replayTour'))$('#replayTour').onclick=()=>startTour(true);
 
 let QS_STEPS=[];
 function buildQuickStartSteps(){
-  const connected=window.mwCoachConnected===true;
   return [
-    {art:'/assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG',eyebrow:'1. START TODAY',title:'Your Workout Starts on Home',body:'Tap START TODAY’S TRAINING on Home. Today and Train use the same season week, so you always open the work scheduled for you.',previewTitle:'HOME → START TRAINING',previewBody:'Your track and strength work stay synchronized to your confirmed or coach-managed season.'},
-    {art:'/assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG',eyebrow:'2. FOLLOW THE SESSION',title:'Use Practice Mode When You Train',body:'Inside today’s workout, start Practice Mode for cues, timing and rep-by-rep guidance. You can also follow the workout normally; Coach Mus is not required.',previewTitle:'TRAIN → PRACTICE MODE',previewBody:'The full MW workout remains available if you prefer to move through it at your own pace.'},
-    {art:'/assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG',eyebrow:'3. RECORD YOUR WORK',title:'Save the Session to Track Progress',body:'Finish the workout and record completion, reps and check-in when prompted. Your saved work appears in Progress and helps your coach review the next step.',previewTitle:connected?'TRAIN → SAVE → PROGRESS / COACH':'TRAIN → SAVE → PROGRESS',previewBody:'Your coach controls your season dates.'+(connected?' You can report schedule conflicts without creating a separate calendar.':' Confirm your suggested dates during setup and update them later if your schedule changes.'),ready:true,tagline:'TRAIN. UNDERSTAND. EXECUTE.'}
+    {art:'/assets/5179ABCA-E66F-4CF0-83CF-26DB22874CCC.PNG',eyebrow:'1. HOME',title:'See What’s Next',body:'Home shows today’s workout and your next step. Start here when you open the app.',previewTitle:'HOME = TODAY',previewBody:'Tap the workout card to open the training planned for you.'},
+    {art:'/assets/948BA7E7-A9D0-4F1D-8686-BC781FD10AED.PNG',eyebrow:'2. TRAIN',title:'Do and Save Your Workout',body:'Train opens your assigned track and strength work. Practice Mode can give you cues and time your reps. When you finish, save your workout.',previewTitle:'TRAIN → PRACTICE → SAVE',previewBody:'Saved workouts can show up in Progression and help your coach see what you did.'},
+    {art:'/assets/555BEB0B-845D-4222-8352-57671082E78B.PNG',eyebrow:'3. COACH MUS',title:'Ask Coach Mus for Help',body:'Ask Coach Mus to explain today’s workout, a running cue or a result you saved. Ask in your own words, like: “What should I focus on today?”',previewTitle:'ASK A QUESTION',previewBody:'Coach Mus gives guidance. Your coach decides your workouts.'},
+    {art:'/assets/D002093A-6379-4BE7-A13E-215C27A83F2C.PNG',eyebrow:'4. PROGRESSION',title:'See How You’re Improving',body:'Progression shows your saved track and weight-room progress. Lower time for the same distance means you ran faster. More weight for the same lift and reps means you got stronger.',previewTitle:'LOOK FOR CHANGE',previewBody:'If you need more matching results to see a change, keep saving your workouts.'},
+    {art:'/assets/3D918BC5-5534-4218-A37A-B2A02A976915.PNG',eyebrow:'5. PROFILE',title:'Keep Your Details Up to Date',body:'Profile holds your athlete details, best track times, lift records and settings. Check that your saved information is right.',previewTitle:'PROFILE = YOUR DETAILS',previewBody:'Good information helps you and your coach understand your progress.',ready:true,tagline:'YOU’RE READY TO GET STARTED.'}
   ];
 }
 let qsIndex=0;
-function qsStorageKey(){const stamp=String(window.mwGetRemoteProfile?.().assessmentCompletedAt||'pending');return 'mwOnboardingCompleteV30:'+String(mwOnboardingUserKey||'local')+':'+stamp}
+function qsStorageKey(){const stamp=String(window.mwGetRemoteProfile?.().assessmentCompletedAt||'pending');return 'mwOnboardingCompleteV31:'+String(mwOnboardingUserKey||'local')+':'+stamp}
 function renderQuickStart(){
   const s=QS_STEPS[qsIndex];
   const main=$('#qsMain');
