@@ -25,6 +25,7 @@ const handlers = {
   'speak': require('../server/api/speak'),
   'transcribe': require('../server/api/transcribe'),
   'status': require('../server/api/status'),
+  'athlete/performance': require('../server/api/athlete/performance'),
   'coach/access': require('../server/api/coach/access'),
   'coach/athlete': require('../server/api/coach/athlete'),
   'coach/invite': require('../server/api/coach/invite'),
