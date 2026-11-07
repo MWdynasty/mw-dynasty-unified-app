@@ -1841,12 +1841,11 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <div class="mwKidNext"><small>YOUR NEXT STEP</small><p>Do your next workout, then save it here.</p></div>
 <details class="mwKidHelp"><summary>How to read this</summary><ul><li>We compare the same sprint distance.</li><li>A lower time means you ran faster.</li><li>Workouts count after you save them.</li></ul></details>
 <details class="mwKidDetails"><summary>See all progress</summary><div class="mwKidDetailsContent"><div hidden><span id="progressPct"></span><span id="progressCompleted"></span><span id="progressWeeks"></span><span id="progressStart"></span><span id="mwProgressRing"></span></div><div class="mwVelocityInsights" id="mwVelocityInsights" aria-label="Detailed training progress">
-  <div class="mwVelocityInsightsHeading"><b>YOUR DEVELOPMENT AT A GLANCE</b><span id="mwVelocityPhase">MW VELOCITY</span></div>
-  <div class="mwVelocityInsightsGrid">
-    <div><small>TRAINING JOURNEY</small><strong id="mwVelocityJourneyRead">Week 1 / 41</strong><div class="mwVelocityTrack"><i id="mwVelocityJourneyBar"></i></div><span>Current program position</span></div>
+  <div class="mwVelocityInsightsHeading"><b>DEVELOPMENT PHASE</b><span id="mwVelocityPhase">MW VELOCITY</span></div>
+  <div id="mwVelocityWeekHistoryWrap" hidden>
+    <div class="mwVelocityInsightsHeading"><b>RECENT WEEKLY CONSISTENCY</b><span>LAST 6 WEEKS</span></div>
+    <div id="mwVelocityWeekHistory" class="mwVelocityWeekHistory"></div>
   </div>
-  <div class="mwVelocityInsightsHeading"><b>RECENT WEEKLY CONSISTENCY</b><span>LAST 6 WEEKS</span></div>
-  <div id="mwVelocityWeekHistory" class="mwVelocityWeekHistory"></div>
   <p class="mwVelocityFootnote">Based on your saved session completions. Performance results and strength response appear in their dedicated sections below. Completion is not a sprint-speed grade.</p>
 </div>
 <div class="mwProgressSection">
@@ -2793,10 +2792,10 @@ function renderVelocityInsights(w,wc){
  const root=document.getElementById('mwVelocityInsights');if(!root)return;
  const completion=getCompletion(),done=Object.values(wc||{}).filter(Boolean).length;
  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
- set('mwVelocityWeekRead',done+' of 5');set('mwVelocityJourneyRead','Week '+w+' / 41');
+ set('mwVelocityWeekRead',done+' of 5');
  set('mwVelocityPhase',PHASES[phaseFromWeek(w)]?.name||'MW VELOCITY');
  document.getElementById('mwVelocityWeekBar').style.width=Math.min(100,done/5*100)+'%';
- document.getElementById('mwVelocityJourneyBar').style.width=Math.min(100,w/41*100)+'%';
+ const historyWrap=document.getElementById('mwVelocityWeekHistoryWrap');if(historyWrap)historyWrap.hidden=Number(w)<3;
  const from=Math.max(1,w-5),weeks=Array.from({length:w-from+1},(_,i)=>from+i);
  document.getElementById('mwVelocityWeekHistory').innerHTML=weeks.map(week=>{
    const n=Math.min(5,Object.values(completion[String(week)]||{}).filter(Boolean).length);
