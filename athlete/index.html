@@ -1047,7 +1047,7 @@ html.mw-native-app .mwLoginRoleBack{display:none!important}
 .mwPracticeBulletList li::marker{color:#f5c95e}
 .mwPracticeBadge{font-size:8px;color:#f5c95e;letter-spacing:.14em;font-weight:900}.mwPracticeBody h1{font-size:30px;line-height:1.05;margin:9px 0}.mwPracticeBody>p{color:#9badb8;font-size:12px;line-height:1.5}
 .mwPracticeRep{margin:28px 0 12px;padding:24px 15px;border:1px solid rgba(245,185,46,.38);border-radius:22px;background:#071018;text-align:center;display:grid;gap:8px}.mwPracticeRep span{font-size:9px;color:#f5c95e;letter-spacing:.12em}.mwPracticeRep strong{font-size:48px;font-variant-numeric:tabular-nums}.mwPracticeRep small{font-size:8px;color:#81939f;letter-spacing:.08em}
-.mwPracticePace{padding:14px;border:1px solid #253945;border-radius:14px;background:#050c12;display:grid;gap:4px}.mwPracticePace b{font-size:9px;color:#fff}.mwPracticePace span{font-size:8px;color:#8496a2}
+.mwPracticePace{padding:14px;border:1px solid #253945;border-radius:14px;background:#050c12;display:grid;gap:4px}.mwPracticePace b{font-size:11px;color:#fff}.mwPracticePace span{font-size:11px;line-height:1.45;color:#b8c5cf}
 .mwPracticeControls{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin-top:12px}.mwPracticeControls button{min-height:52px;border-radius:13px;border:1px solid #30434f;background:#09141c;color:#fff;font-weight:900;font-size:9px}.mwPracticeControls #mwPracticeStart{grid-column:1/-1;background:linear-gradient(135deg,#d9a72c,#f6d06a);color:#071018;border:0}.mwPracticeControls button:disabled{opacity:.35}
 .mwPracticeQuick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:18px}.mwPracticeQuick button{min-height:46px;border:1px solid #263946;border-radius:12px;background:#050c12;color:#b9c6ce;font-size:7px;font-weight:800}
 .mwPracticeRepLog{margin-top:12px;display:grid;gap:7px}.mwPracticeRepRow{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #263946;border-radius:12px;background:#050c12;font-size:9px}.mwPracticeRepRow b{color:#fff}.mwPracticeRepRow span{color:#9badb8}.mwPracticeRepRow .on{color:#42e38b}.mwPracticeRepRow .off{color:#ffb45b}.mwPracticeSummary{margin-top:12px;padding:14px;border:1px solid rgba(66,227,139,.45);border-radius:14px;background:rgba(14,58,42,.28);font-size:10px;line-height:1.5}.mwPracticeControls #mwPracticeSave{grid-column:1/-1;background:linear-gradient(135deg,#1c9f62,#42e38b);color:#03110a;border:0}
@@ -2004,7 +2004,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
         <div class="mwRestActions"><button type="button" data-rest-toggle>START REST</button><button type="button" data-rest-reset aria-label="Reset rest timer">RESET</button></div>
       </section>
     </div>
-    <div class="mwPracticePace" id="mwPracticePace"><b>COACH MUS PACE CALLER</b><span>Target pace calls will play hands-free during timed reps.</span></div>
+    <div class="mwPracticePace" id="mwPracticePace"><b>YOUR PACE GOAL</b><span id="mwPracticePaceText">Checking today’s workout…</span></div>
     <div id="mwPracticeRepLog" class="mwPracticeRepLog" hidden></div>
     <div id="mwPracticeSummary" class="mwPracticeSummary" hidden></div>
     <div class="mwPracticeHandsFree" style="margin:12px 0 0;padding:12px 14px;border:1px solid rgba(85,201,255,.35);border-radius:14px;background:rgba(7,19,30,.8)">
@@ -4925,7 +4925,14 @@ async function openPracticeFor(w,d){
  [/Supervise developing athletes; stop if sprint mechanics, velocity or readiness decline\.?/gi,'Have a coach nearby. Stop if your form gets worse, you slow down, or you do not feel ready.']
  ];for(const [pattern,replacement] of replacements)text=text.replace(pattern,replacement);return text};
  const mainWork=simplifyAthleteText(p.raw||session.focus||'Follow today’s MW prescription.');
- const basis=parsePrescription().paceBasis;
+ const paceInfo=parsePrescription(),basis=paceInfo.paceBasis,paceText=$p('mwPracticePaceText');
+ if(paceText){
+   const workoutText=(paceInfo.raw+' '+String(session?.title||'')).toLowerCase();
+   if(paceInfo.target)paceText.textContent=(basis?.estimated?'About ':'')+paceInfo.target.toFixed(2)+' seconds for each '+paceInfo.dist+'m rep.'+(basis?.estimated?' Based on your saved times.':' Set by your coach.');
+   else if(/\\bhill\\b/.test(workoutText))paceText.textContent='No exact time for hill runs. Run fast and smooth. Try to keep the same effort each rep.';
+   else if(paceInfo.intensity)paceText.textContent='Add a saved race or time trial to get your time goal.';
+   else paceText.textContent='Follow the effort written in today’s workout.';
+ }
  const paceHtml=basis?'<section class="mwPracticeInstruction"><b>PACE</b>'+practiceBullets(basis.anchor+'. '+basis.note)+'</section>':'';
  $p('mwPracticeWork').innerHTML='<details class="mwPracticePrescription"><summary><span>TODAY’S WORK</span><span class="mwPracticeDisclosure">TAP TO OPEN</span></summary><div class="mwPracticePlainIntro">'+practiceBullets(mainWork)+paceHtml+'</div></details>';
  const instructionToggle=$p('mwPracticeWork').querySelector('.mwPracticePrescription'),disclosure=$p('mwPracticeWork').querySelector('.mwPracticeDisclosure');
