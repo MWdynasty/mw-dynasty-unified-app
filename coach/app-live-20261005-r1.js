@@ -1201,19 +1201,38 @@ async function bindCoachBillingPanel(){
     panel.querySelectorAll('.coach-plan-change').forEach(btn=>btn.onclick=async()=>{const state=panel.querySelector('#coachBillingState');btn.disabled=true;const old=btn.textContent;btn.textContent='Preparing…';try{const out=await coachBillingRequest('POST',{action:'coach_plan_change',requestedTier:btn.dataset.tier}),r=out.result||{};state.innerHTML=r.direction==='upgrade'?`<b>Upgrade prepared.</b><br><small>Due now: <b>${mwMoney(Number(r.amount_due_now_cents||0))}</b>${Number(r.full_cycle_difference_cents||0)>Number(r.amount_due_now_cents||0)?` prorated from a ${mwMoney(Number(r.full_cycle_difference_cents||0))} full-cycle difference`:''}. You are never charged the full new plan twice. Your current plan stays active until payment confirms the upgrade.</small>`:`<b>Downgrade protected.</b><br><small>The lower tier will take effect at the end of the paid period${r.effective_at?' on '+escapeHtml(fmtDate(r.effective_at)):''}. Your current plan remains active until that handoff.</small>`;toast('Plan transition prepared')}catch(e){state.textContent=e.message}finally{btn.disabled=false;btn.textContent=old}});
   }catch(e){panel.innerHTML=`<h3>Manage Coach Plan</h3><p>${escapeHtml(e.message)}</p>`}
 }
+function showCoachDeleteConfirmation(onConfirm){
+  const overlay=document.createElement('div');
+  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','coachDeleteTitle');
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.78);display:grid;place-items:center;padding:20px';
+  overlay.innerHTML='<div style="width:min(100%,480px);background:#111d2d;color:#f7f8fb;border:2px solid #d8ac4d;border-radius:22px;padding:24px;box-shadow:0 20px 60px #000"><h2 id="coachDeleteTitle" style="margin:0 0 12px">Request account deletion?</h2><p style="line-height:1.5">This sends MW a request to delete your coach account. Your team and athlete records may need a safe cleanup first. If you pay through Apple, cancel that subscription separately.</p><label for="coachDeleteWord">Type <b>DELETE</b> to continue</label><input id="coachDeleteWord" autocomplete="off" style="display:block;width:100%;box-sizing:border-box;margin:10px 0 18px;padding:13px;border-radius:12px;border:1px solid #526273;background:#07111b;color:white;font-size:17px"><div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" data-delete-cancel style="padding:12px 18px;border-radius:12px">Cancel</button><button type="button" data-delete-confirm disabled style="padding:12px 18px;border-radius:12px;background:#d8ac4d;font-weight:700;opacity:.5">Send request</button></div></div>';
+  document.body.appendChild(overlay);
+  const input=overlay.querySelector('#coachDeleteWord'),confirmBtn=overlay.querySelector('[data-delete-confirm]');
+  const close=()=>overlay.remove();
+  overlay.querySelector('[data-delete-cancel]').addEventListener('click',close);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
+  input.addEventListener('input',()=>{confirmBtn.disabled=input.value.trim()!=='DELETE';confirmBtn.style.opacity=confirmBtn.disabled?'.5':'1'});
+  confirmBtn.addEventListener('click',async()=>{if(confirmBtn.disabled)return;confirmBtn.disabled=true;confirmBtn.textContent='Sending…';await onConfirm(close,confirmBtn)});
+  input.focus();
+}
 async function requestCoachAccountDeletion(){
   if(accountAccess.isFounder)return toast('Founder accounts must be transferred or removed through MW administration.');
-  const typed=prompt('Delete your MW Dynasty coach account? If you have an Apple-billed subscription, deleting the MW account does NOT cancel Apple billing; manage that subscription separately. You may still initiate deletion now. Type DELETE to continue.');if(typed!=='DELETE')return;
-  if(!confirm('Final confirmation: submit this coach account for deletion?'))return;
   const token=mwSessionToken(),btn=document.getElementById('deleteCoachAccount'),state=document.getElementById('deleteCoachState');
-  if(!token){if(state)state.textContent='Sign in again before deleting your account.';return}
-  if(btn){btn.disabled=true;btn.textContent='SUBMITTING…'}
-  try{
-    const r=await fetch(`${SUPABASE_URL}/functions/v1/mw-delete-account`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:'{}'});
-    const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion request failed');
-    if(state)state.innerHTML=d.deleted?'<b>Account deleted.</b>':'<b>Deletion request submitted.</b><br>Your request is recorded in MW Dynasty.';
-    window.setTimeout(signOut,900);
-  }catch(e){if(state)state.textContent=e.message||'Account deletion request failed.';if(btn){btn.disabled=false;btn.textContent='Delete Account'}}
+  if(!token){if(state)state.textContent='Sign in again before requesting account deletion.';return}
+  showCoachDeleteConfirmation(async(close,confirmBtn)=>{
+    if(btn){btn.disabled=true;btn.textContent='SUBMITTING…'}
+    try{
+      const r=await fetch(`${SUPABASE_URL}/functions/v1/mw-delete-account`,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:'{}'});
+      const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Account deletion request failed');
+      close();
+      if(state)state.textContent=d.requested?'Deletion request submitted. MW will review the account and contact you about next steps.':'Account deletion status updated.';
+      if(btn){btn.textContent='REQUEST SUBMITTED';btn.disabled=true}
+    }catch(e){
+      if(state)state.textContent=e.message||'Account deletion request failed.';
+      if(btn){btn.disabled=false;btn.textContent='Delete Account'}
+      confirmBtn.disabled=false;confirmBtn.textContent='Try again';confirmBtn.style.opacity='1'
+    }
+  });
 }
 const COACH_ACTIVE_PAGE_KEY='mwCoachActivePage';
 function rememberCoachActivePage(page){try{window.MWAccountStorage.session.setItem(COACH_ACTIVE_PAGE_KEY,String(page||'dashboard'))}catch{}}
