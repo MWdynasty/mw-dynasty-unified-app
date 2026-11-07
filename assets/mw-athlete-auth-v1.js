@@ -101,13 +101,12 @@
     window.mwAssessmentComplete=Boolean(ps.onboarding_assessment_completed_at);
     window.mwAssessmentRequired=hasAthlete&&featureAccess.smart_entry===true&&!window.mwAssessmentComplete;
     window.mwDobRequired=hasAthlete&&!d.athlete?.date_of_birth&&featureAccess.access_mode!=='internal_test';
-    const localVoice=JSON.parse(localStorage.getItem('mwCoachPreference')||'{}');
 
     mwRemoteProfile={
       userId:d.user?.id||'',
       name:profile.first_name||(role==='founder_owner'?'Founder':'Athlete'),
-      coachType:['male','female'].includes(localVoice.coachType)?localVoice.coachType:'male',
       ...pr,
+      coachType:'male',
       week:String(ps.current_week||1),
       authoritativeWeek:String(d.authoritativeProgram?.week||ps.current_week||1),
       sourceWeek:String(d.authoritativeProgram?.sourceWeek||ps.source_program_week||ps.current_week||1),
@@ -415,14 +414,14 @@
     if(!mwRemoteProfile.athleteId||!token())return;
     const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?athlete_id=eq.'+encodeURIComponent(mwRemoteProfile.athleteId)+'&select=*',{headers:strengthHeaders({'Accept':'application/json'}),cache:'no-store'});
     const rows=await r.json().catch(()=>[]);if(!r.ok)throw new Error(rows?.message||'Could not load athlete settings.');const x=Array.isArray(rows)?rows[0]:null;if(!x)return;
-    const cv=['male','female'].includes(x.coach_visual)?x.coach_visual:'male';mwRemoteProfile.coachType=cv;['coachType','settingsCoachType'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=cv});applyCoachVisual(cv);
+    const cv='male';mwRemoteProfile.coachType=cv;['coachType','settingsCoachType'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=cv});applyCoachVisual(cv);
     const speed=['0.9','1','1.1','1.2'].includes(String(x.voice_speed))?String(x.voice_speed):'1';const mode=['fast','standard'].includes(String(x.voice_mode))?String(x.voice_mode):(String(x.voice_mode)==='natural'?'standard':'fast');const map={voiceSpeed:speed,voiceMode:mode,autoVoice:x.auto_voice?'on':'off',workoutReminders:x.workout_reminders?'on':'off',meetReminders:x.meet_reminders?'on':'off',messageAlerts:x.message_alerts?'on':'off'};
     for(const [id,val] of Object.entries(map)){const el=document.getElementById(id);if(el&&val!=null)el.value=val}localStorage.setItem('mwPrefs',JSON.stringify(map))
   }
   async function saveAthleteSettings(){
     if(!mwRemoteProfile.athleteId||!token())throw new Error('Athlete account is not connected.');
     const v=id=>document.getElementById(id)?.value;
-    const payload={athlete_id:mwRemoteProfile.athleteId,coach_visual:v('settingsCoachType')||v('coachType')||'male',voice_speed:v('voiceSpeed')||'1',voice_mode:v('voiceMode')||'fast',auto_voice:v('autoVoice')==='on',workout_reminders:v('workoutReminders')!=='off',meet_reminders:v('meetReminders')!=='off',message_alerts:v('messageAlerts')!=='off',updated_at:new Date().toISOString()};
+    const payload={athlete_id:mwRemoteProfile.athleteId,coach_visual:'male',voice_speed:v('voiceSpeed')||'1',voice_mode:v('voiceMode')||'fast',auto_voice:v('autoVoice')==='on',workout_reminders:v('workoutReminders')!=='off',meet_reminders:v('meetReminders')!=='off',message_alerts:v('messageAlerts')!=='off',updated_at:new Date().toISOString()};
     const r=await fetch(SUPABASE_URL+'/rest/v1/athlete_settings?on_conflict=athlete_id',{method:'POST',headers:strengthHeaders({'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}),body:JSON.stringify(payload)});const d=await r.json().catch(()=>[]);if(!r.ok)throw new Error(d?.message||'Settings save failed.');mwRemoteProfile.coachType=payload.coach_visual;applyCoachVisual(payload.coach_visual);localStorage.setItem('mwPrefs',JSON.stringify({voiceSpeed:payload.voice_speed,voiceMode:payload.voice_mode,autoVoice:payload.auto_voice?'on':'off',workoutReminders:payload.workout_reminders?'on':'off',meetReminders:payload.meet_reminders?'on':'off',messageAlerts:payload.message_alerts?'on':'off'}));return d;
   }
   async function loadMe(){
