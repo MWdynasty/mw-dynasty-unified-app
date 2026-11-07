@@ -1335,7 +1335,7 @@ const COACH_UPGRADE_TOURS={
     {icon:'🏃',title:'Open the MW Track Program',body:'Find the sprint plan and coaching cues in Menu → MW Velocity.',hint:'Use the assigned session for the day.',navigate:'more',target:'.coach-menu-shell [data-page="mwtrack"]',label:'TRACK PROGRAM'},
     {icon:'🏋',title:'Open Strength & Power',body:'Find the weight-room plan in Menu → MW Velocity.',hint:'Use the assigned lift for the day.',navigate:'more',target:'.coach-menu-shell [data-page="strength"]',label:'STRENGTH & POWER'},
     {icon:'📊',title:'Review results in Performance Tools',body:'Open pacing, stopwatch and performance views when you need them.',hint:'Compare the same distance and workout type.',navigate:'tools',target:'#sideNav [data-page="tools"]',label:'PERFORMANCE TOOLS'},
-    {icon:'MW',title:'Ask Coach Mus about the MW plan',body:'Coach Mus can explain the training intent and help you review athlete results.',hint:'You stay in control of the plan.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'}
+    {icon:'MW',title:'Ask Coach Mus a clear question',body:'Try: “Explain today’s MW workout for [athlete name].” Coach Mus checks the saved team information it can access, then explains what it finds.',hint:'Sample question only: replace [athlete name] with someone on your team. If information is missing, Coach Mus tells you. You review and approve changes; it never changes a workout by itself.',navigate:'coachmw',target:'#sideNav [data-page="coachmw"]',label:'COACH MUS'}
   ]
 };
 /* Short role-specific tour. Core stays AI-free; Coach Mus is optional help in the intelligence tiers. */
@@ -1366,7 +1366,7 @@ const COACH_MOBILE_TOURS={
 };
 let coachTourState=null;
 function coachTourUserKey(){return String(authSession?.user?.id||readStoredSession()?.user?.id||'local')}
-function coachTourCompleteKey(tier=experience){const version=tier==='intelligence'?'v38':'v36';return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:${version}`}
+function coachTourCompleteKey(tier=experience){const version='v39';return `mwCoachTourComplete:${coachTourUserKey()}:${tier}:${version}`}
 function coachTourLastTierKey(){return `mwCoachLastTier:${coachTourUserKey()}`}
 function coachTourRank(t){return COACH_TOUR_RANK[t]||0}
 function maybeStartCoachTour(){
