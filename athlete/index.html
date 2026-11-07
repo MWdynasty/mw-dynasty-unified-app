@@ -1830,6 +1830,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
  <div class="mwVelocityInsightsHeading"><b>YOUR PROGRESS</b></div>
  <section class="mwProgressGraphPanel" aria-labelledby="mwTrackProgressTitle">
   <div class="mwProgressGraphTitle"><b id="mwTrackProgressTitle">TRACK</b><span>SAME DISTANCE &amp; TYPE</span></div>
+  <div id="mwAthleteTrackSignal" class="mwAthleteProgressSignal" role="status">Waiting for saved results</div>
   <div class="mwProgressGraphCompare">
    <div><small>FIRST</small><strong id="mwKidSpeedFirst">—</strong></div><span aria-hidden="true">→</span>
    <div><small>NOW</small><strong id="mwKidSpeedLatest">—</strong></div>
@@ -1839,6 +1840,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
  </section>
  <section class="mwProgressGraphPanel" aria-labelledby="mwStrengthProgressTitle">
   <div class="mwProgressGraphTitle"><b id="mwStrengthProgressTitle">WEIGHT ROOM</b><span>SAME LIFT &amp; REPS</span></div>
+  <div id="mwAthleteStrengthSignal" class="mwAthleteProgressSignal" role="status">Waiting for saved results</div>
   <div class="mwProgressGraphCompare">
    <div><small>FIRST</small><strong id="mwKidStrengthFirst">—</strong></div><span aria-hidden="true">→</span>
    <div><small>NOW</small><strong id="mwKidStrengthLatest">—</strong></div>
@@ -1922,6 +1924,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 #progress .mwProgressGraphPanel{padding:14px 0}
 #progress .mwProgressGraphPanel+.mwProgressGraphPanel{border-top:1px solid #243442}
 #progress .mwProgressGraphTitle{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#progress .mwAthleteProgressSignal{display:inline-flex;align-items:center;width:max-content;max-width:100%;margin-top:8px;padding:5px 8px;border:1px solid rgba(245,201,94,.28);border-radius:999px;background:rgba(245,201,94,.08);color:#f5c95e;font-size:9px;font-weight:800;letter-spacing:.04em}#progress .mwAthleteProgressSignal[data-status="slower"]{color:#ffd19a;border-color:rgba(255,177,91,.35);background:rgba(255,177,91,.08)}
 #progress .mwProgressGraphTitle b{color:#f5c95e;font-size:12px;letter-spacing:.08em}
 #progress .mwProgressGraphTitle span{color:#8093a0;font-size:8px;letter-spacing:.07em}
 #progress .mwProgressGraphCompare{display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:8px;margin-top:12px}
@@ -2253,6 +2256,7 @@ function openView(id,pushHistory=false){
   else if(id==='workouts'&&$('#strengthWeek')){const w=activeMWWeek();$('#strengthWeek').value=w;renderStrengthWeek(w);renderCompletion();}
   if(id==='progress'&&access.mw_training_system!==true&&access.coach_assigned_training===true)mwRenderSponsoredProgress();else if(id==='home'||id==='progress')renderProgressUI();
   if(id==='progress'&&access.mw_training_system===true)loadPracticeProgress().catch(e=>{const box=document.getElementById('mwPracticeProgressResults');if(box)box.innerHTML='<div class="muted">Practice Mode results could not be loaded right now.</div>'});
+  if(id==='progress')loadAthletePerformanceIntelligence();
   if(id==='settings')window.mwLoadBillingStatus?.();
   if(id==='messages')window.mwLoadCoachMessages?.(true);
   if(id==='schedule')mwRenderAthleteSchedule();
@@ -2576,6 +2580,17 @@ function mwTrackSessionSamples(rows){
    if(String(row.recorded_at||'')>String(session.recorded_at||''))session.recorded_at=row.recorded_at;
  }
  return [...sessions.values()].map(x=>({...x,time:x.times.reduce((a,b)=>a+b,0)/x.times.length}));
+}
+async function loadAthletePerformanceIntelligence(){
+ const trackSignal=document.getElementById('mwAthleteTrackSignal'),strengthSignal=document.getElementById('mwAthleteStrengthSignal');
+ const session=sess();if(!session?.access_token)return;
+ try{
+  const response=await fetch('/api/athlete/performance',{headers:{Authorization:'Bearer '+session.access_token}});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||!data.ok)return;
+  if(trackSignal&&data.track){trackSignal.textContent=data.track.label||'Building a baseline';trackSignal.dataset.status=data.track.status||'need_data';}
+  if(strengthSignal&&data.strength){strengthSignal.textContent=data.strength.label||'Building a baseline';strengthSignal.dataset.status=data.strength.status||'need_data';}
+ }catch(e){console.warn('Athlete performance intelligence unavailable',e)}
 }
 function renderDevelopmentGuide(){
  const firstBox=document.getElementById('mwKidSpeedFirst'),latestBox=document.getElementById('mwKidSpeedLatest'),noteBox=document.getElementById('mwKidSpeedRead');
