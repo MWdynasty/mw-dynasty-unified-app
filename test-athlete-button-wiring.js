@@ -26,7 +26,7 @@ const dupes=ids.filter((id,i)=>ids.indexOf(id)!==i);
 assert.deepStrictEqual([...new Set(dupes)],[],'Duplicate static button IDs are not allowed');
 
 const genericFamilies=[
-  'data-open','data-open-settings','data-v','data-practice-coach','data-submit-checkin',
+  'data-open','data-open-settings','data-v','data-delete-cancel','data-delete-confirm','data-practice-coach','data-submit-checkin',
   'data-athlete-search-open','data-coach-thread','data-mw-notification','data-resume-strength',
   'data-sday','data-adjust-strength','data-feel','data-session','data-finish-previous','data-q','data-mw-target','data-rest-toggle','data-rest-reset','data-practice-adjust','data-mw-development'
 ];
