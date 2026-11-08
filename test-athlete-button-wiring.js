@@ -134,7 +134,7 @@ assert(html.includes('id="mw-home-stationary-v1"'),'Athlete Home scroll-lock sty
 assert(html.includes("document.body.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle body scrolling state');
 assert(html.includes("document.documentElement.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle document scrolling state');
 assert(html.includes('body.mw-auth-ready.mw-home-locked'),'Home CSS must override normal authenticated page scrolling');
-assert(html.includes('overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important'),'Home content must scroll internally above the fixed bottom navigation');
+assert(html.includes('body.mw-auth-ready.mw-home-locked{')&&html.includes('overflow-y:auto!important;overscroll-behavior-y:auto!important;')&&html.includes('touch-action:pan-y!important;'),'Home content must scroll inside the locked viewport while preserving native gestures');
 assert(html.includes('#home .mwHomeMenu{\n    max-height:min(70dvh,520px);'),'Home dropdown must remain internally usable on short screens');
 console.log('PASS: Athlete Home keeps the viewport fixed while its content scrolls above the bottom navigation.');
 
