@@ -15,7 +15,7 @@ create table if not exists public.mw_push_schedule (
   user_id uuid not null references auth.users(id) on delete cascade,
   athlete_id uuid not null references public.athletes(id) on delete cascade,
   local_date date not null,
-  slot smallint not null check (slot in (1, 2)),
+  slot smallint not null check (slot in (1, 2, 3)),
   scheduled_for timestamptz not null,
   notification_type text not null,
   title text not null,
@@ -127,7 +127,7 @@ begin
     v_tz := coalesce(nullif(v_pref.timezone, ''), 'America/Chicago');
     v_date := (now() at time zone v_tz)::date + 1;
 
-    for v_item in select 1 as slot union all select 2 as slot loop
+    for v_item in select 1 as slot union all select 2 as slot union all select 3 as slot loop
       if v_item.slot = 1 and v_pref.inactivity_reminders then
         v_type := 'inactivity_reminder';
         v_title := 'Your next rep is waiting';
@@ -157,6 +157,10 @@ begin
             else 'You are building more than a time. Keep showing up and trust the work.'
           end;
         end if;
+      elsif v_item.slot = 3 and v_pref.progress_summaries and extract(isodow from v_date) = 7 then
+        v_type := 'weekly_progress_summary';
+        v_title := 'Your weekly progress check-in';
+        v_body := 'Your weekly check-in is ready. Open Progression to review the training and performance you logged this week.';
       else
         continue;
       end if;
@@ -208,6 +212,63 @@ $$;
 
 revoke all on function public.mw_process_daily_push_schedule() from public, anon, authenticated;
 grant execute on function public.mw_process_daily_push_schedule() to service_role;
+
+
+create or replace function public.mw_notify_faster_athlete_pr()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $
+declare
+  v_previous_best numeric;
+  v_title text;
+  v_body text;
+begin
+  if new.time_seconds is null or new.time_seconds <= 0 then
+    return new;
+  end if;
+
+  select min(time_seconds) into v_previous_best
+    from public.athlete_prs
+   where athlete_id = new.athlete_id
+     and event = new.event
+     and id <> new.id
+     and time_seconds is not null
+     and time_seconds > 0;
+
+  if v_previous_best is null or new.time_seconds >= v_previous_best then
+    return new;
+  end if;
+
+  v_title := 'Faster mark recorded';
+  v_body := 'A faster ' || coalesce(new.event, 'performance') ||
+    ' was logged: ' || round(new.time_seconds, 2)::text ||
+    ' seconds. Open Progression to review it.';
+
+  insert into public.athlete_notifications(athlete_id, notification_type, title, body, action_view)
+  values (new.athlete_id, 'athlete_pr_progress', v_title, v_body, 'progression');
+
+  insert into public.coach_notifications(coach_user_id, notification_type, title, body, action_page, entity_type, entity_id)
+  select ca.coach_user_id, 'athlete_pr_progress', 'Athlete progress update',
+         'A faster ' || coalesce(new.event, 'performance') || ' was logged: ' ||
+         round(new.time_seconds, 2)::text || ' seconds. Open Progression to review it.',
+         'athletes', 'athlete', new.athlete_id::text
+    from public.coach_assignments ca
+   where ca.athlete_id = new.athlete_id
+     and ca.ended_at is null
+  on conflict do nothing;
+
+  return new;
+end;
+$;
+
+revoke all on function public.mw_notify_faster_athlete_pr() from public, anon, authenticated;
+
+drop trigger if exists mw_notify_faster_athlete_pr_after_insert on public.athlete_prs;
+create trigger mw_notify_faster_athlete_pr_after_insert
+after insert on public.athlete_prs
+for each row execute function public.mw_notify_faster_athlete_pr();
 
 select cron.schedule(
   'mw-daily-push-scheduler',
