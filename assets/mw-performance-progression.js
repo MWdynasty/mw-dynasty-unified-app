@@ -109,7 +109,8 @@
     style();
     var section=node('section');section.id='mw-performance-progression';section.setAttribute('aria-labelledby','mwpi-title');
     section.appendChild(node('h2','Your Progress'));section.querySelector('h2').id='mwpi-title';
-    section.appendChild(node('p','See what you’ve done and what comes next.','mwpi-sub'));
+    section.appendChild(node('p','See your workouts, best times, and lifts over time.','mwpi-sub'));
+    section.appendChild(node('p','Read the chart from left to right: each dot shows one week or month.','mwpi-selector-help'));
     var content=node('div','Loading your saved results…');content.id='mwpi-content';section.appendChild(content);
     var archive=node('details',null,'mwpi-archive');archive.appendChild(node('summary','Older training details'));
     var practiceSection=view.querySelector('#mwPracticeProgressResults')?.closest('.mwProgressSection');
