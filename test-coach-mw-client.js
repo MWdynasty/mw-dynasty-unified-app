@@ -137,6 +137,7 @@ function fixture(saved = []) {
     toast:()=>{},mwSessionToken:()=> 'synthetic-session',MWAISharing:{ensure:async()=>true},
     coachMWPrefs:()=>({voiceMode:'standard',coachType:'male',voiceSpeed:1}),
     experience:'intelligence',
+    mwCoachFormatReply:input=>String(input),
     authSession:null,
     fetch:async(url,options)=>{
       const body=JSON.parse(options?.body||'{}');calls.push({url,body});
