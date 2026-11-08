@@ -4,8 +4,7 @@ function mount(){
  var home=document.getElementById('home');
  var train=document.getElementById('workouts');
  var guidance=document.getElementById('mw-return-guidance-launcher');
- var settings=document.getElementById('mw-notification-settings-launcher');
- if(!home||!train||!guidance||!settings)return false;
+ if(!home||!train||!guidance)return false;
  var section=document.getElementById('mw-adaptive-tools');
  if(!section){
   section=document.createElement('section');section.id='mw-adaptive-tools';
@@ -30,20 +29,6 @@ function mount(){
   button.style.setProperty('white-space','normal','important');
   button.style.setProperty('box-shadow','none','important');
  });
- var profile=document.getElementById('athlete');
- if(profile&&settings.parentElement!==profile){
-  settings.style.cssText='position:static;display:block;margin:14px 0 24px;max-width:100%;white-space:normal;box-shadow:none';
-  settings.style.setProperty('position','static','important');
-  settings.style.setProperty('bottom','auto','important');
-  settings.style.setProperty('right','auto','important');
-  settings.style.setProperty('z-index','auto','important');
-  settings.style.setProperty('font-size','12px','important');
-  settings.style.setProperty('padding','10px 12px','important');
-  settings.style.setProperty('max-width','100%','important');
-  settings.style.setProperty('white-space','normal','important');
-  settings.style.setProperty('box-shadow','none','important');
-  profile.appendChild(settings);
- }
  return true;
 }
 function start(){if(mount())return;var observer=new MutationObserver(function(){if(mount())observer.disconnect()});observer.observe(document.body,{childList:true,subtree:true});setTimeout(function(){observer.disconnect()},12000)}
