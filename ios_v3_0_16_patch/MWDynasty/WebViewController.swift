@@ -87,10 +87,6 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         loadMWDynasty()
     }
 
-    deinit {
-        if let observer = pushTokenObserver { NotificationCenter.default.removeObserver(observer) }
-    }
-
     private func loadMWDynasty() {
         guard let raw = Bundle.main.object(forInfoDictionaryKey: "MWProductionURL") as? String,
               !raw.contains("REPLACE-WITH"),
@@ -548,6 +544,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     deinit {
         transactionUpdatesTask?.cancel()
+        if let observer = pushTokenObserver { NotificationCenter.default.removeObserver(observer) }
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPermissions")
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwPurchase")
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwRestorePurchase")
