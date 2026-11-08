@@ -245,7 +245,7 @@ ok(athleteLoginHtml.indexOf('let mwStrengthPerformanceRows=[];')<athleteLoginHtm
 ok((athleteLoginHtml.match(/let mwStrengthPerformanceRows=\[\];/g)||[]).length===1,'Strength-performance rows must not be shadowed by a second lexical declaration');
 includes('athlete/index.html',"console.error('MW post-auth hydration issue',e)",'Athlete post-auth UI hydration must be isolated from authentication');
 includes('athlete/index.html',"if(authenticated&&mwSession?.access_token)",'Athlete sign-in must preserve an accepted session when downstream app startup fails');
-includes('athlete/index.html','You are signed in. MW hit a temporary app-loading issue, but your session is safe.','Athlete sign-in must not expose raw feature exceptions as credential failures');
+includes('assets/mw-athlete-auth-v1.js','You are signed in. MW hit a temporary app-loading issue, but your session is safe.','Athlete sign-in must not expose raw feature exceptions as credential failures');
 
 
 includes('server/api/coach/performance.js','entry_sources:[...new Set(reps.map(r=>r.entry_source','Coach intelligence must receive Practice timing provenance');

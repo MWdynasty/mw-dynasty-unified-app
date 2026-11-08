@@ -30,6 +30,25 @@
   window.mwNativePermissionResult=function(result){
     var r=window.__mwPermissionResolve;window.__mwPermissionResolve=null;if(r)r(result||{native:true});
   };
+  window.mwNativePushToken=function(token){
+    if(!token)return;
+    window.__mwPushToken=String(token);
+    if(typeof window.mwRegisterPushDevice==='function')window.mwRegisterPushDevice();
+  };
+})();
+
+;(function(){
+  var base='https://keqgunlfwhjgcsurynef.supabase.co',key='sb_publishable_JWCLQzrdWA_ZmvbpV5urVg_rcT6NECm';
+  function role(){return location.pathname.startsWith('/coach')?'coach':location.pathname.startsWith('/athlete')?'athlete':null}
+  function session(){var r=role();if(!r)return null;var k=r==='coach'?'mwCoachSupabaseSession':'mwSupabaseSession';try{var s=window.MWAccountStorage||{local:localStorage,session:sessionStorage};return JSON.parse(s.local.getItem(k)||s.session.getItem(k)||'null')}catch{return null}}
+  window.mwRegisterPushDevice=async function(){
+    var token=window.__mwPushToken,s=session();if(!token||!s?.user?.id||!s.access_token)return false;
+    var url=window.MW_SUPABASE_URL||base,headers={apikey:window.MW_SUPABASE_KEY||key,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'};
+    var row={user_id:s.user.id,device_token:token,platform:'ios',environment:'production',app_bundle_id:'com.mwdynasty.app',last_seen_at:new Date().toISOString()};
+    try{var r=await fetch(url+'/rest/v1/mw_push_devices',{method:'POST',headers:headers,body:JSON.stringify(row)});if(!r.ok)return false;await fetch(url+'/rest/v1/mw_notification_preferences?on_conflict=user_id',{method:'POST',headers:headers,body:JSON.stringify({user_id:s.user.id,push_enabled:true})});window.__mwPushRegistered=true;return true}catch{return false}
+  };
+  window.addEventListener('mw:account-changed',function(){window.mwRegisterPushDevice()});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){window.mwRegisterPushDevice()});else window.mwRegisterPushDevice();
 })();
 
 ;(function(){
@@ -143,3 +162,4 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
+

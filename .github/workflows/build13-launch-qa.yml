@@ -75,6 +75,8 @@ jobs:
           install -m 0644 ios_v3_0_16_patch/Config/Release.xcconfig ios_build/Config/Release.xcconfig
           install -m 0644 ios_v3_0_16_patch/MWDynasty.xcodeproj/project.pbxproj ios_build/MWDynasty.xcodeproj/project.pbxproj
           install -m 0644 ios_v3_0_16_patch/MWDynasty/WebViewController.swift ios_build/MWDynasty/WebViewController.swift
+          install -m 0644 ios_v3_0_16_patch/MWDynasty/AppDelegate.swift ios_build/MWDynasty/AppDelegate.swift
+          install -m 0644 ios_v3_0_16_patch/MWDynasty/MWDynasty.entitlements ios_build/MWDynasty/MWDynasty.entitlements
 
           install -m 0644 ios_v3_0_16_patch/MWDynasty/Info.plist ios_build/MWDynasty/Info.plist
           install -m 0644 ios_v3_0_16_patch/MWDynasty/MWLaunch.png ios_build/MWDynasty/MWLaunch.png
@@ -90,6 +92,8 @@ jobs:
         run: |
           set -euo pipefail
           plutil -lint ios_build/MWDynasty/Info.plist
+          plutil -lint ios_build/MWDynasty/MWDynasty.entitlements
+          grep -q 'aps-environment' ios_build/MWDynasty/MWDynasty.entitlements
           grep -q 'MARKETING_VERSION = 3.0.16' ios_build/Config/Release.xcconfig
           grep -q 'CURRENT_PROJECT_VERSION = 16' ios_build/Config/Release.xcconfig
           grep -q 'CURRENT_PROJECT_VERSION = 16;' ios_build/MWDynasty.xcodeproj/project.pbxproj
@@ -115,3 +119,4 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             clean build
+

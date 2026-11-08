@@ -26,7 +26,7 @@ const dupes=ids.filter((id,i)=>ids.indexOf(id)!==i);
 assert.deepStrictEqual([...new Set(dupes)],[],'Duplicate static button IDs are not allowed');
 
 const genericFamilies=[
-  'data-open','data-open-settings','data-v','data-practice-coach','data-submit-checkin',
+  'data-open','data-open-settings','data-v','data-delete-cancel','data-delete-confirm','data-practice-coach','data-submit-checkin',
   'data-athlete-search-open','data-coach-thread','data-mw-notification','data-resume-strength',
   'data-sday','data-adjust-strength','data-feel','data-session','data-finish-previous','data-q','data-mw-target','data-rest-toggle','data-rest-reset','data-practice-adjust','data-mw-development'
 ];
@@ -42,6 +42,7 @@ const directIds=[
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
   'mwPracticeNext','mwPracticeHandsFree','mwPracticeVoiceAdjust','mwPracticeSave','mwPracticeReset','mwPracticeRetry','mwDobVerifySave','mwScSave',
   'mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
+  'mwProgressGoTrain',
   'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton','manageCoachConnections'
 ];
 
@@ -109,7 +110,7 @@ const helper=progressScript.match(/function escapeHtmlLocal\(v\)\{[^\n]+/);
 assert(helper,'Progress HTML helper must be available in the main athlete script');
 const renderer=html.slice(html.indexOf('function renderWeightRoomProgressUI(){'),html.indexOf('function renderProgressUI(){'));
 const elements=new Map();
-const scope={document:{getElementById(id){if(!elements.has(id))elements.set(id,{textContent:'',innerHTML:'',value:'',classList:{remove(){},add(){}}});return elements.get(id)}},window:{},mwStrengthQuickCache:{one:{lifecycle_status:'completed',status:'as_prescribed',program_week:1,strength_day:1,day_label:'Lift <A>',session_feel:'normal'}},mwStrengthPerformanceRows:[{exercise_name:'Squat <test>',reps_completed:8,actual_load:100,recorded_at:'2026-10-01',weight_unit:'lb'},{exercise_name:'Squat <test>',reps_completed:8,actual_load:110,recorded_at:'2026-10-02',weight_unit:'lb'}],mwPracticeProgressCache:[],activeMWWeek:()=>1,MW_STRENGTH:{},PHASES:{1:{name:'Foundation'}},phaseFromWeek:()=>1};
+const scope={document:{getElementById(id){if(!elements.has(id))elements.set(id,{textContent:'',innerHTML:'',value:'',classList:{remove(){},add(){}}});return elements.get(id)}},window:{},mwStrengthQuickCache:{one:{lifecycle_status:'completed',status:'as_prescribed',program_week:1,strength_day:1,day_label:'Lift <A>',session_feel:'normal'}},mwStrengthPerformanceRows:[{exercise_name:'Squat <test>',reps_completed:8,actual_load:100,recorded_at:'2026-10-01',weight_unit:'lb'},{exercise_name:'Squat <test>',reps_completed:8,actual_load:110,recorded_at:'2026-10-02',weight_unit:'lb'}],mwPracticeProgressCache:[],mwRenderProgressTrendChart(){},activeMWWeek:()=>1,MW_STRENGTH:{},PHASES:{1:{name:'Foundation'}},phaseFromWeek:()=>1};
 vm.createContext(scope);vm.runInContext(helper[0]+'\n'+renderer+'\nrenderWeightRoomProgressUI();',scope);
 assert.equal(elements.get('progressStrengthSessions').textContent,'1');
 assert.match(elements.get('progressStrengthRecent').innerHTML,/Lift &lt;A&gt;/);
@@ -133,7 +134,7 @@ assert(html.includes('id="mw-home-stationary-v1"'),'Athlete Home scroll-lock sty
 assert(html.includes("document.body.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle body scrolling state');
 assert(html.includes("document.documentElement.classList.toggle('mw-home-locked',locked)"),'Home lock helper must toggle document scrolling state');
 assert(html.includes('body.mw-auth-ready.mw-home-locked'),'Home CSS must override normal authenticated page scrolling');
-assert(html.includes('overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important'),'Home content must scroll internally above the fixed bottom navigation');
+assert(html.includes('body.mw-auth-ready.mw-home-locked{')&&html.includes('overflow-y:auto!important;overscroll-behavior-y:auto!important;')&&html.includes('touch-action:pan-y!important;'),'Home content must scroll inside the locked viewport while preserving native gestures');
 assert(html.includes('#home .mwHomeMenu{\n    max-height:min(70dvh,520px);'),'Home dropdown must remain internally usable on short screens');
 console.log('PASS: Athlete Home keeps the viewport fixed while its content scrolls above the bottom navigation.');
 
@@ -192,13 +193,13 @@ assert(athleteHtml.includes('mw-athlete-readable-train'),'Athlete Train mobile r
 assert(athleteHtml.includes('#todayTrackDetails .mwMissedTrainingNotice p { font-size: 16px'),'Adaptive-training explanation must use readable mobile text');
 assert(athleteHtml.includes(".sort((a,b)=>a.week-b.week||a.day-b.day)"),'Missed sessions must be listed in chronological order');
 assert(athleteHtml.includes("const missedSummary=priorDays.map(x=>'Week '+x.week+', session '+x.day).join(' · ')"),'Adaptive-training card must prepare a detail for every counted missed session');
-assert(athleteHtml.includes("MISSED SESSIONS:</b> '+missedSummary"),'Adaptive-training card must display all sessions included in its count');
+assert(athleteHtml.includes("<small>Missed: '+missedSummary"),'Adaptive-training details must display all sessions included in its count');
 
 assert((athleteHtml.match(/class="workoutDetailRow"/g)||[]).length===4,'Track workout details must render as four organized sections');
 assert(athleteHtml.includes('#todayTrackDetails .workoutDetailRow span { color: #f1e7d2; font-size: 15px; line-height: 1.55'),'Workout detail rows must use readable mobile typography');
 
 assert(athleteHtml.includes("const workoutBullets="),'Workout prescription must render as bullet lists');
-assert(athleteHtml.includes("raw.split(/\s*[·•]\s*/)"),'Wicket instructions must be split into readable bullet points');
+assert(athleteHtml.includes(String.raw`raw.split(/\s*[·•]\s*/)`),'Wicket instructions must be split into readable bullet points');
 assert(athleteHtml.includes("class=\"workoutBulletList\""),'Workout details must use the organized bullet-list layout');
 
 assert(athleteHtml.includes('class="mwPracticeWork"'),'Practice Mode instructions need a dedicated structured container');
