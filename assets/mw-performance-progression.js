@@ -247,7 +247,7 @@
         drawChart(graph,points,'execution',names[category]+' target reps');
         graph.appendChild(node('p',category==='tempo'?'For tempo, follow the workout’s pace or skill goal—fastest is not always best.':'For technique practice, follow the workout’s pace or skill goal—fastest is not always best.','mwpi-chart-note'));
         var targeted=selected.filter(function(r){return !!r.pace_status}),on=targeted.filter(function(r){return r.pace_status==='on_pace'}).length;
-        if(targeted.length)graph.appendChild(node('p',on+' of '+targeted.length+' reps hit the target.','mwpi-result'));
+        if(targeted.length)graph.appendChild(node('p',on+' of '+targeted.length+' reps hit the target.','mwpi-result'));else if(selected.length)graph.appendChild(node('p','Saved reps need a pace target before MW can chart target execution.','mwpi-chart-note'));
       }
     };
     control(controls,'Workout type',cats.map(function(g){return {label:names[g],value:g}}),category,function(v){category=v;redraw()});
