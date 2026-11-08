@@ -38,6 +38,25 @@ async function audience(record: Record<string, unknown>, table: string): Promise
   return null;
 }
 
+function preferenceFor(record: Record<string, unknown>): string | null {
+  const type = String(record.notification_type ?? "").toLowerCase();
+  if (type.includes("scripture") || type.includes("bible")) return "scripture_encouragement";
+  if (type.includes("coach_mus")) return "coach_mus_motivation";
+  if (type.includes("inactivity") || type.includes("workout_reminder")) return "inactivity_reminders";
+  if (type.includes("weekly") || type.includes("progress_summary")) return "progress_summaries";
+  if (type.includes("adaptive") || type.includes("progress") || type.includes("personal_record") || type === "pr") return "adaptive_updates";
+  return null;
+}
+
+function localHour(timezone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+  return Number(parts.find((part) => part.type === "hour")?.value ?? "0");
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   try {
@@ -47,11 +66,39 @@ Deno.serve(async (req) => {
     if (table !== "athlete_notifications" && table !== "coach_notifications") return Response.json({ ignored: true });
     const userId = await audience(record, table);
     if (!userId) return Response.json({ ignored: true, reason: "no-recipient" });
+
+    const { data: preferences, error: preferenceError } = await admin
+      .from("mw_notification_preferences").select("*").eq("user_id", userId).maybeSingle();
+    if (preferenceError) throw preferenceError;
+    if (!preferences?.push_enabled) return Response.json({ sent: 0, reason: "push-disabled" });
+
+    const preference = preferenceFor(record);
+    if (preference && preferences[preference] === false) {
+      return Response.json({ sent: 0, reason: "category-disabled" });
+    }
+    const timezone = String(preferences.timezone || "America/Chicago");
+    const hour = localHour(timezone);
+    if (preferences.quiet_hours_enabled && (hour >= 21 || hour < 7)) {
+      return Response.json({ sent: 0, reason: "quiet-hours" });
+    }
+
+    const bundleId = Deno.env.get("APNS_BUNDLE_ID") ?? "com.mwdynasty.app";
     const { data: devices, error } = await admin.from("mw_push_devices")
       .select("id,device_token").eq("user_id", userId).eq("environment", "production")
-      .eq("app_bundle_id", Deno.env.get("APNS_BUNDLE_ID") ?? "com.mwdynasty.app").is("disabled_at", null);
+      .eq("app_bundle_id", bundleId).is("disabled_at", null);
     if (error) throw error;
     if (!devices?.length) return Response.json({ sent: 0, reason: "no-devices" });
+
+    const notificationId = String(record.id ?? "");
+    if (!notificationId) return Response.json({ sent: 0, reason: "no-notification-id" });
+    const { data: claimed, error: claimError } = await admin.rpc("mw_claim_push_delivery", {
+      p_user_id: userId,
+      p_notification_id: notificationId,
+      p_daily_limit: Number(preferences.max_daily_pushes ?? 3),
+    });
+    if (claimError) throw claimError;
+    if (!claimed) return Response.json({ sent: 0, reason: "daily-limit-or-duplicate" });
+
     const jwt = await apnsJwt();
     const title = String(record.title ?? "MW Dynasty");
     const body = String(record.body ?? "You have a new MW Dynasty update.");
@@ -59,7 +106,7 @@ Deno.serve(async (req) => {
     for (const device of devices) {
       const response = await fetch(`https://api.push.apple.com/3/device/${encodeURIComponent(device.device_token)}`, {
         method: "POST",
-        headers: { authorization: `bearer ${jwt}`, "apns-topic": Deno.env.get("APNS_BUNDLE_ID") ?? "com.mwdynasty.app", "content-type": "application/json" },
+        headers: { authorization: `bearer ${jwt}`, "apns-topic": bundleId, "content-type": "application/json" },
         body: JSON.stringify({ aps: { alert: { title, body }, sound: "default", badge: 1 } }),
       });
       results.push(response.status);
@@ -73,4 +120,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: "Push dispatch failed" }, { status: 500 });
   }
 });
-
