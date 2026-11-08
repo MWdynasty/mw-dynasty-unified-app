@@ -1617,7 +1617,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 
 <section class="view" id="notifications">
 <div class="top"><div><div class="logo"><b>MW</b> NOTIFICATIONS</div><div class="sub">ATHLETE ALERT CENTER</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
-<div class="card"><div class="cardHead"><span>NOTIFICATIONS</span><button type="button" id="mwAthleteMarkNotificationsRead" class="smalllink mwNotificationTextBtn">MARK ALL READ</button></div><div id="mwAthleteNotificationList"><div class="lockNote">Loading notifications…</div></div></div>
+<div class="card"><div class="cardHead"><span>NOTIFICATIONS</span><div style="display:flex;align-items:center;gap:10px"><button type="button" id="mwAthleteNotificationPreferences" class="smalllink mwNotificationTextBtn">PREFERENCES</button><button type="button" id="mwAthleteMarkNotificationsRead" class="smalllink mwNotificationTextBtn">MARK ALL READ</button></div></div><div id="mwAthleteNotificationList"><div class="lockNote">Loading notifications…</div></div></div>
 </section>
 
 <section class="view" id="coach">
@@ -4789,6 +4789,7 @@ document.getElementById('deleteAccountBtn')?.addEventListener('click',()=>{
   }
   async function load(){try{const d=await request();if(!d)return;items=Array.isArray(d.items)?d.items:[];updateBadge();render()}catch(e){const wrap=document.getElementById('mwAthleteNotificationList');if(wrap)wrap.innerHTML='<div class="lockNote">'+esc(e.message)+'</div>'}}
   document.getElementById('mwAthleteNotificationBell')?.addEventListener('click',()=>{window.openView?.('notifications',true);load()});
+  document.getElementById('mwAthleteNotificationPreferences')?.addEventListener('click',()=>window.MWNotificationSettings?.open?.());
   document.getElementById('mwAthleteMarkNotificationsRead')?.addEventListener('click',async()=>{try{await request('POST',{action:'mark_all_read'});items.forEach(x=>x.read_at=x.read_at||new Date().toISOString());updateBadge();render()}catch{}});
   window.mwReloadAthleteNotifications=load;
   setTimeout(load,1200);setInterval(load,30000);
@@ -5286,7 +5287,7 @@ document.addEventListener('click',e=>{
 .mwAthleteNotificationBtn,#home .mwHomeMenuButton,.topActions .gearBtn{position:relative!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;color:#f5c95e!important;font-size:21px!important;padding:0!important;display:grid!important;place-items:center!important;-webkit-tap-highlight-color:transparent}
 .mwAthleteNotificationBtn:active,#home .mwHomeMenuButton:active,#home .mwHomeMenuButton[aria-expanded="true"],.topActions .gearBtn:active{transform:scale(.92)!important;border:0!important;background:transparent!important;box-shadow:none!important}
 #mwAthleteNotificationBadge{border:2px solid #050a0f!important}
-</style><link rel="stylesheet" href="/assets/mw-hybrid-design.css?v=20261010-hybrid-1"><script src="/assets/mw-notification-settings.js?v=20261108-push-permission-1" defer></script><script src="/assets/mw-return-guidance.js?v=20261106-athlete-guidance-2" defer></script><script src="/assets/mw-adaptive-tools-layout.js?v=20261102-2" defer></script></body></html>
+</style><link rel="stylesheet" href="/assets/mw-hybrid-design.css?v=20261010-hybrid-1"><script src="/assets/mw-notification-settings.js?v=20261108-notifications-center-1" defer></script><script src="/assets/mw-return-guidance.js?v=20261106-athlete-guidance-2" defer></script><script src="/assets/mw-adaptive-tools-layout.js?v=20261102-2" defer></script></body></html>
 
 <script src="/assets/mw-motion-intelligence.js?v=20261103-motion-fix-1"></script>
 
