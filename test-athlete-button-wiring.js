@@ -42,6 +42,7 @@ const directIds=[
   'paceAllYes','paceSomeNo','paceBack','mwPracticeExit','mwPracticeStart','mwPracticePause',
   'mwPracticeNext','mwPracticeHandsFree','mwPracticeVoiceAdjust','mwPracticeSave','mwPracticeReset','mwPracticeRetry','mwDobVerifySave','mwScSave',
   'mwAthleteMembershipContinue','mwAthleteRestorePurchase','mwUtilityClose',
+  'mwProgressGoTrain',
   'mwSelfPayMonthly','mwSelfPayAnnual','mwSupportSend','mwHomeMenuButton','manageCoachConnections'
 ];
 
