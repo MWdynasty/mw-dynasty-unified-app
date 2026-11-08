@@ -37,7 +37,7 @@ async function main(){
   assert(coachIntel.includes("request('coach_season_settings?on_conflict=coach_user_id'"),'Coach Season Intelligence saves the canonical team calendar');
   const athlete=fs.readFileSync('athlete/index.html','utf8');
   assert(athlete.includes('details class="question mwOptionalDetails"'),'athlete performance data is available but not required during short setup');
-  assert(athlete.includes("eyebrow:'3. RECORD YOUR WORK'"),'athlete onboarding teaches workout recording');
+  assert(athlete.includes("eyebrow:'2. TRAIN'")&&athlete.includes('When you finish, save your workout.'),'athlete onboarding teaches workout recording');
   assert(athlete.includes('data-open-settings aria-label="Settings"'),'athlete settings are a separate gear action');
   assert(!athlete.includes('data-open-settings role="menuitem" class="mwHomeMenuSettings"'),'athlete settings are not mixed into the Menu list');
   assert(athlete.includes('USE MW STANDARD CALENDAR & BUILD MY SEASON'),'athletes explicitly confirm a safe default calendar before building their season');
