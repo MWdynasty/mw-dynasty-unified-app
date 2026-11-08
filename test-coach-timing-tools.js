@@ -17,7 +17,7 @@ const stopwatchView=liveCoach.slice(stopwatchStart,stopwatchEnd);
 assert.match(performanceView,/data-page="stopwatch"/,'Stopwatch opens via a Performance Tools card');
 assert.doesNotMatch(performanceView.slice(0,performanceView.indexOf('function coachStopwatchPage(){')),/id="coachStopwatch"/,'Stopwatch controls are not exposed on Performance Tools');
 assert.match(stopwatchView,/id="coachStopwatch"/,'Separate stopwatch workspace keeps the original timing controls');
-assert.match(stopwatchView,/mountStopwatch\\(document\\.getElementById\\('coachStopwatch'\\)\\)/,'Stopwatch controls mount when the stopwatch opens');
+assert.ok(stopwatchView.includes("mountStopwatch(document.getElementById('coachStopwatch'))"),'Stopwatch controls mount when the stopwatch opens');
 assert.match(stopwatchView,/data-page="tools"/,'Stopwatch can navigate back');
 assert.doesNotMatch(paceView,/paceToolsTab|paceToolsPanel|id="coachStopwatch"/,'Pace AI must contain only group and individual pacing');
 assert.match(paceView,/paceTabIds=\['paceGroupTab','paceIndividualTab'\]/,'Pace AI retains two functional tabs');
