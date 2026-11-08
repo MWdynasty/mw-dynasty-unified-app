@@ -96,7 +96,7 @@
     var digits=kind==='speed'?2:kind==='execution'?0:1;
     [[kind==='speed'?min:max,23],[kind==='speed'?max:min,147]].forEach(function(axis){var txt=document.createElementNS(ns,'text');txt.setAttribute('x','4');txt.setAttribute('y',axis[1]);txt.setAttribute('fill','#aebdcc');txt.setAttribute('font-size','9');txt.textContent=number(axis[0],digits)+suffix;svg.appendChild(txt)});
     parent.appendChild(svg);
-    parent.appendChild(node('p',points.length===1?'One result saved. Another matching session will show a change.':kind==='speed'?'Higher dots mean faster times.':kind==='execution'?'Higher dots mean more reps hit the goal.':'Higher dots mean a higher lift estimate.','mwpi-chart-note'));
+    parent.appendChild(node('p',points.length===1?'Only one week or month has a result so far.':kind==='speed'?'Chart guide: higher dots mean a faster time.':kind==='execution'?'Chart guide: higher dots mean more reps hit the goal.':'Chart guide: higher dots mean a higher estimated lift.','mwpi-chart-note'));
   }
   function style(){
     if(document.getElementById('mwpi-style'))return;
@@ -231,12 +231,13 @@
         var points=bySession(selected,function(){return true},period);
         drawChart(graph,points,'speed',names[category]+' '+distance+'m');
         var items=sessionPoints(selected,function(){return true});
-        if(items.length){var first=items[0].value,last=items.at(-1).value,best=Math.min.apply(null,items.map(function(x){return x.value})),delta=first-last;graph.appendChild(node('p','Latest '+number(last,2)+'s · Best '+number(best,2)+'s'+(items.length>1?(delta>0?' · '+number(delta,2)+'s faster':delta<0?' · '+number(Math.abs(delta),2)+'s slower':' · holding steady'):' · first result'),'mwpi-result'))}
+        if(items.length){var first=items[0].value,last=items.at(-1).value,best=Math.min.apply(null,items.map(function(x){return x.value})),delta=first-last;graph.appendChild(node('p','First '+number(first,2)+'s · Latest '+number(last,2)+'s'+(items.length>1?(delta>0?' · '+number(delta,2)+'s faster':delta<0?' · '+number(Math.abs(delta),2)+'s slower':' · holding steady'):' · first result'),'mwpi-result'))}
       }else{
         var buckets=new Map();
         selected.forEach(function(row){if(!row.pace_status)return;var d=dateOf(row);if(!d)return;var k=bucketKey(d,row,period),v=buckets.get(k)||{total:0,on:0,date:d,row:row};v.total++;if(row.pace_status==='on_pace')v.on++;buckets.set(k,v)});
         var points=[...buckets.entries()].map(function(pair){return {key:pair[0],value:pair[1].on/pair[1].total*100,date:pair[1].date,row:pair[1].row}}).sort(function(a,b){return a.date-b.date});
         drawChart(graph,points,'execution',names[category]+' target reps');
+        graph.appendChild(node('p',category==='tempo'?'For tempo, follow the workout’s pace or skill goal—fastest is not always best.':'For technique practice, follow the workout’s pace or skill goal—fastest is not always best.','mwpi-chart-note'));
         var targeted=selected.filter(function(r){return !!r.pace_status}),on=targeted.filter(function(r){return r.pace_status==='on_pace'}).length;
         if(targeted.length)graph.appendChild(node('p',on+' of '+targeted.length+' reps hit the target.','mwpi-result'));
       }
