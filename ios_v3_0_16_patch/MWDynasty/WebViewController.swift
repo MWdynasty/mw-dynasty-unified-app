@@ -17,6 +17,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
     private let motion3DSession = ARSession()
     private var motion3DActive = false
     private var motion3DPreview: ARSCNView?
+    private var pushTokenObserver: NSObjectProtocol?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +31,10 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         content.add(self, name: "mwRestorePurchase")
         content.add(self, name: "mwManageSubscriptions")
         content.add(self, name: "mwMotion3D")
+        pushTokenObserver = NotificationCenter.default.addObserver(forName: .mwAPNsDeviceToken, object: nil, queue: .main) { [weak self] note in
+            guard let token = note.object as? String, !token.isEmpty else { return }
+            self?.sendPushTokenToWeb(token)
+        }
 
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -80,6 +85,10 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             }
         }
         loadMWDynasty()
+    }
+
+    deinit {
+        if let observer = pushTokenObserver { NotificationCenter.default.removeObserver(observer) }
     }
 
     private func loadMWDynasty() {
@@ -211,6 +220,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             switch settings.authorizationStatus {
             case .authorized, .provisional, .ephemeral:
                 DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
                     self?.sendPermissionResult(["native": true, "granted": true, "type": "notifications"])
                 }
             case .denied:
@@ -220,6 +230,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             case .notDetermined:
                 UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
                     DispatchQueue.main.async {
+                        if granted { UIApplication.shared.registerForRemoteNotifications() }
                         self?.sendPermissionResult(["native": true, "granted": granted, "type": "notifications"])
                     }
                 }
@@ -229,6 +240,10 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
                 }
             }
         }
+    }
+
+    private func sendPushTokenToWeb(_ token: String) {
+        webView.evaluateJavaScript("window.mwNativePushToken && window.mwNativePushToken('\(token)');")
     }
 
     private func sendPermissionResult(_ result: [String: Any]) {
@@ -539,3 +554,4 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         webView?.configuration.userContentController.removeScriptMessageHandler(forName: "mwManageSubscriptions")
     }
 }
+
