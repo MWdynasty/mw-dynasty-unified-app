@@ -20,7 +20,7 @@ panel.style.cssText='position:fixed;z-index:2147483600;inset:0;background:#02081
 var card=document.createElement('div');card.style.cssText='width:min(100%,440px);max-height:90vh;overflow:auto;background:#102131;border:1px solid #455363;border-radius:18px;padding:22px;box-shadow:0 12px 40px #0009';
 panel.appendChild(card);document.body.appendChild(panel);
 var h=document.createElement('h2');h.textContent='MW Notification Preferences';h.style.cssText='margin:0 0 12px;font-size:20px';card.appendChild(h);
-var note=document.createElement('p');note.textContent='Manage your reminder preferences. iPhone push delivery will be available after device registration is enabled.';note.style.cssText='font-size:13px;color:#c4d0db;line-height:1.5';card.appendChild(note);
+var note=document.createElement('p');note.textContent=window.__mwPushRegistered?'Manage your reminder preferences. iPhone alerts are enabled on this device.':'Manage your reminder preferences. Enable alerts on your iPhone to receive push notifications.';note.style.cssText='font-size:13px;color:#c4d0db;line-height:1.5';card.appendChild(note);
 var status=document.createElement('p');status.textContent='Loading preferences…';status.style.cssText='font-size:13px;color:#e7bc65';card.appendChild(status);
 var form=document.createElement('form');card.appendChild(form);
 var labels={inactivity_reminders:'Inactivity reminders',adaptive_updates:'Adaptive training updates',progress_summaries:'Weekly progress summaries',quiet_hours_enabled:'Quiet hours (9 PM–7 AM)'};
@@ -34,7 +34,7 @@ panel.addEventListener('click',function(e){if(e.target===panel)close()});
 var settings=Object.assign({},defaults);
 try{var rows=await request('mw_notification_preferences?select=*&user_id=eq.'+encodeURIComponent(s.user.id));if(!panel)return;if(Array.isArray(rows)&&rows[0])Object.assign(settings,rows[0]);status.textContent='Preferences saved to your account; phone push is not yet active.'}catch(e){status.textContent=e.message;save.disabled=true}
 fields.forEach(function(f){inputs[f].checked=!!settings[f]});time.value=String(settings.reminder_hour);
-form.onsubmit=async function(e){e.preventDefault();var current=auth();if(!current||current.user.id!==s.user.id){status.textContent='Session changed. Please reopen settings.';return}save.disabled=true;status.textContent='Saving…';var payload={user_id:s.user.id,push_enabled:false,reminder_hour:Number(time.value),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Chicago'};fields.forEach(function(f){payload[f]=inputs[f].checked});try{await request('mw_notification_preferences?on_conflict=user_id','POST',payload);status.textContent='Preferences saved. iPhone push registration is not yet active.'}catch(err){status.textContent=err.message}finally{save.disabled=false}};
+form.onsubmit=async function(e){e.preventDefault();var current=auth();if(!current||current.user.id!==s.user.id){status.textContent='Session changed. Please reopen settings.';return}save.disabled=true;status.textContent='Saving…';var payload={user_id:s.user.id,push_enabled:window.__mwPushRegistered===true,reminder_hour:Number(time.value),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Chicago'};fields.forEach(function(f){payload[f]=inputs[f].checked});try{await request('mw_notification_preferences?on_conflict=user_id','POST',payload);status.textContent=payload.push_enabled?'Preferences saved. iPhone push is enabled on this device.':'Preferences saved. Enable iPhone alerts to receive push notifications.'}catch(err){status.textContent=err.message}finally{save.disabled=false}};
 }
 window.MWNotificationSettings={open:open};
 var launcher=document.createElement('button');launcher.type='button';launcher.textContent='🔔 Notification settings';launcher.setAttribute('aria-label','Open MW notification settings');launcher.style.cssText='position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:1000;border:1px solid #c9a353;border-radius:999px;background:#112434;color:#f6d18b;padding:9px 13px;font:600 12px system-ui,sans-serif;box-shadow:0 4px 15px #0005';launcher.onclick=open;
@@ -42,3 +42,4 @@ function mount(){if(document.body&&!document.getElementById('mw-notification-set
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 window.addEventListener('mw:account-changed',close);
 })();
+
