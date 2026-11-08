@@ -39,9 +39,6 @@ fields.forEach(function(f){inputs[f].checked=!!settings[f]});time.value=String(s
 form.onsubmit=async function(e){e.preventDefault();var current=auth();if(!current||current.user.id!==s.user.id){status.textContent='Session changed. Please reopen settings.';return}save.disabled=true;status.textContent='Saving…';var payload={user_id:s.user.id,push_enabled:window.__mwPushRegistered===true,reminder_hour:Number(time.value),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Chicago'};fields.forEach(function(f){payload[f]=inputs[f].checked});try{await request('mw_notification_preferences?on_conflict=user_id','POST',payload);status.textContent=payload.push_enabled?'Preferences saved. iPhone push is enabled on this device.':'Preferences saved. Enable iPhone alerts to receive push notifications.'}catch(err){status.textContent=err.message}finally{save.disabled=false}};
 }
 window.MWNotificationSettings={open:open};
-var launcher=document.createElement('button');launcher.type='button';launcher.textContent='🔔 Alerts & reminders';launcher.setAttribute('aria-label','Open MW notification preferences');launcher.style.cssText='position:fixed;right:14px;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:1000;border:1px solid #c9a353;border-radius:999px;background:#e7bc65;color:#091521;padding:11px 16px;font:700 13px system-ui,sans-serif;box-shadow:0 4px 15px #0005';launcher.onclick=open;
-function mount(){if(document.body&&!document.getElementById('mw-notification-settings-launcher')){launcher.id='mw-notification-settings-launcher';document.body.appendChild(launcher)}}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 window.addEventListener('mw:account-changed',close);
 })();
 
