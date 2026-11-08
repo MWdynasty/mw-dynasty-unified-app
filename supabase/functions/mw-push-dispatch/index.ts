@@ -30,12 +30,23 @@ async function apnsJwt(): Promise<string> {
 }
 
 async function audience(record: Record<string, unknown>, table: string): Promise<string | null> {
-  if (table === "coach_notifications") return typeof record.coach_user_id === "string" ? record.coach_user_id : null;
-  if (table === "athlete_notifications" && typeof record.athlete_id === "string") {
-    const { data } = await admin.from("athletes").select("user_id").eq("id", record.athlete_id).maybeSingle();
-    return data?.user_id ?? null;
+  if (table === "coach_notifications") {
+    return typeof record.coach_user_id === "string" ? record.coach_user_id : null;
   }
-  return null;
+  if (table !== "athlete_notifications") return null;
+
+  let athleteId = typeof record.athlete_id === "string" ? record.athlete_id : null;
+  if (!athleteId && typeof record.id === "string") {
+    const { data, error } = await admin.from("athlete_notifications")
+      .select("athlete_id").eq("id", record.id).maybeSingle();
+    if (error) throw error;
+    athleteId = data?.athlete_id ?? null;
+  }
+  if (!athleteId) return null;
+
+  const { data, error } = await admin.from("athletes").select("user_id").eq("id", athleteId).maybeSingle();
+  if (error) throw error;
+  return data?.user_id ?? null;
 }
 
 function preferenceFor(record: Record<string, unknown>): string | null {
@@ -61,8 +72,8 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   try {
     const event = await req.json();
-    const table = event.table as string;
-    const record = (event.record ?? {}) as Record<string, unknown>;
+    const table = String(event.table ?? event.data?.table ?? "");
+    const record = (event.record ?? event.new_record ?? event.data?.record ?? event.data?.new_record ?? {}) as Record<string, unknown>;
     if (table !== "athlete_notifications" && table !== "coach_notifications") return Response.json({ ignored: true });
     const userId = await audience(record, table);
     if (!userId) return Response.json({ ignored: true, reason: "no-recipient" });
