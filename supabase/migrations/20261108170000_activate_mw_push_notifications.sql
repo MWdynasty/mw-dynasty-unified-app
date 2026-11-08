@@ -109,7 +109,7 @@ declare
   v_sent integer := 0;
 begin
   for v_pref in
-    select p.user_id, p.timezone, p.inactivity_reminders, p.scripture_encouragement,
+    select p.user_id, p.timezone, p.inactivity_reminders, p.progress_summaries, p.scripture_encouragement,
            p.coach_mus_motivation, a.id as athlete_id
       from public.mw_notification_preferences p
       join public.athletes a on a.user_id = p.user_id
@@ -219,7 +219,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public, pg_temp
-as $
+as $$
 declare
   v_previous_best numeric;
   v_title text;
@@ -261,7 +261,7 @@ begin
 
   return new;
 end;
-$;
+$$;
 
 revoke all on function public.mw_notify_faster_athlete_pr() from public, anon, authenticated;
 
