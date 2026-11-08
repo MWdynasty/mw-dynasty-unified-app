@@ -105,6 +105,7 @@
   }
   function mount(){
     var view=document.getElementById('progress');
+    document.querySelector('#home .mwHomeProgress')?.remove();
     if(!view||document.getElementById('mw-performance-progression'))return false;
     style();
     var section=node('section');section.id='mw-performance-progression';section.setAttribute('aria-labelledby','mwpi-title');
