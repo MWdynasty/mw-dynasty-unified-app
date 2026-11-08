@@ -193,7 +193,7 @@ assert(athleteHtml.includes('mw-athlete-readable-train'),'Athlete Train mobile r
 assert(athleteHtml.includes('#todayTrackDetails .mwMissedTrainingNotice p { font-size: 16px'),'Adaptive-training explanation must use readable mobile text');
 assert(athleteHtml.includes(".sort((a,b)=>a.week-b.week||a.day-b.day)"),'Missed sessions must be listed in chronological order');
 assert(athleteHtml.includes("const missedSummary=priorDays.map(x=>'Week '+x.week+', session '+x.day).join(' · ')"),'Adaptive-training card must prepare a detail for every counted missed session');
-assert(athleteHtml.includes("MISSED SESSIONS:</b> '+missedSummary"),'Adaptive-training card must display all sessions included in its count');
+assert(athleteHtml.includes("<small>Missed: '+missedSummary"),'Adaptive-training details must display all sessions included in its count');
 
 assert((athleteHtml.match(/class="workoutDetailRow"/g)||[]).length===4,'Track workout details must render as four organized sections');
 assert(athleteHtml.includes('#todayTrackDetails .workoutDetailRow span { color: #f1e7d2; font-size: 15px; line-height: 1.55'),'Workout detail rows must use readable mobile typography');
