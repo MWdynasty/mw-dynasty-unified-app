@@ -202,6 +202,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MWDynasty/Info.plist;
+				CODE_SIGN_ENTITLEMENTS = MWDynasty/MWDynasty.entitlements;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 3.0.16;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mwdynasty.app;
@@ -223,6 +224,7 @@
 				CURRENT_PROJECT_VERSION = 16;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MWDynasty/Info.plist;
+				CODE_SIGN_ENTITLEMENTS = MWDynasty/MWDynasty.entitlements;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 3.0.16;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mwdynasty.app;
@@ -259,3 +261,4 @@
 	};
 	rootObject = G10000000000000000000001 /* Project object */;
 }
+
