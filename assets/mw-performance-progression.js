@@ -209,7 +209,7 @@
     }
     parent.appendChild(journey);
   }
-  function control(parent,title,values,value,onChange)
+  function control(parent,title,values,value,onChange){
     var wrap=node('label',title);var select=node('select');
     values.forEach(function(item){var option=node('option',item.label);option.value=item.value;option.selected=item.value===value;select.appendChild(option)});
     select.addEventListener('change',function(){onChange(select.value)});wrap.appendChild(select);parent.appendChild(wrap);return select;
