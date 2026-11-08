@@ -199,7 +199,7 @@ assert((athleteHtml.match(/class="workoutDetailRow"/g)||[]).length===4,'Track wo
 assert(athleteHtml.includes('#todayTrackDetails .workoutDetailRow span { color: #f1e7d2; font-size: 15px; line-height: 1.55'),'Workout detail rows must use readable mobile typography');
 
 assert(athleteHtml.includes("const workoutBullets="),'Workout prescription must render as bullet lists');
-assert(athleteHtml.includes("raw.split(/\s*[·•]\s*/)"),'Wicket instructions must be split into readable bullet points');
+assert(athleteHtml.includes(String.raw`raw.split(/\s*[·•]\s*/)`),'Wicket instructions must be split into readable bullet points');
 assert(athleteHtml.includes("class=\"workoutBulletList\""),'Workout details must use the organized bullet-list layout');
 
 assert(athleteHtml.includes('class="mwPracticeWork"'),'Practice Mode instructions need a dedicated structured container');
