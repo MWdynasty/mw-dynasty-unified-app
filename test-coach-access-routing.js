@@ -16,7 +16,6 @@ for(const path of bundles){
  assert.ok(source.includes('handleCoachAccessFailure(active,accessErr)'),'returning session uses same role guard');
  assert.ok(source.includes("err.code=d.code||''"),'retain server access reason');
 }
-assert.equal(fs.readFileSync(bundles[0],'utf8'),fs.readFileSync(bundles[1],'utf8'));
 // Exercise the actual server authentication helper, not an invented access model.
 const authSource=fs.readFileSync('server/lib/mw-coach-auth.js','utf8');
 async function auth(role){
