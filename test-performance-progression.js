@@ -145,7 +145,7 @@ async function client(){
   assert.match(section.textContent,/For tempo, follow the workout’s pace or skill goal—fastest is not always best/);
   selects[0].value='technical';selects[0].dispatchEvent(new page.Event('change'));
   assert.match(section.textContent,/For technique practice, follow the workout’s pace or skill goal—fastest is not always best/);
-  assert.match(section.textContent,/Only one week or month has a result so far/,'a one-period graph is replaced by a clear explanation instead of a misleading flat chart');
+  assert.match(section.textContent,/Saved reps need a pace target before MW can chart target execution\./,'technical results without a prescribed target explain why execution cannot be charted');
   page.close();
 }
 
