@@ -64,7 +64,7 @@
         customSelection=customWorkouts.find(w=>w.key===(customSelection?.key||restored?.customWorkoutKey))||customWorkouts[0]||null;if(customSelection)picker.value=customSelection.key;
         customComplete.clear();
         for(const a of roster){if(!customSelection?.athleteIds.includes(a.id)){plans[a.id]={error:'No selected workout assigned'};continue;}
-          plans[a.id]=root.MWCoachProgram.plan(customSelection.session,{id:customSelection.assignmentId},customSelection.revision,a.id,today,customSelection.blockIndex);
+          plans[a.id]={...root.MWCoachProgram.plan(customSelection.session,{id:customSelection.assignmentId},customSelection.revision,a.id,today,customSelection.blockIndex),phase:customSelection.session?.phase||customSelection.session?.seasonPhase||customSelection.session?.periodizationPhase||null};
           if(customSelection.completed.some(r=>r.athlete_id===a.id&&r.block_index===customSelection.blockIndex))customComplete.add(a.id);
           const p=plans[a.id],t=d.mwCoachPracticeRecommendedTarget(a,p.distance,p.intensityPct);if(t)targets[a.id]=typeof t==='object'?t:{target:t};
         }return;
@@ -76,7 +76,7 @@
         const text=[s?.title,s?.focus,s?.prescribedWork,s?.work,s?.structure,s?.intensity,...(Array.isArray(s?.cues)?s.cues:[])].filter(Boolean).join(' ').toLowerCase();
         const intent=/tempo|extensive|recovery|regeneration|easy/.test(text)?(/recovery|regeneration|easy/.test(text)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(text)?(/technical|technique|progressive|fly|flying|wicket/.test(text)?'technical':'speed'):'pace';
         const restSeconds=root.MWCoachTimingTools.prescribedRestSeconds([p.raw,s?.rest,s?.recovery].filter(Boolean).join(' '));
-        plans[a.id]={...p,...d.coachPracticeIdentity(a,week,day),week,day,sourceWeek,intent,restSeconds};if(t)targets[a.id]=typeof t==='object'?t:{target:t,paceBasis:root.MWPace?.calculate(a.prs,p.distance,Number(p.intensityPct)/100)};
+        plans[a.id]={...p,...d.coachPracticeIdentity(a,week,day),week,day,sourceWeek,intent,phase:s?.phase||s?.seasonPhase||s?.periodizationPhase||s?.trainingPhase||null,restSeconds};if(t)targets[a.id]=typeof t==='object'?t:{target:t,paceBasis:root.MWPace?.calculate(a.prs,p.distance,Number(p.intensityPct)/100)};
       }catch(err){plans[a.id]={error:err.message}}}));
     }
     async function loadGroups(){
@@ -148,7 +148,7 @@
       for(const id of ['heatRestMinutes','heatRestSeconds','heatRestApply'])find(id).disabled=busy()||!heat;
       const duration=Math.round((heat?.restDurationMs??90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
       const firstPlan=plans[heat?.athleteIds[0]];
-      find('heatContext').textContent=heat?.restOnly?'This group has no assigned athletes yet. Its rest countdown is available; add athletes in Teams to time reps.':heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Create your group and choose its athletes in Teams, then return here to time practice.';
+      find('heatContext').textContent=heat?.restOnly?'This group has no assigned athletes yet. Its rest countdown is available; add athletes in Teams to time reps.':heat?`${firstPlan?.phase?String(firstPlan.phase).toUpperCase()+' · ':''}${intentLabel(firstPlan?.intent)} · ${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Assigned rest ${firstPlan?.restSeconds?firstPlan.restSeconds+' sec':'shown below'} · Rep times inside the target zone count ON TARGET`:'Create your group and choose its athletes in Teams, then return here to time practice.';
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
         const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&completed(a?.id),p=plans[id],t=targets[id]?.target;
         const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':finishable?'TAP FINISH':'READY';
