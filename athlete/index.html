@@ -3536,7 +3536,24 @@ function renderEntryStatus(){
   box.classList.add('show');
   box.innerHTML=`<small>⚡ MW SMART ENTRY ACTIVE</small><b>Phase ${ep.assignedPhase} • Week ${ep.assignedWeek} — ${PHASES[ep.assignedPhase].name}</b><span class="syncTag">TRACK + STRENGTH SYNCHRONIZED</span><span>Season calendar: Phase ${ep.seasonPhase} • Week ${ep.seasonWeek}. Next MW gate/checkpoint: after Week ${ep.nextCheckpoint}.</span>`;
 }
-function mwEntryDobValue(){\n  const dateEl=$('#entryDob'),yearEl=$('#entryDobYear');\n  const match=String(dateEl?.value||'').match(/^\\d{4}-(\\d{2})-(\\d{2})$/),year=String(yearEl?.value||'').trim();\n  if(!match||!/^\\d{4}$/.test(year))return '';\n  const y=Number(year),maxYear=new Date().getFullYear()-13,month=Number(match[1]),day=Number(match[2]);\n  if(y<1900||y>maxYear)return '';\n  const check=new Date(Date.UTC(y,month-1,day));\n  if(check.getUTCFullYear()!==y||check.getUTCMonth()+1!==month||check.getUTCDate()!==day)return '';\n  const value=year+'-'+match[1]+'-'+match[2];if(dateEl.value!==value)dateEl.value=value;return value;\n}\n(function setupEntryDobYear(){\n  const dateEl=$('#entryDob'),yearEl=$('#entryDobYear');if(!dateEl||!yearEl)return;\n  const maxYear=new Date().getFullYear()-13;yearEl.max=String(maxYear);dateEl.min='1900-01-01';\n  const fillYear=()=>{const match=String(dateEl.value||'').match(/^(\\d{4})-\\d{2}-\\d{2}$/);if(!yearEl.value&&match&&Number(match[1])>=1900&&Number(match[1])<=maxYear)yearEl.value=match[1]};\n  dateEl.addEventListener('focus',fillYear);dateEl.addEventListener('change',()=>{fillYear();mwEntryDobValue()});yearEl.addEventListener('input',mwEntryDobValue);\n  setTimeout(fillYear,0);setTimeout(fillYear,500);\n})();\nfunction showEntryFeedback(message,bad=true,focusId=''){
+function mwEntryDobValue(){
+  const dateEl=$('#entryDob'),yearEl=$('#entryDobYear');
+  const match=String(dateEl?.value||'').match(/^\d{4}-(\d{2})-(\d{2})$/),year=String(yearEl?.value||'').trim();
+  if(!match||! /^\d{4}$/.test(year))return '';
+  const y=Number(year),maxYear=new Date().getFullYear()-13,month=Number(match[1]),day=Number(match[2]);
+  if(y<1900||y>maxYear)return '';
+  const check=new Date(Date.UTC(y,month-1,day));
+  if(check.getUTCFullYear()!==y||check.getUTCMonth()+1!==month||check.getUTCDate()!==day)return '';
+  const value=year+'-'+match[1]+'-'+match[2];if(dateEl.value!==value)dateEl.value=value;return value;
+}
+(function setupEntryDobYear(){
+  const dateEl=$('#entryDob'),yearEl=$('#entryDobYear');if(!dateEl||!yearEl)return;
+  const maxYear=new Date().getFullYear()-13;yearEl.max=String(maxYear);dateEl.min='1900-01-01';
+  const fillYear=()=>{const match=String(dateEl.value||'').match(/^(\d{4})-\d{2}-\d{2}$/);if(!yearEl.value&&match&&Number(match[1])>=1900&&Number(match[1])<=maxYear)yearEl.value=match[1]};
+  dateEl.addEventListener('focus',fillYear);dateEl.addEventListener('change',()=>{fillYear();mwEntryDobValue()});yearEl.addEventListener('input',mwEntryDobValue);
+  setTimeout(fillYear,0);setTimeout(fillYear,500);
+})();
+function showEntryFeedback(message,bad=true,focusId=''){
   const out=$('#entryResult');if(!out)return;
   out.classList.add('show');
   out.innerHTML=bad?`<div class="warning">${message}</div>`:`<div class="reason">${message}</div>`;
