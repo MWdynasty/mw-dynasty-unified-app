@@ -68,7 +68,9 @@
         customSelection=customWorkouts.find(w=>w.key===(customSelection?.key||restored?.customWorkoutKey))||customWorkouts[0]||null;if(customSelection)picker.value=customSelection.key;
         customComplete.clear();
         for(const a of roster){if(!customSelection?.athleteIds.includes(a.id)){plans[a.id]={error:'No selected workout assigned'};continue;}
-          plans[a.id]=root.MWCoachProgram.plan(customSelection.session,{id:customSelection.assignmentId},customSelection.revision,a.id,today,customSelection.blockIndex);
+          const customText=[customSelection.session?.phase,customSelection.session?.seasonPhase,customSelection.session?.periodizationPhase,customSelection.session?.title,customSelection.session?.focus,customSelection.session?.work,customSelection.session?.intensity,...(Array.isArray(customSelection.session?.cues)?customSelection.session.cues:[])].filter(Boolean).join(' ').toLowerCase();
+          const customIntent=/recovery|regeneration|easy/.test(customText)?'recovery':/technical|technique|progressive|fly|flying|wicket/.test(customText)?'technical':/max.?v|max velocity|acceleration|speed/.test(customText)?'speed':'pace';
+          plans[a.id]={...root.MWCoachProgram.plan(customSelection.session,{id:customSelection.assignmentId},customSelection.revision,a.id,today,customSelection.blockIndex),intent:customIntent,phase:customSelection.session?.phase||customSelection.session?.seasonPhase||customSelection.session?.periodizationPhase||null};
           if(customSelection.completed.some(r=>r.athlete_id===a.id&&r.block_index===customSelection.blockIndex))customComplete.add(a.id);
           const p=plans[a.id],t=d.mwCoachPracticeRecommendedTarget(a,p.distance,p.intensityPct);if(t)targets[a.id]=typeof t==='object'?t:{target:t};
         }return;
