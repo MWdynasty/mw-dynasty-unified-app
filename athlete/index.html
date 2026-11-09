@@ -1582,7 +1582,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 <script>window.MWSignIn.mount(document.getElementById('mwAuth'),'athlete');</script>
 <main class="app">
 <section class="view active" id="home">
-<div class="top"><div><img class="mwHybridHeaderCrest" src="/assets/mw-nav-mw.webp" alt=""><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">MW VELOCITY</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MUS</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button><button type="button" class="mwHomeMenuSettings" data-open-settings role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚙</span><span class="mwHomeMenuCopy"><b>SETTINGS</b><small>Account, privacy and app preferences.</small></span></button></div></div></div></div>
+<div class="top"><div><img class="mwHybridHeaderCrest" src="/assets/mw-nav-mw.webp" alt=""><div class="logo"><b>MW</b> DYNASTY</div><div class="sub">MW VELOCITY</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" id="mwAthleteNotificationBell" type="button" aria-label="Notifications">🔔<em id="mwAthleteNotificationBadge" hidden>0</em></button><div class="mwHomeMenuWrap"><button id="mwHomeMenuButton" class="mwHomeMenuButton" type="button" aria-label="Open athlete menu" aria-expanded="false" aria-controls="mwHomeMenu">☰</button><div id="mwHomeMenu" class="mwHomeMenu" role="menu" hidden><button type="button" data-open="coach" role="menuitem"><span class="mwHomeMenuIcon mwCoachCrestMark" aria-hidden="true">MW</span><span class="mwHomeMenuCopy"><b>COACH MUS</b><small>Ask about training, technique, recovery and race strategy.</small></span></button><button type="button" data-open="messages" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">💬</span><span class="mwHomeMenuCopy"><b>MESSAGES</b><small>Open your coach conversations.</small></span><em id="mwMessageHomeBadge" class="mwMessageBadge" hidden>0</em></button><button type="button" data-open="schedule" id="mwScheduleHomeShortcut" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">📅</span><span class="mwHomeMenuCopy"><b>MY SCHEDULE</b><small>View availability, meets and training conflicts.</small></span></button><button type="button" data-open="pacer" role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚡</span><span class="mwHomeMenuCopy"><b>TOOLS</b><small>Open Pace AI and Distance Pacer.</small></span></button><button type="button" class="mwHomeMenuSettings" data-open-settings role="menuitem"><span class="mwHomeMenuIcon" aria-hidden="true">⚙</span><span class="mwHomeMenuCopy"><b>SETTINGS</b><small>Account, privacy and app preferences.</small></span></button></div></div></div></div>
 
 <div class="mwHybridIntro"><small class="mwHybridEyebrow">TODAY</small><h1>Ready for your next rep?</h1><p>Welcome back, <span id="homeName">Athlete</span>.</p></div>
 
@@ -1603,25 +1603,25 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 
 </section>
 <section class="view" id="messages">
-<div class="top"><div><div class="logo"><b>MW</b> MESSAGES</div><div class="sub">COACH COMMUNICATION</div></div><div class="topActions"><div class="online"><span class="dot">●</span> CONNECTED</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+<div class="top"><div><div class="logo"><b>MW</b> MESSAGES</div><div class="sub">COACH COMMUNICATION</div></div><div class="topActions"><div class="online"><span class="dot">●</span> CONNECTED</div></div></div>
 <div id="mwAthleteInboxCard" class="card mwMessageCard"><div class="cardHead"><span>MESSAGES</span><span id="mwMessageUnreadLabel" class="smalllink">0 UNREAD</span></div><div class="mwAthleteMessageSearch"><span>⌕</span><input id="mwAthleteMessageSearch" autocomplete="off" placeholder="Search coach conversations"></div><div id="mwAthleteInbox" class="mwConversationList"><div class="lockNote">Loading conversations…</div></div></div>
 <div id="mwAthleteThreadCard" class="card mwAthleteThreadCard" style="display:none"><div class="mwAthleteThreadHead"><button id="mwAthleteThreadBack" class="entryGhost" type="button">← MESSAGES</button><div><b id="mwAthleteThreadCoach">MW Coach</b><small>Coach conversation</small></div></div><div id="mwAthleteThreadList" class="mwAthleteThreadList"></div><textarea id="mwReplyText" rows="3" placeholder="Message your coach…"></textarea><button id="mwSendReply" class="save" style="margin-top:10px">SEND</button><div id="mwReplyStatus" class="lockNote" style="display:none;margin-top:10px"></div></div>
 </section>
 
 <section class="view" id="schedule">
-<div class="top"><div><div class="logo"><b>MW</b> SCHEDULE</div><div class="sub" id="mwScheduleSubtitle">AVAILABILITY & TRAINING CALENDAR</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" type="button" onclick="openView('notifications',true)" aria-label="Notifications">🔔</button><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+<div class="top"><div><div class="logo"><b>MW</b> SCHEDULE</div><div class="sub" id="mwScheduleSubtitle">AVAILABILITY & TRAINING CALENDAR</div></div><div class="topActions"><button class="mwAthleteNotificationBtn" type="button" onclick="openView('notifications',true)" aria-label="Notifications">🔔</button></div></div>
 <div id="mwScheduleRoot">
   <div class="card"><h2>Loading your schedule…</h2><p class="muted">MW is checking who controls your training calendar.</p></div>
 </div>
 </section>
 
 <section class="view" id="notifications">
-<div class="top"><div><div class="logo"><b>MW</b> NOTIFICATIONS</div><div class="sub">ATHLETE ALERT CENTER</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
+<div class="top"><div><div class="logo"><b>MW</b> NOTIFICATIONS</div><div class="sub">ATHLETE ALERT CENTER</div></div></div>
 <div class="card"><div class="cardHead"><span>NOTIFICATIONS</span><div style="display:flex;align-items:center;gap:10px"><button type="button" id="mwAthleteNotificationPreferences" class="smalllink mwNotificationTextBtn">PREFERENCES</button><button type="button" id="mwAthleteMarkNotificationsRead" class="smalllink mwNotificationTextBtn">MARK ALL READ</button></div></div><div id="mwAthleteNotificationList"><div class="lockNote">Loading notifications…</div></div></div>
 </section>
 
 <section class="view" id="coach">
-<div class="top"><div><div class="logo"><b>MW</b> COACH MUS</div><div class="sub">YOUR PERSONAL MW PERFORMANCE COACH</div></div><div class="topActions"><div class="online"><span class="dot">●</span> READY</div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div></div>
+<div class="top"><div><div class="logo"><b>MW</b> COACH MUS</div><div class="sub">YOUR PERSONAL MW PERFORMANCE COACH</div></div><div class="topActions"><div class="online"><span class="dot">●</span> READY</div></div></div>
 
 <div class="mwCoachThreadShell">
   <div class="mwCoachPresence">
@@ -1758,7 +1758,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 </section>
 <section class="view" id="pacer"><div class="top"><div><div class="logo"><b>MW</b> PERFORMANCE TOOLS</div><div class="sub">ONE ACCOUNT · ONE TRAINING SYSTEM</div></div></div><div class="card"><h2>Performance Lab</h2><p class="muted">Choose the tool you need. Your MW session stays connected while you train.</p><div class="actionGrid" style="margin-top:14px"><button class="actionCard" onclick="location.href='/pace-ai/'"><b>⚡ SPRINT PACE AI</b><span>Turn your PRs into individualized target times.</span></button><button class="actionCard" onclick="location.href='/distance-pacer/'"><b>◎ DISTANCE PACER</b><span>Know exactly where your rep finishes.</span></button><button class="actionCard" onclick="window.mwOpenMotionIntelligence?.()"><b>🎥 MOTION INTELLIGENCE</b><span>Upload a side, front, or rear sprint recording for secure review.</span></button></div></div><div id="mwMotionPanel"></div></section>
 <section class="view" id="athlete">
-<div class="top"><div><div class="logo"><b>MW</b> PROFILE</div><div class="sub">YOUR ATHLETE INFORMATION</div></div><button class="gearBtn" data-open-settings aria-label="Settings">⚙</button></div>
+<div class="top"><div><div class="logo"><b>MW</b> PROFILE</div><div class="sub">YOUR ATHLETE INFORMATION</div></div></div>
 
 <div class="mwProfileIdentity">
   <div class="mwProfileMonogram" id="mwProfileMonogram">MW</div>
@@ -1825,7 +1825,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
 </section>
 
 <section class="view" id="progress">
-<div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">YOUR TRAINING, MADE SIMPLE.</div></div><button class="gearBtn" data-open-settings>⚙</button></div>
+<div class="top"><div><div class="logo"><b>MW</b> PROGRESS</div><div class="sub">YOUR TRAINING, MADE SIMPLE.</div></div></div>
 <div class="mwDevelopmentGuide mwKidResults" id="mwDevelopmentGuide">
  <div class="mwVelocityInsightsHeading"><b>YOUR PROGRESS</b></div>
  <section class="mwProgressGraphPanel" aria-labelledby="mwTrackProgressTitle">
@@ -2156,7 +2156,7 @@ async function mwRenderCoachAssignedTraining(){
   }catch(e){state.innerHTML=`<h2>Training unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p>`}
 }
 async function mwRenderSponsoredProgress(){
-  const view=document.querySelector('#progress');if(!view)return;view.innerHTML=`<div class="top"><div><div class="logo"><b>MW</b> ACTIVITY</div><div class="sub">COACH-CONNECTED CHECK-INS</div></div><button class="gearBtn" data-open-settings>⚙</button></div><div id="mwActivityState" class="card"><h2>Loading your activity…</h2></div>`;
+  const view=document.querySelector('#progress');if(!view)return;view.innerHTML=`<div class="top"><div><div class="logo"><b>MW</b> ACTIVITY</div><div class="sub">COACH-CONNECTED CHECK-INS</div></div></div><div id="mwActivityState" class="card"><h2>Loading your activity…</h2></div>`;
   const state=document.querySelector('#mwActivityState');try{const r=await fetch('/api/assigned-program',{headers:{Authorization:`Bearer ${window.mwGetSessionToken?.()||''}`},cache:'no-store'});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Activity could not be loaded.');const c=Array.isArray(d.checkins)?d.checkins:[];state.innerHTML=`<div class="cardHead"><span>TRAINING CHECK-INS</span><span class="smalllink">${c.length} RECORDED</span></div>${c.length?`<div class="checkList">${c.slice(0,30).map(x=>`<div class="checkItem"><b>${mwEsc(String(x.status||'completed').replaceAll('_',' ').toUpperCase())}</b><span class="muted">${mwEsc(new Date(x.completed_at).toLocaleDateString())}${x.session_rpe?` · RPE ${x.session_rpe}/10`:''}${x.pace_check_status?` · ${mwEsc(String(x.pace_check_status).replaceAll('_',' '))}`:''}${x.pace_reps_total!=null?` · ${x.pace_reps_hit==null?Number(x.pace_reps_total)+' recorded reps':Number(x.pace_reps_hit)+'/'+Number(x.pace_reps_total)+' reps'}`:''}</span>${x.athlete_note?`<small>${mwEsc(x.athlete_note)}</small>`:''}</div>`).join('')}</div>`:'<p class="muted">No check-ins yet. Open Training after your coach assigns a program.</p>'}`;}catch(e){state.innerHTML=`<h2>Activity unavailable</h2><p class="muted">${mwEsc(e.message||'Please try again.')}</p>`}}
 let mwAthleteScheduleSnapshot=null;
 function mwScheduleStatusLabel(x){return ({pending:'PENDING COACH',approved:'APPROVED',declined:'DECLINED',needs_discussion:'DISCUSS',not_required:'ATHLETE CONTROLLED'})[x]||String(x||'').replaceAll('_',' ').toUpperCase()}
