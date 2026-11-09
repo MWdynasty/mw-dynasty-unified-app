@@ -3552,16 +3552,17 @@ function mwEntryDobValue(){
 (function setupEntryDobFields(){
   const dateEl=$('#entryDob'),monthEl=$('#entryDobMonth'),dayEl=$('#entryDobDay'),yearEl=$('#entryDobYear');
   if(!dateEl||!monthEl||!dayEl||!yearEl)return;
-  const fillFields=()=>{
+  window.mwEntryDobHydrate=()=>{
     const match=String(dateEl.value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
     if(!match)return;
     if(!monthEl.value)monthEl.value=match[2];
     if(!dayEl.value)dayEl.value=match[3];
     if(!yearEl.value)yearEl.value=match[1];
+    mwEntryDobValue();
   };
   [monthEl,dayEl,yearEl].forEach(el=>el.addEventListener('change',mwEntryDobValue));
   yearEl.addEventListener('input',mwEntryDobValue);
-  setTimeout(fillFields,0);setTimeout(fillFields,500);
+  setTimeout(window.mwEntryDobHydrate,0);setTimeout(window.mwEntryDobHydrate,500);
 })();
 function showEntryFeedback(message,bad=true,focusId=''){
   const out=$('#entryResult');if(!out)return;
@@ -3941,6 +3942,7 @@ const clearBtn=$('#clearChat'); if(clearBtn) clearBtn.onclick=()=>{conversation.
     const activeSeason=d.seasonPlan||null,activeType=activeSeason?.season_type||'';
     const map={name:mwRemoteProfile.name,profileLastName:profile.last_name||'',profileEvents:(Array.isArray(d.athlete?.selected_events)?d.athlete.selected_events:[d.athlete?.primary_event,d.athlete?.secondary_event].filter(Boolean)).join(', '),profileDob:d.athlete?.date_of_birth||'',trainingGoal:d.athlete?.training_goal||'',entryFirstName:profile.first_name||'',entryLastName:profile.last_name||'',entryDob:d.athlete?.date_of_birth||'',entryGoal:d.athlete?.training_goal||'',entryCompetitionLevel:d.athlete?.competition_level||'',entryCompetitionDivision:d.athlete?.competition_division||'',entryCompetitionState:d.athlete?.competition_state||'',entrySeasonPreference:d.athlete?.season_preference||'',entryCompetitionPath:Array.isArray(d.athlete?.competition_paths)?(d.athlete.competition_paths[0]||'school'):'school',entryIndoorStart:activeType==='indoor'?(activeSeason?.season_start_date||''):'',entryIndoorFirstMeet:activeType==='indoor'?(activeSeason?.first_meet_date||''):'',entryIndoorPeak:activeType==='indoor'?(activeSeason?.primary_peak_date||''):'',entryIndoorSecondPeak:activeType==='indoor'?(activeSeason?.secondary_peak_date||''):'',entryOutdoorStart:activeType==='outdoor'?(activeSeason?.season_start_date||''):'',entryOutdoorFirstMeet:activeType==='outdoor'?(activeSeason?.first_meet_date||''):'',entryOutdoorPeak:activeType==='outdoor'?(activeSeason?.primary_peak_date||''):'',entryOutdoorSecondPeak:activeType==='outdoor'?(activeSeason?.secondary_peak_date||''):'',p60:mwRemoteProfile.p60,p100:mwRemoteProfile.p100,p150:mwRemoteProfile.p150,p200:mwRemoteProfile.p200,p300:mwRemoteProfile.p300,p400:mwRemoteProfile.p400,p500:mwRemoteProfile.p500,entryPr100:mwRemoteProfile.p100,entryPr150:mwRemoteProfile.p150,entryPr200:mwRemoteProfile.p200,entryPr300:mwRemoteProfile.p300,entryPr400:mwRemoteProfile.p400,entryPr500:mwRemoteProfile.p500,week:mwRemoteProfile.week,startDate:mwRemoteProfile.startDate,startWeek:mwRemoteProfile.startWeek,coachType:mwRemoteProfile.coachType};
     for(const [id,val] of Object.entries(map)){const el=document.querySelector('#'+id);if(el)el.value=val||''}
+    window.mwEntryDobHydrate?.();
     for(const distance of [60,100,150,200,300,400,500])for(const prefix of ['entryPr','p'])for(const [suffix,value] of [['Timing','unknown'],['Type','unspecified'],['Date','']]){const el=document.getElementById(prefix+distance+suffix);if(el)el.value=value}
     for(const pr of d.prs||[]){const distance=String(pr.event||'').replace(/[^0-9]/g,'');for(const prefix of ['entryPr','p'])for(const [suffix,value] of [['Timing',pr.timing_method||'unknown'],['Type',pr.mark_type||'unspecified'],['Date',pr.date_recorded||'']]){const el=document.getElementById(prefix+distance+suffix);if(el)el.value=value}}
     document.querySelector('#entrySeasonPreference')?.dispatchEvent(new Event('change'));
