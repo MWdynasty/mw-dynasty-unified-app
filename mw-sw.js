@@ -1,4 +1,4 @@
-const CACHE='mw-dynasty-shell-v16-athlete-auth-fix';
+const CACHE='mw-dynasty-shell-v17-coach-consent';
 const CORE=[
   '/',
   '/athlete/',
@@ -14,7 +14,8 @@ const CORE=[
   '/coach/styles.css',
   '/assets/mw-unified-theme.css',
   '/assets/mw-signin-v3.js',
-  '/assets/mw-athlete-auth-v1.js?v=20261107',
+  '/assets/mw-ai-sharing.js?v=20261109-consent',
+  '/assets/mw-athlete-auth-v1.js?v=20261109-consent',
   '/assets/mw-signin-v3.css',
   '/assets/mw-dynasty-luxe-v21.css',
   '/assets/mw-responsive-v25.css'
