@@ -51,10 +51,14 @@
     const completed=id=>d.customProgram?customComplete.has(id):d.coachPracticeWorkoutComplete(roster.find(a=>a.id===id));
     const eligible=id=>{const heat=h();return !completed(id)&&!plans[id]?.error&&limit(id)>0&&heat.rep<=limit(id)&&!model.owner(id,heat.key)};
     const workoutsSaved=heat=>!!heat&&(heat.saved||(heat.athleteIds.length>0&&heat.athleteIds.every(completed)));
+    const PACE_ZONE_TOLERANCE=.011;
+    const intentLabel=intent=>({pace:'CONTROLLED PACE · STAY IN ZONE',recovery:'RECOVERY · STAY CONTROLLED',technical:'TECHNICAL QUALITY · FORM FIRST',speed:'SPEED QUALITY · USE FULL ASSIGNED REST'})[intent]||'PACE TARGET';
     const pace=(seconds,id)=>{
-      const t=Number(targets[id]?.target)||null,intent=plans[id]?.intent||'pace';if(!t)return {targetSeconds:null,paceStatus:null,paceLabel:'',mwIntent:intent};
-      const fast=t*.99,slow=t*1.01,above=seconds<fast,below=seconds>slow,quality=['speed','technical'].includes(intent);
-      return {targetSeconds:t,targetMinSeconds:fast,targetMaxSeconds:slow,mwIntent:intent,paceStatus:above&&!quality?'fast':below?'slow':'on_pace',mwInterpretation:above?(quality?'above_target':'pace_violation'):below?'below_target':'on_target',paceLabel:above?(quality?'ABOVE TARGET · QUALITY SPEED':'ABOVE PRESCRIBED PACE'):below?(intent==='technical'?'BELOW TARGET · TECHNICAL SPEED':'BELOW TARGET'):'ON TARGET'};
+      const t=Number(targets[id]?.target)||null,intent=plans[id]?.intent||'pace';if(!t)return {targetSeconds:null,targetMinSeconds:null,targetMaxSeconds:null,paceStatus:null,paceLabel:'',mwIntent:intent};
+      const fast=t*(1-PACE_ZONE_TOLERANCE),slow=t*(1+PACE_ZONE_TOLERANCE),above=seconds<fast,below=seconds>slow,quality=['speed','technical'].includes(intent),assignedRest=Number(plans[id]?.restSeconds),actualRest=Number(h()?.repRestSeconds),shortRest=quality&&Number.isFinite(assignedRest)&&assignedRest>0&&Number.isFinite(actualRest)&&actualRest+2<assignedRest;
+      const status=above&&!quality?'fast':below?'slow':'on_pace',interpretation=above?(quality?(shortRest?'pace_violation':'above_target'):'pace_violation'):below?'below_target':'on_target';
+      const label=above?(quality?(shortRest?'ABOVE TARGET · REST SHORT':'ABOVE TARGET · QUALITY SPEED'):'ABOVE PRESCRIBED PACE'):below?(intent==='technical'?'BELOW TARGET · TECHNICAL SPEED':'BELOW TARGET'):'ON TARGET';
+      return {targetSeconds:t,targetMinSeconds:fast,targetMaxSeconds:slow,mwIntent:intent,paceStatus:shortRest?'fast':status,mwInterpretation:interpretation,paceLabel:label};
     };
     async function loadPlans(){
       const cache=new Map();plans={};targets={};
@@ -64,7 +68,9 @@
         customSelection=customWorkouts.find(w=>w.key===(customSelection?.key||restored?.customWorkoutKey))||customWorkouts[0]||null;if(customSelection)picker.value=customSelection.key;
         customComplete.clear();
         for(const a of roster){if(!customSelection?.athleteIds.includes(a.id)){plans[a.id]={error:'No selected workout assigned'};continue;}
-          plans[a.id]=root.MWCoachProgram.plan(customSelection.session,{id:customSelection.assignmentId},customSelection.revision,a.id,today,customSelection.blockIndex);
+          const customText=[customSelection.session?.phase,customSelection.session?.seasonPhase,customSelection.session?.periodizationPhase,customSelection.session?.title,customSelection.session?.focus,customSelection.session?.work,customSelection.session?.intensity,...(Array.isArray(customSelection.session?.cues)?customSelection.session.cues:[])].filter(Boolean).join(' ').toLowerCase();
+          const customIntent=/recovery|regeneration|easy/.test(customText)?'recovery':/technical|technique|progressive|fly|flying|wicket/.test(customText)?'technical':/max.?v|max velocity|acceleration|speed/.test(customText)?'speed':'pace';
+          plans[a.id]={...root.MWCoachProgram.plan(customSelection.session,{id:customSelection.assignmentId},customSelection.revision,a.id,today,customSelection.blockIndex),intent:customIntent,phase:customSelection.session?.phase||customSelection.session?.seasonPhase||customSelection.session?.periodizationPhase||null};
           if(customSelection.completed.some(r=>r.athlete_id===a.id&&r.block_index===customSelection.blockIndex))customComplete.add(a.id);
           const p=plans[a.id],t=d.mwCoachPracticeRecommendedTarget(a,p.distance,p.intensityPct);if(t)targets[a.id]=typeof t==='object'?t:{target:t};
         }return;
@@ -73,10 +79,10 @@
         const week=Number(a.current_week)||1,sourceWeek=Number(a.source_week)||week,day=Number(a.current_day)||1,tier=d.coachPracticeTier(a),strengthTier=d.coachPracticeStrengthTier(a),eg=d.coachPracticeEventGroup(a),key=[sourceWeek,day,tier,strengthTier,eg].join('|');
         if(!cache.has(key))cache.set(key,d.coachProgramData(sourceWeek,eg,tier,strengthTier));
         const data=await cache.get(key),s=(data.track?.sessions||[]).find(x=>d.coachSessionDayNumber(x.day)===day),p=d.mwCoachPracticePrescription(s),t=d.mwCoachPracticeRecommendedTarget(a,p.distance,p.intensityPct);
-        const text=[s?.title,s?.focus,s?.prescribedWork,s?.work,s?.structure,s?.intensity,...(Array.isArray(s?.cues)?s.cues:[])].filter(Boolean).join(' ').toLowerCase();
-        const intent=/tempo|extensive|recovery|regeneration|easy/.test(text)?(/recovery|regeneration|easy/.test(text)?'recovery':'pace'):/technical|technique|progressive|fly|flying|wicket|max.?v|max velocity|acceleration|speed/.test(text)?(/technical|technique|progressive|fly|flying|wicket/.test(text)?'technical':'speed'):'pace';
+        const text=[s?.phase,s?.seasonPhase,s?.periodizationPhase,s?.trainingPhase,s?.title,s?.focus,s?.prescribedWork,s?.work,s?.structure,s?.intensity,...(Array.isArray(s?.cues)?s.cues:[])].filter(Boolean).join(' ').toLowerCase();
+        const intent=/recovery|regeneration|easy/.test(text)?'recovery':/technical|technique|progressive|fly|flying|wicket/.test(text)?'technical':/max.?v|max velocity|acceleration|speed/.test(text)?'speed':'pace';
         const restSeconds=root.MWCoachTimingTools.prescribedRestSeconds([p.raw,s?.rest,s?.recovery].filter(Boolean).join(' '));
-        plans[a.id]={...p,...d.coachPracticeIdentity(a,week,day),week,day,sourceWeek,intent,restSeconds};if(t)targets[a.id]=typeof t==='object'?t:{target:t,paceBasis:root.MWPace?.calculate(a.prs,p.distance,Number(p.intensityPct)/100)};
+        plans[a.id]={...p,...d.coachPracticeIdentity(a,week,day),week,day,sourceWeek,intent,phase:s?.phase||s?.seasonPhase||s?.periodizationPhase||s?.trainingPhase||null,restSeconds};if(t)targets[a.id]=typeof t==='object'?t:{target:t,paceBasis:root.MWPace?.calculate(a.prs,p.distance,Number(p.intensityPct)/100)};
       }catch(err){plans[a.id]={error:err.message}}}));
     }
     async function loadGroups(){
@@ -148,11 +154,12 @@
       for(const id of ['heatRestMinutes','heatRestSeconds','heatRestApply'])find(id).disabled=busy()||!heat;
       const duration=Math.round((heat?.restDurationMs??90000)/1000);find('heatRestMinutes').value=Math.floor(duration/60);find('heatRestSeconds').value=duration%60;
       const firstPlan=plans[heat?.athleteIds[0]];
-      find('heatContext').textContent=heat?.restOnly?'This group has no assigned athletes yet. Its rest countdown is available; add athletes in Teams to time reps.':heat?`${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Tap each athlete as they finish`:'Create your group and choose its athletes in Teams, then return here to time practice.';
+      find('heatContext').textContent=heat?.restOnly?'This group has no assigned athletes yet. Its rest countdown is available; add athletes in Teams to time reps.':heat?`${firstPlan?.phase?String(firstPlan.phase).toUpperCase()+' · ':''}${intentLabel(firstPlan?.intent)} · ${heat.athleteIds.length} athletes · ${firstPlan?.distance?firstPlan.distance+'m':''}${firstPlan?.intensityPct?' @ '+firstPlan.intensityPct+'%':''} · Assigned rest ${firstPlan?.restSeconds?firstPlan.restSeconds+' sec':'shown below'} · Rep times inside the target zone count ON TARGET`:'Create your group and choose its athletes in Teams, then return here to time practice.';
       find('heatLanes').innerHTML=heat?heat.athleteIds.map((id,i)=>{
         const a=roster.find(x=>x.id===id),r=heat.repResults.find(x=>x.athleteId===id),owner=model.owner(id,heat.key),complete=a&&completed(a?.id),p=plans[id],t=targets[id]?.target;
         const status=heat.saved||complete?'WORKOUT SAVED':owner?'IN ANOTHER HEAT':p?.error?'WORKOUT UNAVAILABLE':heat.rep>limit(id)?'REPS COMPLETE':r?(r.ms/1000).toFixed(2)+' s':finishable?'TAP FINISH':'READY';
-        return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!finishable||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'Target '+Number(t).toFixed(2)+' s'+(targets[id]?.paceBasis?.estimated?' · ESTIMATE':''):''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
+        const zone=t?pace(Number(t),id):null;
+        return `<button class="mwHeatLane ${r?'finished':''}" data-heat-athlete="${e(id)}" ${saving||!finishable||r||!eligible(id)?'disabled':''}><span>LANE ${i+1}</span><b>${e(a?.name||'Saved athlete')}</b><small>${t?'TARGET ZONE '+Number(zone.targetMinSeconds).toFixed(2)+'–'+Number(zone.targetMaxSeconds).toFixed(2)+' s · target '+Number(t).toFixed(2)+' s'+(targets[id]?.paceBasis?.estimated?' · ESTIMATE':''):''}</small><strong>${e(status)}</strong>${r?.paceLabel?`<em>${e(r.paceLabel)}</em>`:''}</button>`;
       }).join(''):'<p>No athletes available in this group. Manage its roster in Teams.</p>';
       find('heatLanes').querySelectorAll('[data-heat-athlete]').forEach(button=>button.onclick=()=>finish(button.dataset.heatAthlete));
       panel.closest('.page')?.classList.toggle('mw-heat-running',Boolean(repActive||counting));
