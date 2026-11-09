@@ -55,8 +55,10 @@
     const intentLabel=intent=>({pace:'CONTROLLED PACE · STAY IN ZONE',recovery:'RECOVERY · STAY CONTROLLED',technical:'TECHNICAL QUALITY · FORM FIRST',speed:'SPEED QUALITY · USE FULL ASSIGNED REST'})[intent]||'PACE TARGET';
     const pace=(seconds,id)=>{
       const t=Number(targets[id]?.target)||null,intent=plans[id]?.intent||'pace';if(!t)return {targetSeconds:null,targetMinSeconds:null,targetMaxSeconds:null,paceStatus:null,paceLabel:'',mwIntent:intent};
-      const fast=t*(1-PACE_ZONE_TOLERANCE),slow=t*(1+PACE_ZONE_TOLERANCE),above=seconds<fast,below=seconds>slow,quality=['speed','technical'].includes(intent);
-      return {targetSeconds:t,targetMinSeconds:fast,targetMaxSeconds:slow,mwIntent:intent,paceStatus:above&&!quality?'fast':below?'slow':'on_pace',mwInterpretation:above?(quality?'above_target':'pace_violation'):below?'below_target':'on_target',paceLabel:above?(quality?'ABOVE TARGET · QUALITY SPEED':'ABOVE PRESCRIBED PACE'):below?(intent==='technical'?'BELOW TARGET · TECHNICAL SPEED':'BELOW TARGET'):'ON TARGET'};
+      const fast=t*(1-PACE_ZONE_TOLERANCE),slow=t*(1+PACE_ZONE_TOLERANCE),above=seconds<fast,below=seconds>slow,quality=['speed','technical'].includes(intent),assignedRest=Number(plans[id]?.restSeconds),actualRest=Number(h()?.repRestSeconds),shortRest=quality&&Number.isFinite(assignedRest)&&assignedRest>0&&Number.isFinite(actualRest)&&actualRest+2<assignedRest;
+      const status=above&&!quality?'fast':below?'slow':'on_pace',interpretation=above?(quality?(shortRest?'pace_violation':'above_target'):'pace_violation'):below?'below_target':'on_target';
+      const label=above?(quality?(shortRest?'ABOVE TARGET · REST SHORT':'ABOVE TARGET · QUALITY SPEED'):'ABOVE PRESCRIBED PACE'):below?(intent==='technical'?'BELOW TARGET · TECHNICAL SPEED':'BELOW TARGET'):'ON TARGET';
+      return {targetSeconds:t,targetMinSeconds:fast,targetMaxSeconds:slow,mwIntent:intent,paceStatus:shortRest?'fast':status,mwInterpretation:interpretation,paceLabel:label};
     };
     async function loadPlans(){
       const cache=new Map();plans={};targets={};
