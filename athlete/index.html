@@ -2031,7 +2031,7 @@ body.mw-auth-ready #mwEnteringLoader{display:none!important}
     <div class="mwPracticeTiming">
       <div class="mwPracticeRep"><span id="mwPracticeRep">REP 1</span><strong id="mwPracticeClock">00:00.0</strong><small id="mwPracticeCue">PRESS START WHEN YOU ARE IN POSITION</small></div>
       <section id="mwPracticeRest" class="mwRestTimer" aria-label="Rest timer">
-        <span class="mwRestLabel">REST TIME</span><strong data-rest-clock role="timer" aria-label="Elapsed rest time" aria-live="off">00:00</strong>
+        <span class="mwRestLabel">REST TIME</span><strong data-rest-clock role="timer" aria-label="Assigned rest countdown" aria-live="off">00:00</strong>
         <span data-rest-status role="status">READY BETWEEN REPS</span>
         <div class="mwRestActions"><button type="button" data-rest-toggle>START REST</button><button type="button" data-rest-reset aria-label="Reset rest timer">RESET</button></div>
       </section>
@@ -4914,7 +4914,7 @@ function assignedRestSeconds(source=session){
    if(Number.isFinite(seconds)&&seconds>0&&seconds<=7200)return seconds;
  }
  const tierWork=source.tierWork?.[tier];
- const text=[source.recovery,source.rest,source.focus,source.prescribedWork,tierWork,source.work,source.structure,source.coachNote,source.coach_note,...blocks.map(b=>b?.rest)].filter(Boolean).join(' ');
+ const text=[source.recovery,source.rest,source.focus,source.prescribedWork,tierWork,source.work,source.structure,source.coachNote,source.coach_note,...blocks.flatMap(b=>[b?.rest,b?.restSeconds,b?.rest_seconds,b?.repRestSeconds,b?.rep_rest_seconds])].filter(Boolean).join(' ');
  const match=text.match(/(?:rep\s+)?rest(?:\s+between\s+(?:reps?|repetitions|starts))?\s*[:：-]?\s*(\d+(?:\.\d+)?)\s*(?:[-–—]|to)\s*(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m)\b|(?:rep\s+)?rest(?:\s+between\s+(?:reps?|repetitions|starts))?\s*[:：-]?\s*(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m)\b/i);
  if(!match)return null;
  // For a prescribed range, count down from its upper limit so the full assigned recovery is available.
