@@ -738,7 +738,7 @@
         const accessIssue=Number(err.status)===403;
         const sessionIssue=Number(err.status)===401;
         const msg=accessIssue
-          ? 'Coach MW is connected, but this account needs attention: '+err.message
+          ? 'Coach Mus is connected, but this account needs attention: '+err.message
           : sessionIssue
             ? 'Your MW session needs to be refreshed. Sign in again if this continues.'
             : 'Coach MW connection unavailable right now. '+err.message;
