@@ -4915,7 +4915,7 @@ function assignedRestSeconds(source=session){
  }
  const tierWork=source.tierWork?.[tier];
  const text=[source.recovery,source.rest,source.focus,source.prescribedWork,tierWork,source.work,source.structure,source.coachNote,source.coach_note,...blocks.map(b=>b?.rest)].filter(Boolean).join(' ');
- const match=text.match(/(?:rep\\s+)?rest(?:\\s+between\\s+(?:reps?|repetitions|starts))?\\s*[:：-]?\\s*(\\d+(?:\\.\\d+)?)\\s*(?:[-–—]|to)\\s*(\\d+(?:\\.\\d+)?)\\s*(seconds?|secs?|s|minutes?|mins?|m)\\b|(?:rep\\s+)?rest(?:\\s+between\\s+(?:reps?|repetitions|starts))?\\s*[:：-]?\\s*(\\d+(?:\\.\\d+)?)\\s*(seconds?|secs?|s|minutes?|mins?|m)\\b/i);
+ const match=text.match(/(?:rep\s+)?rest(?:\s+between\s+(?:reps?|repetitions|starts))?\s*[:：-]?\s*(\d+(?:\.\d+)?)\s*(?:[-–—]|to)\s*(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m)\b|(?:rep\s+)?rest(?:\s+between\s+(?:reps?|repetitions|starts))?\s*[:：-]?\s*(\d+(?:\.\d+)?)\s*(seconds?|secs?|s|minutes?|mins?|m)\b/i);
  if(!match)return null;
  // For a prescribed range, count down from its upper limit so the full assigned recovery is available.
  const amount=Number(match[2]||match[4]||match[1]||match[3]),unit=String(match[3]||match[5]||'sec').toLowerCase();
