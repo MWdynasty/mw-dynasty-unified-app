@@ -8,7 +8,7 @@ async function permissions(token,userId){
   return {ownAI:row?.policy_version===VERSION&&row?.own_ai===true,coachAI:row?.policy_version===VERSION&&row?.coach_ai===true};
 }
 async function requireConsent(token,userId){
-  if(!(await permissions(token,userId)).ownAI)throw Object.assign(new Error('Allow sharing with OpenAI in AI & Data Sharing before using Coach MW.'),{status:403,code:'AI_CONSENT_REQUIRED'});
+  if(!(await permissions(token,userId)).ownAI)throw Object.assign(new Error('Allow AI sharing in Profile → AI & Data Sharing before using Coach Mus.'),{status:403,code:'AI_CONSENT_REQUIRED'});
 }
 async function permittedAthleteIds(token,athletes,assignments){
   const rows=Array.isArray(athletes)?athletes:[],assigned=new Set((assignments||[]).map(x=>String(x.athlete_id)));
