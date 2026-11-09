@@ -4904,6 +4904,24 @@ function schedulePace(p){
  const mark=p.dist>=200?50:(p.dist>=100?25:null); if(!mark)return;
  for(let d=mark;d<=p.dist;d+=mark){const t=p.target*(d/p.dist);timers.push(setTimeout(()=>say(d===p.dist?d+' meters. '+t.toFixed(1)+'. Finish!':d+' meters. '+t.toFixed(1)),t*1000))}
 }
+function assignedRestSeconds(source=session){
+ if(!source)return null;
+ const tier=String(getProfile().trainingTier||getProfile().entryAssessment?.tier||'performance').toLowerCase();
+ const blocks=Array.isArray(source.blocks)?source.blocks:[];
+ const direct=[source.repRestSeconds,source.rep_rest_seconds,source.restSeconds,source.rest_seconds,source.repRest,source.rep_rest,...blocks.flatMap(b=>[b?.restSeconds,b?.rest_seconds,b?.repRestSeconds,b?.rep_rest_seconds])];
+ for(const value of direct){
+   const seconds=Number(value);
+   if(Number.isFinite(seconds)&&seconds>0&&seconds<=7200)return seconds;
+ }
+ const tierWork=source.tierWork?.[tier];
+ const text=[source.recovery,source.rest,source.focus,source.prescribedWork,tierWork,source.work,source.structure,source.coachNote,source.coach_note,...blocks.map(b=>b?.rest)].filter(Boolean).join(' ');
+ const match=text.match(/(?:rep\\s+)?rest(?:\\s+between\\s+(?:reps?|repetitions|starts))?\\s*[:：-]?\\s*(\\d+(?:\\.\\d+)?)\\s*(?:[-–—]|to)\\s*(\\d+(?:\\.\\d+)?)\\s*(seconds?|secs?|s|minutes?|mins?|m)\\b|(?:rep\\s+)?rest(?:\\s+between\\s+(?:reps?|repetitions|starts))?\\s*[:：-]?\\s*(\\d+(?:\\.\\d+)?)\\s*(seconds?|secs?|s|minutes?|mins?|m)\\b/i);
+ if(!match)return null;
+ // For a prescribed range, count down from its upper limit so the full assigned recovery is available.
+ const amount=Number(match[2]||match[4]||match[1]||match[3]),unit=String(match[3]||match[5]||'sec').toLowerCase();
+ if(!Number.isFinite(amount)||amount<=0)return null;
+ return Math.round(amount*(unit.startsWith('m')?60:1));
+}
 function currentRep(){return retryRep||results.length+1}
 function updateRepResetButtons(){
  const p=parsePrescription();
@@ -5053,6 +5071,7 @@ async function openPracticeFor(w,d){
  practiceWeek=Number(w);practiceDay=Number(d);workoutSaved=workoutStatus(practiceWeek,practiceDay)?.completion_status==='completed';practiceStarted=['in_progress','incomplete'].includes(String(workoutStatus(practiceWeek,practiceDay)?.completion_status||''));
  try{const data=await loadMWProgramWeek(practiceWeek);session=data?.track?.sessions?.find(x=>Number(x.day)===Number(practiceDay))}catch{}
  if(!session){alert('This MW track session is not available yet.');return}
+ restTimer.setDuration(assignedRestSeconds(session));
  try{results=await loadExistingReps(practiceWeek,practiceDay)}catch{results=[]}
  const p=parsePrescription();
  if(p.target&&results.length){
